@@ -15,9 +15,12 @@ RUN yarn install
 COPY . .
 
 # Build the Quasar app for production
-# RUN npx quasar build
-RUN yarn global add @quasar/cli
-RUN quasar build
+RUN npx quasar build
+
+# This was added when npx didn't work.
+# The correct solution was removing @quasar/app-webpac from package.json
+# RUN yarn global add @quasar/cli
+# RUN quasar build
 
 # Stage 2: Serve the project using Nginx
 FROM nginx:stable
