@@ -145,14 +145,14 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@quasar/app-vite@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@quasar/app-vite/-/app-vite-1.4.0.tgz#8acf5c9313bb7e058b5f733546464b3772d8dfe4"
-  integrity sha512-5f8FKOfYBuax4wTD8Jls+Lgha88kh0vGLvzfIyr2sNIO8cDGPHMYTHZdaeh36sAfhLJU+w0NtUyxNNTI6saw8w==
+"@quasar/app-vite@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@quasar/app-vite/-/app-vite-1.4.1.tgz#86b599d2b4dce32c5220a39b0c82e9732dfa2a62"
+  integrity sha512-I1uwAhcobaNxZ5o3RIYuGyv2QYZlEiNmo4WHrMYORpzYlRmg7s4iERCAqb1leRzKBt6Q79rspJN0fr2t25E78g==
   dependencies:
     "@quasar/fastclick" "1.1.5"
     "@quasar/render-ssr-error" "^1.0.0"
-    "@quasar/vite-plugin" "^1.3.1"
+    "@quasar/vite-plugin" "^1.3.2"
     "@rollup/pluginutils" "^4.1.2"
     "@types/chrome" "^0.0.208"
     "@types/compression" "^1.7.2"
@@ -203,10 +203,10 @@
   dependencies:
     stack-trace "^1.0.0-pre2"
 
-"@quasar/vite-plugin@^1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@quasar/vite-plugin/-/vite-plugin-1.3.1.tgz#49d4cadc5c04d8263b4ba55311dc12bdbf337137"
-  integrity sha512-TOkCgsoxDxdRwzO05SMJgb1ICK1F3FeYE0MFoKukJ0KwKi17WSjIZGfxltShJ9x4ZtNezhVLjFN9MXbQgXFZwQ==
+"@quasar/vite-plugin@^1.3.2":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@quasar/vite-plugin/-/vite-plugin-1.3.3.tgz#63cd2c3cbcf95dff1dc807a80bce7cf44ea91d58"
+  integrity sha512-HSX/Vgec5/Y8fiJRfpf1MR7+um+rdpbilktBGQkYOKw4A9d0smGq4jtSS/K4O2GTXRYqDmZ/5sgCeBcmhB3OCw==
 
 "@rollup/pluginutils@^4.1.0", "@rollup/pluginutils@^4.1.2":
   version "4.2.1"
