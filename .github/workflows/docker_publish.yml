@@ -23,10 +23,10 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2.5.1  # Update to use Node.js 16-compatible version
+        uses: actions/checkout@v2  # Update to use Node.js 16-compatible version
       -
         name: Set up QEMU
-        uses: docker/setup-qemu-action@v2.2.1  # Update to use Node.js 16-compatible version
+        uses: docker/setup-qemu-action@v2  # Update to use Node.js 16-compatible version
       -
         name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v2.2.1
