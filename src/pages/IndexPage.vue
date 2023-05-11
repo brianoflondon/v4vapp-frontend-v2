@@ -3,10 +3,10 @@
     <q-card class="index-card text-center q-pa-lg">
       <q-card-section>
         <div class="text-h6">V4V.app v2 Dev Site</div>
-        <div class="text-subtitle2">by Brian of London</div>
+        <div class="text-subtitle2">Brian of London</div>
       </q-card-section>
       <q-card-section class="q-pt-none">
-        For more information about this project, please visit
+        {{$t('index_page')}}
         <a href="https://peakd.com/created/v4vapp-v2">Hive</a>
       </q-card-section>
       <div class="image-container">
