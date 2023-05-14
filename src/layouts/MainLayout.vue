@@ -12,8 +12,10 @@
         />
 
         <q-toolbar-title> V4V.app v2 Dev </q-toolbar-title>
-
         <div>Quasar v{{ $q.version }}</div>
+        <div class="q-pl-md">
+          <LanguageSelector />
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -35,9 +37,11 @@
   </q-layout>
 </template>
 
-<script>
-import { defineComponent, ref } from "vue";
+<script setup>
+import { ref } from "vue";
 import EssentialLink from "components/EssentialLink.vue";
+import LanguageSelector from "components/utils/LanguageSelector.vue";
+import { useI18n } from "vue-i18n";
 
 const linksList = [
   {
@@ -83,24 +87,10 @@ const linksList = [
     link: "https://awesome.quasar.dev",
   },
 ];
+const essentialLinks = ref(linksList);
+const leftDrawerOpen = ref(false);
 
-export default defineComponent({
-  name: "MainLayout",
-
-  components: {
-    EssentialLink,
-  },
-
-  setup() {
-    const leftDrawerOpen = ref(false);
-
-    return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer() {
-        leftDrawerOpen.value = !leftDrawerOpen.value;
-      },
-    };
-  },
-});
+const toggleLeftDrawer = () => {
+  leftDrawerOpen.value = !leftDrawerOpen.value;
+};
 </script>
