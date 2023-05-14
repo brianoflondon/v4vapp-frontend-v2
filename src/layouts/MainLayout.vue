@@ -13,8 +13,11 @@
 
         <q-toolbar-title> V4V.app v2 Dev </q-toolbar-title>
         <div>Quasar v{{ $q.version }}</div>
-        <div class="q-pl-md">
+        <div>
           <LanguageSelector />
+        </div>
+        <div>
+          <DarkSelector />
         </div>
       </q-toolbar>
     </q-header>
@@ -41,6 +44,7 @@
 import { ref } from "vue";
 import EssentialLink from "components/EssentialLink.vue";
 import LanguageSelector from "components/utils/LanguageSelector.vue";
+import DarkSelector from "components/utils/DarkSelector.vue";
 import { useI18n } from "vue-i18n";
 
 const linksList = [

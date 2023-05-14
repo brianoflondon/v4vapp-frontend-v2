@@ -1,22 +1,20 @@
 <template>
   <div>
-    <div class="q-pa-md">
-      <q-btn-dropdown dense dropdown-icon="language">
-        <q-list>
-          <q-item
-            v-for="localeOption in localeOptions"
-            :key="localeOption.value"
-            clickable
-            v-close-popup
-            @click="onItemClick(localeOption.value)"
-          >
-            <q-item-section>
-              <q-item-label>{{ localeOption.label }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-btn-dropdown>
-    </div>
+    <q-btn-dropdown flat dense dropdown-icon="language">
+      <q-list>
+        <q-item
+          v-for="localeOption in localeOptions"
+          :key="localeOption.value"
+          clickable
+          v-close-popup
+          @click="onItemClick(localeOption.value)"
+        >
+          <q-item-section>
+            <q-item-label>{{ localeOption.label }}</q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </q-btn-dropdown>
   </div>
 </template>
 
