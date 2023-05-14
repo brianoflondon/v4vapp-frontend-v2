@@ -18,5 +18,6 @@
     "titleBar.activeForeground": "#F6FBFE"
   },
   "javascript.format.semicolons": "remove",
+  "typescript.format.semicolons": "remove",
   "prettier.semi": false
 }
