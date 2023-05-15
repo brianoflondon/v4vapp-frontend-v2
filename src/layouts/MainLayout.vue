@@ -9,9 +9,8 @@
       </q-toolbar>
     </q-header>
     <q-drawer show-if-above v-model="rightDrawerOpen" side="right" elevated>
-      <div>Side Menu</div>
+      <div><SideMenu /></div>
     </q-drawer>
-
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -25,13 +24,14 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import LanguageSelector from "components/utils/LanguageSelector.vue";
-import DarkSelector from "components/utils/DarkSelector.vue";
+import { ref } from "vue"
+import LanguageSelector from "components/utils/LanguageSelector.vue"
+import DarkSelector from "components/utils/DarkSelector.vue"
+import SideMenu from "components/SideMenu.vue"
 
-const rightDrawerOpen = ref(false);
+const rightDrawerOpen = ref(false)
 
 const toggleRightDrawer = () => {
-  rightDrawerOpen.value = !rightDrawerOpen.value;
-};
+  rightDrawerOpen.value = !rightDrawerOpen.value
+}
 </script>
