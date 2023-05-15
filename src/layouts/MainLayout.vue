@@ -5,6 +5,7 @@
         <q-toolbar-title> V4V.app v2 Dev </q-toolbar-title>
         <div class="text-caption">{{ appName }} v{{ appVersion }}</div>
         <q-space />
+        <KeychainStatus />
         <LanguageSelector />
         <DarkSelector />
         <q-btn dense flat round icon="menu" @click="toggleRightDrawer" />
@@ -31,6 +32,7 @@ import LanguageSelector from "components/utils/LanguageSelector.vue"
 import DarkSelector from "components/utils/DarkSelector.vue"
 import SideMenu from "components/SideMenu.vue"
 import { getAppDetails } from "components/utils/getAppDetails.js"
+import KeychainStatus from "src/components/utils/KeychainStatus.vue"
 const { appName, appVersion } = getAppDetails()
 
 const rightDrawerOpen = ref(false)

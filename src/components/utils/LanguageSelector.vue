@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="language-selector">
     <q-btn-dropdown flat dense dropdown-icon="language">
       <q-list>
         <q-item
