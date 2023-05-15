@@ -6,5 +6,5 @@ export default {
   success: "Action was successful",
 
   // IndexPage
-  index_page: "Para obtener más información sobre este proyecto, visite",
+  index_page_message: "Para obtener más información sobre este proyecto, visite",
 };
