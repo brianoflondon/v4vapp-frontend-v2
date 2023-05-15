@@ -6,5 +6,10 @@ export default {
   success: "Action was successful",
 
   // IndexPage
-  index_page: "For more information about this project, please visit",
+  index_page_message: "For more information about this project, please visit",
+
+  // SideMenu
+  page: "Page",
+  home: "Home",
+  status: "Status",
 };

@@ -6,5 +6,5 @@ export default {
   success: "Action was successful",
 
   // IndexPage
-  index_page: "למידע נוסף על פרויקט זה, אנא בקר",
+  index_page_message: "למידע נוסף על פרויקט זה, אנא בקר",
 };
