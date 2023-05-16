@@ -59,6 +59,7 @@ function extractProfile(data) {
     label.value = profile.name
     return profile
   } catch (e) {
+    label.value = "Hive Login"
     console.log(e)
     return {}
   }
