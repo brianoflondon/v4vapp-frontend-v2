@@ -48,19 +48,9 @@
 
 <script setup>
 import { ref } from "vue"
+import { useLoadHiveAccountsReputation } from "src/use/useHive"
 
-const stringOptions = [
-  "Google",
-  "Facebook",
-  "Twitter",
-  "Apple",
-  "Oracle",
-].reduce((acc, opt) => {
-  for (let i = 1; i <= 5; i++) {
-    acc.push(opt + " " + i)
-  }
-  return acc
-}, [])
+const stringOptions = ["Type to Find", "A Hive Account"]
 
 const options = ref(stringOptions)
 const model = ref(null)
@@ -88,34 +78,28 @@ function filterFn(val, update, abort) {
   }, 300)
 }
 
-function filterFnAutoselect(val, update, abort) {
-  setTimeout(() => {
-    update(
-      () => {
-        if (val === "") {
-          options.value = stringOptions
-        } else {
-          const needle = val.toLowerCase()
-          options.value = stringOptions.filter(
-            (v) => v.toLowerCase().indexOf(needle) > -1
-          )
-        }
-      },
-      (ref) => {
-        if (
-          val !== "" &&
-          ref.options.length > 0 &&
-          ref.getOptionIndex() === -1
-        ) {
-          ref.moveOptionSelection(1, true)
-          ref.toggleOption(ref.options[ref.optionIndex], true)
-        }
+async function filterFnAutoselect(val, update, abort) {
+  console.log("val", val)
+  // await new Promise((resolve) => setTimeout(resolve, 1))
+  update(
+    async () => {
+      if (val === "") {
+        options.value = stringOptions
+      } else {
+        const needle = val.toLowerCase()
+        options.value = await useLoadHiveAccountsReputation(needle)
       }
-    )
-  }, 300)
+    },
+    (ref) => {
+      if (val !== "" && ref.options.length > 0 && ref.getOptionIndex() === -1) {
+        ref.moveOptionSelection(1, true)
+        ref.toggleOption(ref.options[ref.optionIndex], true)
+      }
+    }
+  )
 }
 
 const abortFilterFn = () => {
-  // console.log('delayed filter aborted')
+  console.log("delayed filter aborted")
 }
 </script>

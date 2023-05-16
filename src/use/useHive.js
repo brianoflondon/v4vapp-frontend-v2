@@ -99,3 +99,22 @@ function extractProfile(data) {
     }
   }
 }
+
+// -------- Hive Account Reputation --------
+export async function useLoadHiveAccountsReputation(val, maxAccounts = 6) {
+  // search through Hive for accounts matching pattern val
+  // return sortted by reputation
+  if (val.length < 2) {
+    return
+  }
+  try {
+    const res = await hiveTx.call("condenser_api.get_account_reputations", [
+      val,
+      maxAccounts,
+    ])
+    const accounts = res.result.map((el) => el.account)
+    return accounts
+  } catch (error) {
+    console.log(error)
+  }
+}
