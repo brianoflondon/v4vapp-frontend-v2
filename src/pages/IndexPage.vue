@@ -1,8 +1,8 @@
 <template>
   <q-page class="flex flex-center">
-
     <q-card class="index-card text-center q-pa-lg">
-      <select-after-filtering />
+      <div>hiveAccname: {{ hiveAccname }}</div>
+      <select-after-filtering @updateValue="handleUpdateValue" />
       <q-card-section>
         <div class="text-h6">V4V.app v2 Dev Site</div>
         <div class="text-subtitle2">Brian of London</div>
@@ -36,7 +36,13 @@
 
 <script setup>
 import SelectAfterFiltering from "components/quasar/SelectAfterFiltering.vue"
-import { defineComponent } from "vue"
+import { defineComponent, ref } from "vue"
+
+const hiveAccname = ref("")
+
+function handleUpdateValue(value) {
+  hiveAccname.value = value
+}
 
 defineComponent({
   name: "IndexPage",
