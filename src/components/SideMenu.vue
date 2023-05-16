@@ -1,24 +1,14 @@
 <template>
   <div>
     <div class="q-pa-md">
-
-      <q-select
-        v-model="hiveUsername"
-        :options="hiveOptions"
-        inputmode="text"
-        use-input
-        input-debounce="0"
-        map-options
-        emit-value
+      <select-hive-acc
         :label="label"
-        dense
-      >
-        <template v-slot:before>
-          <q-avatar>
-            <img :src="avatar" />
-          </q-avatar>
-        </template>
-      </q-select>
+        @updateValue="
+          (value) => {
+            hiveUsername = value
+          }
+        "
+      />
     </div>
     <q-list>
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
@@ -40,9 +30,8 @@ import { ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
 import { useHiveDetails, useHiveAvatarURL } from "src/use/useHive.js"
+import SelectHiveAcc from "components/SelectHiveAcc.vue"
 import "src/assets/hive-tx.min.js"
-
-// import { hiveTx } from "hive-tx"
 
 const t = useI18n().t
 const linkList = ref([
@@ -60,24 +49,16 @@ const linkList = ref([
   },
 ])
 const hiveUsername = ref("")
-const avatar = ref(useHiveAvatarURL({ hiveAccname: '' }))
-const typing = ref("")
+const avatar = ref(useHiveAvatarURL({ hiveAccname: "" }))
 const hiveDetails = ref(null)
-const hiveOptions = ref([
-  "brianoflondon",
-  "v4vapp",
-  "blocktvnews",
-  "v4vapp.dhf",
-  "12334",
-])
-const label = ref("Hive Login")
+
+const label = ref(t("hive_account"))
 
 watch(hiveUsername, async (val) => {
-  console.log("hiveUsername", val)
   label.value = "Loading..."
   hiveDetails.value = await useHiveDetails(val)
   avatar.value = useHiveAvatarURL({ hiveAccname: val })
-  label.value = hiveDetails.value?.profile?.name || "Hive Login"
+  label.value = hiveDetails.value?.profile?.name || t("hive_account")
 })
 </script>
 

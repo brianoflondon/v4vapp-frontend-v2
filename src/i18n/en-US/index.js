@@ -9,6 +9,9 @@ export default {
   // IndexPage
   index_page_message: "For more information about this project, please visit",
 
+  // Selector
+  hive_account: "Hive Account",
+
   // SideMenu
   page: "Page",
   home: "Home",
