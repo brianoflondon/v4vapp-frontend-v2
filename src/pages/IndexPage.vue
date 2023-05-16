@@ -1,12 +1,14 @@
 <template>
   <q-page class="flex flex-center">
+
     <q-card class="index-card text-center q-pa-lg">
+      <select-after-filtering />
       <q-card-section>
         <div class="text-h6">V4V.app v2 Dev Site</div>
         <div class="text-subtitle2">Brian of London</div>
       </q-card-section>
       <q-card-section class="q-pt-none">
-        {{$t('index_page_message')}}
+        {{ $t("index_page_message") }}
         <a href="https://peakd.com/created/v4vapp-v2">Hive</a>
       </q-card-section>
       <div class="image-container">
@@ -33,9 +35,10 @@
 </style>
 
 <script setup>
-import { defineComponent } from "vue";
+import SelectAfterFiltering from "components/quasar/SelectAfterFiltering.vue"
+import { defineComponent } from "vue"
 
 defineComponent({
   name: "IndexPage",
-});
+})
 </script>
