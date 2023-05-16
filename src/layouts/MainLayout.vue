@@ -31,9 +31,10 @@ import { ref } from "vue"
 import LanguageSelector from "components/utils/LanguageSelector.vue"
 import DarkSelector from "components/utils/DarkSelector.vue"
 import SideMenu from "components/SideMenu.vue"
-import { getAppDetails } from "components/utils/getAppDetails.js"
-import KeychainStatus from "src/components/utils/KeychainStatus.vue"
-const { appName, appVersion } = getAppDetails()
+import { useAppDetails } from "src/use/useAppDetails.js"
+import KeychainStatus from "components/utils/KeychainStatus.vue"
+const { appName, appVersion } = useAppDetails()
+
 
 const rightDrawerOpen = ref(false)
 
