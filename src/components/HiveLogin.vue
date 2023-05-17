@@ -25,7 +25,7 @@
           flat
           label="Hive-Keychain"
           icon="img:keychain/hive-keychain-round.svg"
-          @click="checkLoginKeychain(username)"
+          @click="login(hiveAccname)"
         />
       </q-item>
     </q-list>
@@ -37,9 +37,21 @@
 <script setup>
 import { ref } from "vue"
 import HiveSelectAcc from "components/HiveSelectAcc.vue"
+import { useHiveKeychainLogin } from "src/use/useHive"
 
 const hiveAccname = ref("")
 const label = ref("Hive Account")
+
+async function login(username) {
+  try {
+    const result = await useHiveKeychainLogin({ hiveAccname: username })
+    if (result) {
+      console.log(result)
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
 </script>
 
 <style lang="scss" scoped>
