@@ -1,7 +1,6 @@
 <template>
   <q-page class="flex flex-center">
     <q-card class="index-card text-center q-pa-lg">
-      <div>hiveAccname: {{ hiveAccname }}</div>
       <select-hive-acc
         @updateValue="
           (value) => {
@@ -19,15 +18,33 @@
       </q-card-section>
       <div class="image-container">
         <a href="https://peakd.com/created/v4vapp-v2">
-          <img
-            alt="V4V.app v2 Quasar Stars"
-            src="~assets/general-images/v4vapp-v2-quasar-stars.webp"
-          />
+          <div v-if="hiveAccname">
+            <img
+              :alt="'Hive Avatar for ' + hiveAccname"
+              :src="
+                useHiveAvatarURL({ hiveAccname: hiveAccname, size: 'large' })
+              "
+            />
+          </div>
+          <div v-else>
+            <img
+              alt="V4V.app v2 Quasar Stars"
+              src="~assets/general-images/v4vapp-v2-quasar-stars.webp"
+            />
+          </div>
         </a>
       </div>
     </q-card>
   </q-page>
 </template>
+
+<script setup>
+import SelectHiveAcc from "components/SelectHiveAcc.vue"
+import { useHiveAvatarURL } from "src/use/useHive"
+import { defineComponent, ref } from "vue"
+
+const hiveAccname = ref("")
+</script>
 
 <style lang="sass" scoped>
 .index-card
@@ -39,14 +56,3 @@
   width: 100%
   height: auto
 </style>
-
-<script setup>
-import SelectHiveAcc from "components/SelectHiveAcc.vue"
-import { defineComponent, ref } from "vue"
-
-const hiveAccname = ref("")
-
-defineComponent({
-  name: "IndexPage",
-})
-</script>
