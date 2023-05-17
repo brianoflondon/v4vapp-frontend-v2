@@ -11,10 +11,15 @@
     :options="options"
     @filter="filterFnAutoselect"
     @filter-abort="abortFilterFn"
+    @input-value="
+      (input) => {
+        setHiveAvatar(input)
+      }
+    "
   >
     <template v-slot:before>
       <q-avatar>
-        <img :src="avatar" />
+        <img :src="avatar" @error="handleImageError" />
       </q-avatar>
     </template>
     <template v-slot:no-option>
@@ -26,43 +31,70 @@
 </template>
 
 <script setup>
+/**
+ * SelectHiveAcc
+ * A select component for picking Hive accounts
+ *
+ * @props {string} label - The prompt label to show in the Select box
+ * @props {number} maxOptions - Maximum number of options to show in the dropdown
+ * @props {string} size - small, medium, large size of the avatar default is small
+ * @emits {string} updateValue - Emitted value of selected Hive Account
+ */
 import { ref, watch } from "vue"
 import {
   useLoadHiveAccountsReputation,
+  useBlankProfileURL,
   useHiveAvatarURL,
 } from "src/use/useHive"
 
-const stringOptions = []
-const options = ref(stringOptions)
+const options = ref([])
 const model = ref()
-const avatar = ref(useHiveAvatarURL({ hiveAccname: "", size: "small" }))
+const avatar = ref(useBlankProfileURL())
 const emit = defineEmits(["updateValue"])
 const props = defineProps({
   label: {
     type: String,
     default: "Hive Account",
   },
+  maxOptions: {
+    type: Number,
+    default: 10,
+  },
+  size: {
+    type: String,
+    default: "small",
+  },
 })
 
 watch(model, (newValue) => {
-  avatar.value = useHiveAvatarURL({ hiveAccname: newValue, size: "samll" })
+  // Watches the model which holds the selected value
+  avatar.value = useHiveAvatarURL({ hiveAccname: newValue, size: props.size })
   emit("updateValue", newValue)
 })
 
+function setHiveAvatar(hiveAccname) {
+  avatar.value = useHiveAvatarURL({ hiveAccname, size: props.size })
+}
+
+function handleImageError(event) {
+  avatar.value = useBlankProfileURL()
+}
+
 async function filterFnAutoselect(val, update, abort) {
-  console.log("val", val)
-  // await new Promise((resolve) => setTimeout(resolve, 300))
+  // Finds relevant Hive accounts for the options drop down
   update(
     async () => {
       if (val === "") {
-        options.value = stringOptions
+        options.value = []
       } else {
         const needle = val.toLowerCase().replace(/\s+/g, "")
-        options.value = await useLoadHiveAccountsReputation(needle, 10)
-        avatar.value = useHiveAvatarURL({
-          hiveAccname: options.value[0],
-          size: "small",
-        })
+        options.value = await useLoadHiveAccountsReputation(
+          needle,
+          props.maxOptions
+        )
+        if (options.value) {
+          setHiveAvatar(options.value[0])
+        }
       }
     },
     (ref) => {
@@ -72,6 +104,9 @@ async function filterFnAutoselect(val, update, abort) {
       }
     }
   )
+  abort(() => {
+    abortFilterFn
+  })
 }
 
 const abortFilterFn = () => {
