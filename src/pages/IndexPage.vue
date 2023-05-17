@@ -20,12 +20,20 @@
       <div class="image-container">
         <a href="https://peakd.com/created/v4vapp-v2">
           <div v-if="hiveAccname">
-            <img
+            <q-img
+              spinner-color="primary"
+              spinner-size="82px"
               :alt="'Hive Avatar for ' + hiveAccname"
               :src="
                 useHiveAvatarURL({ hiveAccname: hiveAccname, size: 'large' })
               "
-            />
+            >
+              <template v-slot:error>
+                <div class="absolute-full flex flex-center">
+                  <q-icon name="error" size="lg" color="red" />
+                </div>
+              </template>
+            </q-img>
           </div>
           <div v-else>
             <img

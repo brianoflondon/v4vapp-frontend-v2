@@ -28,10 +28,12 @@
     <div>
       <q-item>
         <q-avatar size="200px" class="hive-avatar-large">
-          <img
+          <q-img
             :src="
               useHiveAvatarURL({ hiveAccname: hiveUsername, size: 'large' })
             "
+            spinner-color="primary"
+            spinner-size="82px"
           />
         </q-avatar>
       </q-item>
