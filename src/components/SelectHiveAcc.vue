@@ -11,6 +11,11 @@
     :options="options"
     @filter="filterFnAutoselect"
     @filter-abort="abortFilterFn"
+    @keydown.esc="
+      () => {
+        model = ''
+      }
+    "
     @input-value="
       (input) => {
         setHiveAvatar(input)
@@ -18,7 +23,7 @@
     "
   >
     <template v-slot:before>
-      <q-avatar>
+      <q-avatar rounded size="md">
         <img :src="avatar" @error="handleImageError" />
       </q-avatar>
     </template>
