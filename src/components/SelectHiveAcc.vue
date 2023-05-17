@@ -2,7 +2,6 @@
   <q-select
     v-model="model"
     clearable
-    dense
     use-input
     hide-selected
     fill-input

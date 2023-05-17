@@ -2,6 +2,7 @@
   <div>
     <div class="q-pa-md">
       <select-hive-acc
+        dense
         :label="label"
         maxOptions="20"
         size="small"
