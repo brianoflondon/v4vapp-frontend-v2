@@ -2,6 +2,7 @@
   <q-page class="flex flex-center">
     <q-card class="index-card text-center q-pa-lg">
       <select-hive-acc
+        filled
         @updateValue="
           (value) => {
             hiveAccname = value
