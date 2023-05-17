@@ -11,13 +11,12 @@ const useHiveAccountRegex =
 
 export async function useHiveDetails(hiveAccname) {
   // returns Hive Profile and details for a given Hive hiveAccname
-  if (!hiveAccname.match(useHiveAccountRegex)) {
-    console.log("Invalid Hive hiveAccname")
+  if (!hiveAccname?.match(useHiveAccountRegex)) {
+    console.debug("Invalid Hive hiveAccname")
     return null
   }
   try {
     const res = await hiveTx.call("condenser_api.get_accounts", [[hiveAccname]])
-    console.log(res)
     let hiveDetails = res.result[0]
     hiveDetails["profile"] = extractProfile(hiveDetails)
     return hiveDetails
@@ -33,30 +32,33 @@ export async function useHiveDetails(hiveAccname) {
 export function useHiveAvatarRef({
   hiveAccname,
   size = "medium",
-  reason = "v4vapp-web",
+  reason = "v4vapp-v2-web",
 }) {
-  console.log("useHiveAvatarRef", hiveAccname)
   const hiveAvatar = ref(
     useHiveAvatarURL({ hiveAccname: hiveAccname, size: size, reason: reason })
   )
   return hiveAvatar
 }
 
+export function useBlankProfileURL() {
+  // Returns the blank profile image
+  if (Dark.isActive) {
+    return "avatars/hive_logo_dark.svg"
+  } else {
+    return "avatars/hive_logo_light.svg"
+  }
+}
+
 export function useHiveAvatarURL({
   hiveAccname,
   size = "medium",
-  reason = "v4vapp-web",
+  reason = "v4vapp-v2-web",
 }) {
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
-    if (Dark.isActive) {
-      return "avatars/hive_logo_dark.svg"
-    } else {
-      return "avatars/hive_logo_light.svg"
-    }
+    return useBlankProfileURL()
   }
-  console.log(apiURL + "/hive/avatar/" + hiveAccname + "/" + size)
   return (
     apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
   )
@@ -70,10 +72,8 @@ export async function useLoadHiveAvatar(hiveAccname) {
       method: "GET",
       responseType: "blob",
     })
-    console.log("useLoadHiveAvatar result", res)
     if (res.status === 200) {
       const retUrl = URL.createObjectURL(res.data)
-      console.log("useLoadHiveAvatar retUrl", retUrl)
       return retUrl
     } else {
       return "avatars/unkown_hive_user.png"
@@ -97,5 +97,24 @@ function extractProfile(data) {
     } catch (e) {
       return null
     }
+  }
+}
+
+// -------- Hive Account Reputation --------
+export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
+  // search through Hive for accounts matching pattern val
+  // return sortted by reputation
+  if (val.length < 2) {
+    return
+  }
+  try {
+    const res = await hiveTx.call("condenser_api.get_account_reputations", [
+      val,
+      maxAcc,
+    ])
+    const accounts = res.result.map((el) => el.account)
+    return accounts
+  } catch (error) {
+    console.debug(error)
   }
 }
