@@ -40,6 +40,15 @@ export function useHiveAvatarRef({
   return hiveAvatar
 }
 
+export function useBlankProfileURL() {
+  // Returns the blank profile image
+  if (Dark.isActive) {
+    return "avatars/hive_logo_dark.svg"
+  } else {
+    return "avatars/hive_logo_light.svg"
+  }
+}
+
 export function useHiveAvatarURL({
   hiveAccname,
   size = "medium",
@@ -48,11 +57,7 @@ export function useHiveAvatarURL({
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
-    if (Dark.isActive) {
-      return "avatars/hive_logo_dark.svg"
-    } else {
-      return "avatars/hive_logo_light.svg"
-    }
+    return useBlankProfileURL()
   }
   return (
     apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
