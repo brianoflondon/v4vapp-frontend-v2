@@ -33,8 +33,12 @@ import DarkSelector from "components/utils/DarkSelector.vue"
 import SideMenu from "components/SideMenu.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 import KeychainStatus from "components/utils/KeychainStatus.vue"
-const { appName, appVersion } = useAppDetails()
+import { useQuasar } from "quasar" // Enables Dark mode detection
 
+const $q = useQuasar() // Enables Dark mode detection
+$q.dark.set("auto") // Enables Dark mode detection
+
+const { appName, appVersion } = useAppDetails()
 
 const rightDrawerOpen = ref(false)
 
