@@ -7,6 +7,7 @@
     hide-selected
     fill-input
     input-debounce="300"
+    spellcheck="false"
     :label="label"
     :options="options"
     @filter="filterFnAutoselect"
