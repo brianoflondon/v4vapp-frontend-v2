@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <q-card class="index-card text-center q-pa-lg">
-      <select-hive-acc
+      <HiveSelectAcc
         filled
         @updateValue="
           (value) => {
@@ -48,9 +48,9 @@
 </template>
 
 <script setup>
-import SelectHiveAcc from "components/SelectHiveAcc.vue"
+import HiveSelectAcc from "components/HiveSelectAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
-import { defineComponent, ref } from "vue"
+import { ref } from "vue"
 
 const hiveAccname = ref("")
 </script>
