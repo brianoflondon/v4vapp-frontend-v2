@@ -3,6 +3,8 @@
     <div class="q-pa-md">
       <select-hive-acc
         :label="label"
+        maxOptions="20"
+        size="small"
         @updateValue="
           (value) => {
             hiveUsername = value
@@ -21,6 +23,17 @@
     </div>
     <div v-if="hiveDetails?.profile?.location">
       <q-item-label header> {{ hiveDetails.profile.location }} </q-item-label>
+    </div>
+    <div>
+      <q-item>
+        <q-avatar size="200px" class="hive-avatar-large">
+          <img
+            :src="
+              useHiveAvatarURL({ hiveAccname: hiveUsername, size: 'large' })
+            "
+          />
+        </q-avatar>
+      </q-item>
     </div>
   </div>
 </template>
