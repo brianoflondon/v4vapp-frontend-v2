@@ -5,6 +5,11 @@
         <div class="text-h6">{{ $t("status") }} {{ $t("page") }}</div>
         <div class="text-subtitle2">Brian of London</div>
       </q-card-section>
+      <q-card-section>
+        <div class="hive-login-window">
+          <HiveLogin />
+        </div>
+      </q-card-section>
       <q-card-section class="q-pt-none">
         {{ $t("index_page_message") }}
         <a href="https://peakd.com/created/v4vapp-v2">Hive</a>
@@ -22,8 +27,12 @@
 </template>
 
 <script setup>
+import HiveLogin from "components/HiveLogin.vue"
 import { useI18n } from "vue-i18n"
 const { t } = useI18n()
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.hive-login-window {
+}
+</style>

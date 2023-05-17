@@ -1,5 +1,6 @@
 <template>
   <q-select
+    class="fill-item"
     v-model="model"
     clearable
     use-input
@@ -118,3 +119,11 @@ const abortFilterFn = () => {
   console.log("delayed filter aborted")
 }
 </script>
+
+<style lang="scss" scoped>
+
+.fill-item {
+  flex: 1;
+}
+</style>
+```

@@ -1,6 +1,10 @@
 <template>
   <div>
     <div class="q-pa-md">
+      <HiveLogin />
+    </div>
+
+    <div class="q-pa-md">
       <HiveSelectAcc
         dense
         :label="label"
@@ -47,6 +51,7 @@ import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
 import { useHiveDetails, useHiveAvatarURL } from "src/use/useHive.js"
 import HiveSelectAcc from "components/HiveSelectAcc.vue"
+import HiveLogin from "components/HiveLogin.vue"
 import "src/assets/hive-tx.min.js"
 
 const t = useI18n().t

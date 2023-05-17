@@ -12,6 +12,12 @@ export default {
   // Selector
   hive_account: "Hive Account",
 
+  // Login
+  hive_login: "Hive Login",
+  login: "Login",
+  login_as: "Login as",
+  hive_keychain: "Hive Keychain",
+
   // SideMenu
   page: "Page",
   home: "Home",

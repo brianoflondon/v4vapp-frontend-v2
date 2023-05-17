@@ -4,6 +4,7 @@
 // ----------------------------------------------------------------------------
 import { apiURL } from "boot/axios"
 import { Dark } from "quasar"
+// import { KeychainSDK } from "keychain-sdk"
 import "src/assets/hive-tx.min.js"
 
 const useHiveAccountRegex =
@@ -118,3 +119,51 @@ export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
     console.debug(error)
   }
 }
+
+// /*************************************************
+//  ****     Hive Keycahin Functions
+//  **************************************************/
+
+// const keychain = new KeychainSDK(window)
+
+// export async function useIsHiveKeychainInstalled() {
+//   try {
+//     const isKeychainIn = await keychain.isKeychainInstalled()
+//     return isKeychainIn
+//   } catch (error) {
+//     console.log({ error })
+//   }
+// }
+
+// export async function useHiveKeychainLogin({
+//   hiveAccname,
+//   message = null,
+//   keyType = "posting",
+// }) {
+//   const isKeychainIn = await keychain.isKeychainInstalled()
+//   if (!isKeychainIn || !hiveAccname) {
+//     return null
+//   }
+//   if (!message) {
+//     message = "Login to V4Vapp " + new Date().getTime()
+//   }
+//   const keychainParams = {
+//     data: {
+//       username: hiveAccname,
+//       message: message,
+//       method: keyType,
+//       title: "Login",
+//     },
+//     options: {},
+//   }
+//   try {
+//     const loginResult = await keychain.login(
+//       keychainParams.data,
+//       keychainParams.options
+//     )
+//     return loginResult
+//   } catch (error) {
+//     console.log({ error })
+//     return error
+//   }
+// }
