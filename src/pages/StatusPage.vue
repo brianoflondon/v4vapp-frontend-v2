@@ -69,7 +69,8 @@ const loggedIn = ref(false)
 .index-card
   width: 90%
   height: auto
-  max-width: 400px
+  max-width: 800px
+  min-width: 200px
 
 .image-container img
   width: 100%

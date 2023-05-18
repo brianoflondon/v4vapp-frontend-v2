@@ -134,6 +134,7 @@ export async function useIsHiveKeychainInstalled() {
   } catch (error) {
     console.log({ error })
   }
+  return false
 }
 
 export async function useHiveKeychainLogin({
@@ -141,8 +142,8 @@ export async function useHiveKeychainLogin({
   message = null,
   keyType = "posting",
 }) {
-  console.log("useHiveKeychainLogin") 
-  const isKeychainIn = await keychain.isKeychainInstalled()
+  console.log("useHiveKeychainLogin")
+  const isKeychainIn = keychain.isKeychainInstalled()
   if (!isKeychainIn || !hiveAccname) {
     return null
   }

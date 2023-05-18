@@ -17,19 +17,18 @@
       </q-item>
       <q-item dense>
         <q-btn
-          :disable="hiveAccname === '' || hiveAccname === null"
+          :disable="hiveAccname === '' || hiveAccname === null || !isKeychain"
           flat
-          label="Hive-Keychain"
+          :label="t('hive_keychain')"
           icon="img:keychain/hive-keychain-round.svg"
           @click="login(hiveAccname)"
         />
-        <q-btn
-          :disable="hiveAccname === '' || hiveAccname === null"
-          flat
-          label="Hive-Keychain"
-          icon="img:keychain/hive-keychain-round.svg"
-          @click="login(hiveAccname)"
-        />
+        <q-tooltip v-if="!hiveAccname && isKeychain">{{
+          t("enter_hive_account")
+        }}</q-tooltip>
+        <q-tooltip v-if="!isKeychain">{{
+          t("keychain_not_installed")
+        }}</q-tooltip>
       </q-item>
     </q-list>
   </q-card>
@@ -47,12 +46,18 @@
  *                           login is unsuccessful or hiveAccname is empty
  */
 
-import { ref, watch } from "vue"
+import { ref, watch, onMounted } from "vue"
 import HiveSelectAcc from "components/HiveSelectAcc.vue"
-import { useHiveKeychainLogin, useHiveAvatarURL } from "src/use/useHive"
+import {
+  useHiveKeychainLogin,
+  useHiveAvatarURL,
+  useIsHiveKeychainInstalled,
+} from "src/use/useHive"
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
-import { useQuasar } from "quasar"
+import { is, useQuasar } from "quasar"
+
+const isKeychain = ref(false)
 
 const emit = defineEmits(["hiveAccname", "loggedIn"])
 
@@ -62,15 +67,30 @@ const q = useQuasar()
 const hiveAccname = ref("")
 const label = ref("Hive Account")
 
-watch(hiveAccname, (newValue) => {
+watch(hiveAccname, (newValue, oldValue) => {
   // Watches the model which holds the selected value
   if (!hiveAccname.value) {
+    emit("loggedIn", false)
+  }
+  if (oldValue !== newValue) {
     emit("loggedIn", false)
   }
   emit("hiveAccname", newValue)
 })
 
+onMounted(async () => {
+  isKeychain.value = await useIsHiveKeychainInstalled()
+})
+
 async function login(username) {
+  if (!isKeychain.value) {
+    q.notify({
+      timeout: 2000,
+      message: t("keychain_not_installed"),
+      position: "left",
+    })
+    return
+  }
   const words = await useBip39(3)
   const signMessage = words.join("-")
   const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
