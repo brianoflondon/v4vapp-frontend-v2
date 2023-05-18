@@ -42,7 +42,7 @@
  * Checks for Valid ability to sign a message with Hive Key.
  *
  * @emits {string} hiveAccname - Emitted value of selected Hive Account
- * @emits {string} loggedIn - Emitted True if a login is successful, False if
+ * @emits {boolean} loggedIn - Emitted True if a login is successful, False if
  *                           login is unsuccessful or hiveAccname is empty
  */
 
@@ -123,7 +123,7 @@ async function login(username) {
         )} <br> ${signMessage}`,
         timeout: 1500,
       })
-      emit("hiveAccname", hiveAccname)
+      emit("hiveAccname", hiveAccname.value)
       emit("loggedIn", true)
     } else if (!result.success) {
       console.log(result.message)
