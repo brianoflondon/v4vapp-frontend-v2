@@ -1,7 +1,8 @@
 <template>
   <div>
     <div class="q-pa-md">
-      <HiveLogin />
+      <HiveLogin @hiveAccname="(value) => (hiveUsername = value)"
+      :label="label" />
     </div>
 
     <div class="q-pa-md">

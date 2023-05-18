@@ -7,7 +7,7 @@
       <q-item class="fill-item">
         <HiveSelectAcc
           dense
-          :label="label"
+          :label="props.label"
           @updateValue="
             (value) => {
               hiveAccname = value
@@ -41,6 +41,7 @@
  * HiveLogin
  * Checks for Valid ability to sign a message with Hive Key.
  *
+ * @prop
  * @emits {string} hiveAccname - Emitted value of selected Hive Account
  * @emits {boolean} loggedIn - Emitted True if a login is successful, False if
  *                           login is unsuccessful or hiveAccname is empty
@@ -64,6 +65,12 @@ if (Platform.is.mobile) {
 }
 const isKeychain = ref(false)
 
+const props = defineProps({
+  label: {
+    type: String,
+    default: "",
+  },
+})
 const emit = defineEmits(["hiveAccname", "loggedIn"])
 
 const t = useI18n().t
