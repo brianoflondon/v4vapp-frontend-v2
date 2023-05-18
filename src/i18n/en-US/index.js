@@ -17,6 +17,11 @@ export default {
   login: "Login",
   login_as: "Login as",
   hive_keychain: "Hive Keychain",
+  login_in_progress: "Login in progress",
+  login_failed: "Login failed",
+  login_success: "Login success",
+  sign_this: "Sign this",
+  matches: "matches",
 
   // SideMenu
   page: "Page",
