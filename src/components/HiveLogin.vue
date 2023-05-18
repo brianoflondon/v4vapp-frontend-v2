@@ -63,6 +63,7 @@ async function login(username) {
     const result = await useHiveKeychainLogin({
       hiveAccname: username,
       message: signMessage,
+      keyType: "Posting",
     })
     if (result.success && result?.data?.message == signMessage) {
       console.log("result message", result.data.message)
