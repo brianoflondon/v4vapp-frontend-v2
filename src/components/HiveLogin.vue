@@ -47,7 +47,7 @@
  *                           login is unsuccessful or hiveAccname is empty
  */
 
-import { ref, watch, onMounted } from "vue"
+import { ref, watch, onMounted, computed } from "vue"
 import HiveSelectAcc from "components/HiveSelectAcc.vue"
 import {
   useHiveKeychainLogin,
@@ -77,10 +77,10 @@ const t = useI18n().t
 const q = useQuasar()
 
 const hiveAccname = ref("")
-const label = ref("Hive Account")
 
-watch(hiveAccname, (newValue, oldValue) => {
+watch(hiveAccname, async (newValue, oldValue) => {
   // Watches the model which holds the selected value
+  isKeychain.value = await useIsHiveKeychainInstalled()
   if (!hiveAccname.value) {
     emit("loggedIn", false)
   }
@@ -97,6 +97,7 @@ onMounted(async () => {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 async function login(username) {
+  isKeychain.value = await useIsHiveKeychainInstalled()
   if (!isKeychain.value) {
     q.notify({
       timeout: 2000,
