@@ -1,6 +1,9 @@
 <template>
   <q-page class="flex flex-center">
     <q-card class="index-card text-center q-pa-lg">
+      <div class="hive-login-window">
+        <HiveLogin />
+      </div>
       <HiveSelectAcc
         filled
         @updateValue="
@@ -36,7 +39,7 @@
             </q-img>
           </div>
           <div v-else>
-            <img
+            <q-img
               alt="V4V.app v2 Quasar Stars"
               src="~assets/general-images/v4vapp-v2-quasar-stars.webp"
             />
