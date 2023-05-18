@@ -2,17 +2,27 @@
 FROM node:16 AS build
 
 # Install SSH client
-RUN apt-get update && apt-get install -y openssh-client
+# RUN apt-get update && apt-get install -y openssh-client
 
 # Set working directory
 WORKDIR /app
 
-# Copy package*.json and yarn.lock
-COPY package*.json ./
-COPY yarn.lock ./
+#### YARN PROBLEMS with keychain-sdk
+#### Switch to NPM
+# # Copy package*.json and yarn.lock
+# COPY package*.json ./
+# COPY yarn.lock ./
 
-# Install dependencies
-RUN yarn install
+# # Install dependencies
+# RUN yarn install
+
+# Copy package*.json and package-lock.json
+COPY package*.json ./
+COPY package-lock.json ./
+
+# Install dependencies using NPM
+RUN npm ci
+
 
 # Copy the rest of the application code
 COPY . .
