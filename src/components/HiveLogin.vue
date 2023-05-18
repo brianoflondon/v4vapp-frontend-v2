@@ -55,8 +55,13 @@ import {
 } from "src/use/useHive"
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
-import { is, useQuasar } from "quasar"
+import { useQuasar, Platform } from "quasar"
 
+if (Platform.is.mobile) {
+  console.log("Running on a mobile device")
+} else {
+  console.log("Not running on a mobile device")
+}
 const isKeychain = ref(false)
 
 const emit = defineEmits(["hiveAccname", "loggedIn"])
@@ -82,14 +87,20 @@ onMounted(async () => {
   isKeychain.value = await useIsHiveKeychainInstalled()
 })
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
 async function login(username) {
   if (!isKeychain.value) {
     q.notify({
       timeout: 2000,
       message: t("keychain_not_installed"),
-      position: "left",
+      position: position,
     })
     return
+  }
+  let position = "left"
+  if (Platform.is.mobile) {
+    position = "top"
   }
   const words = await useBip39(3)
   const signMessage = words.join("-")
@@ -102,8 +113,9 @@ async function login(username) {
       avatar: avatarUrl,
       message: t("login_in_progress"),
       caption: `${t("sign_this")}: ${signMessage}`,
-      position: "left",
+      position: position,
     })
+    await delay(300)
     const result = await useHiveKeychainLogin({
       hiveAccname: username,
       message: signMessage,
