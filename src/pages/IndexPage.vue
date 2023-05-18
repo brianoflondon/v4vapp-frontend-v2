@@ -53,11 +53,10 @@ import HiveSelectAcc from "components/HiveSelectAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import { ref, computed } from "vue"
 
-const hiveAvatar = computed(() => {
-  return useHiveAvatarURL({ hiveAccname: hiveAccname, size: "large" })
-})
-
 const hiveAccname = ref("")
+const hiveAvatar = computed(() => {
+  return useHiveAvatarURL({ hiveAccname: hiveAccname.value, size: "large" })
+})
 </script>
 
 <style lang="sass" scoped>
