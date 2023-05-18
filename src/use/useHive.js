@@ -58,7 +58,8 @@ export function useHiveAvatarURL({
 }) {
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
-  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+  if (!hiveAccname) {
+    // Removed: || !hiveAccname.match(useHiveAccountRegex)
     return useBlankProfileURL()
   }
   return (

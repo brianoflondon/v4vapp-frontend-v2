@@ -32,9 +32,7 @@
               spinner-color="primary"
               spinner-size="82px"
               :alt="'Hive Avatar for ' + hiveAccname"
-              :src="
-                useHiveAvatarURL({ hiveAccname: hiveAccname, size: 'large' })
-              "
+              :src="hiveAvatar"
             >
               <template v-slot:error>
                 <div class="absolute-full flex flex-center">
@@ -56,13 +54,18 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, computed } from "vue"
 import HiveLogin from "components/HiveLogin.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import { useI18n } from "vue-i18n"
 const { t } = useI18n()
 const hiveAccname = ref("")
 const loggedIn = ref(false)
+
+const hiveAvatar = computed(() => {
+  console.log(hiveAccname.value)
+  return useHiveAvatarURL({ hiveAccname: hiveAccname.value, size: "large" })
+})
 </script>
 
 <style lang="sass" scoped>

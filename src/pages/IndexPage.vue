@@ -27,9 +27,7 @@
               spinner-color="primary"
               spinner-size="82px"
               :alt="'Hive Avatar for ' + hiveAccname"
-              :src="
-                useHiveAvatarURL({ hiveAccname: hiveAccname, size: 'large' })
-              "
+              :src="hiveAvatar"
             >
               <template v-slot:error>
                 <div class="absolute-full flex flex-center">
@@ -53,7 +51,11 @@
 <script setup>
 import HiveSelectAcc from "components/HiveSelectAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
-import { ref } from "vue"
+import { ref, computed } from "vue"
+
+const hiveAvatar = computed(() => {
+  return useHiveAvatarURL({ hiveAccname: hiveAccname, size: "large" })
+})
 
 const hiveAccname = ref("")
 </script>
