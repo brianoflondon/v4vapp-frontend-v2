@@ -2,7 +2,6 @@
   <q-select
     class="fill-item"
     v-model="model"
-    clearable
     use-input
     hide-selected
     fill-input
@@ -12,16 +11,10 @@
     :options="options"
     @filter="filterFnAutoselect"
     @filter-abort="abortFilterFn"
-    @keydown.esc="
-      () => {
-        model = ''
-      }
-    "
-    @input-value="
-      (input) => {
-        setHiveAvatar(input)
-      }
-    "
+    @keydown.enter="enterFn"
+    @keydown.tab="enterFn"
+    @keydown.esc="escFn"
+    @input-value="inputFn"
   >
     <template v-slot:before>
       <q-avatar rounded size="md">
@@ -42,8 +35,8 @@
  * A select component for picking Hive accounts
  *
  * @props {string} label - The prompt label to show in the Select box
- * @props {number} maxOptions - Maximum number of options to show in the dropdown
- * @props {string} size - small, medium, large size of the avatar default is small
+ * @props {number} maxOptions - Default: 10 - Maximum number of options to show in the dropdown
+ * @props {string} size - Default: small - small, medium, large size of the avatar
  * @emits {string} updateValue - Emitted value of selected Hive Account
  */
 import { ref, watch } from "vue"
@@ -77,6 +70,23 @@ watch(model, (newValue) => {
   avatar.value = useHiveAvatarURL({ hiveAccname: newValue, size: props.size })
   emit("updateValue", newValue)
 })
+
+function enterFn(input) {
+  // If Enter or tab is pressed before selecting from the options, the first option is selected
+  if (!model.value && options.value.length > 0) {
+    model.value = options.value[0]
+  }
+}
+
+function escFn(input) {
+  // If Esc is pressed, the model is cleared
+  model.value = ""
+}
+
+function inputFn(input) {
+  // Change the avatar to match the input value
+  setHiveAvatar(input)
+}
 
 function setHiveAvatar(hiveAccname) {
   avatar.value = useHiveAvatarURL({ hiveAccname, size: props.size })
@@ -121,7 +131,6 @@ const abortFilterFn = () => {
 </script>
 
 <style lang="scss" scoped>
-
 .fill-item {
   flex: 1;
 }
