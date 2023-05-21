@@ -1,13 +1,17 @@
 <template>
   <q-page class="flex flex-center">
     <q-card class="index-card text-center q-pa-lg">
-      <select-hive-acc
+      <div class="hive-login-window">
+        <HiveLogin />
+      </div>
+      <HiveSelectFancyAcc
         filled
         @updateValue="
           (value) => {
             hiveAccname = value
           }
         "
+        fancyOptions
       />
       <q-card-section>
         <div class="text-h6">V4V.app v2 Dev Site</div>
@@ -24,9 +28,7 @@
               spinner-color="primary"
               spinner-size="82px"
               :alt="'Hive Avatar for ' + hiveAccname"
-              :src="
-                useHiveAvatarURL({ hiveAccname: hiveAccname, size: 'large' })
-              "
+              :src="hiveAvatar"
             >
               <template v-slot:error>
                 <div class="absolute-full flex flex-center">
@@ -36,7 +38,7 @@
             </q-img>
           </div>
           <div v-else>
-            <img
+            <q-img
               alt="V4V.app v2 Quasar Stars"
               src="~assets/general-images/v4vapp-v2-quasar-stars.webp"
             />
@@ -48,11 +50,14 @@
 </template>
 
 <script setup>
-import SelectHiveAcc from "components/SelectHiveAcc.vue"
+import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
-import { defineComponent, ref } from "vue"
+import { ref, computed } from "vue"
 
 const hiveAccname = ref("")
+const hiveAvatar = computed(() => {
+  return useHiveAvatarURL({ hiveAccname: hiveAccname.value, size: "large" })
+})
 </script>
 
 <style lang="sass" scoped>

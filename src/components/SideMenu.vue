@@ -1,7 +1,12 @@
 <template>
   <div>
     <div class="q-pa-md">
-      <select-hive-acc
+      <HiveLogin @hiveAccname="(value) => (hiveUsername = value)"
+      :label="label" />
+    </div>
+
+    <div class="q-pa-md">
+      <HiveSelectAcc
         dense
         :label="label"
         maxOptions="20"
@@ -46,7 +51,8 @@ import { ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
 import { useHiveDetails, useHiveAvatarURL } from "src/use/useHive.js"
-import SelectHiveAcc from "components/SelectHiveAcc.vue"
+import HiveSelectAcc from "components/HiveSelectAcc.vue"
+import HiveLogin from "components/HiveLogin.vue"
 import "src/assets/hive-tx.min.js"
 
 const t = useI18n().t

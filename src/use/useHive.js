@@ -4,6 +4,8 @@
 // ----------------------------------------------------------------------------
 import { apiURL } from "boot/axios"
 import { Dark } from "quasar"
+import { KeychainSDK } from "keychain-sdk"
+
 import "src/assets/hive-tx.min.js"
 
 const useHiveAccountRegex =
@@ -25,6 +27,25 @@ export async function useHiveDetails(hiveAccname) {
   }
 }
 
+export async function useHiveProfile(hiveAccname) {
+  // returns Hive Profile for a given Hive hiveAccname
+  if (!hiveAccname?.match(useHiveAccountRegex)) {
+    console.debug("Invalid Hive hiveAccname")
+    return null
+  }
+  try {
+    const profile = await hiveTx.call("bridge.get_profile", [
+      hiveAccname, // account to look up
+      hiveAccname, // observer account
+    ])
+    return profile.result
+    //curl -s --data '{"jsonrpc":"2.0", "method":"bridge.get_profile", "params":{"account": "alice", "observer": "bob"}, "id":1}' https://api.hive.blog
+  } catch (e) {
+    console.log("Error:", e)
+    return null
+  }
+}
+
 /*************************************************
  ****     Avatar related funcitons
  **************************************************/
@@ -32,7 +53,7 @@ export async function useHiveDetails(hiveAccname) {
 export function useHiveAvatarRef({
   hiveAccname,
   size = "medium",
-  reason = "v4vapp-v2-web",
+  reason = "v4vapp-useHiveAvatarRef",
 }) {
   const hiveAvatar = ref(
     useHiveAvatarURL({ hiveAccname: hiveAccname, size: size, reason: reason })
@@ -52,7 +73,7 @@ export function useBlankProfileURL() {
 export function useHiveAvatarURL({
   hiveAccname,
   size = "medium",
-  reason = "v4vapp-v2-web",
+  reason = "v4vapp-v2-useHiveAvatarURL",
 }) {
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
@@ -103,18 +124,84 @@ function extractProfile(data) {
 // -------- Hive Account Reputation --------
 export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
   // search through Hive for accounts matching pattern val
-  // return sortted by reputation
+  // return sorted by reputation.
+  // If there is an exact match in the list, it will be the first item.
   if (val.length < 2) {
     return
   }
   try {
     const res = await hiveTx.call("condenser_api.get_account_reputations", [
       val,
-      maxAcc,
+      maxAcc + 10,
     ])
-    const accounts = res.result.map((el) => el.account)
-    return accounts
+    const reputations = res.result
+    reputations.sort((a, b) => b.reputation - a.reputation)
+
+    const exactMatchIndex = reputations.findIndex(
+      (item) => item.account === val
+    )
+    if (exactMatchIndex > -1) {
+      const exactMatch = reputations.splice(exactMatchIndex, 1)
+      reputations.unshift(exactMatch[0])
+    }
+
+    const sortedAccounts = reputations
+      .map((item) => item.account)
+      .slice(0, maxAcc)
+
+    return sortedAccounts
   } catch (error) {
-    console.debug(error)
+    console.error(error)
+  }
+}
+
+/*************************************************
+ ****     Hive Keycahin Functions
+ **************************************************/
+
+const keychain = new KeychainSDK(window)
+
+export async function useIsHiveKeychainInstalled() {
+  try {
+    const isKeychainIn = await keychain.isKeychainInstalled()
+    return isKeychainIn
+  } catch (error) {
+    console.log({ error })
+  }
+  return false
+}
+
+export async function useHiveKeychainLogin({
+  hiveAccname,
+  message = null,
+  keyType = "posting",
+}) {
+  console.log("useHiveKeychainLogin")
+  const isKeychainIn = keychain.isKeychainInstalled()
+  if (!isKeychainIn || !hiveAccname) {
+    return null
+  }
+  if (!message) {
+    message = "Login to V4Vapp"
+  }
+  const keychainParams = {
+    data: {
+      username: hiveAccname,
+      message: message,
+      method: keyType,
+      title: "Login",
+    },
+    options: {},
+  }
+  try {
+    const loginResult = await keychain.login(
+      keychainParams.data,
+      keychainParams.options
+    )
+    console.log(loginResult)
+    return loginResult
+  } catch (error) {
+    console.log({ error })
+    return error
   }
 }
