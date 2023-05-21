@@ -69,6 +69,12 @@ const linkList = ref([
     icon: "hive",
     link: "status",
   },
+  {
+    title: "Select Demo",
+    caption: "Select Demo",
+    icon: "javascript",
+    link: "selectdemo",
+  }
 ])
 const hiveUsername = ref("")
 const avatar = ref(useHiveAvatarURL({ hiveAccname: "" }))
