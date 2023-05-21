@@ -100,7 +100,6 @@ const props = defineProps({
 
 watch(model, (newValue) => {
   // Watches the model which holds the selected value
-  console.log("watch model", newValue)
   if (!newValue) {
     avatar.value = useBlankProfileURL()
     options.value = []

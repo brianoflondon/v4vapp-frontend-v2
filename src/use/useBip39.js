@@ -57,7 +57,6 @@ export async function useBip39(count) {
   // Falls back to a limited subset of words if the API is down
   let locale = Quasar.lang.getLocale() // returns a string
   try {
-    console.debug("useBip39: trying API")
     const resp = await api.get("/bip39/", {
       params: {
         count: count,
@@ -65,10 +64,8 @@ export async function useBip39(count) {
       },
     })
     if (resp.status !== 200) throw new Error("API returned non-200 status")
-    console.debug(resp.data)
     return resp.data
   } catch {
-    console.debug("useBip39: API failed, falling back to backup words")
     return getRandomWords(backupWords, count)
   }
 }

@@ -114,7 +114,6 @@ async function login(username) {
   const words = await useBip39(3)
   const signMessage = words.join("-")
   const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
-  console.log("avatarUrl: ", avatarUrl)
   try {
     const notif = q.notify({
       group: false, // required to be updatable
@@ -147,7 +146,6 @@ async function login(username) {
       emit("hiveAccname", hiveAccname.value)
       emit("loggedIn", true)
     } else if (!result.success) {
-      console.log(result.message)
       notif({
         icon: "cancel", // we add an icon
         spinner: false, // we reset the spinner setting so the icon can be displayed
