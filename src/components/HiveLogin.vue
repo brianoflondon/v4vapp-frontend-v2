@@ -5,7 +5,7 @@
         $t("login_as")
       }}</q-item-label>
       <q-item class="fill-item">
-        <HiveSelectAcc
+        <HiveSelectFancyAcc
           dense
           :label="props.label"
           @updateValue="
@@ -13,6 +13,7 @@
               hiveAccname = value
             }
           "
+          fancyOptions
         />
       </q-item>
       <q-item dense>
@@ -48,7 +49,7 @@
  */
 
 import { ref, watch, onMounted, computed } from "vue"
-import HiveSelectAcc from "components/HiveSelectAcc.vue"
+import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import {
   useHiveKeychainLogin,
   useHiveAvatarURL,

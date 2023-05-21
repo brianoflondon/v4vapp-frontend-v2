@@ -82,6 +82,7 @@ function enterFn(input) {
   if (!model.value && options.value.length > 0) {
     model.value = options.value[0]
   }
+  emit("updateValue", model.value)
 }
 
 function escFn(input) {

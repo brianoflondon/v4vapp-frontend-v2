@@ -6,6 +6,7 @@
     use-input
     fill-input
     options-html
+    clearable
     input-debounce="300"
     spellcheck="false"
     :label="label"
@@ -100,6 +101,12 @@ const props = defineProps({
 watch(model, (newValue) => {
   // Watches the model which holds the selected value
   console.log("watch model", newValue)
+  if (!newValue) {
+    avatar.value = useBlankProfileURL()
+    options.value = []
+    emit("updateValue", "")
+    return
+  }
   avatar.value = useHiveAvatarURL({
     hiveAccname: newValue.value,
     size: props.size,
@@ -109,9 +116,12 @@ watch(model, (newValue) => {
 
 function enterFn(input) {
   // If Enter or tab is pressed before selecting from the options, the first option is selected
-  if (!model.value.value && options.value.length > 0) {
-    model.value.value = options.value[0]
+  console.log("enterFn", input)
+  if (!model.value && options.value.length > 0) {
+    model.value = options.value[0]
   }
+  console.log("enterFn", model.value.label)
+  emit("updateValue", model.value.label)
 }
 
 function escFn(input) {
