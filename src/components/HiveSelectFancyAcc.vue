@@ -27,6 +27,28 @@
         <q-item-section class="text-grey"> No results </q-item-section>
       </q-item>
     </template>
+    <template v-if="fancyOptions" v-slot:option="scope">
+      <q-item v-bind="scope.itemProps" v-ripple>
+        <q-item-section side>
+          <q-avatar rounded size="sm">
+            <img
+              :src="
+                useHiveAvatarURL({
+                  hiveAccname: scope.opt.label,
+                  size: 'small',
+                  reason: 'select',
+                })
+              "
+              @error="handleImageError"
+            />
+          </q-avatar>
+        </q-item-section>
+        <q-item-section>
+          <q-item-label> {{ scope.opt.label }} </q-item-label>
+          <q-item-label caption> {{ scope.opt.caption }} </q-item-label>
+        </q-item-section>
+      </q-item>
+    </template>
   </q-select>
 </template>
 
@@ -38,15 +60,19 @@
  * @props {string} label - The prompt label to show in the Select box
  * @props {number} maxOptions - Default: 10 - Maximum number of options to show in the dropdown
  * @props {string} size - Default: small - small, medium, large size of the avatar
+ * @props {boolean} fancyOptions - Default: false - Whether to use the fancy options template
  * @emits {string} updateValue - Emitted value of selected Hive Account
  */
 import { ref, watch } from "vue"
+import { useI18n } from "vue-i18n"
 import {
   useLoadHiveAccountsReputation,
   useBlankProfileURL,
   useHiveAvatarURL,
   useHiveProfile,
 } from "src/use/useHive"
+
+const t = useI18n().t
 
 const options = ref([])
 const model = ref()
@@ -73,14 +99,18 @@ const props = defineProps({
 
 watch(model, (newValue) => {
   // Watches the model which holds the selected value
-  avatar.value = useHiveAvatarURL({ hiveAccname: newValue, size: props.size })
-  emit("updateValue", newValue)
+  console.log("watch model", newValue)
+  avatar.value = useHiveAvatarURL({
+    hiveAccname: newValue.value,
+    size: props.size,
+  })
+  emit("updateValue", newValue.value)
 })
 
 function enterFn(input) {
   // If Enter or tab is pressed before selecting from the options, the first option is selected
-  if (!model.value && options.value.length > 0) {
-    model.value = options.value[0]
+  if (!model.value.value && options.value.length > 0) {
+    model.value.value = options.value[0]
   }
 }
 
@@ -104,19 +134,22 @@ function handleImageError(event) {
 
 async function filterFnAutoselect(val, update, abort) {
   // Finds relevant Hive accounts for the options drop down
+  // Fills in the options data structure
   update(
     async () => {
       if (val === "") {
         options.value = []
       } else {
         const needle = val.toLowerCase().replace(/\s+/g, "")
-        options.value = await useLoadHiveAccountsReputation(
+        const simpleList = await useLoadHiveAccountsReputation(
           needle,
           props.maxOptions
         )
-        if (options.value) {
-          setHiveAvatar(options.value[0])
+        if (simpleList) {
+          setHiveAvatar(simpleList[0])
         }
+        options.value = buildOptions(simpleList)
+        await slowFillCaptions()
       }
     },
     (ref) => {
@@ -129,6 +162,31 @@ async function filterFnAutoselect(val, update, abort) {
   abort(() => {
     abortFilterFn
   })
+}
+
+function buildOptions(simpleList) {
+  // Builds the options data structure
+  if (!simpleList) {
+    return []
+  }
+  const objectList = simpleList.map((item) => {
+    return { value: item, label: item, caption: t("loading") }
+  })
+  return objectList
+}
+
+async function slowFillCaptions() {
+  // Fills in the captions for the options drop down
+  options.value = await Promise.all(
+    options.value.map(async (item) => {
+      const result = await useHiveProfile(item.value)
+      const caption = result?.metadata?.profile?.name
+      return {
+        ...item,
+        caption: caption,
+      }
+    })
+  )
 }
 
 const abortFilterFn = () => {

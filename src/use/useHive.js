@@ -35,8 +35,8 @@ export async function useHiveProfile(hiveAccname) {
   }
   try {
     const profile = await hiveTx.call("bridge.get_profile", [
-      hiveAccname,  // account to look up
-      hiveAccname,  // observer account
+      hiveAccname, // account to look up
+      hiveAccname, // observer account
     ])
     return profile.result
     //curl -s --data '{"jsonrpc":"2.0", "method":"bridge.get_profile", "params":{"account": "alice", "observer": "bob"}, "id":1}' https://api.hive.blog
@@ -45,7 +45,6 @@ export async function useHiveProfile(hiveAccname) {
     return null
   }
 }
-
 
 /*************************************************
  ****     Avatar related funcitons
@@ -125,7 +124,8 @@ function extractProfile(data) {
 // -------- Hive Account Reputation --------
 export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
   // search through Hive for accounts matching pattern val
-  // return sortted by reputation
+  // return sortted by reputation.
+  // If there is an exact match in the list, it will be the first item.
   if (val.length < 2) {
     return
   }
@@ -136,11 +136,18 @@ export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
     ])
     const reputations = res.result
     reputations.sort((a, b) => b.reputation - a.reputation)
+
+    const exactMatchIndex = reputations.findIndex(
+      (item) => item.account === val
+    )
+    if (exactMatchIndex > -1) {
+      const exactMatch = reputations.splice(exactMatchIndex, 1)
+      reputations.unshift(exactMatch[0])
+    }
+
     const sortedAccounts = reputations
       .map((item) => item.account)
       .slice(0, maxAcc)
-
-    console.log("Sorted accounts:", sortedAccounts)
 
     return sortedAccounts
   } catch (error) {

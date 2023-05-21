@@ -2,6 +2,9 @@
 // so you can safely delete all default props below
 
 export default {
+  // General
+  loading: "Loading ...",
+
   // Keychain
   keychain_installed: "Keychain is Installed",
   keychain_missing: "Keychain is Missing",

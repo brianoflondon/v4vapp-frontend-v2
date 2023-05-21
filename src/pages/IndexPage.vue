@@ -4,7 +4,7 @@
       <div class="hive-login-window">
         <HiveLogin />
       </div>
-      <HiveSelectAcc
+      <HiveSelectFancyAcc
         filled
         @updateValue="
           (value) => {
@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-import HiveSelectAcc from "components/HiveSelectAcc.vue"
+import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import { ref, computed } from "vue"
 
