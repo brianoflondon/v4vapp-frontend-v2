@@ -124,7 +124,7 @@ function extractProfile(data) {
 // -------- Hive Account Reputation --------
 export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
   // search through Hive for accounts matching pattern val
-  // return sortted by reputation.
+  // return sorted by reputation.
   // If there is an exact match in the list, it will be the first item.
   if (val.length < 2) {
     return
@@ -151,7 +151,7 @@ export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
 
     return sortedAccounts
   } catch (error) {
-    console.debug(error)
+    console.error(error)
   }
 }
 

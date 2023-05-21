@@ -1,13 +1,30 @@
+## Select object for Hive Accounts
+
+This is the extended explanation for the Simple selector for picking Hive Accounts: `HiveSelectAcc`.
+
+This selector uses the Quasar `q-select` object and uses autocompletion based on the partial Hive account name entered. It looks up and presents options from the Hive API sorted in descending order of Hive account reputation. If an exact match for the entered Hive account is found, that is returned.
+
+This Component emits the selected Hive account name and displays the selected Hive account's profile picture.
+
+https://github.com/brianoflondon/v4vapp-frontend-v2/blob/f99a30a3cb208da0770497c1cabdf5ab27655690/src/components/SelectHiveAcc.vue
+
+### Template
+
+The Template options as set are taken from this example in the Quasar Documentation [SelectAfterFiltering](https://quasar.dev/vue-components/select#example--selecting-option-after-filtering).
+
+Unfortunately all the examples in the Quasar documentation use the older Options API and I'm working with the newer Compositions API. I converted this example and you can find the converted version [at this link](https://github.com/brianoflondon/v4vapp-frontend-v2/blob/f99a30a3cb208da0770497c1cabdf5ab27655690/src/components/quasar/SelectAfterFiltering.vue)
+
+
+```vue
 <template>
   <q-select
-    class="fill-item"
+    class="hive-select-account"
     v-model="model"
     hide-selected
     use-input
     fill-input
     options-html
-    clearable
-    input-debounce="500"
+    input-debounce="300"
     spellcheck="false"
     :label="label"
     :options="options"
@@ -28,31 +45,21 @@
         <q-item-section class="text-grey"> No results </q-item-section>
       </q-item>
     </template>
-    <template v-if="fancyOptions" v-slot:option="scope">
-      <q-item v-bind="scope.itemProps" v-ripple>
-        <q-item-section side>
-          <q-avatar rounded size="sm">
-            <img
-              :src="
-                useHiveAvatarURL({
-                  hiveAccname: scope.opt.label,
-                  size: 'small',
-                  reason: 'select',
-                })
-              "
-              @error="handleImageError"
-            />
-          </q-avatar>
-        </q-item-section>
-        <q-item-section>
-          <q-item-label> {{ scope.opt.label }} </q-item-label>
-          <q-item-label caption> {{ scope.opt.caption }} </q-item-label>
-        </q-item-section>
-      </q-item>
-    </template>
   </q-select>
 </template>
 
+```
+
+### Script Setup
+
+You will noticed that this component uses calls from `src/use/useHive.js` which I will also include below.
+
+The optional props are described in the comment section.
+
+
+
+
+```vue
 <script setup>
 /**
  * SelectHiveAcc
@@ -61,19 +68,14 @@
  * @props {string} label - The prompt label to show in the Select box
  * @props {number} maxOptions - Default: 10 - Maximum number of options to show in the dropdown
  * @props {string} size - Default: small - small, medium, large size of the avatar
- * @props {boolean} fancyOptions - Default: false - Whether to use the fancy options template
  * @emits {string} updateValue - Emitted value of selected Hive Account
  */
 import { ref, watch } from "vue"
-import { useI18n } from "vue-i18n"
 import {
   useLoadHiveAccountsReputation,
   useBlankProfileURL,
   useHiveAvatarURL,
-  useHiveProfile,
 } from "src/use/useHive"
-
-const t = useI18n().t
 
 const options = ref([])
 const model = ref()
@@ -100,27 +102,16 @@ const props = defineProps({
 
 watch(model, (newValue) => {
   // Watches the model which holds the selected value
-  if (!newValue) {
-    avatar.value = useBlankProfileURL()
-    options.value = []
-    emit("updateValue", "")
-    return
-  }
-  avatar.value = useHiveAvatarURL({
-    hiveAccname: newValue.value,
-    size: props.size,
-  })
-  emit("updateValue", newValue.value)
+  avatar.value = useHiveAvatarURL({ hiveAccname: newValue, size: props.size })
+  emit("updateValue", newValue)
 })
 
 function enterFn(input) {
   // If Enter or tab is pressed before selecting from the options, the first option is selected
-  console.log("enterFn", input)
   if (!model.value && options.value.length > 0) {
     model.value = options.value[0]
   }
-  console.log("enterFn", model.value.label)
-  emit("updateValue", model.value.label)
+  emit("updateValue", model.value)
 }
 
 function escFn(input) {
@@ -143,22 +134,23 @@ function handleImageError(event) {
 
 async function filterFnAutoselect(val, update, abort) {
   // Finds relevant Hive accounts for the options drop down
-  // Fills in the options data structure
   update(
     async () => {
       if (val === "") {
         options.value = []
       } else {
+        // Fetch the sorted list of Hive accounts after converting
+        // the input to lowercase and removing spaces
         const needle = val.toLowerCase().replace(/\s+/g, "")
-        const simpleList = await useLoadHiveAccountsReputation(
+        options.value = await useLoadHiveAccountsReputation(
           needle,
           props.maxOptions
         )
-        if (simpleList) {
-          setHiveAvatar(simpleList[0])
+        // Sets the displayed Hive avatar to the first option in the
+        // options list
+        if (options.value) {
+          setHiveAvatar(options.value[0])
         }
-        options.value = buildOptions(simpleList)
-        await slowFillCaptions()
       }
     },
     (ref) => {
@@ -173,39 +165,45 @@ async function filterFnAutoselect(val, update, abort) {
   })
 }
 
-function buildOptions(simpleList) {
-  // Builds the options data structure
-  if (!simpleList) {
-    return []
-  }
-  const objectList = simpleList.map((item) => {
-    return { value: item, label: item, caption: t("loading") }
-  })
-  return objectList
-}
-
-async function slowFillCaptions() {
-  // Fills in the captions for the options drop down
-  options.value = await Promise.all(
-    options.value.map(async (item) => {
-      const result = await useHiveProfile(item.value)
-      const caption = result?.metadata?.profile?.name
-      return {
-        ...item,
-        caption: caption,
-      }
-    })
-  )
-}
-
 const abortFilterFn = () => {
   console.log("delayed filter aborted")
 }
 </script>
 
-<style lang="scss" scoped>
-.fill-item {
-  flex: 1;
-}
-</style>
+<style lang="scss" scoped></style>
+```
+
+
+### Hive Functions
+
+First note is that I'm using the HiveTx library. [Hive-tx-js](https://github.com/mahdiyari/hive-tx-js). I was unable to get this to work successfullyy by installing with `yarn` so I copied the minified js file into my project and I import it like this:
+
+`import "src/assets/hive-tx.min.js"`
+
+You can see the complete file here: [useHive.js](https://github.com/brianoflondon/v4vapp-frontend-v2/blob/b2d442d248e5f3ae0a61c45f4156ef9db8dc9e1b/src/use/useHive.js)
+
+
+## How to use the Template
+
+This should be all you need to put the object in your own project. Once this object is on the page you will have access to the selected Hive account name in the `hiveAccname` variable.
+
+
+```vue
+
+<template>
+  <HiveSelectAcc
+    @updateValue="
+      (value) => {
+        hiveAccname = value
+      }
+    "
+  />
+</template>
+import { ref } from "vue"
+const hiveAccname = ref("")
+
+<script setup>
+
+
+</script>
 ```

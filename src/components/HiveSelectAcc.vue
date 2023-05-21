@@ -1,6 +1,6 @@
 <template>
   <q-select
-    class="fill-item"
+    class="hive-select-account"
     v-model="model"
     hide-selected
     use-input
@@ -45,7 +45,6 @@ import {
   useLoadHiveAccountsReputation,
   useBlankProfileURL,
   useHiveAvatarURL,
-  useHiveProfile,
 } from "src/use/useHive"
 
 const options = ref([])
@@ -137,9 +136,5 @@ const abortFilterFn = () => {
 }
 </script>
 
-<style lang="scss" scoped>
-.fill-item {
-  flex: 1;
-}
-</style>
+<style lang="scss" scoped></style>
 ```
