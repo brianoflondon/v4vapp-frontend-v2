@@ -27,6 +27,26 @@ export async function useHiveDetails(hiveAccname) {
   }
 }
 
+export async function useHiveProfile(hiveAccname) {
+  // returns Hive Profile for a given Hive hiveAccname
+  if (!hiveAccname?.match(useHiveAccountRegex)) {
+    console.debug("Invalid Hive hiveAccname")
+    return null
+  }
+  try {
+    const profile = await hiveTx.call("bridge.get_profile", [
+      hiveAccname,  // account to look up
+      hiveAccname,  // observer account
+    ])
+    return profile.result
+    //curl -s --data '{"jsonrpc":"2.0", "method":"bridge.get_profile", "params":{"account": "alice", "observer": "bob"}, "id":1}' https://api.hive.blog
+  } catch (e) {
+    console.log("Error:", e)
+    return null
+  }
+}
+
+
 /*************************************************
  ****     Avatar related funcitons
  **************************************************/
@@ -34,7 +54,7 @@ export async function useHiveDetails(hiveAccname) {
 export function useHiveAvatarRef({
   hiveAccname,
   size = "medium",
-  reason = "v4vapp-v2-web",
+  reason = "v4vapp-useHiveAvatarRef",
 }) {
   const hiveAvatar = ref(
     useHiveAvatarURL({ hiveAccname: hiveAccname, size: size, reason: reason })
@@ -54,12 +74,11 @@ export function useBlankProfileURL() {
 export function useHiveAvatarURL({
   hiveAccname,
   size = "medium",
-  reason = "v4vapp-v2-web",
+  reason = "v4vapp-v2-useHiveAvatarURL",
 }) {
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
-  if (!hiveAccname) {
-    // Removed: || !hiveAccname.match(useHiveAccountRegex)
+  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     return useBlankProfileURL()
   }
   return (
@@ -113,10 +132,17 @@ export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
   try {
     const res = await hiveTx.call("condenser_api.get_account_reputations", [
       val,
-      maxAcc,
+      maxAcc + 10,
     ])
-    const accounts = res.result.map((el) => el.account)
-    return accounts
+    const reputations = res.result
+    reputations.sort((a, b) => b.reputation - a.reputation)
+    const sortedAccounts = reputations
+      .map((item) => item.account)
+      .slice(0, maxAcc)
+
+    console.log("Sorted accounts:", sortedAccounts)
+
+    return sortedAccounts
   } catch (error) {
     console.debug(error)
   }

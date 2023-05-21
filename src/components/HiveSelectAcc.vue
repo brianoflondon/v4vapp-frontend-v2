@@ -2,9 +2,10 @@
   <q-select
     class="fill-item"
     v-model="model"
-    use-input
     hide-selected
+    use-input
     fill-input
+    options-html
     input-debounce="300"
     spellcheck="false"
     :label="label"
@@ -26,6 +27,28 @@
         <q-item-section class="text-grey"> No results </q-item-section>
       </q-item>
     </template>
+    <template v-if="fancyOptions" v-slot:option="scope">
+      <q-item v-bind="scope.itemProps" v-ripple>
+        <q-item-section side>
+          <q-avatar rounded size="sm">
+            <img
+              :src="
+                useHiveAvatarURL({ hiveAccname: scope.label, size: 'small', reason: 'select' })
+              "
+              @error="handleImageError"
+            />
+          </q-avatar>
+        </q-item-section>
+        <q-item-section>
+          <q-item-label> {{ scope.label }} </q-item-label>
+          <q-item-label caption> placeholder </q-item-label>
+          <!-- Add your customizations here. -->
+          <div class="custom-option-content">
+            <!-- ... -->
+          </div>
+        </q-item-section>
+      </q-item>
+    </template>
   </q-select>
 </template>
 
@@ -37,6 +60,7 @@
  * @props {string} label - The prompt label to show in the Select box
  * @props {number} maxOptions - Default: 10 - Maximum number of options to show in the dropdown
  * @props {string} size - Default: small - small, medium, large size of the avatar
+ * @props {boolean} fancyOptions - Default: false - Whether to use the fancy options template
  * @emits {string} updateValue - Emitted value of selected Hive Account
  */
 import { ref, watch } from "vue"
@@ -62,6 +86,10 @@ const props = defineProps({
   size: {
     type: String,
     default: "small",
+  },
+  fancyOptions: {
+    type: Boolean,
+    default: false,
   },
 })
 

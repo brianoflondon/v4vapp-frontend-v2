@@ -11,6 +11,7 @@
             hiveAccname = value
           }
         "
+        fancyOptions
       />
       <q-card-section>
         <div class="text-h6">V4V.app v2 Dev Site</div>
