@@ -9,7 +9,7 @@
       <HiveSelectAcc
         dense
         :label="label"
-        maxOptions="20"
+        :maxOptions="20"
         size="small"
         @updateValue="
           (value) => {
