@@ -102,8 +102,6 @@ function handleImageError(event) {
 
 async function updateOptions(val) {
   // Finds relevant Hive accounts for the options drop down
-  console.log("updateOptions", val)
-  console.log("modelValue.value", modelValue.value)
   if (val === "") {
     options.value = []
   } else {

@@ -16,18 +16,7 @@
           <div class="image-container">
             <a href="https://peakd.com/created/v4vapp-v2">
               <div v-if="hiveAccname">
-                <q-img
-                  spinner-color="primary"
-                  spinner-size="82px"
-                  :alt="'Hive Avatar for ' + hiveAccname"
-                  :src="hiveAvatar"
-                >
-                  <template v-slot:error>
-                    <div class="absolute-full flex flex-center">
-                      <q-icon name="error" size="lg" color="red" />
-                    </div>
-                  </template>
-                </q-img>
+                <HiveAvatar :hiveAccname="hiveAccname" size="large" />
               </div>
               <div v-else>
                 <q-img
@@ -39,19 +28,29 @@
           </div>
         </q-card-section>
       </q-card>
+      <q-card class="sidebyside-card">
+        <div class="image-container">
+          <q-card-section>
+            <q-avatar rounded size="md">
+              <HiveAvatar
+                :hiveAccname="hiveAccname"
+                size="small"
+                :qImg="false"
+              />
+            </q-avatar>
+          </q-card-section>
+        </div>
+      </q-card>
     </div>
   </q-page>
 </template>
 
 <script setup>
 import HiveSelectAcc2 from "components/HiveSelectAcc2.vue"
-import { useHiveAvatarURL } from "src/use/useHive"
-import { ref, computed } from "vue"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
+import { ref } from "vue"
 
 const hiveAccname = ref("")
-const hiveAvatar = computed(() => {
-  return useHiveAvatarURL({ hiveAccname: hiveAccname.value, size: "large" })
-})
 </script>
 
 <style lang="sass" scoped>
