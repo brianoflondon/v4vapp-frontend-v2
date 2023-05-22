@@ -71,7 +71,13 @@ module.exports = configure(function (/* ctx */) {
       // distDir
 
       // extendViteConf (viteConf) {},
-      // viteVuePluginOptions: {},
+
+      // added to use the new defineModel macro in Vue 3.3.0
+      viteVuePluginOptions: {
+        script: {
+          defineModel: true,
+        },
+      },
 
       vitePlugins: [
         [
