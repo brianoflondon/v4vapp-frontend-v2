@@ -9,6 +9,10 @@ const routes = [
         path: "/selectdemo",
         component: () => import("pages/HiveSelectDemoPage.vue"),
       },
+      {
+        path: "/selectdemo2",
+        component: () => import("pages/HiveSelectDemoPage2.vue"),
+      },
     ],
   },
 
