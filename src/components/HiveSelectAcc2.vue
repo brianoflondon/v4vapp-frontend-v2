@@ -39,7 +39,6 @@
  * @props {string} label - The prompt label to show in the Select box
  * @props {number} maxOptions - Default: 10 - Maximum number of options to show in the dropdown
  * @props {string} size - Default: small - small, medium, large size of the avatar
- * @emits {string} updateValue - Emitted value of selected Hive Account
  */
 import { ref } from "vue"
 import {
@@ -51,12 +50,6 @@ import {
 const options = ref([])
 const modelValue = defineModel()
 const avatar = ref(useBlankProfileURL())
-
-// Using a computed property to set the avatar does not work
-// There is no good way to handle an image error during load.
-// const avatar = computed(() => {
-//   return useHiveAvatarURL({ hiveAccname: modelValue.value, size: props.size })
-// })
 
 const props = defineProps({
   label: {
@@ -132,18 +125,6 @@ async function filterFnAutoselect(val, update, abort) {
     async () => {
       console.log("delayed filter")
       await updateOptions(val)
-      // if (val === "") {
-      //   options.value = []
-      // } else {
-      //   const needle = val.toLowerCase().replace(/\s+/g, "")
-      //   options.value = await useLoadHiveAccountsReputation(
-      //     needle,
-      //     props.maxOptions
-      //   )
-      //   if (options.value) {
-      //     setHiveAvatar(options.value[0])
-      //   }
-      // }
     },
     (ref) => {
       if (val !== "" && ref.options.length > 0 && ref.getOptionIndex() === -1) {
