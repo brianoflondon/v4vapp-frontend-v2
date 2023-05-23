@@ -114,6 +114,7 @@ async function login(username) {
       message: `${t("login_in_progress")}: @${username}`,
       caption: `${t("sign_this")}: ${signMessage}`,
       position: position,
+      color: "info",
     })
     await delay(300)
     const result = await useHiveKeychainLogin({
@@ -135,6 +136,7 @@ async function login(username) {
         caption: `${result?.data?.message} <br> ${t(
           "matches"
         )} <br> ${signMessage}`,
+        color: "positive",
         timeout: 1500,
       })
     } else if (!result.success) {
@@ -144,6 +146,7 @@ async function login(username) {
         spinner: false, // we reset the spinner setting so the icon can be displayed
         message: t("login_failed"),
         caption: `${result?.message}`,
+        color: "negative",
         timeout: 1500,
       })
     }
@@ -154,6 +157,7 @@ async function login(username) {
       icon: "cancel", // we add an icon
       spinner: false, // we reset the spinner setting so the icon can be displayed
       message: `${error}`,
+      color: "negative",
       timeout: 1500,
     })
   }
