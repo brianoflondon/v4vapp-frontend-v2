@@ -7,65 +7,31 @@
       </q-card-section>
       <q-card-section>
         <div class="hive-login-window">
-          <HiveLogin
-            @hiveAccname="
-              (value) => {
-                hiveAccname = value
-              }
-            "
-            @loggedIn="
-              (value) => {
-                loggedIn = value
-              }
-            "
-          />
+          <HiveLogin v-model="hiveAccObj" />
         </div>
       </q-card-section>
       <q-card-section class="q-pt-none">
         {{ $t("index_page_message") }}
         <a href="https://peakd.com/created/v4vapp-v2">Hive</a>
       </q-card-section>
-      <div class="image-container">
-        <a href="https://peakd.com/created/v4vapp-v2">
-          <div v-if="loggedIn">
-            <q-img
-              spinner-color="primary"
-              spinner-size="82px"
-              :alt="'Hive Avatar for ' + hiveAccname"
-              :src="hiveAvatar"
-            >
-              <template v-slot:error>
-                <div class="absolute-full flex flex-center">
-                  <q-icon name="error" size="lg" color="red" />
-                </div>
-              </template>
-            </q-img>
-          </div>
-          <div v-else>
-            <q-img
-              alt="V4V.app v2 Quasar Stars"
-              src="~assets/general-images/v4vapp-v2-quasar-stars.webp"
-            />
-          </div>
-        </a>
-      </div>
+      <q-card-section
+        :class="{
+          'is-logged-in': hiveAccObj?.loggedIn,
+          'not-logged-in': !hiveAccObj?.loggedIn,
+        }"
+      >
+        {{ hiveAccObj }}
+      </q-card-section>
     </q-card>
   </q-page>
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref } from "vue"
 import HiveLogin from "components/HiveLogin.vue"
-import { useHiveAvatarURL } from "src/use/useHive"
 import { useI18n } from "vue-i18n"
 const { t } = useI18n()
-const hiveAccname = ref("")
-const loggedIn = ref(false)
-
-const hiveAvatar = computed(() => {
-  console.log(hiveAccname.value)
-  return useHiveAvatarURL({ hiveAccname: hiveAccname.value, size: "large" })
-})
+const hiveAccObj = ref("")
 </script>
 
 <style lang="sass" scoped>
@@ -78,4 +44,10 @@ const hiveAvatar = computed(() => {
 .image-container img
   width: 100%
   height: auto
+
+.is-logged-in
+  background: radial-gradient(circle, #35a2ff 0%, #014a88 100%)
+
+.not-logged-in
+  background: radial-gradient(circle, #333333 0%, #880000 100%)
 </style>

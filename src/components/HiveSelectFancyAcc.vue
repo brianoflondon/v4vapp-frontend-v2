@@ -1,15 +1,14 @@
 <template>
   <q-select
-    class="fill-item"
-    v-model="model"
+    class="hive-select-account"
+    v-model="modelValue"
     hide-selected
     use-input
     fill-input
-    options-html
     clearable
     input-debounce="500"
     spellcheck="false"
-    :label="label"
+    :label="modelValue?.caption ? modelValue.caption : label"
     :options="options"
     @filter="filterFnAutoselect"
     @filter-abort="abortFilterFn"
@@ -20,7 +19,7 @@
   >
     <template v-slot:before>
       <q-avatar rounded size="md">
-        <img :src="avatar" @error="handleImageError" />
+        <HiveAvatar :hiveAccname="avatarName" />
       </q-avatar>
     </template>
     <template v-slot:no-option>
@@ -32,16 +31,7 @@
       <q-item v-bind="scope.itemProps" v-ripple>
         <q-item-section side>
           <q-avatar rounded size="sm">
-            <img
-              :src="
-                useHiveAvatarURL({
-                  hiveAccname: scope.opt.label,
-                  size: 'small',
-                  reason: 'select',
-                })
-              "
-              @error="handleImageError"
-            />
+            <HiveAvatar :hiveAccname="scope.opt.label" />
           </q-avatar>
         </q-item-section>
         <q-item-section>
@@ -58,13 +48,14 @@
  * SelectHiveAcc
  * A select component for picking Hive accounts
  *
+ * @defineModel (object)
  * @props {string} label - The prompt label to show in the Select box
  * @props {number} maxOptions - Default: 10 - Maximum number of options to show in the dropdown
  * @props {string} size - Default: small - small, medium, large size of the avatar
  * @props {boolean} fancyOptions - Default: false - Whether to use the fancy options template
- * @emits {string} updateValue - Emitted value of selected Hive Account
  */
-import { ref, watch } from "vue"
+import { ref } from "vue"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useI18n } from "vue-i18n"
 import {
   useLoadHiveAccountsReputation,
@@ -76,9 +67,8 @@ import {
 const t = useI18n().t
 
 const options = ref([])
-const model = ref()
-const avatar = ref(useBlankProfileURL())
-const emit = defineEmits(["updateValue"])
+const modelValue = defineModel()
+const avatarName = ref("")
 const props = defineProps({
   label: {
     type: String,
@@ -98,43 +88,24 @@ const props = defineProps({
   },
 })
 
-watch(model, (newValue) => {
-  // Watches the model which holds the selected value
-  if (!newValue) {
-    avatar.value = useBlankProfileURL()
-    options.value = []
-    emit("updateValue", "")
-    return
-  }
-  avatar.value = useHiveAvatarURL({
-    hiveAccname: newValue.value,
-    size: props.size,
-  })
-  emit("updateValue", newValue.value)
-})
-
 function enterFn(input) {
   // If Enter or tab is pressed before selecting from the options, the first option is selected
   console.log("enterFn", input)
-  if (!model.value && options.value.length > 0) {
-    model.value = options.value[0]
-  }
-  console.log("enterFn", model.value.label)
-  emit("updateValue", model.value.label)
+  // if (!modelValue.value && options.value.length > 0) {
+  //   modelValue.value = options.value[0]
+  //   avatarName.value = options.value[0].label
+  // }
+  // console.log("enterFn", modelValue.value)
 }
 
 function escFn(input) {
   // If Esc is pressed, the model is cleared
-  model.value = ""
+  modelValue.value = ""
 }
 
 function inputFn(input) {
   // Change the avatar to match the input value
-  setHiveAvatar(input)
-}
-
-function setHiveAvatar(hiveAccname) {
-  avatar.value = useHiveAvatarURL({ hiveAccname, size: props.size })
+  avatarName.value = input
 }
 
 function handleImageError(event) {
@@ -155,11 +126,11 @@ async function filterFnAutoselect(val, update, abort) {
           props.maxOptions
         )
         if (simpleList) {
-          setHiveAvatar(simpleList[0])
+          avatarName.value = simpleList[0]
         }
         options.value = buildOptions(simpleList)
-        await slowFillCaptions()
       }
+      await slowFillCaptions()
     },
     (ref) => {
       if (val !== "" && ref.options.length > 0 && ref.getOptionIndex() === -1) {

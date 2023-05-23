@@ -4,15 +4,7 @@
       <div class="hive-login-window">
         <HiveLogin />
       </div>
-      <HiveSelectFancyAcc
-        filled
-        @updateValue="
-          (value) => {
-            hiveAccname = value
-          }
-        "
-        fancyOptions
-      />
+      <HiveSelectFancyAcc filled v-model="hiveAccObj" fancyOptions />
       <q-card-section>
         <div class="text-h6">V4V.app v2 Dev Site</div>
         <div class="text-subtitle2">Brian of London</div>
@@ -24,18 +16,7 @@
       <div class="image-container">
         <a href="https://peakd.com/created/v4vapp-v2">
           <div v-if="hiveAccname">
-            <q-img
-              spinner-color="primary"
-              spinner-size="82px"
-              :alt="'Hive Avatar for ' + hiveAccname"
-              :src="hiveAvatar"
-            >
-              <template v-slot:error>
-                <div class="absolute-full flex flex-center">
-                  <q-icon name="error" size="lg" color="red" />
-                </div>
-              </template>
-            </q-img>
+            <HiveAvatar :hiveAccname="hiveAccname" size="large" />
           </div>
           <div v-else>
             <q-img
@@ -52,9 +33,13 @@
 <script setup>
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { ref, computed } from "vue"
 
-const hiveAccname = ref("")
+const hiveAccObj = ref(null)
+const hiveAccname = computed(() => {
+  return hiveAccObj.value ? hiveAccObj.value.label : null
+})
 const hiveAvatar = computed(() => {
   return useHiveAvatarURL({ hiveAccname: hiveAccname.value, size: "large" })
 })

@@ -10,7 +10,7 @@
         />
         <q-card-section class="q-pa-sm"><p>HiveSelectAcc</p></q-card-section>
         <q-card-section class="text-center q-pa-sm">
-          <HiveSelectAcc2 dense v-model="hiveAccname" />
+          <HiveSelectAcc dense v-model="hiveAccname" />
         </q-card-section>
         <q-card-section>
           <div class="image-container">

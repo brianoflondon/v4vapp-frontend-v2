@@ -9,7 +9,6 @@
     spellcheck="false"
     :label="label"
     :options="options"
-    @focus="focusFn"
     @filter="filterFnAutoselect"
     @filter-abort="abortFilterFn"
     @keydown.enter="enterFn"
