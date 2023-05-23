@@ -43,7 +43,6 @@ const props = defineProps({
 
 function handleImageError(error) {
   // If the image fails to load, use the blank profile image
-  console.log("HiveAvatar - Error loading image: ", error)
   avatarImg.value.src = useBlankProfileURL()
 }
 </script>

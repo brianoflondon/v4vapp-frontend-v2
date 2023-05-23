@@ -5,7 +5,6 @@
     hide-selected
     use-input
     fill-input
-    options-html
     input-debounce="300"
     spellcheck="false"
     :label="label"
@@ -19,11 +18,6 @@
     @input-value="inputFn"
   >
     <template v-slot:before>
-      <q-avatar rounded size="md">
-        <img :src="avatar" @error="handleImageError" />
-      </q-avatar>
-    </template>
-    <template v-slot:after>
       <q-avatar rounded size="md">
         <HiveAvatar :hiveAccname="avatarName" />
       </q-avatar>
@@ -46,16 +40,11 @@
  * @props {string} size - Default: small - small, medium, large size of the avatar
  */
 import { ref } from "vue"
-import HiveAvatar from "components/utils/HiveAvatar.vue";
-import {
-  useLoadHiveAccountsReputation,
-  useBlankProfileURL,
-  useHiveAvatarURL,
-} from "src/use/useHive"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
+import { useLoadHiveAccountsReputation } from "src/use/useHive"
 
 const options = ref([])
 const modelValue = defineModel()
-const avatar = ref(useBlankProfileURL())
 const avatarName = ref("")
 
 const props = defineProps({
@@ -84,11 +73,6 @@ function enterFn(input) {
   }
 }
 
-async function focusFn(input) {
-  // When the input is focused, the options are updated
-  await updateOptions(input.srcElement._value)
-}
-
 function escFn(input) {
   // If Esc is pressed, the model is cleared
   modelValue.value = ""
@@ -97,15 +81,6 @@ function escFn(input) {
 function inputFn(input) {
   // Change the avatar to match the input value
   avatarName.value = input
-  setHiveAvatar(input)
-}
-
-function setHiveAvatar(hiveAccname) {
-  avatar.value = useHiveAvatarURL({ hiveAccname, size: props.size })
-}
-
-function handleImageError(event) {
-  avatar.value = useBlankProfileURL()
 }
 
 async function updateOptions(val) {
@@ -119,7 +94,7 @@ async function updateOptions(val) {
       props.maxOptions
     )
     if (options.value) {
-      setHiveAvatar(options.value[0])
+      avatarName.value = options.value[0]
     }
   }
 }
@@ -129,7 +104,6 @@ async function filterFnAutoselect(val, update, abort) {
   // console.log("filter", val, update, abort)
   update(
     async () => {
-      console.log("delayed filter")
       await updateOptions(val)
     },
     (ref) => {
