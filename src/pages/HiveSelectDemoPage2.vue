@@ -31,7 +31,7 @@
       <q-card class="sidebyside-card">
         <div class="image-container">
           <q-card-section>
-            <q-avatar rounded size="md">
+            <q-avatar size="sm">
               <HiveAvatar
                 :hiveAccname="hiveAccname"
                 size="small"

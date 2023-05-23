@@ -23,6 +23,11 @@
         <img :src="avatar" @error="handleImageError" />
       </q-avatar>
     </template>
+    <template v-slot:after>
+      <q-avatar rounded size="md">
+        <HiveAvatar :hiveAccname="avatarName" />
+      </q-avatar>
+    </template>
     <template v-slot:no-option>
       <q-item>
         <q-item-section class="text-grey"> No results </q-item-section>
@@ -41,6 +46,7 @@
  * @props {string} size - Default: small - small, medium, large size of the avatar
  */
 import { ref } from "vue"
+import HiveAvatar from "components/utils/HiveAvatar.vue";
 import {
   useLoadHiveAccountsReputation,
   useBlankProfileURL,
@@ -50,6 +56,7 @@ import {
 const options = ref([])
 const modelValue = defineModel()
 const avatar = ref(useBlankProfileURL())
+const avatarName = ref("")
 
 const props = defineProps({
   label: {
@@ -89,6 +96,7 @@ function escFn(input) {
 
 function inputFn(input) {
   // Change the avatar to match the input value
+  avatarName.value = input
   setHiveAvatar(input)
 }
 
