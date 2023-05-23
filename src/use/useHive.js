@@ -97,10 +97,10 @@ export async function useLoadHiveAvatar(hiveAccname) {
       const retUrl = URL.createObjectURL(res.data)
       return retUrl
     } else {
-      return "avatars/unkown_hive_user.png"
+      return "avatars/unknown_hive_user.png"
     }
   } catch (err) {
-    return "avatars/unkown_hive_user.png"
+    return "avatars/unknown_hive_user.png"
   }
 }
 
