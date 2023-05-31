@@ -2,9 +2,9 @@
   <q-page class="flex flex-center">
     <q-card class="index-card text-center q-pa-lg">
       <div class="hive-login-window">
-        <HiveLogin />
+        <HiveLogin v-model="hiveAccObj" />
       </div>
-      <HiveSelectFancyAcc filled v-model="hiveAccObj" fancyOptions />
+      <!-- <HiveSelectFancyAcc filled v-model="hiveAccObj" fancyOptions /> -->
       <q-card-section>
         <div class="text-h6">V4V.app v2 Dev Site</div>
         <div class="text-subtitle2">Brian of London</div>
@@ -33,6 +33,7 @@
 <script setup>
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
+import HiveLogin from "components/HiveLogin.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { ref, computed } from "vue"
 

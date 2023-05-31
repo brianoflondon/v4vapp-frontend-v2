@@ -38,10 +38,13 @@
  * HiveLogin
  * Checks for Valid ability to sign a message with Hive Key.
  *
+ * PROPS
+ * hiveAccObj: Object - Object with Hive Account Name and Avatar URL
+ * label: String - Label for the HiveSelectFancyAcc
  *
  */
 
-import { ref, watch, onMounted } from "vue"
+import { ref, onMounted } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import {
   useHiveKeychainLogin,
@@ -71,18 +74,6 @@ const props = defineProps({
 const t = useI18n().t
 const q = useQuasar()
 
-// watch(hiveAccObj, async (newValue, oldValue) => {
-//   // Watches the model which holds the selected value
-//   isKeychain.value = await useIsHiveKeychainInstalled()
-//   if (!hiveAccObj.value) {
-//     emit("loggedIn", false)
-//   }
-//   if (oldValue !== newValue) {
-//     emit("loggedIn", false)
-//   }
-//   emit("hiveAccObj", newValue)
-// })
-
 onMounted(async () => {
   isKeychain.value = await useIsHiveKeychainInstalled()
 })
@@ -107,7 +98,7 @@ async function login(username) {
   const signMessage = words.join("-")
   const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
   try {
-    const notif = q.notify({
+    const note = q.notify({
       group: false, // required to be updatable
       timeout: 0, // we want to be in control when it gets dismissed
       avatar: avatarUrl,
@@ -127,7 +118,7 @@ async function login(username) {
       console.log("result", result)
       hiveAccObj.value["loggedIn"] = true
       console.log("hiveAccObj", hiveAccObj)
-      notif({
+      note({
         icon: "done", // we add an icon
         html: true,
         spinner: false, // we reset the spinner setting so the icon can be displayed
@@ -141,7 +132,7 @@ async function login(username) {
       })
     } else if (!result.success) {
       hiveAccObj.value["loggedIn"] = false
-      notif({
+      note({
         icon: "cancel", // we add an icon
         spinner: false, // we reset the spinner setting so the icon can be displayed
         message: t("login_failed"),
@@ -153,7 +144,7 @@ async function login(username) {
   } catch (error) {
     hiveAccObj.value["loggedIn"] = false
     console.log("error: ", error)
-    notif({
+    note({
       icon: "cancel", // we add an icon
       spinner: false, // we reset the spinner setting so the icon can be displayed
       message: `${error}`,

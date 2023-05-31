@@ -78,14 +78,8 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
         }
       }
       const checkKeychain = async () => {
-        console.log("Checking Keychain")
         try {
           this.isKeychainIn = await keychain.isKeychainInstalled()
-          console.log(this.isKeychainIn)
-          if (!this.isKeychainIn) {
-            console.log("Keychain is not installed")
-          }
-          console.log("Keychain is installed")
         } catch (error) {
           console.log({ error })
         }

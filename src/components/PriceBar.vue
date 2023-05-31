@@ -1,12 +1,12 @@
 <template>
   <q-footer elevated>
     <div class="price-bar q-pa-none shadow-1 no-wrap row">
-      <div class="col-10 price-bar-item">
+      <div class="col-9 price-bar-item">
         <span class="price-bar-item btc-price q-pa-xs">
           <i class="fa-brands fa-btc" />&thinsp;
           <strong>${{ storeAPIStatus.bitcoin }}</strong>
         </span>
-        <span class="price-bar-item btc-price q-pa-xs">
+        <span class="price-bar-item hive-price q-pa-xs">
           <i class="fa-brands fa-hive" />&thinsp;
           <strong>
             ${{ storeAPIStatus.hive }}
@@ -14,11 +14,13 @@
             {{ storeAPIStatus.hiveSats }} {{ $t("sats") }}
           </strong>
         </span>
-        <span class="price-bar-item hbd-price q-pa-xs">
+        <span ref="HBDItem" class="price-bar-item hbd-price q-pa-xs">
           HBD
           <strong>${{ storeAPIStatus.hbd }}</strong>
         </span>
-        <span class="price-bar-item api-status-indicator q-pa-xs">
+      </div>
+      <div class="col-3 price-bar-item">
+        <span class="price-bar-item api-status-indicator q-pa-none">
           <q-btn
             @click="alert = true"
             flat
@@ -28,7 +30,7 @@
             {{ storeAPIStatus.statusDisp }}
           </q-btn>
         </span>
-        <span class="price-bar-item reload-status q-pa-xs">
+        <span class="price-bar-item reload-status q-pa-none">
           <q-btn
             icon="refresh"
             :title="$t('reload_prices')"
@@ -37,7 +39,7 @@
             @click="storeAPIStatus.update()"
           />
         </span>
-        <span class="price-bar-item keychain-status-indicator q-pa-xs">
+        <span class="price-bar-item keychain-status-indicator">
           <q-btn
             flat
             dense
@@ -57,8 +59,6 @@
             />
           </q-btn>
         </span>
-      </div>
-      <div class="col-2 price-bar-item">
         <DarkSelector />
       </div>
     </div>
@@ -66,27 +66,47 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { onMounted, onUnmounted, ref, watch } from "vue"
 import DarkSelector from "components/utils/DarkSelector.vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
+import { useQuasar } from "quasar"
 
 const storeAPIStatus = useStoreAPIStatus()
 const t = useI18n().t
+const q = useQuasar()
 
-storeAPIStatus.update()
+const HBDItem = ref(null)
 
-const loadingState = ref(true)
-const text = ref("")
+let timeoutId
 
-async function load() {
-  loadingState.value = true
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  text.value = "Hello World!"
-  loadingState.value = false
+// watch the q.screen for changes
+watch(
+  () => q.screen.width,
+  (val) => {
+    if (val < 425) {
+      console.log((HBDItem.value.style.display = "none"))
+    } else {
+      console.log((HBDItem.value.style.display = "block"))
+    }
+  }
+)
+
+// run on mounted
+onMounted(() => {
+  scheduleUpdate()
+})
+
+async function scheduleUpdate() {
+  console.log("Updating prices")
+  await storeAPIStatus.update()
+  // Schedule the next update after 5 minutes
+  timeoutId = setTimeout(scheduleUpdate, 10 * 60 * 1000)
 }
 
-load()
+onUnmounted(() => {
+  clearTimeout(timeoutId)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -94,7 +114,6 @@ load()
   display: flex;
   justify-content: center;
   align-items: center;
-  /* Add any other necessary styles */
 }
 
 .body--dark {
