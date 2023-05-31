@@ -7,7 +7,6 @@
         <q-space />
         <KeychainStatus />
         <LanguageSelector />
-        <DarkSelector />
         <q-btn dense flat round icon="menu" @click="toggleRightDrawer" />
       </q-toolbar>
     </q-header>
