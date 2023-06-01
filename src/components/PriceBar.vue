@@ -105,17 +105,5 @@ onUnmounted(() => {
   align-items: center;
 }
 
-.body--dark {
-  .price-bar {
-    background-color: $bar-bg-dark;
-    color: $primary;
-  }
-}
 
-.body--light {
-  .price-bar {
-    background-color: $bar-bg-light;
-    color: whitesmoke;
-  }
-}
 </style>

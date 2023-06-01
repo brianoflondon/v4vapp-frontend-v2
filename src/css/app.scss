@@ -1,1 +1,19 @@
 // app global css in SCSS form
+
+.body--dark {
+  .top-bar,
+  .price-bar {
+    background-color: $bar-bg-dark;
+    color: $primary;
+  }
+}
+
+.body--light {
+  .top-bar,
+  .price-bar {
+    background-color: $bar-bg-light;
+    color: whitesmoke;
+  }
+}
+
+

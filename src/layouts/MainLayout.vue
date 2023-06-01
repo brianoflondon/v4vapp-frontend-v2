@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh lpR lFf">
     <q-header elevated class="bg-primary text-white">
-      <q-toolbar>
+      <q-toolbar class="top-bar">
         <q-toolbar-title> V4V.app v2 Dev </q-toolbar-title>
         <div class="text-caption">{{ appName }} v{{ appVersion }}</div>
         <q-space />
