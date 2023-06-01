@@ -4,27 +4,23 @@
       <q-item-label class="text-left q-pa-sm">{{
         $t("login_as")
       }}</q-item-label>
-      <q-item class="fill-item">
+      <q-item>
         <HiveSelectFancyAcc
           dense
           :label="props.label"
-          @updateValue="
-            (value) => {
-              hiveAccname = value
-            }
-          "
+          v-model="hiveAccObj"
           fancyOptions
         />
       </q-item>
       <q-item dense>
         <q-btn
-          :disable="hiveAccname === '' || hiveAccname === null || !isKeychain"
+          :disable="hiveAccObj === '' || hiveAccObj === null"
           flat
           :label="t('hive_keychain')"
           icon="img:keychain/hive-keychain-round.svg"
-          @click="login(hiveAccname)"
+          @click="login(hiveAccObj?.value)"
         />
-        <q-tooltip v-if="!hiveAccname && isKeychain">{{
+        <q-tooltip v-if="!hiveAccObj && isKeychain">{{
           t("enter_hive_account")
         }}</q-tooltip>
         <q-tooltip v-if="!isKeychain">{{
@@ -42,13 +38,13 @@
  * HiveLogin
  * Checks for Valid ability to sign a message with Hive Key.
  *
- * @prop
- * @emits {string} hiveAccname - Emitted value of selected Hive Account
- * @emits {boolean} loggedIn - Emitted True if a login is successful, False if
- *                           login is unsuccessful or hiveAccname is empty
+ * PROPS
+ * hiveAccObj: Object - Object with Hive Account Name and Avatar URL
+ * label: String - Label for the HiveSelectFancyAcc
+ *
  */
 
-import { ref, watch, onMounted, computed } from "vue"
+import { ref, onMounted } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import {
   useHiveKeychainLogin,
@@ -58,6 +54,8 @@ import {
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
+
+const hiveAccObj = defineModel()
 
 if (Platform.is.mobile) {
   console.log("Running on a mobile device")
@@ -72,24 +70,9 @@ const props = defineProps({
     default: "",
   },
 })
-const emit = defineEmits(["hiveAccname", "loggedIn"])
 
 const t = useI18n().t
 const q = useQuasar()
-
-const hiveAccname = ref("")
-
-watch(hiveAccname, async (newValue, oldValue) => {
-  // Watches the model which holds the selected value
-  isKeychain.value = await useIsHiveKeychainInstalled()
-  if (!hiveAccname.value) {
-    emit("loggedIn", false)
-  }
-  if (oldValue !== newValue) {
-    emit("loggedIn", false)
-  }
-  emit("hiveAccname", newValue)
-})
 
 onMounted(async () => {
   isKeychain.value = await useIsHiveKeychainInstalled()
@@ -115,13 +98,14 @@ async function login(username) {
   const signMessage = words.join("-")
   const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
   try {
-    const notif = q.notify({
+    const note = q.notify({
       group: false, // required to be updatable
       timeout: 0, // we want to be in control when it gets dismissed
       avatar: avatarUrl,
-      message: t("login_in_progress"),
+      message: `${t("login_in_progress")}: @${username}`,
       caption: `${t("sign_this")}: ${signMessage}`,
       position: position,
+      color: "info",
     })
     await delay(300)
     const result = await useHiveKeychainLogin({
@@ -132,7 +116,9 @@ async function login(username) {
     if (result.success && result?.data?.message == signMessage) {
       console.log("result message", result.data.message)
       console.log("result", result)
-      notif({
+      hiveAccObj.value["loggedIn"] = true
+      console.log("hiveAccObj", hiveAccObj)
+      note({
         icon: "done", // we add an icon
         html: true,
         spinner: false, // we reset the spinner setting so the icon can be displayed
@@ -141,25 +127,28 @@ async function login(username) {
         caption: `${result?.data?.message} <br> ${t(
           "matches"
         )} <br> ${signMessage}`,
+        color: "positive",
         timeout: 1500,
       })
-      emit("hiveAccname", hiveAccname.value)
-      emit("loggedIn", true)
     } else if (!result.success) {
-      notif({
+      hiveAccObj.value["loggedIn"] = false
+      note({
         icon: "cancel", // we add an icon
         spinner: false, // we reset the spinner setting so the icon can be displayed
         message: t("login_failed"),
         caption: `${result?.message}`,
+        color: "negative",
         timeout: 1500,
       })
     }
   } catch (error) {
+    hiveAccObj.value["loggedIn"] = false
     console.log("error: ", error)
-    notif({
+    note({
       icon: "cancel", // we add an icon
       spinner: false, // we reset the spinner setting so the icon can be displayed
       message: `${error}`,
+      color: "negative",
       timeout: 1500,
     })
   }

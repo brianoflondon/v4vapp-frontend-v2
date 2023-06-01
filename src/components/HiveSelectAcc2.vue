@@ -5,7 +5,6 @@
     hide-selected
     use-input
     fill-input
-    clearable
     input-debounce="300"
     spellcheck="false"
     :label="label"

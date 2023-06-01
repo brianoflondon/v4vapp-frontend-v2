@@ -37,7 +37,7 @@ module.exports = configure(function (/* ctx */) {
     extras: [
       // 'ionicons-v4',
       // 'mdi-v5',
-      // 'fontawesome-v6',
+      'fontawesome-v6',
       // 'eva-icons',
       // 'themify',
       // 'line-awesome',
@@ -71,7 +71,13 @@ module.exports = configure(function (/* ctx */) {
       // distDir
 
       // extendViteConf (viteConf) {},
-      // viteVuePluginOptions: {},
+
+      // added to use the new defineModel macro in Vue 3.3.0
+      viteVuePluginOptions: {
+        script: {
+          defineModel: true,
+        },
+      },
 
       vitePlugins: [
         [

@@ -1,38 +1,24 @@
 <template>
   <q-page>
+    <div>
+      <div v-if="hiveAccname">{{ hiveAccname }}</div>
+      <div v-else>Default Value</div>
+      <div v-if="hiveAccname">{{ hiveAccname }}</div>
+      <div v-else>Default Value</div>
+    </div>
     <div class="q-pa-md row items-start q-gutter-md">
       <q-card class="sidebyside-card hive-fancy-selector">
         <q-card-section class="q-pa-sm">
           <p>HiveSelectFancyAcc</p>
         </q-card-section>
         <q-card-section class="text-center q-pa-sm">
-          <HiveSelectFancyAcc
-            filled
-            dense
-            @updateValue="
-              (value) => {
-                hiveAccname = value
-              }
-            "
-            fancyOptions
-          />
+          <HiveSelectFancyAcc filled dense v-model="hiveAccname" fancyOptions />
         </q-card-section>
         <q-card-section>
           <div class="image-container">
             <a href="https://peakd.com/created/v4vapp-v2">
               <div v-if="hiveAccname">
-                <q-img
-                  spinner-color="primary"
-                  spinner-size="82px"
-                  :alt="'Hive Avatar for ' + hiveAccname"
-                  :src="hiveAvatar"
-                >
-                  <template v-slot:error>
-                    <div class="absolute-full flex flex-center">
-                      <q-icon name="error" size="lg" color="red" />
-                    </div>
-                  </template>
-                </q-img>
+                <HiveAvatar :hiveAccname="hiveAccname.label" size="large" />
               </div>
               <div v-else>
                 <q-img
@@ -47,31 +33,13 @@
       <q-card class="sidebyside-card hive-selector">
         <q-card-section class="q-pa-sm"><p>HiveSelectAcc</p></q-card-section>
         <q-card-section class="text-center q-pa-sm">
-          <HiveSelectAcc
-            dense
-            @updateValue="
-              (value) => {
-                hiveAccname = value
-              }
-            "
-          />
+          <HiveSelectAcc dense v-model="hiveAccname.value" />
         </q-card-section>
         <q-card-section>
           <div class="image-container">
             <a href="https://peakd.com/created/v4vapp-v2">
               <div v-if="hiveAccname">
-                <q-img
-                  spinner-color="primary"
-                  spinner-size="82px"
-                  :alt="'Hive Avatar for ' + hiveAccname"
-                  :src="hiveAvatar"
-                >
-                  <template v-slot:error>
-                    <div class="absolute-full flex flex-center">
-                      <q-icon name="error" size="lg" color="red" />
-                    </div>
-                  </template>
-                </q-img>
+                <HiveAvatar :hiveAccname="hiveAccname.label" size="large" />
               </div>
               <div v-else>
                 <q-img
@@ -90,13 +58,10 @@
 <script setup>
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import HiveSelectAcc from "components/HiveSelectAcc.vue"
-import { useHiveAvatarURL } from "src/use/useHive"
-import { ref, computed } from "vue"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
+import { ref } from "vue"
 
-const hiveAccname = ref("")
-const hiveAvatar = computed(() => {
-  return useHiveAvatarURL({ hiveAccname: hiveAccname.value, size: "large" })
-})
+const hiveAccname = ref({ label: "", value: "", caption: "" })
 </script>
 
 <style lang="sass" scoped>

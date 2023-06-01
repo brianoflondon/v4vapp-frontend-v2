@@ -85,25 +85,6 @@ export function useHiveAvatarURL({
   )
 }
 
-export async function useLoadHiveAvatar(hiveAccname) {
-  const url = useHiveAvatarURL({ hiveAccname: hiveAccname, size: "small" })
-  try {
-    const res = await axios({
-      url: url,
-      method: "GET",
-      responseType: "blob",
-    })
-    if (res.status === 200) {
-      const retUrl = URL.createObjectURL(res.data)
-      return retUrl
-    } else {
-      return "avatars/unkown_hive_user.png"
-    }
-  } catch (err) {
-    return "avatars/unkown_hive_user.png"
-  }
-}
-
 // -------- Helper functions --------
 function extractProfile(data) {
   // Extracts the profile from the posting_json_metadata field or
