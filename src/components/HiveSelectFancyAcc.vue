@@ -17,7 +17,7 @@
     @keydown.esc="escFn"
     @input-value="inputFn"
   >
-    <template v-slot:before>
+    <template v-slot:prepend>
       <q-avatar rounded size="md">
         <HiveAvatar :hiveAccname="avatarName" />
       </q-avatar>
