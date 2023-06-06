@@ -19,21 +19,17 @@
       >
       </q-input>
       <div class="q-pa-sm text-center amounts">
-        <q-toggle
-          v-model="cameraOn"
-          @change="toggleCamera"
-          icon="photo_camera"
-          size="xl"
-          color="primary"
-          dense
-          flat />
-        <q-btn
-
-          dense
-          flat
-          @click="turnCameraOn()"
-          title="Take a photo of a lightning invoice QR code using your camera"
-        />
+        <div class="camera-toggle">
+          <q-toggle
+            v-model="cameraOn"
+            @update:model-value="toggleCamera()"
+            icon="photo_camera"
+            size="xl"
+            color="primary"
+            dense
+            flat
+          />
+        </div>
         <div class="q-pa-sm">
           <q-input readonly dense filled v-model="sats" label="Sats"></q-input>
         </div>
@@ -45,8 +41,8 @@
         </div>
       </div>
     </div>
-    <div v-if="cameraOn">
-      <QrcodeStream @decode="onDecode"></QrcodeStream>
+    <div v-if="cameraShow">
+      <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
     </div>
   </q-page>
 </template>
@@ -85,9 +81,10 @@ div {
 import { computed, ref } from "vue"
 import * as bolt11 from "src/assets/bolt11.min.js"
 import { tidyNumber } from "src/use/useUtils"
-// https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html
-// import CaptureQRCode from "components/qrcode/CaptureQRCode.vue"
 import { QrcodeStream } from "qrcode-reader-vue3"
+import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
+import { useI18n } from "vue-i18n"
+import { useQuasar } from "quasar"
 
 const invoiceText = ref("")
 const invoiceLoading = ref(false)
@@ -95,8 +92,14 @@ const invoiceValid = ref(false)
 const dInvoice = ref({})
 
 const cameraOn = ref(false)
+const cameraShow = ref(false)
+const cameraError = ref("")
+
+const t = useI18n().t
+const q = useQuasar()
 
 const sats = computed(() => {
+  console.log("dInvoice.value", dInvoice.value)
   if (dInvoice.value?.millisatoshis) {
     return tidyNumber(dInvoice.value?.millisatoshis / 1000)
   }
@@ -109,20 +112,29 @@ function onDecode(content) {
   decodeInvoice()
 }
 
-function decodeInvoice() {
+async function decodeInvoice() {
   console.log("invoiceText.value", invoiceText.value)
   if (!invoiceText.value) {
     dInvoice.value = {}
     return true
   }
   try {
-    dInvoice.value = lightningPayReq.decode(invoiceText.value)
-    console.log("dInvoice", dInvoice)
-    invoiceValid.value = true
-    if(cameraOn.value) {
+    dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
+    console.log("dInvoice", dInvoice.value)
+    if (dInvoice.value) {
+      q.notify({
+        color: "primary",
+        timeout: 2000,
+        message: t("valid_invoice"),
+        position: "top",
+      })
+      invoiceValid.value = true
       cameraOn.value = false
+      cameraShow.value = false
+      return true
     }
-    return true
+    // raise an error
+
   } catch (e) {
     console.log("e", e)
     dInvoice.value = {}
@@ -130,8 +142,47 @@ function decodeInvoice() {
   }
 }
 
+const cameraErrors = [
+  "NotAllowedError",
+  "NotFoundError",
+  "NotSupportedError",
+  "NotReadableError",
+  "OverconstrainedError",
+  "StreamApiNotSupportedError",
+  "InsecureContextError",
+]
+
+const onInitCamera = async (promise) => {
+  try {
+    await promise
+  } catch (errorEvent) {
+    console.log(errorEvent.name)
+    if (cameraErrors.includes(errorEvent.name)) {
+      cameraError.value = `${t("error")}: ${t(errorEvent.name)}`
+    } else {
+      cameraError.value = `${t("error")}: ${t("OtherError")}`
+    }
+    console.log("cameraError", cameraError.value)
+    q.notify({
+      color: "negative",
+      timeout: 2000,
+      message: cameraError.value,
+      position: "top",
+    })
+    setTimeout(() => {
+      cameraError.value = ""
+      cameraOn.value = false
+      cameraShow.value = false
+    }, 500)
+    cameraOn.value = false
+    cameraShow.value = false
+  }
+}
+
 function toggleCamera() {
-  console.log("turnCameraOn")
-  cameraOn.value = !cameraOn.value
+  console.log("cameraOn", cameraOn.value)
+  setTimeout(() => {
+    cameraShow.value = cameraOn.value
+  }, 500)
 }
 </script>

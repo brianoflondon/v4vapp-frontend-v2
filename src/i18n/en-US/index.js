@@ -4,6 +4,7 @@
 export default {
   // General
   loading: "Loading ...",
+  error: "Error",
 
   // Keychain
   keychain_installed: "Keychain is Installed",
@@ -47,4 +48,14 @@ export default {
   // Invoice
   invoice: "Invoice",
   enter_invoice: "lnbc....",
+  valid_invoice: "Invoice successfully decoded",
+
+  // Camera
+  NotAllowedError: "You need to grant camera access permission",
+  NotSupportedError: "No camera found on this device",
+  NotReadableError: "Is the camera already in use?",
+  OverconstrainedError: "Installed cameras are not suitable",
+  StreamApiNotSupportedError: "Stream API is not supported in this browser",
+  InsecureContextError: "Secure secure context required (HTTPS, localhost)",
+  OtherError: "Unknown camera error",
 }
