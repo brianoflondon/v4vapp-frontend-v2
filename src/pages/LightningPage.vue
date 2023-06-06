@@ -37,11 +37,14 @@
         </div>
       </div>
     </div>
+    <div>
+      Hello
+      <QrcodeStream @decode="onDecode"></QrcodeStream>
+    </div>
   </q-page>
 </template>
 
 <style lang="scss" scoped>
-
 div {
   border: 1px solid red;
 }
@@ -50,37 +53,39 @@ div {
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
+  width: 100%;
 }
 
 .invoice-input {
   border: 1px solid blue;
   align-items: center;
-  width: 50%;
 }
 
 .amounts {
   border: 1px solid green;
   align-items: center;
-  width: 30%;}
+  width: 40%;
+}
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 300px) {
   .invoice {
     flex-direction: column;
   }
 }
 </style>
 
-
-
 <script setup>
 import { computed, ref } from "vue"
+import * as bolt11 from "src/assets/bolt11.min.js"
+import { tidyNumber } from "src/use/useUtils"
+// https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html
+// import CaptureQRCode from "components/qrcode/CaptureQRCode.vue"
+import { QrcodeStream } from "qrcode-reader-vue3"
 
 const invoiceText = ref("")
 const invoiceLoading = ref(false)
 const invoiceValid = ref(false)
 const dInvoice = ref({})
-import * as bolt11 from "src/assets/bolt11.min.js"
-import { tidyNumber } from "src/use/useUtils"
 
 const sats = computed(() => {
   if (dInvoice.value?.millisatoshis) {
@@ -88,6 +93,13 @@ const sats = computed(() => {
   }
   return 0
 })
+
+function onDecode(content) {
+  console.log("onDecode", content)
+  // this.invoice = content.toLowerCase()
+  // this.turnCameraOff()
+  // this.checkInvoice()
+}
 
 function decodeInvoice() {
   console.log("invoiceText.value", invoiceText.value)
@@ -105,5 +117,9 @@ function decodeInvoice() {
     dInvoice.value = {}
     return "Not a valid invoice"
   }
+}
+
+function turnCameraOn() {
+  console.log("turnCameraOn")
 }
 </script>
