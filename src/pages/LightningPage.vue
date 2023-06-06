@@ -38,7 +38,7 @@
       </div>
     </div>
     <div>
-      Hello
+      <pre>{{  }}</pre>
       <QrcodeStream @decode="onDecode"></QrcodeStream>
     </div>
   </q-page>
@@ -96,9 +96,8 @@ const sats = computed(() => {
 
 function onDecode(content) {
   console.log("onDecode", content)
-  // this.invoice = content.toLowerCase()
-  // this.turnCameraOff()
-  // this.checkInvoice()
+  invoiceText.value = content
+  decodeInvoice()
 }
 
 function decodeInvoice() {
