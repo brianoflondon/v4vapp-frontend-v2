@@ -15,6 +15,9 @@ export default {
   // Selector
   hive_account: "Hive Account",
 
+  // Lightning Page
+  lightning: "Lightning",
+
   // Login
   keychain_not_installed: "Keychain is not installed",
   enter_hive_account: "Give Hive Account Name to Login",
@@ -40,4 +43,8 @@ export default {
   keychain_installed: "Keychain is Installed",
   keychain_missing: "Keychain is Missing",
   reload_prices: "Reload Prices",
+
+  // Invoice
+  invoice: "Invoice",
+  enter_invoice: "lnbc....",
 }

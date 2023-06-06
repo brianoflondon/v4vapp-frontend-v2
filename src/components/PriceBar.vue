@@ -5,7 +5,6 @@
         <i class="fa-brands fa-btc" />&thinsp;
         <strong>${{ storeAPIStatus.bitcoin }}</strong>
       </span>
-      <spacer />
       <span class="price-bar-item hive-price q-pa-xs">
         <i class="fa-brands fa-hive" />&thinsp;
         <strong>
