@@ -1,8 +1,8 @@
 <template>
   <q-page class="column flex-center">
-    <div class="invoice flex q-gutter-xs">
+    <div class="invoice flex">
       <q-input
-        class="q-pa-sm col-auto max-width-input invoice-input"
+        class="q-pa-sm invoice-input"
         v-model="invoiceText"
         type="textarea"
         name="invoice"
@@ -18,26 +18,59 @@
         :rules="[decodeInvoice]"
       >
       </q-input>
-      <div class="q-pa-sm">
+      <div class="q-pa-sm text-center amounts">
         <q-btn
           icon-right="photo_camera"
-          class="vertical-middle"
           dense
           flat
           @click="turnCameraOn()"
           title="Take a photo of a lightning invoice QR code using your camera"
         />
         <div class="q-pa-sm">
-          <q-input readonly filled v-model="sats" label="Sats"></q-input>
+          <q-input readonly dense filled v-model="sats" label="Sats"></q-input>
+        </div>
+        <div class="q-pa-sm">
+          <q-input readonly dense filled v-model="sats" label="HBD"></q-input>
+        </div>
+        <div class="q-pa-sm">
+          <q-input readonly dense filled v-model="sats" label="Hive"></q-input>
         </div>
       </div>
     </div>
-    <div class="row first-row">
-      <div class="col-6 q-pa-sm"><q-input filled label="HBD"></q-input></div>
-      <div class="col-3 q-pa-sm"><q-input filled label="sats"></q-input></div>
-    </div>
   </q-page>
 </template>
+
+<style lang="scss" scoped>
+
+div {
+  border: 1px solid red;
+}
+
+.invoice {
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.invoice-input {
+  border: 1px solid blue;
+  align-items: center;
+  width: 50%;
+}
+
+.amounts {
+  border: 1px solid green;
+  align-items: center;
+  width: 30%;}
+
+@media screen and (max-width: 600px) {
+  .invoice {
+    flex-direction: column;
+  }
+}
+</style>
+
+
 
 <script setup>
 import { computed, ref } from "vue"
@@ -63,29 +96,14 @@ function decodeInvoice() {
     return true
   }
   try {
-    dInvoice.value = bolt11.lightningPayReq.decode(invoiceText.value)
+    dInvoice.value = lightningPayReq.decode(invoiceText.value)
     console.log("dInvoice", dInvoice)
     invoiceValid.value = true
     return true
   } catch (e) {
+    console.log("e", e)
     dInvoice.value = {}
     return "Not a valid invoice"
   }
 }
 </script>
-
-<style lang="scss" scoped>
-// .max-width-input {
-
-//   width: 250px;
-//   max-width: 600px;
-// }
-
-// .body--light .invoice-input {
-//   // background-color: lightgreen;
-// }
-
-// .body--dark .invoice-input {
-//   // background-color: darkgreen;
-// }
-</style>
