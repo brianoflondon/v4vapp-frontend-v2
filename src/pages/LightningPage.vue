@@ -19,8 +19,16 @@
       >
       </q-input>
       <div class="q-pa-sm text-center amounts">
+        <q-toggle
+          v-model="cameraOn"
+          @change="toggleCamera"
+          icon="photo_camera"
+          size="xl"
+          color="primary"
+          dense
+          flat />
         <q-btn
-          icon-right="photo_camera"
+
           dense
           flat
           @click="turnCameraOn()"
@@ -37,8 +45,7 @@
         </div>
       </div>
     </div>
-    <div>
-      <pre>{{  }}</pre>
+    <div v-if="cameraOn">
       <QrcodeStream @decode="onDecode"></QrcodeStream>
     </div>
   </q-page>
@@ -87,6 +94,8 @@ const invoiceLoading = ref(false)
 const invoiceValid = ref(false)
 const dInvoice = ref({})
 
+const cameraOn = ref(false)
+
 const sats = computed(() => {
   if (dInvoice.value?.millisatoshis) {
     return tidyNumber(dInvoice.value?.millisatoshis / 1000)
@@ -110,6 +119,9 @@ function decodeInvoice() {
     dInvoice.value = lightningPayReq.decode(invoiceText.value)
     console.log("dInvoice", dInvoice)
     invoiceValid.value = true
+    if(cameraOn.value) {
+      cameraOn.value = false
+    }
     return true
   } catch (e) {
     console.log("e", e)
@@ -118,7 +130,8 @@ function decodeInvoice() {
   }
 }
 
-function turnCameraOn() {
+function toggleCamera() {
   console.log("turnCameraOn")
+  cameraOn.value = !cameraOn.value
 }
 </script>
