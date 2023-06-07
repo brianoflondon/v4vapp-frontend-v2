@@ -25,6 +25,7 @@ export async function useDecodeLightningInvoice(invoice) {
       decodedInvoice = await anythingDecode(invoice)
       if (decodedInvoice) {
         decodedInvoice.v4vapp = {}
+        decodedInvoice.v4vapp.metadata = await decodeMetadata(decodedInvoice)
         decodedInvoice.v4vapp.type = "lightningAddress"
         return decodedInvoice
       }
@@ -93,4 +94,22 @@ async function anythingDecode(invoice) {
   }
 }
 
+async function decodeMetadata(decodedInvoice) {
+  // Decode metadata from a decoded LNURL request
+  let result = await JSON.parse(decodedInvoice.metadata)
+  console.log(result)
+  let decoded = result.reduce((obj, item) => {
+    obj[item[0]] = item[1]
+    return obj
+  }, {})
+  result.imageKey = Object.keys(decoded).find((key) => key.includes("image/"))
+  if (result.imageKey) {
+    decoded.image = decoded[result.imageKey]
+    decoded.imgUrl = `data:${result.imageKey},${decoded[result.imageKey]}`
+  } else {
+    decoded.imgUrl = ""
+  }
 
+  console.log("useLightning decoded ", decoded)
+  return decoded
+}

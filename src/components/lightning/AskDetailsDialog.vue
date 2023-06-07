@@ -45,29 +45,36 @@ function getImage() {
 
 async function decodeMetadata() {
   // Decode the metadata field of the payment request
-
-  console.log(dInvoice.metadata)
+  console.log('------------------')
+  console.log("unique ", dInvoice.value?.v4vapp?.metadata["text/plain"])
+  console.log('------------------')
   let result = await JSON.parse(dInvoice.value.metadata)
   metadata.value = result
 
   // Transform the two-dimensional array into an object where
   // the first element of each sub-array is the key and the second element is the value.
   let decoded = result.reduce((obj, item) => {
-    obj[item[0]] = item[1];
-    return obj;
-  }, {});
+    obj[item[0]] = item[1]
+    return obj
+  }, {})
   metadata.value.decoded = decoded
-  metadata.value.decoded.imageKey = Object.keys(decoded).find(key => key.includes('image/'));
-  metadata.value.decoded.textKey = Object.keys(decoded).find(key => key.includes('text/'));
-  if(metadata.value.decoded.imageKey){
-    imgUrl.value = `data:${metadata.value.decoded.imageKey},${decoded[metadata.value.decoded.imageKey]}`;
+  metadata.value.decoded.imageKey = Object.keys(decoded).find((key) =>
+    key.includes("image/")
+  )
+  metadata.value.decoded.textKey = Object.keys(decoded).find((key) =>
+    key.includes("text/")
+  )
+  if (metadata.value.decoded.imageKey) {
+    imgUrl.value = `data:${metadata.value.decoded.imageKey},${
+      decoded[metadata.value.decoded.imageKey]
+    }`
+  } else {
+    imgUrl.value = ""
   }
-  if(metadata.value.decoded.textKey){
+  if (metadata.value.decoded.textKey) {
     textRequest.value = decoded[metadata.value.decoded.textKey]
   }
   console.log(imgUrl.value)
-  console.log(imageKey)
-  // console.log(result)
 }
 </script>
 
