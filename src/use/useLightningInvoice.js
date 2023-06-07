@@ -1,5 +1,4 @@
 import { api } from "boot/axios"
-import { Quasar } from "quasar"
 import * as bolt11 from "src/assets/bolt11.min.js"
 
 export async function useDecodeLightningInvoice(invoice) {
@@ -26,6 +25,8 @@ export async function useDecodeLightningInvoice(invoice) {
       if (decodedInvoice) {
         decodedInvoice.v4vapp = {}
         decodedInvoice.v4vapp.metadata = await decodeMetadata(decodedInvoice)
+        decodedInvoice.v4vapp.amountToSend =
+          decodedInvoice.v4vapp.metadata.minSats
         decodedInvoice.v4vapp.type = "lightningAddress"
         return decodedInvoice
       }
@@ -94,6 +95,33 @@ async function anythingDecode(invoice) {
   }
 }
 
+export async function callBackGenerateInvoice(callbackURL, amount, comment) {
+  // Take in a call back url and an amount and generate a Lightning Invoice
+  // using the v4vapp api
+  let baseURL = callbackURL
+  let params = {
+    amount: amount * 1000,
+  }
+  if (comment) {
+    params.comment = comment
+  }
+  let url = new URL(baseURL)
+  url.search = new URLSearchParams(params).toString()
+  let combined = url.toString()
+  console.log(combined)
+
+  const v4vappUrl = "/lnurlp/proxy/callback/"
+  try {
+    const callBackResult = await api.get(v4vappUrl, {
+      params: { callbackUrl: combined },
+    })
+    return callBackResult.data
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
 async function decodeMetadata(decodedInvoice) {
   // Decode metadata from a decoded LNURL request
   let result = await JSON.parse(decodedInvoice.metadata)
@@ -104,11 +132,17 @@ async function decodeMetadata(decodedInvoice) {
   }, {})
   result.imageKey = Object.keys(decoded).find((key) => key.includes("image/"))
   if (result.imageKey) {
-    decoded.image = decoded[result.imageKey]
+    // decoded.image = decoded[result.imageKey]
     decoded.imgUrl = `data:${result.imageKey},${decoded[result.imageKey]}`
   } else {
     decoded.imgUrl = ""
   }
+  decoded.requestString = decoded["text/long-desc"]
+    ? decoded["text/long-desc"]
+    : decoded["text/plain"]
+  decoded.minSats = Math.floor(decodedInvoice.minSendable / 1000)
+  decoded.maxSats = Math.floor(decodedInvoice.maxSendable / 1000)
+  decoded.commentLength = decodedInvoice?.commentAllowed || 0
 
   console.log("useLightning decoded ", decoded)
   return decoded

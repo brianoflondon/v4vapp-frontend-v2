@@ -5,6 +5,9 @@ export default {
   // General
   loading: "Loading ...",
   error: "Error",
+  required: "Required",
+  ok: "OK",
+  cancel: "Cancel",
 
   // Keychain
   keychain_installed: "Keychain is Installed",
@@ -51,6 +54,12 @@ export default {
   valid_invoice: "Invoice decoded",
   valid_lightning_address: "Address decoded",
   invalid_invoice: "Invalid invoice",
+
+  // Ask Details dialog
+  asking_details: "You are about to pay:",
+  amount_to_send: "Amount to send",
+  too_low: "Amount too low",
+  too_high: "Amount too high",
 
   // Camera
   NotAllowedError: "You need to grant camera access permission",

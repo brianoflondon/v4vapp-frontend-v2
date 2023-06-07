@@ -83,7 +83,7 @@ div {
 </style>
 
 <script setup>
-import { computed, ref } from "vue"
+import { computed, ref, watch } from "vue"
 import * as bolt11 from "src/assets/bolt11.min.js"
 import { tidyNumber } from "src/use/useUtils"
 import { QrcodeStream } from "qrcode-reader-vue3"
@@ -95,7 +95,7 @@ import { useQuasar } from "quasar"
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
 const invoiceValid = ref(null)
-const dInvoice = ref({})
+const dInvoice = ref({ callback: { pr: "" } })
 
 const cameraOn = ref(false)
 const cameraShow = ref(false)
@@ -126,7 +126,6 @@ const invoiceColours = {
 }
 
 const invoiceColor = computed(() => {
-  console.log(q.dark.isActive)
   console.log(invoiceColours[q.dark.isActive])
   const colours = invoiceColours[q.dark.isActive]
   if (invoiceValid.value === null) {
@@ -185,6 +184,7 @@ async function decodeInvoice() {
     return true
   }
   try {
+    console.log("invoiceText.value", invoiceText.value)
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
     console.log("dInvoice", dInvoice.value)
     if (dInvoice.value) {
@@ -210,6 +210,23 @@ async function decodeInvoice() {
     return "Not a valid invoice"
   }
 }
+
+// watch the dInvoice.value.pr and if it changes then update the invoiceText.value
+watch(
+  () => dInvoice,
+  async (newVal, oldVal) => {
+    console.log("newVal", newVal)
+    console.log("oldVal", oldVal)
+    console.log("dInvoice.value?.callback?.pr", dInvoice.value?.callback?.pr)
+    const newInvoiceText = dInvoice.value?.callback?.pr
+    // const callBackResult = structuredClone(dInvoice.value.callback)
+    // clearReset()
+    // if (newVal !== oldVal) {
+    //   invoiceText.value = newInvoiceText
+    //   await decodeInvoice()
+    // }
+  }
+)
 
 const cameraErrors = [
   "NotAllowedError",
