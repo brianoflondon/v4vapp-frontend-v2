@@ -48,7 +48,9 @@ export default {
   // Invoice
   invoice: "Invoice",
   enter_invoice: "lnbc....",
-  valid_invoice: "Invoice successfully decoded",
+  valid_invoice: "Invoice decoded",
+  valid_lightning_address: "Address decoded",
+  invalid_invoice: "Invalid invoice",
 
   // Camera
   NotAllowedError: "You need to grant camera access permission",

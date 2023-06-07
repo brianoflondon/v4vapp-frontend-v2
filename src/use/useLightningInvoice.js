@@ -10,8 +10,12 @@ export async function useDecodeLightningInvoice(invoice) {
   invoice = invoice.toLowerCase().trim()
   // if the invoice starts with lnbc the bolt11 library can decode it
   if (invoice.startsWith("lnbc")) {
-    decodedInvoice = bolt11Decode(invoice)
+    decodedInvoice = await bolt11Decode(invoice)
     if (decodedInvoice) {
+      // add pubkeys to the decoded invoice
+      decodedInvoice.v4vapp = {}
+      decodedInvoice.v4vapp.pubKeys = extractPubKeys(decodedInvoice)
+      decodedInvoice.v4vapp.type = "bolt11"
       return decodedInvoice
     }
   } else {
@@ -20,12 +24,42 @@ export async function useDecodeLightningInvoice(invoice) {
       // try to decode it as a lightning address
       decodedInvoice = await anythingDecode(invoice)
       if (decodedInvoice) {
+        decodedInvoice.v4vapp = {}
+        decodedInvoice.v4vapp.type = "lightningAddress"
         return decodedInvoice
       }
     }
   }
 
   return decodedInvoice
+}
+
+export function extractPubKeys(data) {
+  // Extract pubkeys from a decoded lightning invoice
+  const pubKeys = []
+
+  // Add payeeNodeKey to the array
+  if (data.payeeNodeKey) {
+    pubKeys.push(data.payeeNodeKey)
+  }
+
+  // Loop through tags
+  if (Array.isArray(data.tags)) {
+    data.tags.forEach((tag) => {
+      // Check if tag is routing_info
+      if (tag.tagName === "routing_info" && Array.isArray(tag.data)) {
+        // Loop through data in routing_info tag
+        tag.data.forEach((route) => {
+          // Add pubkey to the array
+          if (route.pubkey) {
+            pubKeys.push(route.pubkey)
+          }
+        })
+      }
+    })
+  }
+
+  return pubKeys
 }
 
 async function bolt11Decode(invoice) {
@@ -58,3 +92,5 @@ async function anythingDecode(invoice) {
     return null
   }
 }
+
+

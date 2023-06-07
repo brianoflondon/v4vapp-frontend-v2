@@ -1,23 +1,26 @@
 <template>
-  <q-page class="column flex-center">
-    <div class="invoice flex">
-      <q-input
-        class="q-pa-sm invoice-input"
-        v-model="invoiceText"
-        type="textarea"
-        name="invoice"
-        style="max-width: 600px"
-        :placeholder="$t('enter_invoice')"
-        :label="$t('invoice')"
-        debounce="500"
-        filled
-        grow
-        for="invoice"
-        :loading="invoiceLoading"
-        clearable
-        :rules="[decodeInvoice]"
-      >
-      </q-input>
+  <q-page>
+    <div class="invoice column flex-center">
+      <div class="q-pa-sm column invoice-input">
+        <q-input
+          style="width: 200px"
+          v-model="invoiceText"
+          type="textarea"
+          name="invoice"
+          @clear="clearReset"
+          :placeholder="$t('enter_invoice')"
+          :label="invoiceLabel"
+          debounce="500"
+          filled
+          for="invoice"
+          :loading="invoiceChecking"
+          clearable
+          :rules="[decodeInvoice]"
+          :bg-color="invoiceColor"
+          @keyup.esc="clearReset"
+        >
+        </q-input>
+      </div>
       <div class="q-pa-sm text-center amounts">
         <div class="camera-toggle">
           <q-toggle
@@ -44,6 +47,10 @@
     <div v-if="cameraShow">
       <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
     </div>
+    <div>
+      <pre>{{ dInvoice }}</pre>
+    </div>
+    <AskDetailsDialog v-model="dInvoice" />
   </q-page>
 </template>
 
@@ -56,7 +63,6 @@ div {
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
-  width: 100%;
 }
 
 .invoice-input {
@@ -67,7 +73,6 @@ div {
 .amounts {
   border: 1px solid green;
   align-items: center;
-  width: 40%;
 }
 
 @media screen and (max-width: 300px) {
@@ -83,12 +88,13 @@ import * as bolt11 from "src/assets/bolt11.min.js"
 import { tidyNumber } from "src/use/useUtils"
 import { QrcodeStream } from "qrcode-reader-vue3"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
+import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 
-const invoiceText = ref("")
-const invoiceLoading = ref(false)
-const invoiceValid = ref(false)
+const invoiceText = ref(null)
+const invoiceChecking = ref(false)
+const invoiceValid = ref(null)
 const dInvoice = ref({})
 
 const cameraOn = ref(false)
@@ -106,6 +112,66 @@ const sats = computed(() => {
   return 0
 })
 
+const invoiceColours = {
+  true: {
+    empty: "blue-grey-9",
+    valid: "green-9",
+    invalid: "red-9",
+  },
+  false: {
+    empty: "blue-grey-2",
+    valid: "green-2",
+    invalid: "red-2",
+  },
+}
+
+const invoiceColor = computed(() => {
+  console.log(q.dark.isActive)
+  console.log(invoiceColours[q.dark.isActive])
+  const colours = invoiceColours[q.dark.isActive]
+  if (invoiceValid.value === null) {
+    return colours.empty
+  }
+  if (invoiceValid.value) {
+    return colours.valid
+  }
+  return colours.invalid
+})
+
+const invoiceLabels = {
+  bolt11: t("valid_invoice"),
+  lightningAddress: t("valid_lightning_address"),
+  invalid: t("invalid_invoice"),
+}
+
+const invoiceLabel = computed(() => {
+  return invoiceLabels[invoiceType()]
+})
+
+function invoiceType() {
+  // Checks the type of the invoice returns bolt11 or lightningAddress
+  if (invoiceValid.value === null) {
+    return null
+  }
+  const type = dInvoice.value?.v4vapp?.type
+  if (type === "bolt11") {
+    return "bolt11"
+  } else if (type === "lightningAddress") {
+    return "lightningAddress"
+  } else {
+    return "invalid"
+  }
+}
+
+function clearReset() {
+  invoiceText.value = null
+  invoiceValid.value = null
+  invoiceChecking.value = false
+  dInvoice.value = {}
+  cameraOn.value = false
+  cameraShow.value = false
+}
+
 function onDecode(content) {
   console.log("onDecode", content)
   invoiceText.value = content
@@ -115,7 +181,7 @@ function onDecode(content) {
 async function decodeInvoice() {
   console.log("invoiceText.value", invoiceText.value)
   if (!invoiceText.value) {
-    dInvoice.value = {}
+    clearReset()
     return true
   }
   try {
@@ -131,13 +197,16 @@ async function decodeInvoice() {
       invoiceValid.value = true
       cameraOn.value = false
       cameraShow.value = false
+      if (invoiceType() === "lightningAddress") {
+        dInvoice.value.askDetails = true
+      }
       return true
     }
-    // raise an error
-
+    invoiceValid.value = false
   } catch (e) {
     console.log("e", e)
     dInvoice.value = {}
+    invoiceValid.value = false
     return "Not a valid invoice"
   }
 }
@@ -154,6 +223,7 @@ const cameraErrors = [
 
 const onInitCamera = async (promise) => {
   try {
+    invoiceChecking.value = true
     await promise
   } catch (errorEvent) {
     console.log(errorEvent.name)
@@ -163,6 +233,7 @@ const onInitCamera = async (promise) => {
       cameraError.value = `${t("error")}: ${t("OtherError")}`
     }
     console.log("cameraError", cameraError.value)
+    invoiceChecking.value = false
     q.notify({
       color: "negative",
       timeout: 2000,
@@ -181,6 +252,7 @@ const onInitCamera = async (promise) => {
 
 function toggleCamera() {
   console.log("cameraOn", cameraOn.value)
+  invoiceChecking.value = true
   setTimeout(() => {
     cameraShow.value = cameraOn.value
   }, 500)
