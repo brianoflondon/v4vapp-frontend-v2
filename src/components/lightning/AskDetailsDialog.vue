@@ -92,6 +92,8 @@ import { ref } from "vue"
 import { callBackGenerateInvoice } from "src/use/useLightningInvoice"
 const dInvoice = defineModel({})
 
+const emit = defineEmits(["newInvoice"])
+
 const amountUSD = ref(null)
 
 const vAutofocus = {
@@ -115,6 +117,8 @@ async function createInvoice() {
     console.log("response", response)
     dInvoice.value.askDetails = false
     dInvoice.value.callback = response
+    console.log('emit("newInvoice", response)', response)
+    emit("newInvoice", response)
   } catch (error) {
     console.log("error", error)
   }

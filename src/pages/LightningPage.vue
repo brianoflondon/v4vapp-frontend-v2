@@ -50,7 +50,10 @@
     <div>
       <pre>{{ dInvoice }}</pre>
     </div>
-    <AskDetailsDialog v-model="dInvoice" />
+    <AskDetailsDialog
+      v-model="dInvoice"
+      @newInvoice="(val) => receiveNewInvoice(val)"
+    />
   </q-page>
 </template>
 
@@ -95,7 +98,9 @@ import { useQuasar } from "quasar"
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
 const invoiceValid = ref(null)
-const dInvoice = ref({ callback: { pr: "" } })
+const dInvoice = ref(null)
+const callbackResult = ref(null)
+
 
 const cameraOn = ref(false)
 const cameraShow = ref(false)
@@ -146,6 +151,13 @@ const invoiceLabels = {
 const invoiceLabel = computed(() => {
   return invoiceLabels[invoiceType()]
 })
+
+function receiveNewInvoice(val) {
+  console.log("newInvoice")
+  console.log("val", val)
+  callbackResult.value = val
+  invoiceText.value = val.pr
+}
 
 function invoiceType() {
   // Checks the type of the invoice returns bolt11 or lightningAddress
@@ -210,23 +222,6 @@ async function decodeInvoice() {
     return "Not a valid invoice"
   }
 }
-
-// watch the dInvoice.value.pr and if it changes then update the invoiceText.value
-watch(
-  () => dInvoice,
-  async (newVal, oldVal) => {
-    console.log("newVal", newVal)
-    console.log("oldVal", oldVal)
-    console.log("dInvoice.value?.callback?.pr", dInvoice.value?.callback?.pr)
-    const newInvoiceText = dInvoice.value?.callback?.pr
-    // const callBackResult = structuredClone(dInvoice.value.callback)
-    // clearReset()
-    // if (newVal !== oldVal) {
-    //   invoiceText.value = newInvoiceText
-    //   await decodeInvoice()
-    // }
-  }
-)
 
 const cameraErrors = [
   "NotAllowedError",
