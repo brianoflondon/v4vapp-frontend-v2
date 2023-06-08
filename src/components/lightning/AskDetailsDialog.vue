@@ -31,17 +31,12 @@
                 pattern="\d*"
                 :label="$t('send') + ' (Sats)'"
                 stack-label
+                debounce="1000"
                 v-autofocus
                 :input-style="{ 'text-align': 'right' }"
                 @update:model-value="(val) => updateAmounts(val, 'sats')"
-                :rules="[
-                  (val) => !!val || 'Required',
-                  (val) =>
-                    val >= dInvoice?.v4vapp?.metadata?.minSats || $t('too_low'),
-                  (val) =>
-                    val <= dInvoice?.v4vapp?.metadata?.maxSats ||
-                    $t('too_high'),
-                ]"
+                :error-message="errorMessage"
+                :error="errorState"
               />
             </div>
             <!-- USD INPUT -->
@@ -53,6 +48,7 @@
                 inputmode="numeric"
                 :label="$t('send') + ' (HBD)'"
                 stack-label
+                debounce="1000"
                 :input-style="{ 'text-align': 'right' }"
                 @update:model-value="(val) => updateAmounts(val, 'hbd')"
               />
@@ -66,14 +62,12 @@
                 inputmode="numeric"
                 :label="$t('send') + ' (Hive)'"
                 stack-label
+                debounce="1000"
                 :input-style="{ 'text-align': 'right' }"
                 @update:model-value="(val) => updateAmounts(val, 'hive')"
               />
             </div>
           </div>
-        </q-card-section>
-        <q-card-section>
-          <pre>{{ amounts }}</pre>
         </q-card-section>
         <q-card-section
           v-if="dInvoice?.v4vapp?.metadata?.commentLength"
@@ -84,6 +78,13 @@
             label="Comment"
             type="text"
             counter
+            :rules="[
+              (val) =>
+                val.length <= dInvoice?.v4vapp?.metadata?.commentLength ||
+                `${t('comment_length')}: (${
+                  dInvoice?.v4vapp?.metadata?.commentLength
+                } ${t('characters')})`,
+            ]"
           />
         </q-card-section>
         <q-card-actions align="right">
@@ -98,6 +99,7 @@
             :label="$t('ok')"
             color="primary"
             @click="createInvoice"
+            :disabled="errorState"
           ></q-btn>
         </q-card-actions>
       </q-card>
@@ -110,9 +112,14 @@ import { ref } from "vue"
 import { callBackGenerateInvoice } from "src/use/useLightningInvoice"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { tidyNumber } from "src/use/useUtils"
+import { useI18n } from "vue-i18n"
+const t = useI18n().t
+
 const storeAPIStatus = useStoreAPIStatus()
 const dInvoice = defineModel({})
 const emit = defineEmits(["newInvoice"])
+const errorMessage = ref("")
+const errorState = ref(false)
 const amounts = ref({
   sats: 0,
   hbd: 0,
@@ -126,38 +133,63 @@ function showDialog() {
   }
 }
 
-function someChange(val) {
-  console.log("someChange, val", val)
-}
-
 function updateAmounts(amount, currency) {
-  console.log("updateAmounts, amount, currency", amount, currency)
-  if (currency === "sats") {
-    dInvoice.value.v4vapp.amountToSend = amount
-    amounts.value.sats = amount
-    amounts.value.hive = amount / storeAPIStatus.hiveSatsNumber
-    amounts.value.hbd = amount / storeAPIStatus.HBDSatsNumber
-    amounts.value.hbd = tidyNumber(amounts.value.hbd.toFixed(2))
-
-    amounts.value.hive = tidyNumber(amounts.value.hive.toFixed(3))
-
-  } else if (currency === "hive") {
-    amounts.value.hive = amount
-    dInvoice.value.v4vapp.amountToSend = amount * storeAPIStatus.hiveSatsNumber
-    amounts.value.sats = amount * storeAPIStatus.hiveSatsNumber
-    amounts.value.hbd =
-      (amount * storeAPIStatus.hiveSatsNumber) / storeAPIStatus.HBDSatsNumber
-    amounts.value.hbd = tidyNumber(amounts.value.hbd.toFixed(2))
-  } else if (currency === "hbd") {
-    amounts.value.hbd = amount
-    dInvoice.value.v4vapp.amountToSend = amount * storeAPIStatus.HBDSatsNumber
-    amounts.value.sats = amount * storeAPIStatus.HBDSatsNumber
-    amounts.value.hive =
-      (amount * storeAPIStatus.HBDSatsNumber) / storeAPIStatus.hiveSatsNumber
-    amounts.value.hive = tidyNumber(amounts.value.hive.toFixed(3))
+  if (amount === "") {
+    amount = "1"
   }
-  dInvoice.value.v4vapp.amountToSend = parseInt(amounts.value.sats)
-  amounts.value.sats = dInvoice.value.v4vapp.amountToSend
+  console.log("updateAmounts, amount, currency", amount, currency)
+  // strip out all the commas
+  // check if amount is a string
+  if (typeof amount === "string") {
+    amount = parseFloat(amount.replace(/,/g, ""), 10)
+  }
+  console.log("updateAmounts, amount, currency", amount, currency)
+  let sats, hive, hbd
+
+  switch (currency) {
+    case "sats":
+      sats = parseInt(amount)
+      hive = amount / storeAPIStatus.hiveSatsNumber
+      hbd = amount / storeAPIStatus.HBDSatsNumber
+      break
+
+    case "hive":
+      sats = amount * storeAPIStatus.hiveSatsNumber
+      hive = amount
+      hbd =
+        (amount * storeAPIStatus.hiveSatsNumber) / storeAPIStatus.HBDSatsNumber
+      break
+
+    case "hbd":
+      sats = amount * storeAPIStatus.HBDSatsNumber
+      hive =
+        (amount * storeAPIStatus.HBDSatsNumber) / storeAPIStatus.hiveSatsNumber
+      hbd = amount
+      break
+
+    default:
+      return
+  }
+  dInvoice.value.v4vapp.amountToSend = parseInt(sats)
+  console.log("Sats amount: ", sats)
+  console.log(dInvoice.value.v4vapp.metadata.minSats)
+  console.log(dInvoice.value.v4vapp.metadata.maxSats)
+  if (sats < dInvoice.value.v4vapp.metadata.minSats) {
+    console.log("amounts.value.sats < dInvoice.value.metadata.minSats")
+    errorMessage.value = t("too_low")
+    errorState.value = true
+  } else if (sats > dInvoice.value.v4vapp.metadata.maxSats) {
+    console.log("amounts.value.sats > dInvoice.value.metadata.maxSats")
+    errorMessage.value = t("too_high")
+    errorState.value = true
+  } else {
+    errorMessage.value = ""
+    errorState.value = false
+  }
+
+  amounts.value.sats = tidyNumber(sats.toFixed(0))
+  amounts.value.hive = tidyNumber(hive.toFixed(3))
+  amounts.value.hbd = tidyNumber(hbd.toFixed(2))
 }
 
 const vAutofocus = {
@@ -194,6 +226,6 @@ async function createInvoice() {
 
 <style lang="scss" scoped>
 .input-amount {
-  width: 7rem;
+  width: 6.3rem;
 }
 </style>

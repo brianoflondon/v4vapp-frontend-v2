@@ -8,6 +8,7 @@ export default {
   required: "Required",
   ok: "OK",
   cancel: "Cancel",
+  characters: "characters",
 
   // Keychain
   keychain_installed: "Keychain is Installed",
@@ -65,6 +66,7 @@ export default {
   send: "Send",
   too_low: "Amount too low",
   too_high: "Amount too high",
+  comment_length: "Comment is too long",
 
   // Camera
   NotAllowedError: "You need to grant camera access permission",
