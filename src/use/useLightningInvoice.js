@@ -44,7 +44,7 @@ function validateInvoice(decodedInvoice) {
   // Check value of invoice is within min and max
   // check that invoice is not expired
   decodedInvoice.errors = {}
-  decodedInvoice.errors.text=[]
+  decodedInvoice.errors.text = []
   if (!decodedInvoice) {
     return null
   }
@@ -163,8 +163,15 @@ export async function callBackGenerateInvoice(callbackURL, amount, comment) {
   }
 }
 
+/**
+ * Decode metadata from a decoded LNURL request.
+ * If the requested min or max sats are outside the range
+ * of this service, set them to service maximum/minimum.
+ *
+ * @param {Object} decodedInvoice - The decoded invoice object containing metadata.
+ * @returns {Promise<Object>} - A promise that resolves to the decoded metadata object.
+ */
 async function decodeMetadata(decodedInvoice) {
-  // Decode metadata from a decoded LNURL request
   let result = await JSON.parse(decodedInvoice.metadata)
   console.log(result)
   let decoded = result.reduce((obj, item) => {
@@ -184,6 +191,18 @@ async function decodeMetadata(decodedInvoice) {
   decoded.minSats = Math.floor(decodedInvoice.minSendable / 1000)
   decoded.maxSats = Math.floor(decodedInvoice.maxSendable / 1000)
   decoded.commentLength = decodedInvoice?.commentAllowed || 0
+
+  const minimumPayment =
+    storeAPIStatus.apiStatus.config.minimum_invoice_payment_sats
+  const maximumPayment =
+    storeAPIStatus.apiStatus.config.maximum_invoice_payment_sats
+
+  if (decoded.minSats < minimumPayment) {
+    decoded.minSats = minimumPayment
+  }
+  if (decoded.maxSats > maximumPayment) {
+    decoded.maxSats = maximumPayment
+  }
 
   console.log("useLightning decoded ", decoded)
   return decoded

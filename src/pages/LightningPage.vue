@@ -1,48 +1,73 @@
 <template>
   <q-page>
-    <div class="invoice column flex-center">
-      <div class="q-pa-sm column invoice-input">
-        <q-input
-          style="width: 300px"
-          v-model="invoiceText"
-          type="textarea"
-          name="invoice"
-          @clear="clearReset"
-          :placeholder="$t('enter_invoice')"
-          :label="invoiceLabel"
-          debounce="500"
-          filled
-          for="invoice"
-          :loading="invoiceChecking"
-          clearable
-          @update:model-value="decodeInvoice"
-          :error-message="errorMessage"
-          :error="invoiceValid === false"
-          :bg-color="invoiceColor"
-          @keyup.esc="clearReset"
-        >
-        </q-input>
+    <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
+      <div class="camera-toggle-invoice">
+        <div class="column flex-center">
+          <div class="camera-toggle">
+            <q-toggle
+              v-model="cameraOn"
+              @update:model-value="toggleCamera()"
+              icon="photo_camera"
+              size="xl"
+              color="primary"
+              dense
+              flat
+            />
+          </div>
+          <div class="q-pa-sm invoice-input">
+            <q-input
+              style="width: 300px"
+              v-model="invoiceText"
+              type="textarea"
+              name="invoice"
+              @clear="clearReset"
+              :placeholder="$t('enter_invoice')"
+              :label="invoiceLabel"
+              debounce="500"
+              filled
+              for="invoice"
+              :loading="invoiceChecking"
+              clearable
+              @update:model-value="decodeInvoice"
+              :error-message="errorMessage"
+              :error="invoiceValid === false"
+              :bg-color="invoiceColor"
+              @keyup.esc="clearReset"
+            >
+            </q-input>
+          </div>
+        </div>
       </div>
-      <div class="q-pa-sm text-center amounts">
-        <div class="camera-toggle">
-          <q-toggle
-            v-model="cameraOn"
-            @update:model-value="toggleCamera()"
-            icon="photo_camera"
-            size="xl"
-            color="primary"
+      <div class="amounts-display flex justify-evenly">
+        <div class="q-pa-xs input-amount-readonly">
+          <q-input
+            readonly
+            input-class="text-right"
             dense
-            flat
-          />
+            filled
+            v-model="sats"
+            label="Sats"
+          ></q-input>
         </div>
-        <div class="q-pa-sm">
-          <q-input readonly dense filled v-model="sats" label="Sats"></q-input>
+        <div class="q-pa-xs input-amount-readonly">
+          <q-input
+            readonly
+            input-class="text-right"
+            dense
+            filled
+            v-model="HBD"
+            label="HBD"
+          ></q-input>
         </div>
-        <div class="q-pa-sm">
-          <q-input readonly dense filled v-model="sats" label="HBD"></q-input>
-        </div>
-        <div class="q-pa-sm">
-          <q-input readonly dense filled v-model="sats" label="Hive"></q-input>
+        <div class="q-pa-xs input-amount-readonly">
+          <q-input
+            readonly
+            input-class="text-right"
+            dense
+            filled
+            v-model="Hive"
+            label="Hive"
+          ></q-input>
         </div>
       </div>
     </div>
@@ -61,36 +86,25 @@
 
 <style lang="scss" scoped>
 div {
-  border: 1px solid red;
+  // border: 1px solid green;
 }
 
-.invoice {
-  flex-direction: row;
-  justify-content: space-evenly;
-  align-items: center;
+.input-amount-readonly {
+  width: 7rem;
 }
 
-.invoice-input {
-  border: 1px solid blue;
-  align-items: center;
-}
-
-.amounts {
-  border: 1px solid green;
-  align-items: center;
-}
-
-@media screen and (max-width: 375px) {
-  .invoice {
+@media screen and (min-width: 500px) {
+  .amounts-display {
     flex-direction: column;
   }
 }
 </style>
 
 <script setup>
-import { computed, ref, watch } from "vue"
+import { computed, ref } from "vue"
 import * as bolt11 from "src/assets/bolt11.min.js"
 import { tidyNumber } from "src/use/useUtils"
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { QrcodeStream } from "qrcode-reader-vue3"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
@@ -110,13 +124,31 @@ const cameraError = ref("")
 
 const t = useI18n().t
 const q = useQuasar()
+const storeApiStatus = useStoreAPIStatus()
 
 const sats = computed(() => {
-  console.log("dInvoice.value", dInvoice.value)
   if (dInvoice.value?.millisatoshis) {
     return tidyNumber(dInvoice.value?.millisatoshis / 1000)
   }
-  return 0
+  return "---"
+})
+
+const HBD = computed(() => {
+  if (dInvoice.value?.millisatoshis) {
+    const sats = dInvoice.value?.millisatoshis / 1000
+    const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(2)
+    return tidyNumber(HBD)
+  }
+  return "---"
+})
+
+const Hive = computed(() => {
+  if (dInvoice.value?.millisatoshis) {
+    const sats = dInvoice.value?.millisatoshis / 1000
+    const hive = (sats / storeApiStatus.hiveSatsNumber).toFixed(3)
+    return tidyNumber(hive)
+  }
+  return "---"
 })
 
 const invoiceColours = {
@@ -134,7 +166,6 @@ const invoiceColours = {
 }
 
 const invoiceColor = computed(() => {
-  console.log(invoiceColours[q.dark.isActive])
   const colours = invoiceColours[q.dark.isActive]
   if (invoiceValid.value === null) {
     return colours.empty
@@ -146,6 +177,7 @@ const invoiceColor = computed(() => {
 })
 
 const invoiceLabels = {
+  enter: t("enter_invoice"),
   bolt11: t("valid_invoice"),
   lightningAddress: t("valid_lightning_address"),
   invalid: t("invalid_invoice"),
@@ -156,8 +188,6 @@ const invoiceLabel = computed(() => {
 })
 
 function receiveNewInvoice(val) {
-  console.log("newInvoice")
-  console.log("val", val)
   callbackResult.value = val
   invoiceText.value = val.pr
   decodeInvoice()
@@ -166,9 +196,12 @@ function receiveNewInvoice(val) {
 function invoiceType() {
   // Checks the type of the invoice returns bolt11 or lightningAddress
   if (invoiceValid.value === null) {
-    return null
+    return "enter"
   }
   const type = dInvoice.value?.v4vapp?.type
+  if (!type) {
+    return "invalid"
+  }
   if (type === "bolt11") {
     return "bolt11"
   } else if (type === "lightningAddress") {
@@ -189,35 +222,22 @@ function clearReset() {
 }
 
 function onDecode(content) {
-  console.log("onDecode", content)
   invoiceText.value = content
   decodeInvoice()
 }
 
 async function decodeInvoice() {
-  console.log("invoiceText.value", invoiceText.value)
-
-  invoiceText.value = invoiceText.value.toLowerCase()
-
-  if (invoiceText.value.startsWith("lightning:")) {
-    invoiceText.value = invoiceText.value.substring(10)
-  }
-
   if (!invoiceText.value) {
     clearReset()
     return true
   }
+  invoiceText.value = invoiceText.value.toLowerCase()
+  if (invoiceText.value.startsWith("lightning:")) {
+    invoiceText.value = invoiceText.value.substring(10)
+  }
   try {
-    console.log("invoiceText.value", invoiceText.value)
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
-    console.log("dInvoice", dInvoice.value)
     if (dInvoice.value) {
-      q.notify({
-        color: "primary",
-        timeout: 2000,
-        message: t("valid_invoice"),
-        position: "top",
-      })
       invoiceValid.value = true
       invoiceChecking.value = false
       cameraOn.value = false
@@ -226,7 +246,7 @@ async function decodeInvoice() {
         dInvoice.value.askDetails = true
         return
       } else {
-        if (Object.keys(dInvoice.value?.errors).length > 0) {
+        if (dInvoice.value?.errors.text.length > 0) {
           errorMessage.value = dInvoice.value?.errors.text
             .map((error) => t(error))
             .join(", ")
@@ -246,10 +266,10 @@ async function decodeInvoice() {
     }
     invoiceValid.value = false
   } catch (e) {
-    console.log("e", e)
-    // dInvoice.value = {}
     invoiceValid.value = false
-    return "Not a valid invoice"
+    invoiceChecking.value = false
+    errorMessage.value = t("invalid_invoice")
+    return false
   }
 }
 
@@ -268,13 +288,11 @@ const onInitCamera = async (promise) => {
     invoiceChecking.value = true
     await promise
   } catch (errorEvent) {
-    console.log(errorEvent.name)
     if (cameraErrors.includes(errorEvent.name)) {
       cameraError.value = `${t("error")}: ${t(errorEvent.name)}`
     } else {
       cameraError.value = `${t("error")}: ${t("OtherError")}`
     }
-    console.log("cameraError", cameraError.value)
     invoiceChecking.value = false
     q.notify({
       color: "negative",
@@ -289,6 +307,7 @@ const onInitCamera = async (promise) => {
     }, 500)
     cameraOn.value = false
     cameraShow.value = false
+    invoiceChecking.value = false
   }
 }
 

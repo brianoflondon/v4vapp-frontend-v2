@@ -1,6 +1,6 @@
 <template>
   <div v-if="dInvoice">
-    <q-dialog v-model="dInvoice.askDetails">
+    <q-dialog v-model="dInvoice.askDetails" @show="showDialog">
       <q-card>
         <q-card-section>
           <div class="row q-pa-md">
@@ -22,17 +22,18 @@
             </div>
           </div>
           <!-- SATS INPUT -->
-          <div class="row input-amounts">
-            <div class="input-sats col-6 q-pa-md">
+          <div class="row input-amounts justify-around">
+            <div class="input-sats input-amount q-pa-sm">
               <q-input
-                v-model="dInvoice.v4vapp.amountToSend"
+                v-model="amounts.sats"
                 type="text"
-                pattern="\d*"
                 inputmode="numeric"
-                :label="$t('amount_to_send') + ' (Sats)'"
+                pattern="\d*"
+                :label="$t('send') + ' (Sats)'"
                 stack-label
                 v-autofocus
                 :input-style="{ 'text-align': 'right' }"
+                @update:model-value="(val) => updateAmounts(val, 'sats')"
                 :rules="[
                   (val) => !!val || 'Required',
                   (val) =>
@@ -44,18 +45,35 @@
               />
             </div>
             <!-- USD INPUT -->
-            <div class="input-usd col-6 q-pa-md">
+            <div class="input-hbd input-amount q-pa-sm">
               <q-input
-                v-model="amountUSD"
+                v-model="amounts.hbd"
                 type="text"
                 pattern="\d*"
                 inputmode="numeric"
-                :label="$t('amount_to_send') + ' (USD)'"
+                :label="$t('send') + ' (HBD)'"
                 stack-label
                 :input-style="{ 'text-align': 'right' }"
+                @update:model-value="(val) => updateAmounts(val, 'hbd')"
+              />
+            </div>
+            <!-- USD INPUT -->
+            <div class="input-hive input-amount q-pa-sm">
+              <q-input
+                v-model="amounts.hive"
+                type="text"
+                pattern="\d*"
+                inputmode="numeric"
+                :label="$t('send') + ' (Hive)'"
+                stack-label
+                :input-style="{ 'text-align': 'right' }"
+                @update:model-value="(val) => updateAmounts(val, 'hive')"
               />
             </div>
           </div>
+        </q-card-section>
+        <q-card-section>
+          <pre>{{ amounts }}</pre>
         </q-card-section>
         <q-card-section
           v-if="dInvoice?.v4vapp?.metadata?.commentLength"
@@ -90,11 +108,49 @@
 <script setup>
 import { ref } from "vue"
 import { callBackGenerateInvoice } from "src/use/useLightningInvoice"
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import { tidyNumber } from "src/use/useUtils"
+const storeAPIStatus = useStoreAPIStatus()
 const dInvoice = defineModel({})
-
 const emit = defineEmits(["newInvoice"])
+const amounts = ref({
+  sats: 0,
+  hbd: 0,
+  hive: 0,
+})
 
-const amountUSD = ref(null)
+function showDialog() {
+  console.log("showDialog, dInvoice.value.v4vapp.amountToSend")
+  if (dInvoice.value.v4vapp.amountToSend) {
+    updateAmounts(dInvoice.value.v4vapp.amountToSend, "sats")
+  }
+}
+
+function someChange(val) {
+  console.log("someChange, val", val)
+}
+
+function updateAmounts(amount, currency) {
+  console.log("updateAmounts, amount, currency", amount, currency)
+  if (currency === "sats") {
+    dInvoice.value.v4vapp.amountToSend = amount
+    amounts.value.sats = amount
+    amounts.value.hive = amount / storeAPIStatus.hiveSatsNumber
+    amounts.value.hbd = amount / storeAPIStatus.HBDSatsNumber
+  } else if (currency === "hive") {
+    amounts.value.hive = amount
+    dInvoice.value.v4vapp.amountToSend = amount * storeAPIStatus.hiveSatsNumber
+    amounts.value.sats = amount * storeAPIStatus.hiveSatsNumber
+    amounts.value.hbd =
+      (amount * storeAPIStatus.hiveSatsNumber) / storeAPIStatus.HBDSatsNumber
+  } else if (currency === "hbd") {
+    amounts.value.hbd = amount
+    dInvoice.value.v4vapp.amountToSend = amount * storeAPIStatus.HBDSatsNumber
+    amounts.value.sats = amount * storeAPIStatus.HBDSatsNumber
+    amounts.value.hive =
+      (amount * storeAPIStatus.HBDSatsNumber) / storeAPIStatus.hiveSatsNumber
+  }
+}
 
 const vAutofocus = {
   mounted(el) {
@@ -109,6 +165,9 @@ async function createInvoice() {
     dInvoice.value.v4vapp?.comment
   )
   try {
+    dInvoice.value.v4vapp.amountToSend = Math.round(
+      dInvoice.value.v4vapp.amountToSend
+    )
     const response = await callBackGenerateInvoice(
       dInvoice.value.callback,
       dInvoice.value.v4vapp.amountToSend,
@@ -125,4 +184,8 @@ async function createInvoice() {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.input-amount {
+  width: 7rem;
+}
+</style>

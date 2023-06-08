@@ -50,10 +50,10 @@ export default {
 
   // Invoice
   invoice: "Invoice",
-  enter_invoice: "lnbc....",
+  enter_invoice: "lnbc.... or Lightning Address",
   valid_invoice: "Invoice decoded",
   valid_lightning_address: "Address decoded",
-  invalid_invoice: "Invalid invoice",
+  invalid_invoice: "Invalid invoice or Lightning Address",
   invoice_too_low: "Invoice is below minimum payment",
   invoice_too_high: "Invoice is above maximum payment",
   invoice_expired: "Invoice has expired",
@@ -62,6 +62,7 @@ export default {
   // Ask Details dialog
   asking_details: "You are about to pay:",
   amount_to_send: "Amount to send",
+  send: "Send",
   too_low: "Amount too low",
   too_high: "Amount too high",
 

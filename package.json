@@ -32,7 +32,8 @@
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^9.0.0",
     "postcss": "^8.4.14",
-    "prettier": "^2.5.1"
+    "prettier": "^2.5.1",
+    "quasar-app-extension-qnumber": "^1.7.0"
   },
   "engines": {
     "node": "^18 || ^16 || ^14.19",
