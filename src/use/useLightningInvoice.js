@@ -1,5 +1,8 @@
-import { api } from "boot/axios"
+import { api, myNodePubKey } from "boot/axios"
 import * as bolt11 from "src/assets/bolt11.min.js"
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+
+const storeAPIStatus = useStoreAPIStatus()
 
 export async function useDecodeLightningInvoice(invoice) {
   // Decode a lightning invoice first using local Bolt11 library
@@ -11,6 +14,8 @@ export async function useDecodeLightningInvoice(invoice) {
   if (invoice.startsWith("lnbc")) {
     decodedInvoice = await bolt11Decode(invoice)
     if (decodedInvoice) {
+      // Adds error messages to the decoded invoice if
+      await validateInvoice(decodedInvoice)
       // add pubkeys to the decoded invoice
       decodedInvoice.v4vapp = {}
       decodedInvoice.v4vapp.pubKeys = extractPubKeys(decodedInvoice)
@@ -32,8 +37,44 @@ export async function useDecodeLightningInvoice(invoice) {
       }
     }
   }
-
   return decodedInvoice
+}
+
+function validateInvoice(decodedInvoice) {
+  // Check value of invoice is within min and max
+  // check that invoice is not expired
+  decodedInvoice.errors = {}
+  decodedInvoice.errors.text=[]
+  if (!decodedInvoice) {
+    return null
+  }
+
+  if (decodedInvoice.payeeNodeKey === myNodePubKey) {
+    // if we fail this test, no need to do any other tests
+    decodedInvoice.errors.self_payment = true
+    decodedInvoice.errors.text.push("self_payment")
+    return
+  }
+  const amount = Math.floor(decodedInvoice.millisatoshis / 1000)
+  const minimumPayment =
+    storeAPIStatus.apiStatus.config.minimum_invoice_payment_sats
+  const maximumPayment =
+    storeAPIStatus.apiStatus.config.maximum_invoice_payment_sats
+  if (amount < minimumPayment) {
+    decodedInvoice.errors.too_low = true
+    decodedInvoice.errors.text.push("invoice_too_low")
+    return
+  } else if (amount > maximumPayment) {
+    decodedInvoice.errors.too_high = true
+    decodedInvoice.errors.text.push("invoice_too_high")
+    return
+  }
+  // Compare the current time with the expiration time
+  if (Date.now() > decodedInvoice.timeExpireDate * 1000) {
+    decodedInvoice.errors.expired = true
+    decodedInvoice.errors.text.push("invoice_expired")
+  }
+  return
 }
 
 export function extractPubKeys(data) {

@@ -54,6 +54,10 @@ export default {
   valid_invoice: "Invoice decoded",
   valid_lightning_address: "Address decoded",
   invalid_invoice: "Invalid invoice",
+  invoice_too_low: "Invoice is below minimum payment",
+  invoice_too_high: "Invoice is above maximum payment",
+  invoice_expired: "Invoice has expired",
+  self_payment: "Can't send to v4v.app",
 
   // Ask Details dialog
   asking_details: "You are about to pay:",

@@ -15,7 +15,9 @@
           for="invoice"
           :loading="invoiceChecking"
           clearable
-          :rules="[decodeInvoice]"
+          @update:model-value="decodeInvoice"
+          :error-message="errorMessage"
+          :error="invoiceValid === false"
           :bg-color="invoiceColor"
           @keyup.esc="clearReset"
         >
@@ -100,7 +102,7 @@ const invoiceChecking = ref(false)
 const invoiceValid = ref(null)
 const dInvoice = ref(null)
 const callbackResult = ref(null)
-
+const errorMessage = ref("")
 
 const cameraOn = ref(false)
 const cameraShow = ref(false)
@@ -157,6 +159,7 @@ function receiveNewInvoice(val) {
   console.log("val", val)
   callbackResult.value = val
   invoiceText.value = val.pr
+  decodeInvoice()
 }
 
 function invoiceType() {
@@ -175,6 +178,7 @@ function invoiceType() {
 }
 
 function clearReset() {
+  errorMessage.value = ""
   invoiceText.value = null
   invoiceValid.value = null
   invoiceChecking.value = false
@@ -191,6 +195,13 @@ function onDecode(content) {
 
 async function decodeInvoice() {
   console.log("invoiceText.value", invoiceText.value)
+
+  invoiceText.value = invoiceText.value.toLowerCase()
+
+  if (invoiceText.value.startsWith("lightning:")) {
+    invoiceText.value = invoiceText.value.substring(10)
+  }
+
   if (!invoiceText.value) {
     clearReset()
     return true
@@ -207,17 +218,35 @@ async function decodeInvoice() {
         position: "top",
       })
       invoiceValid.value = true
+      invoiceChecking.value = false
       cameraOn.value = false
       cameraShow.value = false
       if (invoiceType() === "lightningAddress") {
         dInvoice.value.askDetails = true
+        return
+      } else {
+        if (Object.keys(dInvoice.value?.errors).length > 0) {
+          errorMessage.value = dInvoice.value?.errors.text
+            .map((error) => t(error))
+            .join(", ")
+
+          q.notify({
+            color: "negative",
+            timeout: 2000,
+            message: errorMessage.value,
+            position: "top",
+          })
+          invoiceValid.value = false
+          invoiceChecking.value = false
+          return errorMessage.value
+        }
       }
       return true
     }
     invoiceValid.value = false
   } catch (e) {
     console.log("e", e)
-    dInvoice.value = {}
+    // dInvoice.value = {}
     invoiceValid.value = false
     return "Not a valid invoice"
   }
