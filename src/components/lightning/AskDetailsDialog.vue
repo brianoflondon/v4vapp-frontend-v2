@@ -137,19 +137,27 @@ function updateAmounts(amount, currency) {
     amounts.value.sats = amount
     amounts.value.hive = amount / storeAPIStatus.hiveSatsNumber
     amounts.value.hbd = amount / storeAPIStatus.HBDSatsNumber
+    amounts.value.hbd = tidyNumber(amounts.value.hbd.toFixed(2))
+
+    amounts.value.hive = tidyNumber(amounts.value.hive.toFixed(3))
+
   } else if (currency === "hive") {
     amounts.value.hive = amount
     dInvoice.value.v4vapp.amountToSend = amount * storeAPIStatus.hiveSatsNumber
     amounts.value.sats = amount * storeAPIStatus.hiveSatsNumber
     amounts.value.hbd =
       (amount * storeAPIStatus.hiveSatsNumber) / storeAPIStatus.HBDSatsNumber
+    amounts.value.hbd = tidyNumber(amounts.value.hbd.toFixed(2))
   } else if (currency === "hbd") {
     amounts.value.hbd = amount
     dInvoice.value.v4vapp.amountToSend = amount * storeAPIStatus.HBDSatsNumber
     amounts.value.sats = amount * storeAPIStatus.HBDSatsNumber
     amounts.value.hive =
       (amount * storeAPIStatus.HBDSatsNumber) / storeAPIStatus.hiveSatsNumber
+    amounts.value.hive = tidyNumber(amounts.value.hive.toFixed(3))
   }
+  dInvoice.value.v4vapp.amountToSend = parseInt(amounts.value.sats)
+  amounts.value.sats = dInvoice.value.v4vapp.amountToSend
 }
 
 const vAutofocus = {
