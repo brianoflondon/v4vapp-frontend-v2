@@ -3,7 +3,7 @@
     <div class="invoice column flex-center">
       <div class="q-pa-sm column invoice-input">
         <q-input
-          style="width: 200px"
+          style="width: 300px"
           v-model="invoiceText"
           type="textarea"
           name="invoice"
@@ -80,7 +80,7 @@ div {
   align-items: center;
 }
 
-@media screen and (max-width: 300px) {
+@media screen and (max-width: 375px) {
   .invoice {
     flex-direction: column;
   }
@@ -120,6 +120,7 @@ const sats = computed(() => {
 })
 
 const invoiceColours = {
+  // dark mode is true, light mode is false
   true: {
     empty: "blue-grey-9",
     valid: "green-9",
