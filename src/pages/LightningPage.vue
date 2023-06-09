@@ -3,15 +3,24 @@
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div class="camera-toggle-invoice">
         <div class="column flex-center">
-          <div class="camera-toggle">
-            <q-toggle
-              v-model="cameraOn"
-              @update:model-value="toggleCamera()"
-              icon="photo_camera"
-              size="xl"
+          <div class="row justify-between items-center q-gutter-lg">
+            <div class="camera-toggle">
+              <q-toggle
+                v-model="cameraOn"
+                @update:model-value="toggleCamera()"
+                icon="photo_camera"
+                size="xl"
+                color="primary"
+                dense
+                flat
+              />
+            </div>
+            <q-btn
+              @click="pasteClipboard()"
+              icon="content_paste_go"
               color="primary"
-              dense
-              flat
+              size="md"
+              round
             />
           </div>
           <div class="q-pa-sm invoice-input">
@@ -86,7 +95,7 @@
 
 <style lang="scss" scoped>
 div {
-  // border: 1px solid green;
+  border: 1px solid green;
 }
 
 .input-amount-readonly {
@@ -150,6 +159,19 @@ const Hive = computed(() => {
   }
   return "---"
 })
+
+async function pasteClipboard() {
+  console.log("pasteClipboard")
+  if (window.navigator.clipboard) {
+    try {
+      const text = await window.navigator.clipboard.readText()
+      invoiceText.value = text
+      decodeInvoice()
+    } catch (error) {}
+  } else {
+    console.log("Clipboard API not supported in this browser.")
+  }
+}
 
 const invoiceColours = {
   // dark mode is true, light mode is false
