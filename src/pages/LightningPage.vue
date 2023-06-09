@@ -171,10 +171,17 @@ function runFunctionWithVariableInterval() {
       timeLeft
     )
     console.log("Time interval for 1% drop:", timeIntervalFor1PercentDrop)
-    countTimer = setTimeout(
-      runFunctionWithVariableInterval,
-      timeIntervalFor1PercentDrop * 1000
-    )
+    if (timeLeft > 0) {
+      countTimer = setTimeout(
+        runFunctionWithVariableInterval,
+        timeIntervalFor1PercentDrop * 1000
+      )
+    } else {
+      console.log("expired...")
+      invoiceValid.value = false
+      countTimer = countdownTimer.value = -1
+      runFunctionWithVariableInterval()
+    }
   } else {
     console.log("checking...")
     countTimer = countdownTimer.value = -1
