@@ -23,9 +23,9 @@
               round
             />
           </div>
-          <div class="q-pa-sm invoice-input">
+          <div class="column flex-center q-pt-sm q-px-sm">
             <q-input
-              style="width: 300px"
+              class="invoice-input"
               v-model="invoiceText"
               type="textarea"
               name="invoice"
@@ -44,6 +44,15 @@
               @keyup.esc="clearReset"
             >
             </q-input>
+          </div>
+          <div v-if="countdownTimer > 0">
+            <q-linear-progress
+              class="invoice-timer"
+              size="10px"
+              :value="countdownTimer"
+              color="positive"
+            >
+            </q-linear-progress>
           </div>
         </div>
       </div>
@@ -95,7 +104,12 @@
 
 <style lang="scss" scoped>
 div {
-  border: 1px solid green;
+  // border: 1px solid green;
+}
+
+.invoice-input,
+.invoice-timer {
+  width: 300px;
 }
 
 .input-amount-readonly {
@@ -110,12 +124,15 @@ div {
 </style>
 
 <script setup>
-import { computed, ref } from "vue"
+import { computed, ref, onMounted } from "vue"
 import * as bolt11 from "src/assets/bolt11.min.js"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { QrcodeStream } from "qrcode-reader-vue3"
-import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
+import {
+  useDecodeLightningInvoice,
+  useGetTimeProgress,
+} from "src/use/useLightningInvoice"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
@@ -126,6 +143,7 @@ const invoiceValid = ref(null)
 const dInvoice = ref(null)
 const callbackResult = ref(null)
 const errorMessage = ref("")
+const countdownTimer = ref()
 
 const cameraOn = ref(false)
 const cameraShow = ref(false)
@@ -134,6 +152,42 @@ const cameraError = ref("")
 const t = useI18n().t
 const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
+
+onMounted(() => {
+  runFunctionWithVariableInterval()
+})
+
+let countTimer = null
+
+function runFunctionWithVariableInterval() {
+  if (invoiceValid.value) {
+    countTimer = null
+    const [timeFraction, timeLeft] = useGetTimeProgress(dInvoice.value)
+    countdownTimer.value = timeFraction
+    console.log("timeLeft", timeLeft)
+    console.log("timeFraction", timeFraction)
+    const timeIntervalFor1PercentDrop = calculateTimeInterval(
+      timeFraction,
+      timeLeft
+    )
+    console.log("Time interval for 1% drop:", timeIntervalFor1PercentDrop)
+    countTimer = setTimeout(
+      runFunctionWithVariableInterval,
+      timeIntervalFor1PercentDrop * 1000
+    )
+  } else {
+    console.log("checking...")
+    countTimer = countdownTimer.value = -1
+    setTimeout(runFunctionWithVariableInterval, 5000)
+  }
+}
+
+function calculateTimeInterval(timeFraction, timeLeft) {
+  const onePercentTime = timeLeft / timeFraction // Calculate the time for 1% progress
+  const onePercentDrop = onePercentTime * 0.01 // Calculate the time for 1% drop
+
+  return onePercentDrop // Return the time interval in seconds for a 1% drop
+}
 
 const sats = computed(() => {
   if (dInvoice.value?.millisatoshis) {
@@ -235,6 +289,8 @@ function invoiceType() {
 
 function clearReset() {
   errorMessage.value = ""
+  countdownTimer.value = -1
+  countTimer = null
   invoiceText.value = null
   invoiceValid.value = null
   invoiceChecking.value = false
@@ -256,6 +312,10 @@ async function decodeInvoice() {
   invoiceText.value = invoiceText.value.toLowerCase()
   if (invoiceText.value.startsWith("lightning:")) {
     invoiceText.value = invoiceText.value.substring(10)
+  }
+  if (invoiceText.value.startsWith("bitcoin:")) {
+    const lightningSection = invoiceText.value.match(/lightning=([^&]*)/)
+    invoiceText.value = lightningSection[1]
   }
   try {
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)

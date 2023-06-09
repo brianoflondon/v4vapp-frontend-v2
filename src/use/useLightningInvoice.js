@@ -20,6 +20,7 @@ export async function useDecodeLightningInvoice(invoice) {
       decodedInvoice.v4vapp = {}
       decodedInvoice.v4vapp.pubKeys = extractPubKeys(decodedInvoice)
       decodedInvoice.v4vapp.type = "bolt11"
+      decodedInvoice.v4vapp.timeNow = Date.now() / 1000
       return decodedInvoice
     }
   } else {
@@ -38,6 +39,22 @@ export async function useDecodeLightningInvoice(invoice) {
     }
   }
   return decodedInvoice
+}
+
+export function useGetTimeProgress(decodedInvoice) {
+  // returns the progress of the invoice in seconds
+  // if the invoice is expired returns -1
+  if (!decodedInvoice) {
+    return -1
+  }
+  const timeNow = Date.now() / 1000
+  const timeLengthInvoice =
+    decodedInvoice.timeExpireDate - decodedInvoice.timestamp
+  const timeLeft = decodedInvoice.timeExpireDate - timeNow
+
+  const timeFraction = timeLeft / timeLengthInvoice
+
+  return [timeFraction, timeLeft]
 }
 
 function validateInvoice(decodedInvoice) {
