@@ -121,7 +121,6 @@
         rounded
       />
     </div>
-    <div><p>You will be charged 1Hive or 1HBD extra</p></div>
     <div v-if="cameraShow">
       <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
     </div>
@@ -166,7 +165,10 @@ import {
   useDecodeLightningInvoice,
   useGetTimeProgress,
 } from "src/use/useLightningInvoice"
-import { useHiveKeychainTransfer } from "src/use/useHive.js"
+import {
+  useHiveKeychainTransfer,
+  useGetHiveTransactionHistory,
+} from "src/use/useHive.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
@@ -500,17 +502,24 @@ async function payInvoice(val) {
   }
   const memo = `${dInvoice.value.paymentRequest} 2.v4v.app`
   console.log("memo, amount, currency ", memo, amount, currency)
+  // replace null with logged in user
   const result = await useHiveKeychainTransfer(null, amount, currency, memo)
-  console.log("result", result)
+  console.log("result", result.data)
   console.log("username: ", result.data.username)
+  console.log("trx_id: ", result.result.id)
+
+  // const transactions = await useGetHiveTransactionHistory(result.data.username)
+  const transactions = await useGetHiveTransactionHistory("v4vapp.dev")
+
   if (result.success) {
     q.notify({
       color: "positive",
       timeout: 2000,
-      message: "Payment successful",
+      message: result.message,
       position: "top",
     })
     clearReset()
+    checkHiveTransaction(result.data.username, result.result.id)
   } else {
     q.notify({
       color: "negative",
@@ -519,5 +528,40 @@ async function payInvoice(val) {
       position: "top",
     })
   }
+}
+
+async function checkHiveTransaction(username, trx_id, count = 0) {
+  // wait 5 seconds then check for a transaction
+  count += 1
+  await new Promise((resolve) => setTimeout(resolve, 5000))
+  const transactions = await useGetHiveTransactionHistory(username)
+  const transaction_found = findObjectBefore(transactions, trx_id)
+  console.log("transaction_found", transaction_found)
+  if (!transaction_found) {
+    console.log("transaction not found ", trx_id, count)
+    if (count < 20) {
+      await checkHiveTransaction(username, trx_id, count)
+    }
+    return
+  }
+  const memo = transaction_found.op[1].memo
+  console.log("transaction found ", trx_id)
+  console.log("memo", memo)
+  clearReset()
+  q.notify({
+    color: "positive",
+    timeout: 5000,
+    message: memo,
+    position: "top",
+  })
+}
+
+function findObjectBefore(data, target_trx_id) {
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][1].trx_id === target_trx_id) {
+      return data[i - 1][1]
+    }
+  }
+  return null
 }
 </script>

@@ -11,6 +11,8 @@ import "src/assets/hive-tx.min.js"
 const useHiveAccountRegex =
   /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
 
+const serverHiveAccount = "v4vapp"
+
 export async function useHiveDetails(hiveAccname) {
   // returns Hive Profile and details for a given Hive hiveAccname
   if (!hiveAccname?.match(useHiveAccountRegex)) {
@@ -189,7 +191,6 @@ export async function useHiveKeychainLogin({
 
 // -------- Hive Transfer --------
 
-
 /**
  * Performs a transfer using the Hive Keychain SDK.
  *
@@ -212,7 +213,7 @@ export async function useHiveKeychainTransfer(
     const formParamsAsObject = {
       data: {
         username: username,
-        to: "v4vapp",
+        to: serverHiveAccount,
         amount: amount,
         memo: memo,
         enforce: false,
@@ -225,5 +226,33 @@ export async function useHiveKeychainTransfer(
   } catch (error) {
     console.log({ error })
     return error
+  }
+}
+
+// -------- Hive check for transactions --------
+export async function useGetHiveTransactionHistory(
+  hiveAccname,
+  limit = 10,
+  start = -1,
+  opFilterLow = 4,
+  opFilterHigh = 4
+) {
+  // Returns the account history for the given account.
+
+  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    return null
+  }
+  try {
+    const history = await hiveTx.call("condenser_api.get_account_history", [
+      hiveAccname,
+      start,
+      limit,
+      4
+    ])
+    const transfers = history.result.filter((item) => item[1].op[0] === "transfer")
+    return transfers.reverse()
+  } catch (error) {
+    console.log({ error })
+    return null
   }
 }
