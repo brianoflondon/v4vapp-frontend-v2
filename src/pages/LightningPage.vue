@@ -154,46 +154,39 @@ const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 
 onMounted(() => {
-  runFunctionWithVariableInterval()
+  // checkExpiry()
 })
 
 let countTimer = null
 
-function runFunctionWithVariableInterval() {
+function checkExpiry() {
   if (invoiceValid.value) {
     countTimer = null
     const [timeFraction, timeLeft] = useGetTimeProgress(dInvoice.value)
     countdownTimer.value = timeFraction
-    console.log("timeLeft", timeLeft)
-    console.log("timeFraction", timeFraction)
     const timeIntervalFor1PercentDrop = calculateTimeInterval(
       timeFraction,
-      timeLeft
+      timeLeft,
+      0.05
     )
-    console.log("Time interval for 1% drop:", timeIntervalFor1PercentDrop)
     if (timeLeft > 0) {
-      countTimer = setTimeout(
-        runFunctionWithVariableInterval,
-        timeIntervalFor1PercentDrop * 1000
-      )
+      errorMessage.value = "Invoice expires in " + timeLeft + " seconds"
+      console.log("timeLeft: ", timeLeft, timeIntervalFor1PercentDrop)
+      countTimer = setTimeout(checkExpiry, timeIntervalFor1PercentDrop * 1000)
     } else {
       console.log("expired...")
       invoiceValid.value = false
-      countTimer = countdownTimer.value = -1
-      runFunctionWithVariableInterval()
+      countTimer = null
+      countdownTimer.value = -1
     }
-  } else {
-    console.log("checking...")
-    countTimer = countdownTimer.value = -1
-    setTimeout(runFunctionWithVariableInterval, 5000)
   }
 }
 
-function calculateTimeInterval(timeFraction, timeLeft) {
-  const onePercentTime = timeLeft / timeFraction // Calculate the time for 1% progress
-  const onePercentDrop = onePercentTime * 0.01 // Calculate the time for 1% drop
+function calculateTimeInterval(timeFraction, timeLeft, percent = 0.01) {
+  const percentTime = timeLeft / timeFraction // Calculate the time for 1% progress
+  const percentDrop = percentTime * percent // Calculate the time for 1% drop
 
-  return onePercentDrop // Return the time interval in seconds for a 1% drop
+  return percentDrop // Return the time interval in seconds for a 1% drop
 }
 
 const sats = computed(() => {
@@ -331,6 +324,7 @@ async function decodeInvoice() {
       invoiceChecking.value = false
       cameraOn.value = false
       cameraShow.value = false
+      checkExpiry()
       if (invoiceType() === "lightningAddress") {
         dInvoice.value.askDetails = true
         return
