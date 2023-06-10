@@ -42,10 +42,11 @@
               :error="invoiceValid === false"
               :bg-color="invoiceColor"
               @keyup.esc="clearReset"
+              :hint="invoiceHint"
             >
             </q-input>
           </div>
-          <div v-if="countdownTimer > 0">
+          <div v-if="countdownTimer > 0" class="q-pt-sm">
             <q-linear-progress
               class="invoice-timer"
               size="10px"
@@ -159,6 +160,33 @@ onMounted(() => {
 
 let countTimer = null
 
+const invoiceHint = computed(() => {
+  if (!invoiceValid.value) {
+    return t("invoice_hint")
+  } else {
+    if (invoiceValid.value && dInvoice.value.timeLeft > 1) {
+      return `${t("invoice")} ${t("expires")} ${formatTime(
+        dInvoice.value.timeLeft
+      )}`
+    }
+    return t("invoice_hint")
+  }
+})
+
+function formatTime(timeInSeconds) {
+  const hours = Math.floor(timeInSeconds / 3600)
+  const minutes = Math.floor((timeInSeconds % 3600) / 60)
+  const seconds = Math.floor(timeInSeconds % 60)
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`
+  } else if (minutes > 0) {
+    return `${minutes}m ${seconds}s`
+  } else {
+    return `${seconds}s`
+  }
+}
+
 function checkExpiry() {
   if (invoiceValid.value) {
     countTimer = null
@@ -167,14 +195,13 @@ function checkExpiry() {
     const timeIntervalFor1PercentDrop = calculateTimeInterval(
       timeFraction,
       timeLeft,
-      0.05
+      0.01
     )
     if (timeLeft > 0) {
-      errorMessage.value = "Invoice expires in " + timeLeft + " seconds"
-      console.log("timeLeft: ", timeLeft, timeIntervalFor1PercentDrop)
+      dInvoice.value.timeLeft = timeLeft
       countTimer = setTimeout(checkExpiry, timeIntervalFor1PercentDrop * 1000)
     } else {
-      console.log("expired...")
+      errorMessage.value = t("invoice_expired")
       invoiceValid.value = false
       countTimer = null
       countdownTimer.value = -1
@@ -215,7 +242,6 @@ const Hive = computed(() => {
 })
 
 async function pasteClipboard() {
-  console.log("pasteClipboard")
   if (window.navigator.clipboard) {
     try {
       const text = await window.navigator.clipboard.readText()
@@ -223,7 +249,7 @@ async function pasteClipboard() {
       decodeInvoice()
     } catch (error) {}
   } else {
-    console.log("Clipboard API not supported in this browser.")
+    console.error("Clipboard API not supported in this browser.")
   }
 }
 
@@ -309,6 +335,7 @@ async function decodeInvoice() {
     clearReset()
     return true
   }
+  // Clean up invoice text input, strip prefixes
   invoiceText.value = invoiceText.value.toLowerCase()
   if (invoiceText.value.startsWith("lightning:")) {
     invoiceText.value = invoiceText.value.substring(10)
@@ -318,6 +345,7 @@ async function decodeInvoice() {
     invoiceText.value = lightningSection[1]
   }
   try {
+    // decode the invoice
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
     if (dInvoice.value) {
       invoiceValid.value = true
@@ -326,6 +354,7 @@ async function decodeInvoice() {
       cameraShow.value = false
       checkExpiry()
       if (invoiceType() === "lightningAddress") {
+        // need to ask for details including amount
         dInvoice.value.askDetails = true
         return
       } else {
@@ -347,6 +376,7 @@ async function decodeInvoice() {
       }
       return true
     }
+    errorMessage.value = t("invalid_invoice")
     invoiceValid.value = false
   } catch (e) {
     invoiceValid.value = false
@@ -395,7 +425,6 @@ const onInitCamera = async (promise) => {
 }
 
 function toggleCamera() {
-  console.log("cameraOn", cameraOn.value)
   invoiceChecking.value = true
   setTimeout(() => {
     cameraShow.value = cameraOn.value

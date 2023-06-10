@@ -9,6 +9,9 @@ export default {
   ok: "OK",
   cancel: "Cancel",
   characters: "characters",
+  hours: "hours",
+  minutes: "minutes",
+  seconds: "seconds",
 
   // Keychain
   keychain_installed: "Keychain is Installed",
@@ -51,6 +54,7 @@ export default {
 
   // Invoice
   invoice: "Invoice",
+  expires: "expires",
   enter_invoice: "lnbc.... or Lightning Address",
   valid_invoice: "Invoice decoded",
   valid_lightning_address: "Address decoded",
@@ -59,6 +63,7 @@ export default {
   invoice_too_high: "Invoice is above maximum payment",
   invoice_expired: "Invoice has expired",
   self_payment: "Can't send to v4v.app",
+  invoice_hint: "Paste an invoice or scan a QR code",
 
   // Ask Details dialog
   asking_details: "You are about to pay:",
