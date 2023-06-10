@@ -90,6 +90,38 @@
         </div>
       </div>
     </div>
+    <div
+      v-if="invoiceValid"
+      class="row flex-center q-gutter-lg q-pt-md keychain-button"
+    >
+      <q-btn
+        class="keychain-button-hive"
+        @click="payInvoice((value = 'HIVE'))"
+        :loading="storeApiStatus.payInvoice"
+        :disable="storeApiStatus.payInvoice"
+        icon="img:keychain/hive-keychain-round.svg"
+        icon-right="img:avatars/hive_logo_dark.svg"
+        :label="Hive"
+        :color="buttonColor.buttonColor"
+        :text-color="buttonColor.textColor"
+        size="md"
+        rounded
+      />
+      <q-btn
+        class="keychain-button-hbd"
+        @click="payInvoice((value = 'HBD'))"
+        :loading="storeApiStatus.payInvoice"
+        :disable="storeApiStatus.payInvoice"
+        icon="img:keychain/hive-keychain-round.svg"
+        icon-right="fa-sharp fa-dollar-sign"
+        :label="HBD"
+        :color="buttonColor.buttonColor"
+        :text-color="buttonColor.textColor"
+        size="md"
+        rounded
+      />
+    </div>
+    <div><p>You will be charged 1Hive or 1HBD extra</p></div>
     <div v-if="cameraShow">
       <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
     </div>
@@ -134,6 +166,7 @@ import {
   useDecodeLightningInvoice,
   useGetTimeProgress,
 } from "src/use/useLightningInvoice"
+import { useHiveKeychainTransfer } from "src/use/useHive.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
@@ -223,10 +256,17 @@ const sats = computed(() => {
   return "---"
 })
 
+function calcSatsFee(sats) {
+  let satsWithFees = sats
+  satsWithFees += storeApiStatus.apiStatus.config.conv_fee_sats
+  satsWithFees *= 1 + storeApiStatus.apiStatus.config.conv_fee_percent
+  return satsWithFees
+}
+
 const HBD = computed(() => {
   if (dInvoice.value?.millisatoshis) {
-    const sats = dInvoice.value?.millisatoshis / 1000
-    const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(2)
+    const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
+    const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(3)
     return tidyNumber(HBD)
   }
   return "---"
@@ -234,7 +274,7 @@ const HBD = computed(() => {
 
 const Hive = computed(() => {
   if (dInvoice.value?.millisatoshis) {
-    const sats = dInvoice.value?.millisatoshis / 1000
+    const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
     const hive = (sats / storeApiStatus.hiveSatsNumber).toFixed(3)
     return tidyNumber(hive)
   }
@@ -276,6 +316,23 @@ const invoiceColor = computed(() => {
     return colours.valid
   }
   return colours.invalid
+})
+
+const buttonColors = {
+  // dark mode is true, light mode is false
+  true: {
+    buttonColor: "grey-9",
+    textColor: "grey-6",
+  },
+  false: {
+    buttonColor: "grey-6",
+    textColor: "grey-9",
+  },
+}
+
+const buttonColor = computed(() => {
+  const colours = buttonColors[q.dark.isActive]
+  return colours
 })
 
 const invoiceLabels = {
@@ -429,5 +486,38 @@ function toggleCamera() {
   setTimeout(() => {
     cameraShow.value = cameraOn.value
   }, 500)
+}
+
+async function payInvoice(val) {
+  // Pay the invoice using Hive Keychain
+  console.log("payInvoice", val)
+  const currency = val
+  let amount = 0
+  if (currency == "HIVE") {
+    amount = parseFloat(Hive.value) + 1
+  } else if (currency == "HBD") {
+    amount = parseFloat(HBD.value) + 1
+  }
+  const memo = `${dInvoice.value.paymentRequest} 2.v4v.app`
+  console.log("memo, amount, currency ", memo, amount, currency)
+  const result = await useHiveKeychainTransfer(null, amount, currency, memo)
+  console.log("result", result)
+  console.log("username: ", result.data.username)
+  if (result.success) {
+    q.notify({
+      color: "positive",
+      timeout: 2000,
+      message: "Payment successful",
+      position: "top",
+    })
+    clearReset()
+  } else {
+    q.notify({
+      color: "negative",
+      timeout: 2000,
+      message: result.message,
+      position: "top",
+    })
+  }
 }
 </script>
