@@ -504,12 +504,6 @@ async function payInvoice(val) {
   console.log("memo, amount, currency ", memo, amount, currency)
   // replace null with logged in user
   const result = await useHiveKeychainTransfer(null, amount, currency, memo)
-  console.log("result", result.data)
-  console.log("username: ", result.data.username)
-  console.log("trx_id: ", result.result.id)
-
-  // const transactions = await useGetHiveTransactionHistory(result.data.username)
-  const transactions = await useGetHiveTransactionHistory("v4vapp.dev")
 
   if (result.success) {
     q.notify({
@@ -544,13 +538,13 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
     }
     return
   }
-  const memo = transaction_found.op[1].memo
+  const memo =  `Transfer: ${transaction_found.op[1].amount}\n${transaction_found.op[1].memo}`
   console.log("transaction found ", trx_id)
   console.log("memo", memo)
   clearReset()
   q.notify({
     color: "positive",
-    timeout: 5000,
+    timeout: 10000,
     message: memo,
     position: "top",
   })
