@@ -249,8 +249,9 @@ export async function useGetHiveTransactionHistory(
       limit,
       4
     ])
-    const transfers = history.result.filter((item) => item[1].op[0] === "transfer")
-    return transfers.reverse()
+    return history.result.reverse()
+    // const transfers = history.result.filter((item) => item[1].op[0] === "transfer")
+    // return transfers.reverse()
   } catch (error) {
     console.log({ error })
     return null

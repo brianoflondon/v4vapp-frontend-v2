@@ -43,6 +43,7 @@
               :bg-color="invoiceColor"
               @keyup.esc="clearReset"
               :hint="invoiceHint"
+              hide-bottom-space
             >
             </q-input>
           </div>
@@ -57,7 +58,7 @@
           </div>
         </div>
       </div>
-      <div class="amounts-display flex justify-evenly">
+      <div v-if="false" class="amounts-display flex justify-evenly">
         <div class="q-pa-xs input-amount-readonly">
           <q-input
             readonly
@@ -92,10 +93,10 @@
     </div>
     <div
       v-if="invoiceValid"
-      class="row flex-center q-gutter-lg q-pt-md keychain-button"
+      class="row flex-center q-gutter-lg q-pt-md payment-button"
     >
       <q-btn
-        class="keychain-button-hive"
+        class="payment-button-hive"
         @click="payInvoice((value = 'HIVE'))"
         :loading="storeApiStatus.payInvoice"
         :disable="storeApiStatus.payInvoice"
@@ -108,7 +109,7 @@
         rounded
       />
       <q-btn
-        class="keychain-button-hbd"
+        class="payment-button-hbd"
         @click="payInvoice((value = 'HBD'))"
         :loading="storeApiStatus.payInvoice"
         :disable="storeApiStatus.payInvoice"
@@ -157,7 +158,7 @@ div {
 
 <script setup>
 import { computed, ref, onMounted } from "vue"
-import * as bolt11 from "src/assets/bolt11.min.js"
+// import * as bolt11 from "src/assets/bolt11.min.js"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { QrcodeStream } from "qrcode-reader-vue3"
@@ -195,14 +196,16 @@ onMounted(() => {
 
 let countTimer = null
 
+// Invoice hint shows expiry time and sats costs and fee
 const invoiceHint = computed(() => {
   if (!invoiceValid.value) {
     return t("invoice_hint")
   } else {
     if (invoiceValid.value && dInvoice.value.timeLeft > 1) {
-      return `${t("invoice")} ${t("expires")} ${formatTime(
-        dInvoice.value.timeLeft
-      )}`
+      const message = `${t("invoice")} ${sats.value} (${t("fee")}: ${
+        satsFee.value
+      }) - ${t("expires")} ${formatTime(dInvoice.value.timeLeft)}`
+      return message
     }
     return t("invoice_hint")
   }
@@ -258,10 +261,19 @@ const sats = computed(() => {
   return "---"
 })
 
+const satsFee = computed(() => {
+  if (dInvoice.value?.millisatoshis) {
+    const sats = dInvoice.value?.millisatoshis / 1000
+    const satsFee = (calcSatsFee(sats) - sats).toFixed(0)
+    return tidyNumber(satsFee)
+  }
+  return "---"
+})
+
 function calcSatsFee(sats) {
   let satsWithFees = sats
-  satsWithFees += storeApiStatus.apiStatus.config.conv_fee_sats
   satsWithFees *= 1 + storeApiStatus.apiStatus.config.conv_fee_percent
+  satsWithFees += storeApiStatus.apiStatus.config.conv_fee_sats
   return satsWithFees
 }
 
@@ -390,6 +402,8 @@ function onDecode(content) {
 }
 
 async function decodeInvoice() {
+  invoiceChecking.value = true
+  invoiceValid.value = null
   if (!invoiceText.value) {
     clearReset()
     return true
@@ -407,6 +421,7 @@ async function decodeInvoice() {
     // decode the invoice
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
     if (dInvoice.value) {
+      console.log("dInvoice.value", dInvoice.value)
       invoiceValid.value = true
       invoiceChecking.value = false
       cameraOn.value = false
@@ -414,6 +429,9 @@ async function decodeInvoice() {
       checkExpiry()
       if (invoiceType() === "lightningAddress") {
         // need to ask for details including amount
+        // make sure we clear any earlier errors
+        invoiceValid.value = null
+        errorMessage.value = ""
         dInvoice.value.askDetails = true
         return
       } else {
@@ -437,6 +455,7 @@ async function decodeInvoice() {
     }
     errorMessage.value = t("invalid_invoice")
     invoiceValid.value = false
+    invoiceChecking.value = false
   } catch (e) {
     invoiceValid.value = false
     invoiceChecking.value = false
@@ -538,7 +557,7 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
     }
     return
   }
-  const memo =  `Transfer: ${transaction_found.op[1].amount}\n${transaction_found.op[1].memo}`
+  const memo = `Transfer: ${transaction_found.op[1].amount}\n${transaction_found.op[1].memo}`
   console.log("transaction found ", trx_id)
   console.log("memo", memo)
   clearReset()
@@ -550,6 +569,13 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
   })
 }
 
+/**
+ * Finds the object in the 'data' array that occurs before the object with the specified 'target_trx_id'.
+ *
+ * @param {Array} data - The array of objects to search.
+ * @param {string} target_trx_id - The transaction ID to search for.
+ * @returns {Object|null} - The object that occurs before the target object, or null if not found.
+ */
 function findObjectBefore(data, target_trx_id) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][1].trx_id === target_trx_id) {

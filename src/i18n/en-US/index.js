@@ -12,6 +12,7 @@ export default {
   hours: "hours",
   minutes: "minutes",
   seconds: "seconds",
+  fee: "fee",
 
   // Keychain
   keychain_installed: "Keychain is Installed",
