@@ -125,8 +125,10 @@
     <div v-if="cameraShow">
       <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
     </div>
-    <div>
-      <pre>{{ dInvoice }}</pre>
+    <div class="flex q-pt-md flex-center column">
+      <div class="progress-screen">
+        <ShowProgress v-model="dInvoice" />
+      </div>
     </div>
     <AskDetailsDialog
       v-model="dInvoice"
@@ -171,6 +173,7 @@ import {
   useGetHiveTransactionHistory,
 } from "src/use/useHive.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
+import ShowProgress from "components/lightning/ShowProgress.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 
@@ -512,6 +515,8 @@ function toggleCamera() {
 async function payInvoice(val) {
   // Pay the invoice using Hive Keychain
   console.log("payInvoice", val)
+  dInvoice.value.progress = []
+  dInvoice.value.progress.push("Starting to paying the invoice...")
   const currency = val
   let amount = 0
   if (currency == "HIVE") {

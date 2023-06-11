@@ -92,13 +92,12 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn
-            flat
             :label="$t('cancel')"
             color="primary"
             v-close-popup
+            tabindex="4"
           ></q-btn>
           <q-btn
-            flat
             :label="$t('ok')"
             color="primary"
             @click="createInvoice"
@@ -131,7 +130,6 @@ const amounts = ref({
 })
 
 function showDialog() {
-  console.log("showDialog, dInvoice.value.v4vapp.amountToSend")
   if (dInvoice.value.v4vapp.amountToSend) {
     updateAmounts(dInvoice.value.v4vapp.amountToSend, "sats")
   }
@@ -141,13 +139,11 @@ function updateAmounts(amount, currency) {
   if (amount === "") {
     amount = "1"
   }
-  console.log("updateAmounts, amount, currency", amount, currency)
   // strip out all the commas
   // check if amount is a string
   if (typeof amount === "string") {
     amount = parseFloat(amount.replace(/,/g, ""), 10)
   }
-  console.log("updateAmounts, amount, currency", amount, currency)
   let sats, hive, hbd
 
   switch (currency) {
@@ -175,15 +171,10 @@ function updateAmounts(amount, currency) {
       return
   }
   dInvoice.value.v4vapp.amountToSend = parseInt(sats)
-  console.log("Sats amount: ", sats)
-  console.log(dInvoice.value.v4vapp.metadata.minSats)
-  console.log(dInvoice.value.v4vapp.metadata.maxSats)
   if (sats < dInvoice.value.v4vapp.metadata.minSats) {
-    console.log("amounts.value.sats < dInvoice.value.metadata.minSats")
     errorMessage.value = t("too_low")
     errorState.value = true
   } else if (sats > dInvoice.value.v4vapp.metadata.maxSats) {
-    console.log("amounts.value.sats > dInvoice.value.metadata.maxSats")
     errorMessage.value = t("too_high")
     errorState.value = true
   } else {
@@ -203,11 +194,6 @@ const vAutofocus = {
 }
 
 async function createInvoice() {
-  console.log(
-    "createInvoice",
-    dInvoice.value.v4vapp.amountToSend,
-    dInvoice.value.v4vapp?.comment
-  )
   try {
     dInvoice.value.v4vapp.amountToSend = Math.round(
       dInvoice.value.v4vapp.amountToSend
@@ -217,10 +203,8 @@ async function createInvoice() {
       dInvoice.value.v4vapp.amountToSend,
       dInvoice.value.v4vapp?.comment
     )
-    console.log("response", response)
     dInvoice.value.askDetails = false
     dInvoice.value.callback = response
-    console.log('emit("newInvoice", response)', response)
     emit("newInvoice", response)
   } catch (error) {
     console.log("error", error)
