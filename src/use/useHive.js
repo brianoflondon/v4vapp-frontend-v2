@@ -247,7 +247,8 @@ export async function useGetHiveTransactionHistory(
       hiveAccname,
       start,
       limit,
-      4
+      opFilterLow,
+      opFilterHigh,
     ])
     return history.result.reverse()
     // const transfers = history.result.filter((item) => item[1].op[0] === "transfer")

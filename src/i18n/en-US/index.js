@@ -65,6 +65,7 @@ export default {
   invoice_expired: "Invoice has expired",
   self_payment: "Can't send to v4v.app",
   invoice_hint: "Paste an invoice or scan a QR code",
+  waiting_for: "Waiting for reply transaction to appear on Hive blockchain",
 
   // Ask Details dialog
   asking_details: "You are about to pay:",

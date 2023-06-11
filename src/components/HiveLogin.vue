@@ -120,6 +120,7 @@ async function login(username) {
       console.log("hiveAccObj", hiveAccObj)
       note({
         icon: "done", // we add an icon
+        avatar: avatarUrl,
         html: true,
         spinner: false, // we reset the spinner setting so the icon can be displayed
         multiLine: true,

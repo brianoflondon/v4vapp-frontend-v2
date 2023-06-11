@@ -191,7 +191,7 @@ const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 
 onMounted(() => {
-  // checkExpiry()
+  // console.log("mounted")
 })
 
 let countTimer = null
@@ -525,17 +525,20 @@ async function payInvoice(val) {
   const result = await useHiveKeychainTransfer(null, amount, currency, memo)
 
   if (result.success) {
-    q.notify({
+    const notif = q.notify({
+      avatar: "site-logo/v4vapp-logo.svg",
       color: "positive",
-      timeout: 2000,
+      group: false,
+      timeout: 0,
       message: result.message,
       position: "top",
     })
     clearReset()
-    checkHiveTransaction(result.data.username, result.result.id)
+    checkHiveTransaction(result.data.username, result.result.id, notif)
   } else {
-    q.notify({
+    notif({
       color: "negative",
+      avatar: "site-logo/v4vapp-logo.svg",
       timeout: 2000,
       message: result.message,
       position: "top",
@@ -543,7 +546,7 @@ async function payInvoice(val) {
   }
 }
 
-async function checkHiveTransaction(username, trx_id, count = 0) {
+async function checkHiveTransaction(username, trx_id, notif, count = 0) {
   // wait 5 seconds then check for a transaction
   count += 1
   await new Promise((resolve) => setTimeout(resolve, 5000))
@@ -553,20 +556,28 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
   if (!transaction_found) {
     console.log("transaction not found ", trx_id, count)
     if (count < 20) {
-      await checkHiveTransaction(username, trx_id, count)
+      notif({
+        color: "positive",
+        avatar: "site-logo/v4vapp-logo.svg",
+        timeout: 0,
+        message: `${t("waiting_for")} ${count}/20`,
+        position: "top",
+      })
+      await checkHiveTransaction(username, trx_id, notif, count)
     }
     return
   }
   const memo = `Transfer: ${transaction_found.op[1].amount}\n${transaction_found.op[1].memo}`
   console.log("transaction found ", trx_id)
   console.log("memo", memo)
-  clearReset()
-  q.notify({
+  notif({
     color: "positive",
+    avatar: "site-logo/v4vapp-logo.svg",
     timeout: 10000,
     message: memo,
     position: "top",
   })
+  clearReset()
 }
 
 /**
