@@ -536,7 +536,7 @@ async function payInvoice(val) {
     clearReset()
     checkHiveTransaction(result.data.username, result.result.id, notif)
   } else {
-    notif({
+    q.notify({
       color: "negative",
       avatar: "site-logo/v4vapp-logo.svg",
       timeout: 2000,

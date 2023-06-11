@@ -35,8 +35,10 @@
                 v-autofocus
                 :input-style="{ 'text-align': 'right' }"
                 @update:model-value="(val) => updateAmounts(val, 'sats')"
+                @keyup.enter="createInvoice"
                 :error-message="errorMessage"
                 :error="errorState"
+                tabindex="1"
               />
             </div>
             <!-- USD INPUT -->
@@ -78,6 +80,7 @@
             label="Comment"
             type="text"
             counter
+            tabindex="2"
             :rules="[
               (val) =>
                 val.length <= dInvoice?.v4vapp?.metadata?.commentLength ||
@@ -100,6 +103,7 @@
             color="primary"
             @click="createInvoice"
             :disabled="errorState"
+            tabindex="3"
           ></q-btn>
         </q-card-actions>
       </q-card>
