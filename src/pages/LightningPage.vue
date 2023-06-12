@@ -8,11 +8,12 @@
               <q-toggle
                 v-model="cameraOn"
                 @update:model-value="toggleCamera()"
-                icon="photo_camera"
+                icon="qr_code"
                 size="xl"
                 color="primary"
                 dense
                 flat
+                toggle-aria-label="Capture QR code with your camera"
               />
             </div>
             <q-btn
@@ -20,21 +21,24 @@
               icon="content_paste_go"
               color="primary"
               size="md"
-              round
+              rounded
+              :label="t('paste')"
+              toggle-aria-label="Paste in a Lightning invoice from your clipboard"
             />
           </div>
           <div class="column flex-center q-pt-sm q-px-sm">
             <q-input
-              class="invoice-input"
-              v-model="invoiceText"
-              type="textarea"
-              name="invoice"
-              @clear="clearReset"
-              :placeholder="$t('enter_invoice')"
-              :label="invoiceLabel"
-              debounce="500"
-              filled
               for="invoice"
+              name="invoice"
+              class="invoice-input"
+              :label="invoiceLabel"
+              data-1p-ignore
+              v-model="invoiceText"
+              @clear="clearReset"
+              autogrow
+              :placeholder="$t('enter_invoice')"
+              debounce="1000"
+              filled
               :loading="invoiceChecking"
               clearable
               @update:model-value="decodeInvoice"
@@ -45,6 +49,10 @@
               :hint="invoiceHint"
               hide-bottom-space
             >
+              <!--
+              hide-bottom-space: stops the animation for the hint text
+
+            -->
             </q-input>
           </div>
           <div v-if="countdownTimer > 0" class="q-pt-sm">
@@ -126,7 +134,7 @@
       <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
     </div>
     <div class="flex q-pt-md flex-center column">
-      <div class="progress-screen">
+      <div v-if="false" class="progress-screen">
         <ShowProgress v-model="dInvoice" />
       </div>
     </div>
