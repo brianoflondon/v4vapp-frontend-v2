@@ -24,7 +24,9 @@
         </q-card-section>
       </div>
       <q-card-section class="text-center">
-        <p><strong>{{ $t("please_vote") }}</strong></p>
+        <p>
+          <strong>{{ $t("please_vote") }}</strong>
+        </p>
         <div class="q-pa-md">
           {{ $t("vote_for_proposal") }} {{ modelValue.proposalId }}
           {{ $t("and") }} {{ $t("witness") }} {{ $t("please") }}
@@ -50,7 +52,10 @@
 import { ref } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { KeychainSDK } from "keychain-sdk"
-
+import { useQuasar } from "quasar"
+import { useI18n } from "vue-i18n"
+const t = useI18n().t
+const q = useQuasar()
 const showThankYou = ref(false)
 
 const modelValue = defineModel({
@@ -91,16 +96,18 @@ async function doVotes() {
   if (hiveAccname.value.value) {
     username = hiveAccname.value.value
   }
-  const witnessVoted = false
-  const proposalVoted = false
+  console.log("username: ", { username })
+  console.log()
+  let witnessVoted = false
+  let proposalVoted = false
   try {
     const keychain = new KeychainSDK(window)
     const formParamsAsObject = {
       data: {
         username: username,
-        proposal_ids: modelValue.proposalId,
+        proposal_ids: [modelValue.value.proposalId],
         approve: true,
-        extensions: modelValue.proposalId,
+        extensions: [modelValue.value.proposalId],
       },
     }
     const updateproposalvote = await keychain.updateProposalVote(
@@ -127,9 +134,9 @@ async function doVotes() {
   } catch (error) {
     console.log({ error })
   }
-  if (witnessVoted && proposalVoted) {
+  if (witnessVoted || proposalVoted) {
     q.notify({
-      message: $t("thank_you_for_voting"),
+      message: t("thank_you_for_voting"),
       type: "positive",
       position: "bottom",
       timeout: 5000,
