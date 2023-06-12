@@ -5,7 +5,6 @@
     hide-selected
     use-input
     fill-input
-    clearable
     input-debounce="500"
     spellcheck="false"
     :label="modelValue?.caption ? modelValue.caption : label"
@@ -17,7 +16,7 @@
     @keydown.esc="escFn"
     @input-value="inputFn"
   >
-    <template v-slot:before>
+    <template v-slot:prepend>
       <q-avatar rounded size="md">
         <HiveAvatar :hiveAccname="avatarName" />
       </q-avatar>
@@ -40,6 +39,14 @@
         </q-item-section>
       </q-item>
     </template>
+    <!-- Use my Own code for the clearable button -->
+    <template v-if="modelValue" v-slot:append>
+      <q-icon
+        name="cancel"
+        @click.stop.prevent="escFn"
+        class="cursor-pointer"
+      />
+    </template>
   </q-select>
 </template>
 
@@ -48,7 +55,7 @@
  * SelectHiveAcc
  * A select component for picking Hive accounts
  *
- * @defineModel (object)
+ * @defineModel {object} modelValue - The selected value of the q-select
  * @props {string} label - The prompt label to show in the Select box
  * @props {number} maxOptions - Default: 10 - Maximum number of options to show in the dropdown
  * @props {string} size - Default: small - small, medium, large size of the avatar
@@ -60,14 +67,13 @@ import { useI18n } from "vue-i18n"
 import {
   useLoadHiveAccountsReputation,
   useBlankProfileURL,
-  useHiveAvatarURL,
   useHiveProfile,
 } from "src/use/useHive"
 
 const t = useI18n().t
 
 const options = ref([])
-const modelValue = defineModel()
+const modelValue = defineModel({ label: "", value: "", caption: "" })
 const avatarName = ref("")
 const props = defineProps({
   label: {
@@ -89,18 +95,12 @@ const props = defineProps({
 })
 
 function enterFn(input) {
-  // If Enter or tab is pressed before selecting from the options, the first option is selected
   console.log("enterFn", input)
-  // if (!modelValue.value && options.value.length > 0) {
-  //   modelValue.value = options.value[0]
-  //   avatarName.value = options.value[0].label
-  // }
-  // console.log("enterFn", modelValue.value)
 }
 
 function escFn(input) {
   // If Esc is pressed, the model is cleared
-  modelValue.value = ""
+  modelValue.value = { label: "", value: "", caption: "" }
 }
 
 function inputFn(input) {

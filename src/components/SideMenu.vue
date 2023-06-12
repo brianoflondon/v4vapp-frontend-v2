@@ -40,10 +40,10 @@ const hiveAccObj = ref()
 const t = useI18n().t
 const linkList = ref([
   {
-    title: t("home"),
-    caption: t("home"),
-    icon: "home",
-    link: "/",
+    title: t("lightning"),
+    caption: t("lightning"),
+    icon: "fa-sharp fa-solid fa-bolt",
+    link: "/lnd",
   },
   {
     title: t("status"),

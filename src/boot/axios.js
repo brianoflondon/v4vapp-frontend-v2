@@ -8,6 +8,10 @@ import axios from "axios"
 // "export default () => {}" function below (which runs individually
 // for each client)
 
+// My Lightning Node address to prevent self-payment
+const myNodePubKey =
+  "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
+
 const apiURL = "https://api.v4v.app/v1"
 // const apiURL = "http://127.0.0.1:1818/v1"
 
@@ -25,4 +29,4 @@ export default boot(({ app }) => {
   //       so you can easily perform requests against your app's API
 })
 
-export { axios, api, apiURL }
+export { axios, api, apiURL, myNodePubKey }

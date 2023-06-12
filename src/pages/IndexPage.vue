@@ -13,13 +13,16 @@
         {{ $t("index_page_message") }}
         <a href="https://peakd.com/created/v4vapp-v2">Hive</a>
       </q-card-section>
-      <div class="image-container">
+      <div>
         <a href="https://peakd.com/created/v4vapp-v2">
-          <div v-if="hiveAccname">
-            <HiveAvatar :hiveAccname="hiveAccname" size="large" />
-          </div>
-          <div v-else>
+          <div class="image-container">
+            <HiveAvatar
+              v-if="hiveAccname"
+              :hiveAccname="hiveAccname"
+              size="large"
+            />
             <q-img
+              v-if="!hiveAccname"
               alt="V4V.app v2 Quasar Stars"
               src="~assets/general-images/v4vapp-v2-quasar-stars.webp"
             />
@@ -54,5 +57,6 @@ const hiveAvatar = computed(() => {
 
 .image-container img
   width: 100%
-  height: auto
+  height: 100%
+  object-fit: cover
 </style>
