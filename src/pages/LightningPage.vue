@@ -134,7 +134,7 @@
       <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
     </div>
     <div class="flex q-pt-md flex-center column">
-      <div v-if="false" class="progress-screen">
+      <div v-if="true" class="progress-screen">
         <ShowProgress v-model="dInvoice" />
       </div>
     </div>
@@ -142,6 +142,9 @@
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
     />
+    <div class="q-pa-lg text-center">
+      <VoteProposal v-model="voteOptions" />
+    </div>
   </q-page>
 </template>
 
@@ -182,6 +185,7 @@ import {
 } from "src/use/useHive.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import ShowProgress from "components/lightning/ShowProgress.vue"
+import VoteProposal from "components/utils/VoteProposal.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 
@@ -192,6 +196,11 @@ const dInvoice = ref(null)
 const callbackResult = ref(null)
 const errorMessage = ref("")
 const countdownTimer = ref()
+const voteOptions = ref({
+  hiveUser: "",
+  showButton: true,
+  showDialog: false,
+})
 
 const cameraOn = ref(false)
 const cameraShow = ref(false)
@@ -403,6 +412,7 @@ function clearReset() {
   invoiceValid.value = null
   invoiceChecking.value = false
   dInvoice.value = {}
+  dInvoice.value.progress = []
   cameraOn.value = false
   cameraShow.value = false
 }
@@ -432,7 +442,7 @@ async function decodeInvoice() {
     // decode the invoice
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
     if (dInvoice.value) {
-      console.log("dInvoice.value", dInvoice.value)
+      dInvoice.value.progress = []
       invoiceValid.value = true
       invoiceChecking.value = false
       cameraOn.value = false
@@ -450,7 +460,6 @@ async function decodeInvoice() {
           errorMessage.value = dInvoice.value?.errors.text
             .map((error) => t(error))
             .join(", ")
-
           q.notify({
             color: "negative",
             timeout: 2000,
@@ -514,7 +523,7 @@ const onInitCamera = async (promise) => {
 }
 
 function toggleCamera() {
-  invoiceChecking.value = true
+  invoiceChecking.value = !invoiceChecking.value
   setTimeout(() => {
     cameraShow.value = cameraOn.value
   }, 500)
@@ -523,8 +532,6 @@ function toggleCamera() {
 async function payInvoice(val) {
   // Pay the invoice using Hive Keychain
   console.log("payInvoice", val)
-  dInvoice.value.progress = []
-  dInvoice.value.progress.push("Starting to paying the invoice...")
   const currency = val
   let amount = 0
   if (currency == "HIVE") {
@@ -533,7 +540,7 @@ async function payInvoice(val) {
     amount = parseFloat(HBD.value) + 1
   }
   const memo = `${dInvoice.value.paymentRequest} 2.v4v.app`
-  console.log("memo, amount, currency ", memo, amount, currency)
+  dInvoice.value.progress.push(`Requesting ${amount} ${currency}`)
   // replace null with logged in user
   const result = await useHiveKeychainTransfer(null, amount, currency, memo)
 
@@ -546,9 +553,12 @@ async function payInvoice(val) {
       message: result.message,
       position: "top",
     })
-    clearReset()
+    dInvoice.value.progress.push(result.message)
+    // Set the username for the Voting Button
+    voteOptions.value.hiveUser = result.data.username
     checkHiveTransaction(result.data.username, result.result.id, notif)
   } else {
+    dInvoice.value.progress.push(result.message)
     q.notify({
       color: "negative",
       avatar: "site-logo/v4vapp-logo.svg",
@@ -567,13 +577,14 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
   const transaction_found = findObjectBefore(transactions, trx_id)
   console.log("transaction_found", transaction_found)
   if (!transaction_found) {
-    console.log("transaction not found ", trx_id, count)
     if (count < 20) {
+      const message = `${t("waiting_for")} ${count}/20`
+      dInvoice.value.progress.push(message)
       notif({
         color: "positive",
         avatar: "site-logo/v4vapp-logo.svg",
         timeout: 0,
-        message: `${t("waiting_for")} ${count}/20`,
+        message: message,
         position: "top",
       })
       await checkHiveTransaction(username, trx_id, notif, count)
@@ -581,8 +592,7 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
     return
   }
   const memo = `Transfer: ${transaction_found.op[1].amount}\n${transaction_found.op[1].memo}`
-  console.log("transaction found ", trx_id)
-  console.log("memo", memo)
+  dInvoice.value.progress.push(memo)
   notif({
     color: "positive",
     avatar: "site-logo/v4vapp-logo.svg",
@@ -590,7 +600,7 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
     message: memo,
     position: "top",
   })
-  clearReset()
+  voteOptions.value.showDialog = true
 }
 
 /**

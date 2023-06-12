@@ -5,6 +5,7 @@ export default {
   // General
   loading: "Loading ...",
   error: "Error",
+  paste: "Paste",
   required: "Required",
   ok: "OK",
   cancel: "Cancel",
@@ -13,6 +14,11 @@ export default {
   minutes: "minutes",
   seconds: "seconds",
   fee: "fee",
+  vote: "Vote",
+  vote_for_proposal: "Vote DHF for proposal",
+  please: "Please",
+  and: "and",
+  witness: "My Hive Witness",
 
   // Keychain
   keychain_installed: "Keychain is Installed",
@@ -29,7 +35,7 @@ export default {
 
   // Login
   keychain_not_installed: "Keychain is not installed",
-  enter_hive_account: "Give Hive Account Name to Login",
+  enter_hive_account: "Please enter you Hive Account name",
   hive_login: "Hive Login",
   login: "Login",
   login_as: "Login as",
@@ -66,6 +72,11 @@ export default {
   self_payment: "Can't send to v4v.app",
   invoice_hint: "Paste an invoice or scan a QR code",
   waiting_for: "Waiting for reply transaction to appear on Hive blockchain",
+
+  // Please vote
+  please_vote:
+    "If you're using V4V.app and find it useful, please consider voting for both my proposal for ongoing maintenance and my witness. This really helps me keep the service operating. Thank you!",
+  thank_you_for_voting: "Thank you for voting!",
 
   // Ask Details dialog
   asking_details: "You are about to pay:",

@@ -3,7 +3,7 @@
     <div>
       <div v-if="hiveAccname">{{ hiveAccname }}</div>
       <div v-else>Default Value</div>
-      <div v-if="hiveAccname">{{ hiveAccname }}</div>
+      <div v-if="hiveAccname?.value">{{ hiveAccname.value }}</div>
       <div v-else>Default Value</div>
     </div>
     <div class="q-pa-md row items-start q-gutter-md">
