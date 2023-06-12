@@ -1,28 +1,23 @@
 <template>
   <div>
     <div class="q-pa-md">
-      <HiveLogin v-model="hiveAccObj" :label="label" />
+      <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
-
     <q-list>
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
     </q-list>
-    <div v-if="hiveDetails?.profile?.name">
-      <q-item-label header> {{ hiveDetails.profile.name }} </q-item-label>
-    </div>
-    <div v-if="hiveDetails?.profile?.about">
-      <q-item-label header> {{ hiveDetails.profile.about }} </q-item-label>
-    </div>
-    <div v-if="hiveDetails?.profile?.location">
-      <q-item-label header> {{ hiveDetails.profile.location }} </q-item-label>
-    </div>
-    <div>
-      <q-item>
-        <q-avatar size="200px" class="hive-avatar-large">
-          <HiveAvatar :hiveAccname="hiveUsername" size="large" />
-        </q-avatar>
+    <q-list v-if="storeUser.users">
+      <q-item v-for="user in storeUser.users" :key="user.hiveAccname">
+        <!-- Content of each q-item -->
+        <!-- You can add your desired content here -->
+        <q-item-section>
+          <q-item-label>{{ user.hiveAccname }}</q-item-label>
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>{{ user?.profile?.name }}</q-item-label>
+        </q-item-section>
       </q-item>
-    </div>
+    </q-list>
   </div>
 </template>
 
@@ -33,7 +28,10 @@ import EssentialLink from "components/EssentialLink.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useHiveDetails, useHiveAvatarURL } from "src/use/useHive.js"
 import HiveLogin from "components/HiveLogin.vue"
+import { useStoreUser } from "src/stores/storeUser"
 import "src/assets/hive-tx.min.js"
+
+const storeUser = useStoreUser()
 
 const hiveAccObj = ref()
 

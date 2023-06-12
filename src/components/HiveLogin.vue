@@ -14,7 +14,11 @@
       </q-item>
       <q-item dense>
         <q-btn
-          :disable="hiveAccObj === '' || hiveAccObj === null"
+          :disable="
+            typeof hiveAccObj === 'undefined' ||
+            hiveAccObj === '' ||
+            hiveAccObj === null
+          "
           flat
           :label="t('hive_keychain')"
           icon="img:keychain/hive-keychain-round.svg"
@@ -39,7 +43,8 @@
  * Checks for Valid ability to sign a message with Hive Key.
  *
  * PROPS
- * hiveAccObj: Object - Object with Hive Account Name and Avatar URL
+ * hiveAccObj: string - Object with Hive Account Name
+ * keyType
  * label: String - Label for the HiveSelectFancyAcc
  *
  */
@@ -54,8 +59,10 @@ import {
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
+import { useStoreUser } from "src/stores/storeUser"
 
-const hiveAccObj = defineModel()
+const storeUser = useStoreUser()
+const hiveAccObj = defineModel({})
 
 if (Platform.is.mobile) {
   console.log("Running on a mobile device")
@@ -69,6 +76,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  keyType: {
+    type: String,
+    default: "Posting",
+  },
 })
 
 const t = useI18n().t
@@ -76,6 +87,8 @@ const q = useQuasar()
 
 onMounted(async () => {
   isKeychain.value = await useIsHiveKeychainInstalled()
+  console.log("hiveAccObj", hiveAccObj.value)
+  console.log("isKeychain", isKeychain.value)
 })
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -111,13 +124,14 @@ async function login(username) {
     const result = await useHiveKeychainLogin({
       hiveAccname: username,
       message: signMessage,
-      keyType: "Posting",
+      keyType: props.keyType,
     })
     if (result.success && result?.data?.message == signMessage) {
       console.log("result message", result.data.message)
       console.log("result", result)
       hiveAccObj.value["loggedIn"] = true
       console.log("hiveAccObj", hiveAccObj)
+      storeUser.login(username, props.keyType)
       note({
         icon: "done", // we add an icon
         avatar: avatarUrl,

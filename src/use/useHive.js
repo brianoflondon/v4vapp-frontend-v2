@@ -22,7 +22,8 @@ export async function useHiveDetails(hiveAccname) {
   try {
     const res = await hiveTx.call("condenser_api.get_accounts", [[hiveAccname]])
     let hiveDetails = res.result[0]
-    hiveDetails["profile"] = extractProfile(hiveDetails)
+    hiveDetails["profile"] = await extractProfile(hiveDetails)
+    console.log("hiveDetails", hiveDetails)
     return hiveDetails
   } catch (e) {
     return null
@@ -88,15 +89,15 @@ export function useHiveAvatarURL({
 }
 
 // -------- Helper functions --------
-function extractProfile(data) {
+async function extractProfile(data) {
   // Extracts the profile from the posting_json_metadata field or
   // if that doesn't exist checks the profile.
   try {
-    const profile = JSON.parse(data["posting_json_metadata"])["profile"]
+    const profile = await JSON.parse(data["posting_json_metadata"])["profile"]
     return profile
   } catch (e) {
     try {
-      const profile = JSON.parse(data["json_metadata"])["profile"]
+      const profile = await JSON.parse(data["json_metadata"])["profile"]
       return profile
     } catch (e) {
       return null
