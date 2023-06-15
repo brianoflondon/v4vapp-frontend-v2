@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="q-pa-md">
+      <UserList />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
     <div class="text-center q-pa-md">
@@ -9,21 +10,6 @@
     <q-list>
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
     </q-list>
-    <q-list v-if="storeUser.users">
-      <q-item v-for="user in storeUser.users" :key="user.hiveAccname">
-        <!-- Content of each q-item -->
-        <!-- You can add your desired content here -->
-        <q-item-section>
-          <q-item-label>{{ user.hiveAccname }}</q-item-label>
-        </q-item-section>
-        <q-item-section>
-          <q-item-label>{{ user?.profile?.name }}</q-item-label>
-        </q-item-section>
-      </q-item>
-    </q-list>
-    <pre>
-      {{ storeUser.users }}
-    </pre>
   </div>
 </template>
 
@@ -31,12 +17,12 @@
 import { ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
+import UserList from "components/hive/UserList.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useHiveDetails, useHiveAvatarURL } from "src/use/useHive.js"
 import HiveLogin from "components/HiveLogin.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import "src/assets/hive-tx.min.js"
-import { store } from "quasar/wrappers"
 
 const storeUser = useStoreUser()
 

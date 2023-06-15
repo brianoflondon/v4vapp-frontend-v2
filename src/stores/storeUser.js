@@ -114,6 +114,17 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.log(err)
       }
     },
+    switchUser(hiveAccname) {
+      try {
+        if (hiveAccname in this.users) {
+          this.currentUser = hiveAccname
+          // test if login is still valid
+          this.update()
+        }
+      } catch (err) {
+        console.log(err)
+      }
+    },
     async logout() {
       if (this.currentUser in this.users) {
         delete this.users[this.currentUser]
