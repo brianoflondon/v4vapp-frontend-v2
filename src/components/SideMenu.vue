@@ -18,6 +18,9 @@
         </q-item-section>
       </q-item>
     </q-list>
+    <pre>
+      {{ storeUser.users }}
+    </pre>
   </div>
 </template>
 
@@ -30,6 +33,7 @@ import { useHiveDetails, useHiveAvatarURL } from "src/use/useHive.js"
 import HiveLogin from "components/HiveLogin.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import "src/assets/hive-tx.min.js"
+import { store } from "quasar/wrappers"
 
 const storeUser = useStoreUser()
 

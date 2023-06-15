@@ -1,6 +1,7 @@
 <template>
   <q-page>
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
+      <CreditCard />
       <div class="camera-toggle-invoice">
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
@@ -64,72 +65,77 @@
             >
             </q-linear-progress>
           </div>
+          <div v-show="false" class="amounts-display flex justify-evenly">
+            <div class="q-pa-xs input-amount-readonly">
+              <q-input
+                readonly
+                input-class="text-right"
+                dense
+                filled
+                v-model="sats"
+                label="Sats"
+              ></q-input>
+            </div>
+            <div class="q-pa-xs input-amount-readonly">
+              <q-input
+                readonly
+                input-class="text-right"
+                dense
+                filled
+                v-model="HBD"
+                label="HBD"
+              ></q-input>
+            </div>
+            <div class="q-pa-xs input-amount-readonly">
+              <q-input
+                readonly
+                input-class="text-right"
+                dense
+                filled
+                v-model="Hive"
+                label="Hive"
+              ></q-input>
+            </div>
+          </div>
         </div>
-      </div>
-      <div v-if="false" class="amounts-display flex justify-evenly">
-        <div class="q-pa-xs input-amount-readonly">
-          <q-input
-            readonly
-            input-class="text-right"
-            dense
-            filled
-            v-model="sats"
-            label="Sats"
-          ></q-input>
+
+        <div
+          class="payment-buttons row flex-center q-gutter-lg q-pt-md"
+          v-show="invoiceValid"
+        >
+          <q-btn
+            class="payment-button-hive"
+            @click="payInvoice((value = 'HIVE'))"
+            :loading="storeApiStatus.payInvoice"
+            :disable="storeApiStatus.payInvoice"
+            icon="img:keychain/hive-keychain-round.svg"
+            icon-right="img:avatars/hive_logo_dark.svg"
+            :label="Hive"
+            :color="buttonColor.buttonColor"
+            :text-color="buttonColor.textColor"
+            size="md"
+            rounded
+          />
+          <q-btn
+            class="payment-button-hbd"
+            @click="payInvoice((value = 'HBD'))"
+            :loading="storeApiStatus.payInvoice"
+            :disable="storeApiStatus.payInvoice"
+            icon="img:keychain/hive-keychain-round.svg"
+            icon-right="fa-sharp fa-dollar-sign"
+            :label="HBD"
+            :color="buttonColor.buttonColor"
+            :text-color="buttonColor.textColor"
+            size="md"
+            rounded
+          />
         </div>
-        <div class="q-pa-xs input-amount-readonly">
-          <q-input
-            readonly
-            input-class="text-right"
-            dense
-            filled
-            v-model="HBD"
-            label="HBD"
-          ></q-input>
-        </div>
-        <div class="q-pa-xs input-amount-readonly">
-          <q-input
-            readonly
-            input-class="text-right"
-            dense
-            filled
-            v-model="Hive"
-            label="Hive"
-          ></q-input>
+        <div class="vote-button q-pa-lg text-center">
+          <VoteProposal v-model="voteOptions" />
         </div>
       </div>
     </div>
-    <div
-      v-if="invoiceValid"
-      class="row flex-center q-gutter-lg q-pt-md payment-button"
-    >
-      <q-btn
-        class="payment-button-hive"
-        @click="payInvoice((value = 'HIVE'))"
-        :loading="storeApiStatus.payInvoice"
-        :disable="storeApiStatus.payInvoice"
-        icon="img:keychain/hive-keychain-round.svg"
-        icon-right="img:avatars/hive_logo_dark.svg"
-        :label="Hive"
-        :color="buttonColor.buttonColor"
-        :text-color="buttonColor.textColor"
-        size="md"
-        rounded
-      />
-      <q-btn
-        class="payment-button-hbd"
-        @click="payInvoice((value = 'HBD'))"
-        :loading="storeApiStatus.payInvoice"
-        :disable="storeApiStatus.payInvoice"
-        icon="img:keychain/hive-keychain-round.svg"
-        icon-right="fa-sharp fa-dollar-sign"
-        :label="HBD"
-        :color="buttonColor.buttonColor"
-        :text-color="buttonColor.textColor"
-        size="md"
-        rounded
-      />
-    </div>
+
     <div v-if="cameraShow">
       <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
     </div>
@@ -142,9 +148,6 @@
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
     />
-    <div class="q-pa-lg text-center">
-      <VoteProposal v-model="voteOptions" />
-    </div>
   </q-page>
 </template>
 
@@ -188,6 +191,7 @@ import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
+import CreditCard from "components/hive/CreditCard.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
