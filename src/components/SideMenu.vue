@@ -3,6 +3,9 @@
     <div class="q-pa-md">
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
+    <div class="text-center q-pa-md">
+      <q-btn @click="storeUser.logout()" label="Logout" />
+    </div>
     <q-list>
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
     </q-list>

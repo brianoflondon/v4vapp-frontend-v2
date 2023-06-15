@@ -68,15 +68,20 @@ export const useStoreUser = defineStore("useStoreUser", {
       return tidyNumber(balNum)
     },
     satsBalance() {
-      // return a sumation of Hive and HBD in sats
-      if (!this.currentDetails) return '💰💰💰'
-      let hiveTotal = parseFloat(this.currentDetails.balance)
-      console.log("hive", hiveTotal)
-      hiveTotal *= storeAPIStatus.hiveHBDNumber
-      hiveTotal += parseFloat(this.currentDetails.hbd_balance)
-      console.log("HBD", hiveTotal)
-      let satsTotal = hiveTotal * storeAPIStatus.HBDSatsNumber
-      satsTotal = tidyNumber(satsTotal.toFixed(0))
+      // Return the sum of Hive and HBD in sats
+      if (!this.currentDetails) {
+        return "💰💰💰"
+      }
+      const hiveBalance = parseFloat(this.currentDetails.balance)
+      const hbdBalance = parseFloat(this.currentDetails.hbd_balance)
+      if (isNaN(hiveBalance) || isNaN(hbdBalance)) {
+        return "Invalid balance"
+      }
+      const hiveTotal = hiveBalance * storeAPIStatus.hiveHBDNumber
+      const satsTotal = Math.round(
+        hiveTotal * storeAPIStatus.HBDSatsNumber
+      ).toLocaleString()
+
       return satsTotal
     },
   },
@@ -86,7 +91,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       const onOpen = async () => {
         console.log("onOpen in useStoreUser")
         this.currentDetails = await useHiveDetails(this.currentUser)
-        this.currentProfile = this.currentDetails.profile
+        this.currentProfile = this.currentDetails?.profile
       }
       onOpen()
     },
@@ -103,10 +108,19 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.currentUser = hiveAccname
           this.currentDetails = hiveDetails
           this.currentProfile = hiveDetails.profile
+          this.update()
         }
       } catch (err) {
         console.log(err)
       }
+    },
+    async logout() {
+      if (this.currentUser in this.users) {
+        delete this.users[this.currentUser]
+      }
+      this.currentUser = null
+      this.currentDetails = null
+      this.currentProfile = null
     },
   },
   persist: {
