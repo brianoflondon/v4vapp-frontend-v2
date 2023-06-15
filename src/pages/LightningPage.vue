@@ -1,7 +1,12 @@
 <template>
   <q-page>
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
-      <CreditCard />
+      <div v-if="!cameraShow">
+        <CreditCard />
+      </div>
+      <div v-else>
+        <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
+      </div>
       <div class="camera-toggle-invoice">
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
@@ -136,9 +141,6 @@
       </div>
     </div>
 
-    <div v-if="cameraShow">
-      <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
-    </div>
     <div class="flex q-pt-md flex-center column">
       <div v-if="true" class="progress-screen">
         <ShowProgress v-model="dInvoice" />
