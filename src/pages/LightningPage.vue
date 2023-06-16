@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
-      <div v-if="!cameraShow">
+      <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
       </div>
       <div v-else>
@@ -154,10 +154,6 @@
 </template>
 
 <style lang="scss" scoped>
-div {
-  // border: 1px solid green;
-}
-
 .invoice-input,
 .invoice-timer {
   width: 300px;

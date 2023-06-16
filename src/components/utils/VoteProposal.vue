@@ -3,8 +3,7 @@
     <q-btn
       :label="$t('vote')"
       rounded
-      color="yellow"
-      text-color="black"
+      color="primary"
       @click="vote"
     >
       <q-tooltip>
@@ -34,7 +33,7 @@
         <q-btn
           :label="$t('vote')"
           rounded
-          color="yellow"
+          color="primary"
           text-color="black"
           @click="doVotes"
         >
@@ -49,14 +48,17 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { onMounted, ref } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { KeychainSDK } from "keychain-sdk"
+import { useStoreUser } from "src/stores/storeUser"
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
+import { store } from "quasar/wrappers"
 const t = useI18n().t
 const q = useQuasar()
 const showThankYou = ref(false)
+const storeUser = useStoreUser()
 
 const modelValue = defineModel({
   hiveUser: {
@@ -80,6 +82,15 @@ const modelValue = defineModel({
 if (!modelValue.value?.proposalId) {
   modelValue.value.proposalId = "265"
 }
+
+onMounted(() => {
+  console.log('onMounted voteProposal.vue')
+  console.log(storeUser.currentUser)
+  if(storeUser.currentUser) {
+    hiveAccname.value = storeUser.currentUser
+    modelValue.value.hiveUser = storeUser.currentUser
+  }
+})
 
 const hiveAccname = ref({ label: "", value: modelValue.hiveUser, caption: "" })
 
