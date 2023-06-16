@@ -1,11 +1,6 @@
 <template>
   <div v-if="modelValue?.showButton">
-    <q-btn
-      :label="$t('vote')"
-      rounded
-      color="primary"
-      @click="vote"
-    >
+    <q-btn :label="$t('vote')" rounded color="primary" @click="vote">
       <q-tooltip>
         {{ $t("vote_for_proposal") }} {{ modelValue.proposalId }}
         {{ $t("and") }} {{ $t("witness") }} {{ $t("please") }}
@@ -23,6 +18,7 @@
         </q-card-section>
       </div>
       <q-card-section class="text-center">
+        <p>Voting Name: {{ hiveAccname }}</p>
         <p>
           <strong>{{ $t("please_vote") }}</strong>
         </p>
@@ -54,12 +50,12 @@ import { KeychainSDK } from "keychain-sdk"
 import { useStoreUser } from "src/stores/storeUser"
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
-import { store } from "quasar/wrappers"
 const t = useI18n().t
 const q = useQuasar()
 const showThankYou = ref(false)
 const storeUser = useStoreUser()
 
+storeUser.update()
 const modelValue = defineModel({
   hiveUser: {
     type: String,
@@ -84,9 +80,10 @@ if (!modelValue.value?.proposalId) {
 }
 
 onMounted(() => {
-  console.log('onMounted voteProposal.vue')
+  storeUser.update()
+  console.log("onMounted voteProposal.vue")
   console.log(storeUser.currentUser)
-  if(storeUser.currentUser) {
+  if (storeUser.currentUser) {
     hiveAccname.value = storeUser.currentUser
     modelValue.value.hiveUser = storeUser.currentUser
   }
@@ -96,6 +93,11 @@ const hiveAccname = ref({ label: "", value: modelValue.hiveUser, caption: "" })
 
 function vote() {
   console.log("vote")
+  if (storeUser.currentUser) {
+    hiveAccname.value = storeUser.currentUser
+    modelValue.value.hiveUser = storeUser.currentUser
+  }
+  storeUser.update()
   console.log(modelValue.value)
   modelValue.value.showDialog = true
 }

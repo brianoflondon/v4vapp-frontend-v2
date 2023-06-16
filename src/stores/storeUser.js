@@ -121,6 +121,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     switchUser(hiveAccname) {
       try {
+        console.log("switchUser to ", hiveAccname," from ", this.currentUser)
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
           // test if login is still valid
