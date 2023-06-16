@@ -1,11 +1,11 @@
 <template>
-  <div>
-    <q-card v-if="storeUser.currentUser">
+  <div class="q-pb-lg">
+    <q-card width="370px" v-if="storeUser.currentUser" class="q-pa-xs">
       <q-card-section class="credit-card q-pa-xs">
         <q-img
           class="credit-card-aspect-ratio"
           :src="creditCardImage"
-          width="350px"
+          width="360px"
           basic
         >
           <div class="text-overlay">
@@ -32,7 +32,7 @@
                     {{ storeUser.hiveBalance }}
                   </td>
                   <td>
-                    <i class="fa-brands fa-hive" />
+                    <q-icon name="fa-brands fa-hive" />
                   </td>
                 </tr>
                 <tr>
@@ -40,16 +40,19 @@
                     {{ storeUser.hbdBalance }}
                   </td>
                   <td class="q-pl-sm">
-                    <i class="fa-brands fa-hive" style="color: green" />
+                    <q-icon name="img:/avatars/hbd_logo.svg">
+                      <q-tooltip>HBD - Hive Blockchain Dollar</q-tooltip>
+                    </q-icon>
                   </td>
                 </tr>
-
                 <tr>
                   <td class="numeric-cell q-pt-sm">
                     <strong>{{ storeUser.satsBalance }}</strong>
                   </td>
                   <td>
-                    <i class="fa-brands fa-btc" />
+                    <q-icon name="fa-brands fa-btc">
+                      <q-tooltip>BTC equivalent in Sats</q-tooltip>
+                    </q-icon>
                   </td>
                 </tr>
               </div>
@@ -89,7 +92,7 @@ storeUser.update()
   ); /* Set the padding-bottom to achieve the desired aspect ratio */
   background-size: cover;
   border-radius: 12px;
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .text-overlay {

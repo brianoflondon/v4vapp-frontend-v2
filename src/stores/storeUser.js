@@ -2,9 +2,8 @@ import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
 import { useStorage } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
-import { ref } from "vue"
 import { tidyNumber } from "src/use/useUtils.js"
-import { store } from "quasar/wrappers"
+import { formatTimeAgo } from "@vueuse/core"
 
 const storeAPIStatus = useStoreAPIStatus()
 
@@ -29,13 +28,19 @@ export class HiveUser {
     return Date.now() - this.timestamp
   }
 
+  get timeAgo() {
+    const temp = formatTimeAgo(this.loginAge)
+    console.log("timeAgo", temp)
+    return temp
+  }
+
   get allData() {
     return {
       hiveAccname: this.hiveAccname,
       profileName: this.profileName,
       keySelected: this.keySelected,
       timestamp: this.timestamp,
-      loginAge: this.getLoginAge(),
+      loginAge: this.loginAge,
     }
   }
 }
