@@ -139,6 +139,64 @@ export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
   }
 }
 
+// -------- Hive Check proposal votes --------
+export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
+  console.log("useGetHiveProposalVotes -----------------")
+  console.log(hiveAccname)
+  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    return null
+  }
+  let nextPage = true
+  while (nextPage) {
+
+
+
+    proposalId = parseInt(proposalId)
+    try {
+      const params = [
+        [hiveAccname],
+        100,
+        "by_voter_proposal",
+        "ascending",
+        "votable",
+      ]
+      const response = await hiveTx.call(
+        "condenser_api.list_proposal_votes",
+        params
+      )
+      console.log("response", response.result)
+      // check that last item of response.result has same item.voter as hiveAccname
+      const lastItem = response.result[response.result.length - 1]
+      if (lastItem.voter !== hiveAccname) {
+        console.log("lastItem.voter !== hiveAccname")
+      }
+
+      const proposalIds = response.result
+        .filter((item) => item.voter === hiveAccname)
+        .filter((item) => item.proposal.proposal_id === proposalId)
+
+      console.log("proposalIds", proposalIds)
+      if (proposalIds.length > 0) {
+        nextPage = false
+        return proposalIds[0]
+      } else {
+        const lastItem = response.result[response.result.length - 1]
+        if (lastItem.voter !== hiveAccname) {
+          console.log("lastItem.voter !== hiveAccname")
+          console.log('we checked all the results and did not find the proposalId')
+          nextPage = false
+          return null
+        } else {
+          // need to rerun this with a new page
+          nextPage = true
+        }
+      }
+    } catch (error) {
+      console.log("error", error)
+    }
+  }
+}
+
 /*************************************************
  ****     Hive Keycahin Functions
  **************************************************/

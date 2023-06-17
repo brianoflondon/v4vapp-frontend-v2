@@ -50,6 +50,7 @@ import { KeychainSDK } from "keychain-sdk"
 import { useStoreUser } from "src/stores/storeUser"
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
+import { useGetHiveProposalVotes } from "src/use/useHive"
 const t = useI18n().t
 const q = useQuasar()
 const showThankYou = ref(false)
@@ -79,13 +80,16 @@ if (!modelValue.value?.proposalId) {
   modelValue.value.proposalId = "265"
 }
 
-onMounted(() => {
+onMounted(async () => {
   storeUser.update()
+  console.log()
   console.log("onMounted voteProposal.vue")
   console.log(storeUser.currentUser)
   if (storeUser.currentUser) {
     hiveAccname.value = storeUser.currentUser
     modelValue.value.hiveUser = storeUser.currentUser
+    const votes = await useGetHiveProposalVotes(storeUser.currentUser, modelValue.value.proposalId)
+    console.log('votes: ', votes)
   }
 })
 
@@ -104,7 +108,6 @@ function vote() {
 
 async function doVotes() {
   console.log("doVotes")
-
   let username = modelValue.value.hiveUser
   if (hiveAccname.value.value) {
     username = hiveAccname.value.value
