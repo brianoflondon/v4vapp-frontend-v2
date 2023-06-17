@@ -147,15 +147,17 @@ export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
     return null
   }
   let nextPage = true
+  let pageCount = 0
+  let lastPropId = 0
+  const pageSize = 100
+  proposalId = parseInt(proposalId)
   while (nextPage) {
-
-
-
-    proposalId = parseInt(proposalId)
+    pageCount++
+    console.log("pageCount", pageCount)
     try {
       const params = [
-        [hiveAccname],
-        100,
+        [hiveAccname, lastPropId],
+        pageSize,
         "by_voter_proposal",
         "ascending",
         "votable",
@@ -164,35 +166,31 @@ export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
         "condenser_api.list_proposal_votes",
         params
       )
-      console.log("response", response.result)
-      // check that last item of response.result has same item.voter as hiveAccname
-      const lastItem = response.result[response.result.length - 1]
-      if (lastItem.voter !== hiveAccname) {
-        console.log("lastItem.voter !== hiveAccname")
+      const voterItems = response.result.filter(
+        (item) => item.voter === hiveAccname
+      )
+      console.log("voterItems", voterItems)
+      if (!voterItems.length) {
+        console.log("no voterItems")
+        return null
       }
-
-      const proposalIds = response.result
-        .filter((item) => item.voter === hiveAccname)
-        .filter((item) => item.proposal.proposal_id === proposalId)
-
-      console.log("proposalIds", proposalIds)
-      if (proposalIds.length > 0) {
+      if (voterItems.length < pageSize) {
+        console.log("voterItems.length < pageSize")
         nextPage = false
-        return proposalIds[0]
-      } else {
-        const lastItem = response.result[response.result.length - 1]
-        if (lastItem.voter !== hiveAccname) {
-          console.log("lastItem.voter !== hiveAccname")
-          console.log('we checked all the results and did not find the proposalId')
-          nextPage = false
-          return null
-        } else {
-          // need to rerun this with a new page
-          nextPage = true
-        }
       }
+      // now find the proposalId
+      const foundId = voterItems.filter(
+        (item) => item.proposal.proposal_id === proposalId
+      )
+      console.log("foundId", foundId)
+      if (foundId.length > 0) {
+        return foundId
+      }
+      lastPropId = voterItems[voterItems.length - 1].proposal.proposal_id + 1
+      debugger
     } catch (error) {
       console.log("error", error)
+      return null
     }
   }
 }

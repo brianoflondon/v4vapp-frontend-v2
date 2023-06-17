@@ -88,15 +88,18 @@ onMounted(async () => {
   if (storeUser.currentUser) {
     hiveAccname.value = storeUser.currentUser
     modelValue.value.hiveUser = storeUser.currentUser
-    const votes = await useGetHiveProposalVotes(storeUser.currentUser, modelValue.value.proposalId)
-    console.log('votes: ', votes)
   }
 })
 
 const hiveAccname = ref({ label: "", value: modelValue.hiveUser, caption: "" })
 
-function vote() {
+async function vote() {
   console.log("vote")
+  const votes = await useGetHiveProposalVotes(
+    storeUser.currentUser,
+    modelValue.value.proposalId
+  )
+  console.log("votes: ", votes)
   if (storeUser.currentUser) {
     hiveAccname.value = storeUser.currentUser
     modelValue.value.hiveUser = storeUser.currentUser
