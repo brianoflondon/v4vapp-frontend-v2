@@ -202,6 +202,34 @@ export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
   }
 }
 
+export async function useGetHiveWitnessVotes(hiveAccname, witness) {
+  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    return null
+  }
+
+  const params = {
+    start: [witness, hiveAccname],
+    limit: 1,
+    order: "by_witness_account",
+  }
+  try {
+    const response = await hiveTx.call(
+      "database_api.list_witness_votes",
+      params
+    )
+    console.log(response.result)
+    if (response.result?.votes.length > 0) {
+      if (response.result.votes[0].account === witness) {
+        return true
+      }
+    }
+    return false
+  } catch (error) {
+    console.error("An error occurred while fetching witness votes:", error)
+    return null
+  }
+}
+
 /*************************************************
  ****     Hive Keycahin Functions
  **************************************************/

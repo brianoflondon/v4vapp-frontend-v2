@@ -18,7 +18,9 @@
         </q-card-section>
       </div>
       <q-card-section class="text-center">
-        <p>Voting Name: {{ hiveAccname }}</p>
+        <p class="text-h6">{{ $t("voting_as") }} @{{ hiveAccname }}</p>
+      </q-card-section>
+      <q-card-section class="text-center">
         <p>
           <strong>{{ $t("please_vote") }}</strong>
         </p>
@@ -26,8 +28,23 @@
           {{ $t("vote_for_proposal") }} {{ modelValue.proposalId }}
           {{ $t("and") }} {{ $t("witness") }} {{ $t("please") }}
         </div>
+        <pre>{{ votedFor }}</pre>
         <q-btn
-          :label="$t('vote')"
+          :label="$t('vote_proposal')"
+          name="Vote Proposal"
+          rounded
+          color="primary"
+          text-color="black"
+          @click="doVotes"
+        >
+          <q-tooltip>
+            {{ $t("vote_for_proposal") }} {{ modelValue.proposalId }}
+            {{ $t("and") }} {{ $t("witness") }} {{ $t("please") }}
+          </q-tooltip>
+        </q-btn>
+        <q-btn
+          :label="$t('vote_witness')"
+          name="Vote Witness"
           rounded
           color="primary"
           text-color="black"
@@ -50,11 +67,18 @@ import { KeychainSDK } from "keychain-sdk"
 import { useStoreUser } from "src/stores/storeUser"
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
-import { useGetHiveProposalVotes } from "src/use/useHive"
+import {
+  useGetHiveProposalVotes,
+  useGetHiveWitnessVotes,
+} from "src/use/useHive"
 const t = useI18n().t
 const q = useQuasar()
 const showThankYou = ref(false)
 const storeUser = useStoreUser()
+const votedFor = ref({
+  proposal: false,
+  witness: false,
+})
 
 storeUser.update()
 const modelValue = defineModel({
@@ -82,14 +106,32 @@ if (!modelValue.value?.proposalId) {
 
 onMounted(async () => {
   storeUser.update()
-  console.log()
   console.log("onMounted voteProposal.vue")
   console.log(storeUser.currentUser)
   if (storeUser.currentUser) {
     hiveAccname.value = storeUser.currentUser
     modelValue.value.hiveUser = storeUser.currentUser
   }
+  await checkVotes()
 })
+
+async function checkVotes() {
+  console.log("checkVotes")
+  const votes = await useGetHiveProposalVotes(
+    storeUser.currentUser,
+    modelValue.value.proposalId
+  )
+  console.log("votes: ", votes)
+  if (votes) {
+    votedFor.value.proposal = true
+  }
+  const witnessVotes = await useGetHiveWitnessVotes(
+    storeUser.currentUser,
+    "brianoflondon"
+  )
+  votedFor.value.witness = witnessVotes
+  console.log("witnessVotes: ", witnessVotes)
+}
 
 const hiveAccname = ref({ label: "", value: modelValue.hiveUser, caption: "" })
 
