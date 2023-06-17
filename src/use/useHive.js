@@ -50,7 +50,7 @@ export async function useHiveProfile(hiveAccname) {
 }
 
 /*************************************************
- ****     Avatar related funcitons
+ ****     Avatar related functions
  **************************************************/
 
 export function useHiveAvatarRef({
@@ -139,57 +139,64 @@ export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
   }
 }
 
-// -------- Hive Check proposal votes --------
+/**
+ * useGetHiveProposalVotes fetches proposal votes for a given Hive account and proposal ID.
+ *
+ * @param {string} hiveAccname - The name of the Hive account to fetch votes for.
+ * @param {string|number} proposalId - The ID of the proposal to fetch votes for.
+ *
+ * @returns {Promise<Array>|null} Returns a Promise that resolves to an array of proposal votes.
+ *                               Returns null if the provided Hive account name or proposal ID are invalid,
+ *                               or if no votes were found for the given proposal.
+ */
 export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
-  console.log("useGetHiveProposalVotes -----------------")
-  console.log(hiveAccname)
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     return null
   }
-  let nextPage = true
-  let pageCount = 0
-  let lastPropId = 0
+
+  let shouldFetchNextPage = true
+  let lastProcessedProposalId = 0
   const pageSize = 100
-  proposalId = parseInt(proposalId)
-  while (nextPage) {
-    pageCount++
-    console.log("pageCount", pageCount)
+  proposalId = parseInt(proposalId, 10)
+
+  while (shouldFetchNextPage) {
     try {
       const params = [
-        [hiveAccname, lastPropId],
+        [hiveAccname, lastProcessedProposalId],
         pageSize,
         "by_voter_proposal",
         "ascending",
         "votable",
       ]
+
       const response = await hiveTx.call(
         "condenser_api.list_proposal_votes",
         params
       )
-      const voterItems = response.result.filter(
+      const userVotedItems = response.result.filter(
         (item) => item.voter === hiveAccname
       )
-      console.log("voterItems", voterItems)
-      if (!voterItems.length) {
-        console.log("no voterItems")
+
+      if (!userVotedItems.length) {
         return null
       }
-      if (voterItems.length < pageSize) {
-        console.log("voterItems.length < pageSize")
-        nextPage = false
+
+      if (userVotedItems.length < pageSize) {
+        shouldFetchNextPage = false
       }
-      // now find the proposalId
-      const foundId = voterItems.filter(
+
+      const matchingProposals = userVotedItems.filter(
         (item) => item.proposal.proposal_id === proposalId
       )
-      console.log("foundId", foundId)
-      if (foundId.length > 0) {
-        return foundId
+
+      if (matchingProposals.length > 0) {
+        return matchingProposals
       }
-      lastPropId = voterItems[voterItems.length - 1].proposal.proposal_id + 1
-      debugger
+
+      lastProcessedProposalId =
+        userVotedItems[userVotedItems.length - 1].proposal.proposal_id + 1
     } catch (error) {
-      console.log("error", error)
+      console.error("An error occurred while fetching proposal votes:", error)
       return null
     }
   }

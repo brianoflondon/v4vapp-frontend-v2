@@ -100,6 +100,7 @@ async function vote() {
     modelValue.value.proposalId
   )
   console.log("votes: ", votes)
+
   if (storeUser.currentUser) {
     hiveAccname.value = storeUser.currentUser
     modelValue.value.hiveUser = storeUser.currentUser
