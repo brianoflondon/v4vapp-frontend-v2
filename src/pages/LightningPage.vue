@@ -188,7 +188,6 @@ import VoteProposal from "components/utils/VoteProposal.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
-import SendOrReceive from "components/lightning/SendOrReceive.vue"
 import { useStoreUser } from "src/stores/storeUser"
 
 const invoiceText = ref(null)

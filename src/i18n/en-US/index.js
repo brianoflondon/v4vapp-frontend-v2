@@ -85,6 +85,7 @@ export default {
   asking_details: "You are about to pay:",
   amount_to_send: "Amount to send",
   send: "Send",
+  receive: "Receive",
   too_low: "Amount too low",
   too_high: "Amount too high",
   comment_length: "Comment is too long",

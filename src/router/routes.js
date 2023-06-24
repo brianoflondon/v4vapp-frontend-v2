@@ -5,6 +5,7 @@ const routes = [
     children: [
       { path: "", component: () => import("pages/LightningPage.vue") },
       { path: "/lnd", component: () => import("pages/LightningPage.vue") },
+      { path: "/hive", component: () => import("pages/HivePage.vue") },
       { path: "/index", component: () => import("pages/IndexPage.vue") },
       { path: "/status", component: () => import("pages/StatusPage.vue") },
       {
