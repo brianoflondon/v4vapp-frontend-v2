@@ -1,11 +1,14 @@
 <template>
   <q-page>
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
-      <div v-if="!cameraShow" class="q-pb-lg">
+      <div v-show="!cameraShow" class="q-pb-lg">
         <CreditCard />
       </div>
-      <div v-else>
+      <div v-show="cameraShow">
         <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
+      </div>
+      <div class="progress-screen">
+        <ShowProgress v-model="dInvoice" />
       </div>
       <div class="camera-toggle-invoice">
         <div class="q-pa-lg">
@@ -71,9 +74,9 @@
               :value="countdownTimer"
               color="positive"
             >
-          </q-linear-progress>
-        </div>
-        <div v-show="false" class="amounts-display flex justify-evenly">
+            </q-linear-progress>
+          </div>
+          <div v-show="false" class="amounts-display flex justify-evenly">
             <div class="q-pa-xs input-amount-readonly">
               <q-input
                 readonly
@@ -141,12 +144,6 @@
         <div class="vote-button q-pa-lg text-center">
           <VoteProposal v-model="voteOptions" />
         </div>
-      </div>
-    </div>
-
-    <div class="flex q-pt-md flex-center column">
-      <div v-if="true" class="progress-screen">
-        <ShowProgress v-model="dInvoice" />
       </div>
     </div>
     <AskDetailsDialog
@@ -593,7 +590,12 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
   if (!transaction_found) {
     if (count < 20) {
       const message = `${t("waiting_for")} ${count}/20`
-      dInvoice.value.progress.push(message)
+      const progressList = dInvoice.value.progress
+      if (count > 1) {
+        progressList[progressList.length - 1] = message // Overwrite the last item
+      } else {
+        progressList.push(message) // Add the message as the first item if the list is empty
+      }
       notif({
         color: "positive",
         avatar: "site-logo/v4vapp-logo.svg",
