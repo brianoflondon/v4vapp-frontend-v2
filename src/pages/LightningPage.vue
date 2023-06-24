@@ -194,6 +194,7 @@ import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
 import SendOrReceive from "components/lightning/SendOrReceive.vue"
+import { useStoreUser } from "src/stores/storeUser"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -215,6 +216,7 @@ const cameraError = ref("")
 const t = useI18n().t
 const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
+const storeUser = useStoreUser()
 
 onMounted(() => {
   // console.log("mounted")
@@ -548,7 +550,13 @@ async function payInvoice(val) {
   const memo = `${dInvoice.value.paymentRequest} 2.v4v.app`
   dInvoice.value.progress.push(`Requesting ${amount} ${currency}`)
   // replace null with logged in user
-  const result = await useHiveKeychainTransfer(null, amount, currency, memo)
+  let username = null
+  console.log("storeUser.currentUser", storeUser.currentUser)
+  if (storeUser.currentUser) {
+    username = storeUser.currentUser
+  }
+  console.log("username", username)
+  const result = await useHiveKeychainTransfer(username, amount, currency, memo)
 
   if (result.success) {
     const notif = q.notify({
