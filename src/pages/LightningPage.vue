@@ -127,7 +127,7 @@
             :loading="storeApiStatus.payInvoice"
             :disable="storeApiStatus.payInvoice"
             icon="img:keychain/hive-keychain-round.svg"
-            icon-right="fa-sharp fa-dollar-sign"
+            icon-right="img:/avatars/hbd_logo.svg"
             :label="HBD"
             :color="buttonColor.buttonColor"
             :text-color="buttonColor.textColor"
