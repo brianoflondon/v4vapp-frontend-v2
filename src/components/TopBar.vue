@@ -9,7 +9,7 @@
         />
       </q-toolbar-title>
       <div class="q-pa-none">
-        <SendOrReceive />
+        <TabBar />
       </div>
       <!-- <div class="text-caption">{{ appName }} v{{ appVersion }}</div> -->
       <q-space />
@@ -24,7 +24,7 @@
 import LanguageSelector from "components/utils/LanguageSelector.vue"
 import DarkSelector from "components/utils/DarkSelector.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
-import SendOrReceive from "./lightning/SendOrReceive.vue";
+import TabBar from "components/TabBar.vue";
 const rightDrawerOpen = defineModel(false)
 
 const { appName, appVersion } = useAppDetails()

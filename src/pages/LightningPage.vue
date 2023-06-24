@@ -11,7 +11,6 @@
         <ShowProgress v-model="dInvoice" />
       </div>
       <div class="camera-toggle-invoice">
-
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
             <div class="camera-toggle">
