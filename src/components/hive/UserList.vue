@@ -1,11 +1,16 @@
 <template>
   <div class="q-pa-md" style="max-width: 350px">
+    <pre>
+      {{ storeUser.currentUser }}
+    </pre>
     <q-list>
       <q-item
         clickable
         @click="doClick(user.hiveAccname)"
         v-for="user in storeUser.users"
         :key="user.hiveAccname"
+        :active="storeUser.currentUser === user.hiveAccname"
+        active-class="bg-grey-7 text-white"
       >
         <q-item-section avatar>
           <q-avatar>
@@ -25,6 +30,7 @@
 <script setup>
 import { useStoreUser, HiveUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
+import { store } from "quasar/wrappers";
 const storeUser = useStoreUser()
 
 function doClick(item) {

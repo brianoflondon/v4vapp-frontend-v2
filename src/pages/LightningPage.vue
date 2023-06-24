@@ -8,6 +8,9 @@
         <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
       </div>
       <div class="camera-toggle-invoice">
+        <div class="q-pa-lg">
+          <SendOrReceive />
+        </div>
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
             <div class="camera-toggle">
@@ -68,9 +71,9 @@
               :value="countdownTimer"
               color="positive"
             >
-            </q-linear-progress>
-          </div>
-          <div v-show="false" class="amounts-display flex justify-evenly">
+          </q-linear-progress>
+        </div>
+        <div v-show="false" class="amounts-display flex justify-evenly">
             <div class="q-pa-xs input-amount-readonly">
               <q-input
                 readonly
@@ -190,6 +193,7 @@ import VoteProposal from "components/utils/VoteProposal.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
+import SendOrReceive from "components/lightning/SendOrReceive.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
