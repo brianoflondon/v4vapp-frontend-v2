@@ -1,7 +1,10 @@
 <template>
-  <div class="q-pa-md" v-if="dInvoice?.progress && dInvoice?.progress.length > 0">
-    <q-list  separator>
-      <q-list-header separator>Progress</q-list-header>
+  <div
+    class="q-pa-md"
+    v-if="dInvoice?.progress && dInvoice?.progress.length > 0"
+  >
+    <q-list separator>
+      <q-item-label header>Progress</q-item-label>
       <q-separator />
       <q-item
         v-for="(item, index) in dInvoice.progress.slice().reverse()"

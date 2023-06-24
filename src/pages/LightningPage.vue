@@ -7,7 +7,7 @@
       <div v-if="cameraShow">
         <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
       </div>
-      <div v-if="dInovice?.progress" class="progress-screen">
+      <div class="progress-screen">
         <ShowProgress v-model="dInvoice" />
       </div>
       <div class="camera-toggle-invoice">
