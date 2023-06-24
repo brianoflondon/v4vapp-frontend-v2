@@ -1,19 +1,17 @@
 <template>
   <q-page>
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
-      <div v-show="!cameraShow" class="q-pb-lg">
+      <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
       </div>
-      <div v-show="cameraShow">
+      <div v-if="cameraShow">
         <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
       </div>
-      <div class="progress-screen">
+      <div v-if="dInovice?.progress" class="progress-screen">
         <ShowProgress v-model="dInvoice" />
       </div>
       <div class="camera-toggle-invoice">
-        <div class="q-pa-lg">
-          <SendOrReceive />
-        </div>
+
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
             <div class="camera-toggle">

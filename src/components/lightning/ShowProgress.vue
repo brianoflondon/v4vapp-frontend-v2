@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md" v-show="dInvoice?.progress && dInvoice.progress.length > 0">
+  <div class="q-pa-md" v-if="dInvoice?.progress && dInvoice?.progress.length > 0">
     <q-list  separator>
       <q-list-header separator>Progress</q-list-header>
       <q-separator />

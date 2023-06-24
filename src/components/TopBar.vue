@@ -8,7 +8,10 @@
           src="site-logo/v4vapp-logo-shadows.svg"
         />
       </q-toolbar-title>
-      <div class="text-caption">{{ appName }} v{{ appVersion }}</div>
+      <div class="q-pa-none">
+        <SendOrReceive />
+      </div>
+      <!-- <div class="text-caption">{{ appName }} v{{ appVersion }}</div> -->
       <q-space />
       <LanguageSelector />
       <DarkSelector />
@@ -21,7 +24,7 @@
 import LanguageSelector from "components/utils/LanguageSelector.vue"
 import DarkSelector from "components/utils/DarkSelector.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
-
+import SendOrReceive from "./lightning/SendOrReceive.vue";
 const rightDrawerOpen = defineModel(false)
 
 const { appName, appVersion } = useAppDetails()
