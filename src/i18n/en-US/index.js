@@ -15,7 +15,6 @@ export default {
   seconds: "seconds",
   fee: "fee",
   vote: "Vote",
-  vote_for_proposal: "Vote DHF for proposal",
   please: "Please",
   and: "and",
   witness: "My Hive Witness",
@@ -74,9 +73,13 @@ export default {
   waiting_for: "Waiting for reply transaction to appear on Hive blockchain",
 
   // Please vote
+  voting_as: "Voting as",
+  vote_for_proposal: "Vote DHF for proposal",
   please_vote:
     "If you're using V4V.app and find it useful, please consider voting for both my proposal for ongoing maintenance and my witness. This really helps me keep the service operating. Thank you!",
   thank_you_for_voting: "Thank you for voting!",
+  vote_witness: "Vote for my Hive Witness",
+  vote_proposal: "Vote for my DHF Proposal",
 
   // Ask Details dialog
   asking_details: "You are about to pay:",

@@ -22,7 +22,8 @@ export async function useHiveDetails(hiveAccname) {
   try {
     const res = await hiveTx.call("condenser_api.get_accounts", [[hiveAccname]])
     let hiveDetails = res.result[0]
-    hiveDetails["profile"] = extractProfile(hiveDetails)
+    hiveDetails["profile"] = await extractProfile(hiveDetails)
+    console.log("hiveDetails", hiveDetails)
     return hiveDetails
   } catch (e) {
     return null
@@ -49,7 +50,7 @@ export async function useHiveProfile(hiveAccname) {
 }
 
 /*************************************************
- ****     Avatar related funcitons
+ ****     Avatar related functions
  **************************************************/
 
 export function useHiveAvatarRef({
@@ -88,15 +89,15 @@ export function useHiveAvatarURL({
 }
 
 // -------- Helper functions --------
-function extractProfile(data) {
+async function extractProfile(data) {
   // Extracts the profile from the posting_json_metadata field or
   // if that doesn't exist checks the profile.
   try {
-    const profile = JSON.parse(data["posting_json_metadata"])["profile"]
+    const profile = await JSON.parse(data["posting_json_metadata"])["profile"]
     return profile
   } catch (e) {
     try {
-      const profile = JSON.parse(data["json_metadata"])["profile"]
+      const profile = await JSON.parse(data["json_metadata"])["profile"]
       return profile
     } catch (e) {
       return null
@@ -135,6 +136,97 @@ export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
     return sortedAccounts
   } catch (error) {
     console.error(error)
+  }
+}
+
+/**
+ * useGetHiveProposalVotes fetches proposal votes for a given Hive account and proposal ID.
+ *
+ * @param {string} hiveAccname - The name of the Hive account to fetch votes for.
+ * @param {string|number} proposalId - The ID of the proposal to fetch votes for.
+ *
+ * @returns {Promise<Array>|null} Returns a Promise that resolves to an array of proposal votes.
+ *                               Returns null if the provided Hive account name or proposal ID are invalid,
+ *                               or if no votes were found for the given proposal.
+ */
+export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
+  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    return null
+  }
+
+  let shouldFetchNextPage = true
+  let lastProcessedProposalId = 0
+  const pageSize = 100
+  proposalId = parseInt(proposalId, 10)
+
+  while (shouldFetchNextPage) {
+    try {
+      const params = [
+        [hiveAccname, lastProcessedProposalId],
+        pageSize,
+        "by_voter_proposal",
+        "ascending",
+        "votable",
+      ]
+
+      const response = await hiveTx.call(
+        "condenser_api.list_proposal_votes",
+        params
+      )
+      const userVotedItems = response.result.filter(
+        (item) => item.voter === hiveAccname
+      )
+
+      if (!userVotedItems.length) {
+        return null
+      }
+
+      if (userVotedItems.length < pageSize) {
+        shouldFetchNextPage = false
+      }
+
+      const matchingProposals = userVotedItems.filter(
+        (item) => item.proposal.proposal_id === proposalId
+      )
+
+      if (matchingProposals.length > 0) {
+        return matchingProposals
+      }
+
+      lastProcessedProposalId =
+        userVotedItems[userVotedItems.length - 1].proposal.proposal_id + 1
+    } catch (error) {
+      console.error("An error occurred while fetching proposal votes:", error)
+      return null
+    }
+  }
+}
+
+export async function useGetHiveWitnessVotes(hiveAccname, witness) {
+  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    return null
+  }
+
+  const params = {
+    start: [witness, hiveAccname],
+    limit: 1,
+    order: "by_witness_account",
+  }
+  try {
+    const response = await hiveTx.call(
+      "database_api.list_witness_votes",
+      params
+    )
+    console.log(response.result)
+    if (response.result?.votes.length > 0) {
+      if (response.result.votes[0].account === witness) {
+        return true
+      }
+    }
+    return false
+  } catch (error) {
+    console.error("An error occurred while fetching witness votes:", error)
+    return null
   }
 }
 

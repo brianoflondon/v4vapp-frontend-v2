@@ -1,7 +1,17 @@
 <template>
   <q-page>
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
+      <div v-if="!cameraShow" class="q-pb-lg">
+        <CreditCard />
+      </div>
+      <div v-if="cameraShow">
+        <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
+      </div>
+      <div class="progress-screen">
+        <ShowProgress v-model="dInvoice" />
+      </div>
       <div class="camera-toggle-invoice">
+
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
             <div class="camera-toggle">
@@ -64,95 +74,84 @@
             >
             </q-linear-progress>
           </div>
+          <div v-show="false" class="amounts-display flex justify-evenly">
+            <div class="q-pa-xs input-amount-readonly">
+              <q-input
+                readonly
+                input-class="text-right"
+                dense
+                filled
+                v-model="sats"
+                label="Sats"
+              ></q-input>
+            </div>
+            <div class="q-pa-xs input-amount-readonly">
+              <q-input
+                readonly
+                input-class="text-right"
+                dense
+                filled
+                v-model="HBD"
+                label="HBD"
+              ></q-input>
+            </div>
+            <div class="q-pa-xs input-amount-readonly">
+              <q-input
+                readonly
+                input-class="text-right"
+                dense
+                filled
+                v-model="Hive"
+                label="Hive"
+              ></q-input>
+            </div>
+          </div>
         </div>
-      </div>
-      <div v-if="false" class="amounts-display flex justify-evenly">
-        <div class="q-pa-xs input-amount-readonly">
-          <q-input
-            readonly
-            input-class="text-right"
-            dense
-            filled
-            v-model="sats"
-            label="Sats"
-          ></q-input>
+
+        <div
+          class="payment-buttons row flex-center q-gutter-lg q-pt-md"
+          v-show="invoiceValid"
+        >
+          <q-btn
+            class="payment-button-hive"
+            @click="payInvoice((value = 'HIVE'))"
+            :loading="storeApiStatus.payInvoice"
+            :disable="storeApiStatus.payInvoice"
+            icon="img:keychain/hive-keychain-round.svg"
+            icon-right="img:avatars/hive_logo_dark.svg"
+            :label="Hive"
+            :color="buttonColor.buttonColor"
+            :text-color="buttonColor.textColor"
+            size="md"
+            rounded
+          />
+          <q-btn
+            class="payment-button-hbd"
+            @click="payInvoice((value = 'HBD'))"
+            :loading="storeApiStatus.payInvoice"
+            :disable="storeApiStatus.payInvoice"
+            icon="img:keychain/hive-keychain-round.svg"
+            icon-right="img:/avatars/hbd_logo.svg"
+            :label="HBD"
+            :color="buttonColor.buttonColor"
+            :text-color="buttonColor.textColor"
+            size="md"
+            rounded
+          />
         </div>
-        <div class="q-pa-xs input-amount-readonly">
-          <q-input
-            readonly
-            input-class="text-right"
-            dense
-            filled
-            v-model="HBD"
-            label="HBD"
-          ></q-input>
+        <div class="vote-button q-pa-lg text-center">
+          <VoteProposal v-model="voteOptions" />
         </div>
-        <div class="q-pa-xs input-amount-readonly">
-          <q-input
-            readonly
-            input-class="text-right"
-            dense
-            filled
-            v-model="Hive"
-            label="Hive"
-          ></q-input>
-        </div>
-      </div>
-    </div>
-    <div
-      v-if="invoiceValid"
-      class="row flex-center q-gutter-lg q-pt-md payment-button"
-    >
-      <q-btn
-        class="payment-button-hive"
-        @click="payInvoice((value = 'HIVE'))"
-        :loading="storeApiStatus.payInvoice"
-        :disable="storeApiStatus.payInvoice"
-        icon="img:keychain/hive-keychain-round.svg"
-        icon-right="img:avatars/hive_logo_dark.svg"
-        :label="Hive"
-        :color="buttonColor.buttonColor"
-        :text-color="buttonColor.textColor"
-        size="md"
-        rounded
-      />
-      <q-btn
-        class="payment-button-hbd"
-        @click="payInvoice((value = 'HBD'))"
-        :loading="storeApiStatus.payInvoice"
-        :disable="storeApiStatus.payInvoice"
-        icon="img:keychain/hive-keychain-round.svg"
-        icon-right="fa-sharp fa-dollar-sign"
-        :label="HBD"
-        :color="buttonColor.buttonColor"
-        :text-color="buttonColor.textColor"
-        size="md"
-        rounded
-      />
-    </div>
-    <div v-if="cameraShow">
-      <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
-    </div>
-    <div class="flex q-pt-md flex-center column">
-      <div v-if="true" class="progress-screen">
-        <ShowProgress v-model="dInvoice" />
       </div>
     </div>
     <AskDetailsDialog
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
     />
-    <div class="q-pa-lg text-center">
-      <VoteProposal v-model="voteOptions" />
-    </div>
   </q-page>
 </template>
 
 <style lang="scss" scoped>
-div {
-  // border: 1px solid green;
-}
-
 .invoice-input,
 .invoice-timer {
   width: 300px;
@@ -188,6 +187,9 @@ import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
+import CreditCard from "components/hive/CreditCard.vue"
+import SendOrReceive from "components/lightning/SendOrReceive.vue"
+import { useStoreUser } from "src/stores/storeUser"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -209,6 +211,7 @@ const cameraError = ref("")
 const t = useI18n().t
 const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
+const storeUser = useStoreUser()
 
 onMounted(() => {
   // console.log("mounted")
@@ -542,7 +545,13 @@ async function payInvoice(val) {
   const memo = `${dInvoice.value.paymentRequest} 2.v4v.app`
   dInvoice.value.progress.push(`Requesting ${amount} ${currency}`)
   // replace null with logged in user
-  const result = await useHiveKeychainTransfer(null, amount, currency, memo)
+  let username = null
+  console.log("storeUser.currentUser", storeUser.currentUser)
+  if (storeUser.currentUser) {
+    username = storeUser.currentUser
+  }
+  console.log("username", username)
+  const result = await useHiveKeychainTransfer(username, amount, currency, memo)
 
   if (result.success) {
     const notif = q.notify({
@@ -579,7 +588,12 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
   if (!transaction_found) {
     if (count < 20) {
       const message = `${t("waiting_for")} ${count}/20`
-      dInvoice.value.progress.push(message)
+      const progressList = dInvoice.value.progress
+      if (count > 1) {
+        progressList[progressList.length - 1] = message // Overwrite the last item
+      } else {
+        progressList.push(message) // Add the message as the first item if the list is empty
+      }
       notif({
         color: "positive",
         avatar: "site-logo/v4vapp-logo.svg",
