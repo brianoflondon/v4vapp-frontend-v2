@@ -3,7 +3,7 @@
     <q-dialog v-model="dInvoice.askDetails" @show="showDialog">
       <q-card>
         <q-card-section>
-          <div class="row q-pa-md">
+          <div class="row q-pa-sm">
             <div class="left-side-details col-7 q-gutter-md">
               <p>{{ main_message }}</p>
               <p>
@@ -71,6 +71,16 @@
             </div>
           </div>
         </q-card-section>
+        <q-card-section>
+          <q-badge color="secondary"> Sats: </q-badge>
+          <q-slider
+            v-model="amounts.satsNum"
+            :min="dInvoice.v4vapp.metadata.minSats"
+            :max="dInvoice.v4vapp.metadata.maxSats"
+            :step="100"
+            @update:model-value="(val) => updateAmounts(val, 'sats')"
+          ></q-slider>
+        </q-card-section>
         <q-card-section
           v-if="dInvoice?.v4vapp?.metadata?.commentLength"
           class="q-pa-md"
@@ -127,6 +137,7 @@ const amounts = ref({
   sats: 0,
   hbd: 0,
   hive: 0,
+  satsNum: 0
 })
 const main_message = ref("")
 
@@ -188,7 +199,7 @@ function updateAmounts(amount, currency) {
     errorMessage.value = ""
     errorState.value = false
   }
-
+  amounts.value.satsNum = sats.toFixed(0)
   amounts.value.sats = tidyNumber(sats.toFixed(0))
   amounts.value.hive = tidyNumber(hive.toFixed(3))
   amounts.value.hbd = tidyNumber(hbd.toFixed(2))

@@ -24,7 +24,7 @@
       </q-card-section>
       <q-card-section>
         <q-btn
-          :label="$t('amount')"
+          :label="amountButton"
           name="amount"
           rounded
           color="primary"
@@ -33,9 +33,6 @@
         >
           <q-tooltip>{{ $t("amount") }}</q-tooltip>
         </q-btn>
-      </q-card-section>
-      <q-card-section>
-        <pre>{{ amounts }}</pre>
       </q-card-section>
     </q-card>
     <AskDetailsDialog
@@ -62,6 +59,7 @@ import {
 const dInvoice = ref({})
 const amounts = ref({})
 const storeUser = useStoreUser()
+const amountButton = ref("")
 const hiveHbd = ref("hbd")
 const hiveAccObj = ref({ label: "", value: "", caption: "" })
 const t = useI18n().t
@@ -78,6 +76,7 @@ onMounted(() => {
     }
   }
   setLightningAddress()
+  setAmountButton()
 })
 
 watch(storeUser, async (val) => {
@@ -88,20 +87,32 @@ watch(storeUser, async (val) => {
     caption: val.profileName,
   }
   setLightningAddress()
+  setAmountButton()
 })
 
 watch(hiveAccObj, async (val) => {
   console.log("hiveAccObj", val)
   setLightningAddress()
+  setAmountButton()
 })
 
 watch(hiveHbd, async (val) => {
   console.log("hiveHbd", val)
   setLightningAddress()
+  setAmountButton()
 })
 
 function setLightningAddress() {
   qrText.value = "lightning:" + getHiveHbdAddress(hiveAccObj.value.value)
+}
+
+function setAmountButton() {
+  console.log("amounts.value", amounts.value)
+  if (amounts.value?.sats) {
+    amountButton.value = amounts.value.sats + " sats"
+  } else {
+    amountButton.value = t("amount")
+  }
 }
 
 function getHiveHbdAddress(username) {
@@ -144,6 +155,7 @@ async function receiveNewInvoice(val) {
 async function receiveAmounts(val) {
   console.log("receiveAmounts", val)
   amounts.value = val
+  setAmountButton()
 }
 </script>
 
