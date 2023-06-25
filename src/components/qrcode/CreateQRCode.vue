@@ -1,7 +1,7 @@
 <template>
   <div class="flex col text-center">
-    <pre>{{ props }}</pre>
     <QRCodeVue3
+      ref="lightningAddressQRCode"
       :key="props.qrText"
       :width="props.width"
       :height="props.height"
@@ -30,11 +30,9 @@
       :backgroundOptions="{ color: '#ffffff' }"
       :cornersSquareOptions="{ type: 'square', color: '#000000' }"
       :cornersDotOptions="{ type: undefined, color: '#000000' }"
-      fileExt="png"
       :download="true"
       myclass="my-qur"
       imgclass="img-qr"
-      downloadButton="q-btn my-download-button"
       :downloadOptions="downloadOptions"
     />
   </div>
@@ -43,7 +41,17 @@
 <script setup>
 import { useHiveAvatarURL } from "src/use/useHive"
 import QRCodeVue3 from "qrcode-vue3"
-import { computed } from "vue"
+import { computed, ref } from "vue"
+
+const lightningAddressQRCode = ref(null)
+
+async function downloadQRCode() {
+  console.log("downloadQRCode")
+  console.log("lightningAddressQRCode", lightningAddressQRCode.value)
+  const imageDataUrl = await lightningAddressQRCode.value.getImageDataUrl()
+
+  console.log("downloadUrl", downloadUrl)
+}
 
 const props = defineProps({
   qrText: {
@@ -73,25 +81,15 @@ const avatarUrl = computed(() => {
   })
 })
 
-// const avatarUrl = useHiveAvatarURL({
-//   hiveAccname: props.hiveAccname,
-//   size: "small",
-//   reason: "qr-code",
-// })
-
 const downloadOptions = computed(() => {
   console.log("props.hiveAccname", props.hiveAccname)
   return {
     name: props.hiveAccname + "-lightning-address-v4vapp",
-    extension: "png",
+    extension: "webp",
   }
 })
 
 console.log("avatarUrl", avatarUrl)
 </script>
 
-<style lang="scss" scoped>
-.my-download-button {
-  
-}
-</style>
+<style lang="scss" scoped></style>

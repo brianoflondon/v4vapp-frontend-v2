@@ -1,19 +1,13 @@
 <template>
   <q-page>
-    <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
-      <pre
-        >{{ qrText }}
-      </pre>
-      <pre>
-        {{ hiveAccname }}
-      </pre>
+    <q-card
+      rounded
+      class="outer-wrapper row justify-center q-gutter-sm q-pt-lg"
+    >
       <div>
         <CreateQRCode :qr-text="qrText" :hive-accname="hiveAccname" />
       </div>
-      <div>
-        <q-input></q-input>
-      </div>
-    </div>
+    </q-card>
   </q-page>
 </template>
 
@@ -32,9 +26,6 @@ const qrText = computed(() => {
 const hiveAccname = computed(() => {
   return storeUser.hiveAccname
 })
-
-console.log(storeUser)
-
 </script>
 
 <style lang="scss" scoped></style>
