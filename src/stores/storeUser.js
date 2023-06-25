@@ -95,6 +95,8 @@ export const useStoreUser = defineStore("useStoreUser", {
     update() {
       const onOpen = async () => {
         console.log("onOpen in useStoreUser")
+        console.log("this.currentProfile", this.currentProfile)
+        if(this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
         this.currentProfile = this.currentDetails?.profile
       }

@@ -80,12 +80,16 @@ export default {
   thank_you_for_voting: "Thank you for voting!",
   vote_witness: "Vote for my Hive Witness",
   vote_proposal: "Vote for my DHF Proposal",
+  thank_you: "Thank you for voting already!",
+
+  // Tab Bar
+  send: "Send",
+  receive: "Receive",
+  podcasts: "Podcasts",
 
   // Ask Details dialog
   asking_details: "You are about to pay:",
   amount_to_send: "Amount to send",
-  send: "Send",
-  receive: "Receive",
   too_low: "Amount too low",
   too_high: "Amount too high",
   comment_length: "Comment is too long",

@@ -190,6 +190,7 @@ export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
       )
 
       if (matchingProposals.length > 0) {
+        console.log("Found matching proposals:", matchingProposals)
         return matchingProposals
       }
 
@@ -200,6 +201,24 @@ export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
       return null
     }
   }
+  console.log("Proposal Nothing found")
+  return false
+}
+
+// Returns the proxy vote if one exists or false
+export async function useCheckProxyVote(hiveAccname) {
+  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    return null
+  }
+
+  const details = await useHiveDetails(hiveAccname)
+  const proxy = details?.proxy
+  console.log("details in useGetHiveWitnessVotes", details?.proxy)
+
+  if (proxy) {
+    return proxy
+  }
+  return false
 }
 
 export async function useGetHiveWitnessVotes(hiveAccname, witness) {
@@ -217,9 +236,12 @@ export async function useGetHiveWitnessVotes(hiveAccname, witness) {
       "database_api.list_witness_votes",
       params
     )
-    console.log(response.result)
+    console.log("witnes votes", response.result)
     if (response.result?.votes.length > 0) {
-      if (response.result.votes[0].account === witness) {
+      if (
+        response.result.votes[0].witness === witness &&
+        response.result.votes[0].account === hiveAccname
+      ) {
         return true
       }
     }
