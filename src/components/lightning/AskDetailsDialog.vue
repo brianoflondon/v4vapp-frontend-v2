@@ -22,7 +22,7 @@
             </div>
           </div>
           <!-- SATS INPUT -->
-          <div class="row input-amounts justify-around">
+          <div class="row q-pb-none input-amounts justify-around">
             <div class="input-sats input-amount q-pa-sm">
               <q-input
                 v-model="amounts.sats"
@@ -71,19 +71,22 @@
             </div>
           </div>
         </q-card-section>
-        <q-card-section>
+        <q-card-section class="sats-slider q-py-none q-px-sm">
           <q-badge color="secondary"> Sats: </q-badge>
           <q-slider
             v-model="amounts.satsNum"
             :min="dInvoice.v4vapp.metadata.minSats"
             :max="dInvoice.v4vapp.metadata.maxSats"
             :step="100"
+            label
+            label-always
+            switch-label-side
             @update:model-value="(val) => updateAmounts(val, 'sats')"
           ></q-slider>
         </q-card-section>
         <q-card-section
           v-if="dInvoice?.v4vapp?.metadata?.commentLength"
-          class="q-pa-md"
+          class="q-pa-sm"
         >
           <q-input
             v-model="dInvoice.v4vapp.comment"
@@ -137,7 +140,7 @@ const amounts = ref({
   sats: 0,
   hbd: 0,
   hive: 0,
-  satsNum: 0
+  satsNum: 0,
 })
 const main_message = ref("")
 
