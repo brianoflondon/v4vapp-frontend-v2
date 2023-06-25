@@ -38,12 +38,19 @@ export default {
   hive_login: "Hive Login",
   login: "Login",
   login_as: "Login as",
+  login_with: "Login with",
   hive_keychain: "Hive Keychain",
   login_in_progress: "Login in progress",
   login_failed: "Login failed",
   login_success: "Login success",
   sign_this: "Sign this",
   matches: "matches",
+
+  // Get Hive
+  amount: "Amount",
+  copy_qrcode: "Click to copy QR code",
+  copied: "Copied to clipboard",
+  downloading_qrcode: "Downloading QR code",
 
   // SideMenu
   page: "Page",

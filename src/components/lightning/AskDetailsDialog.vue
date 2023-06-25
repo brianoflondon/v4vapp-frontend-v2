@@ -120,7 +120,7 @@ const t = useI18n().t
 
 const storeAPIStatus = useStoreAPIStatus()
 const dInvoice = defineModel({})
-const emit = defineEmits(["newInvoice"])
+const emit = defineEmits(["newInvoice", "amounts"])
 const errorMessage = ref("")
 const errorState = ref(false)
 const amounts = ref({
@@ -193,11 +193,22 @@ const vAutofocus = {
   },
 }
 
+function modifyComment() {
+  if (dInvoice.value.hiveHbd === "hbd") {
+    if (dInvoice.value.v4vapp.comment === undefined) {
+      dInvoice.value.v4vapp.comment = "#HBD"
+    } else {
+      dInvoice.value.v4vapp.comment += " #HBD"
+    }
+  }
+}
+
 async function createInvoice() {
   try {
     dInvoice.value.v4vapp.amountToSend = Math.round(
       dInvoice.value.v4vapp.amountToSend
     )
+    modifyComment()
     const response = await callBackGenerateInvoice(
       dInvoice.value.callback,
       dInvoice.value.v4vapp.amountToSend,
@@ -206,6 +217,7 @@ async function createInvoice() {
     dInvoice.value.askDetails = false
     dInvoice.value.callback = response
     emit("newInvoice", response)
+    emit("amounts", amounts.value)
   } catch (error) {
     console.log("error", error)
   }

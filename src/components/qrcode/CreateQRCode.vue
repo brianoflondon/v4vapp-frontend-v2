@@ -1,5 +1,5 @@
 <template>
-  <div class="flex col text-center" @click="console.log('copy')">
+  <div class="flex col text-center" @click="copyText">
     <QRCodeVue3
       ref="lightningAddressQRCode"
       :key="props.qrText"
@@ -30,19 +30,12 @@
       :backgroundOptions="{ color: '#ffffff' }"
       :cornersSquareOptions="{ type: 'square', color: '#000000' }"
       :cornersDotOptions="{ type: undefined, color: '#000000' }"
-      :download="true"
+      :download="false"
       myclass="my-qur"
       imgclass="img-qr"
       :downloadOptions="downloadOptions"
     />
-    <q-tooltip
-      anchor="top middle"
-      self="bottom middle"
-      :offset="[0, 10]"
-      :delay="100"
-    >
-      {{ $t("click_to_copy") }}
-    </q-tooltip>
+    <q-tooltip>{{ $t("copy_qrcode") }}</q-tooltip>
   </div>
 </template>
 
@@ -50,6 +43,11 @@
 import { useHiveAvatarURL } from "src/use/useHive"
 import QRCodeVue3 from "qrcode-vue3"
 import { computed, ref } from "vue"
+import { copyToClipboard, useQuasar } from "quasar"
+import { useI18n } from "vue-i18n"
+
+const quasar = useQuasar()
+const t = useI18n().t
 
 const lightningAddressQRCode = ref(null)
 
@@ -90,12 +88,20 @@ const avatarUrl = computed(() => {
 })
 
 const downloadOptions = computed(() => {
-  console.log("props.hiveAccname", props.hiveAccname)
   return {
     name: props.hiveAccname + "-lightning-address-v4vapp",
     extension: "webp",
   }
 })
+
+function copyText() {
+  copyToClipboard(props.qrText)
+  quasar.notify({
+    message: t("copied"),
+    color: "positive",
+    icon: "check_circle",
+  })
+}
 
 console.log("avatarUrl", avatarUrl)
 </script>
