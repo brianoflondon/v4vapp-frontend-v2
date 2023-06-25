@@ -52,6 +52,7 @@ import { computed, onMounted, ref, watch } from "vue"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
+import { useQuasar } from "quasar"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import {
   useDecodeLightningInvoice,
@@ -64,6 +65,7 @@ const storeUser = useStoreUser()
 const hiveHbd = ref("hbd")
 const hiveAccObj = ref({ label: "", value: "", caption: "" })
 const t = useI18n().t
+const quasar = useQuasar()
 
 const qrText = ref("")
 
@@ -88,6 +90,16 @@ watch(storeUser, async (val) => {
   setLightningAddress()
 })
 
+watch(hiveAccObj, async (val) => {
+  console.log("hiveAccObj", val)
+  setLightningAddress()
+})
+
+watch(hiveHbd, async (val) => {
+  console.log("hiveHbd", val)
+  setLightningAddress()
+})
+
 function setLightningAddress() {
   qrText.value = "lightning:" + getHiveHbdAddress(hiveAccObj.value.value)
 }
@@ -101,15 +113,27 @@ function getHiveHbdAddress(username) {
 }
 
 async function setAmount() {
-  console.log("setAmount")
+  if (!hiveAccObj.value.value) {
+    quasar.notify("Please select an account", {
+      color: "negative",
+      position: "top",
+      timeout: 2000,
+    })
+    return
+  }
   if (dInvoice.value) {
     dInvoice.value = {}
     setLightningAddress()
   }
-  dInvoice.value = await useDecodeLightningInvoice(qrText.value)
-  dInvoice.value.hiveHbd = hiveHbd.value
-  dInvoice.value.askDetails = true
-  console.log("dInvoice.value", dInvoice.value)
+  try {
+    dInvoice.value = await useDecodeLightningInvoice(qrText.value)
+    console.log("dInvoice.value", dInvoice.value)
+    dInvoice.value.makingInvoice = true
+    dInvoice.value.hiveHbd = hiveHbd.value
+    dInvoice.value.askDetails = true
+  } catch (e) {
+    console.log("e", e)
+  }
 }
 
 async function receiveNewInvoice(val) {

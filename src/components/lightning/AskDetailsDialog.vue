@@ -5,7 +5,7 @@
         <q-card-section>
           <div class="row q-pa-md">
             <div class="left-side-details col-7 q-gutter-md">
-              <p>{{ $t("asking_details") }}</p>
+              <p>{{ main_message }}</p>
               <p>
                 <strong>{{ dInvoice?.v4vapp?.metadata?.requestString }}</strong>
               </p>
@@ -128,8 +128,15 @@ const amounts = ref({
   hbd: 0,
   hive: 0,
 })
+const main_message = ref("")
 
 function showDialog() {
+  console.log("dInvoice", dInvoice.value.makingInvoice)
+  if (dInvoice.value?.makingInvoice) {
+    main_message.value = t("making_invoice")
+  } else {
+    main_message.value = t("asking_details")
+  }
   if (dInvoice.value.v4vapp.amountToSend) {
     updateAmounts(dInvoice.value.v4vapp.amountToSend, "sats")
   }

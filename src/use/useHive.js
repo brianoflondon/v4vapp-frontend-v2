@@ -78,7 +78,6 @@ export function useHiveAvatarURL({
   size = "medium",
   reason = "v4vapp-v2-useHiveAvatarURL",
 }) {
-  console.log("useHiveAvatarURL", hiveAccname, size, reason)
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {

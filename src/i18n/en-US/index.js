@@ -96,6 +96,7 @@ export default {
 
   // Ask Details dialog
   asking_details: "You are about to pay:",
+  making_invoice: "You are about to create an invoice for:",
   amount_to_send: "Amount to send",
   too_low: "Amount too low",
   too_high: "Amount too high",
