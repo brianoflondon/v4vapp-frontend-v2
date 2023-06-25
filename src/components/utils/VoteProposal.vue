@@ -17,7 +17,7 @@
         >
       </q-card-section>
       <q-card-section>
-        <q-img src="public/site-logo/v4vapp-logo-shadows.svg"></q-img>
+        <q-img src="/site-logo/v4vapp-logo-shadows.svg"></q-img>
       </q-card-section>
     </q-card>
     <q-card v-if="!(votedFor.proposal && votedFor.witness)">

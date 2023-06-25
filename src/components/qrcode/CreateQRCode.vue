@@ -1,5 +1,5 @@
 <template>
-  <div class="flex col text-center">
+  <div class="flex col text-center" @click="console.log('copy')">
     <QRCodeVue3
       ref="lightningAddressQRCode"
       :key="props.qrText"
@@ -35,6 +35,14 @@
       imgclass="img-qr"
       :downloadOptions="downloadOptions"
     />
+    <q-tooltip
+      anchor="top middle"
+      self="bottom middle"
+      :offset="[0, 10]"
+      :delay="100"
+    >
+      {{ $t("click_to_copy") }}
+    </q-tooltip>
   </div>
 </template>
 
