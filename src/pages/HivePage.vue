@@ -75,8 +75,7 @@ onMounted(() => {
       caption: storeUser.profileName,
     }
   }
-  setLightningAddress()
-  setAmountButton()
+  resetValues()
 })
 
 watch(storeUser, async (val) => {
@@ -86,28 +85,30 @@ watch(storeUser, async (val) => {
     value: val.hiveAccname,
     caption: val.profileName,
   }
-  setLightningAddress()
-  setAmountButton()
+  resetValues()
 })
 
 watch(hiveAccObj, async (val) => {
-  console.log("hiveAccObj", val)
-  setLightningAddress()
-  setAmountButton()
+  resetValues()
 })
 
 watch(hiveHbd, async (val) => {
-  console.log("hiveHbd", val)
-  setLightningAddress()
-  setAmountButton()
+  resetValues()
 })
 
+function resetValues() {
+  setLightningAddress()
+  setAmountButton()
+}
+
 function setLightningAddress() {
+  if(!hiveAccObj.value.value) {
+    qrText.value = "lightning:v4vapp@v4v.app"
+  }
   qrText.value = "lightning:" + getHiveHbdAddress(hiveAccObj.value.value)
 }
 
 function setAmountButton() {
-  console.log("amounts.value", amounts.value)
   if (amounts.value?.sats) {
     amountButton.value = amounts.value.sats + " sats"
   } else {

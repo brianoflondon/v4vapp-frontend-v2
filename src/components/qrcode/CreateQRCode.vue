@@ -79,7 +79,6 @@ const props = defineProps({
 })
 
 const avatarUrl = computed(() => {
-  console.log("props.hiveAccname", props.hiveAccname)
   return useHiveAvatarURL({
     hiveAccname: props.hiveAccname,
     size: "small",
