@@ -22,10 +22,11 @@
       <q-card-section>
         <CreateQRCode
           :qr-text="qrText"
+          :loading="loading"
           :hive-accname="hiveAccObj.value"
           @qr-code="(val) => (qrCode = val)"
         />
-        <div v-if="true" class="q-pt-none">
+        <div v-if="false" class="q-pt-none">
           <q-linear-progress
             class="invoice-timer"
             size="10px"
@@ -102,6 +103,7 @@ const amounts = ref({})
 const storeUser = useStoreUser()
 const amountButton = ref("")
 const hiveHbd = ref("hbd")
+const loading = ref(false)
 const hiveAccObj = ref({ label: "", value: "", caption: "" })
 const t = useI18n().t
 const quasar = useQuasar()
@@ -137,6 +139,7 @@ watch(hiveAccObj, async (val) => {
 // If the amount has been set, rerun with the amount.
 watch(hiveHbd, async (newVal, oldVal) => {
   if (amounts.value?.sats) {
+    loading.value = true
     qrText.value = "lightning:" + getHiveHbdAddress(hiveAccObj.value.value)
     const oldComment = dInvoice.value.v4vapp.comment.replace(/#HBD/g, "").trim()
     const oldMetadata = dInvoice.value.v4vapp.metadata
@@ -147,6 +150,7 @@ watch(hiveHbd, async (newVal, oldVal) => {
     dInvoice.value.v4vapp.amountToSend = amounts.value.satsNum
     const invoice = await useCreateInvoice(dInvoice.value)
     receiveNewInvoice(invoice)
+    loading.value = false
   } else {
     resetValues()
   }

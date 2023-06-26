@@ -1,9 +1,19 @@
 <template>
   <div class="flex col text-center" @click="copyText">
     <a :href="qrText" class="invoice-qrcode">
-      <div ref="qrCodeContainer">
-      </div>
+      <div v-show="!loading" ref="qrCodeContainer"></div>
     </a>
+    <div
+      v-if="loading"
+      :style="{
+        width: '290px',
+        height: '290px',
+      }"
+    >
+      <q-inner-loading :showing="loading">
+        <q-spinner-gears size="50px" color="primary" />
+      </q-inner-loading>
+    </div>
   </div>
 </template>
 
@@ -37,6 +47,10 @@ const props = defineProps({
   hiveAccname: {
     type: String,
     default: "",
+  },
+  loading: {
+    type: Boolean,
+    default: false,
   },
 })
 
