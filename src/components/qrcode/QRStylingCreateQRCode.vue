@@ -10,7 +10,7 @@ import { useHiveAvatarURL } from "src/use/useHive"
 import { computed, ref, onMounted, onUpdated } from "vue"
 import { copyToClipboard, useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
-import QRCodeStyling from "qrcode-vue3/src/core/QRCodeStyling"
+import QRCodeStyling from "qr-code-styling"
 
 const quasar = useQuasar()
 const t = useI18n().t

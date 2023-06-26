@@ -47,7 +47,6 @@
 </template>
 
 <script setup>
-import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import QRStylingCreateQRCode from "components/qrcode/QRStylingCreateQRCode.vue"
 import { computed, onMounted, ref, watch } from "vue"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
