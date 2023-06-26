@@ -153,6 +153,34 @@ async function anythingDecode(invoice) {
   }
 }
 
+function modifyComment(dInvoice) {
+  if (dInvoice?.hiveHbd === "hbd") {
+    if (dInvoice.v4vapp.comment === undefined) {
+      dInvoice.v4vapp.comment = "#HBD"
+    } else {
+      dInvoice.v4vapp.comment += " #HBD"
+    }
+  }
+}
+
+// Using call by reference to modify the dInvoice object
+export async function useCreateInvoice(dInvoice) {
+  try {
+    dInvoice.v4vapp.amountToSend = Math.round(dInvoice.v4vapp.amountToSend)
+    modifyComment(dInvoice)
+    const response = await callBackGenerateInvoice(
+      dInvoice.callback,
+      dInvoice.v4vapp.amountToSend,
+      dInvoice.v4vapp?.comment
+    )
+    dInvoice.askDetails = false
+    dInvoice.callback = response
+    return response
+  } catch (error) {
+    console.error("error", error)
+  }
+}
+
 export async function callBackGenerateInvoice(callbackURL, amount, comment) {
   // Take in a call back url and an amount and generate a Lightning Invoice
   // using the v4vapp api

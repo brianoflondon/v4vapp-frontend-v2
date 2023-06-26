@@ -25,8 +25,17 @@
           :hive-accname="hiveAccObj.value"
           @qr-code="(val) => (qrCode = val)"
         />
+        <div v-if="true" class="q-pt-none">
+          <q-linear-progress
+            class="invoice-timer"
+            size="10px"
+            :value="countdownTimer"
+            color="positive"
+          >
+          </q-linear-progress>
+        </div>
       </q-card-section>
-      <q-card-section>
+      <q-card-section class="action-buttons">
         <div class="flex column text-center q-gutter-sm">
           <q-btn
             :label="amountButton"
@@ -85,7 +94,7 @@ import { useQuasar, copyToClipboard } from "quasar"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import {
   useDecodeLightningInvoice,
-  useGetTimeProgress,
+  useCreateInvoice,
 } from "src/use/useLightningInvoice"
 
 const dInvoice = ref({})
@@ -125,11 +134,26 @@ watch(hiveAccObj, async (val) => {
   resetValues()
 })
 
-watch(hiveHbd, async (val) => {
-  resetValues()
+// If the amount has been set, rerun with the amount.
+watch(hiveHbd, async (newVal, oldVal) => {
+  if (amounts.value?.sats) {
+    qrText.value = "lightning:" + getHiveHbdAddress(hiveAccObj.value.value)
+    const oldComment = dInvoice.value.v4vapp.comment.replace(/#HBD/g, "").trim()
+    const oldMetadata = dInvoice.value.v4vapp.metadata
+    dInvoice.value.hiveHbd = newVal
+    dInvoice.value = await useDecodeLightningInvoice(qrText.value)
+    dInvoice.value.v4vapp.comment = oldComment
+    dInvoice.value.v4vapp.metadata = oldMetadata
+    dInvoice.value.v4vapp.amountToSend = amounts.value.satsNum
+    const invoice = await useCreateInvoice(dInvoice.value)
+    receiveNewInvoice(invoice)
+  } else {
+    resetValues()
+  }
 })
 
 function resetValues() {
+  amounts.value = {}
   setLightningAddress()
   setAmountButton()
 }
@@ -195,7 +219,7 @@ async function setAmount() {
   }
 }
 
-async function receiveNewInvoice(val) {
+function receiveNewInvoice(val) {
   console.log("receiveNewInvoice", val)
   qrText.value = "lightning:" + val.pr
 }

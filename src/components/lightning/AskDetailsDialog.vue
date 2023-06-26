@@ -71,7 +71,7 @@
             </div>
           </div>
           <div class="row amount-buttons q-py-sm q-gutter-sm">
-            <q-btn rounded label = "$1" />
+            <q-btn rounded label="$1" />
             <q-btn rounded label>5</q-btn>
             <q-btn rounded label>10</q-btn>
           </div>
@@ -130,7 +130,7 @@
 
 <script setup>
 import { ref } from "vue"
-import { callBackGenerateInvoice } from "src/use/useLightningInvoice"
+import { useCreateInvoice } from "src/use/useLightningInvoice"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { tidyNumber } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
@@ -219,35 +219,42 @@ const vAutofocus = {
   },
 }
 
-function modifyComment() {
-  if (dInvoice.value.hiveHbd === "hbd") {
-    if (dInvoice.value.v4vapp.comment === undefined) {
-      dInvoice.value.v4vapp.comment = "#HBD"
-    } else {
-      dInvoice.value.v4vapp.comment += " #HBD"
-    }
-  }
+async function createInvoice() {
+  console.log("dInvoice callback", dInvoice.value.callback)
+  const newInvoice = await useCreateInvoice(dInvoice.value)
+  emit("newInvoice", newInvoice)
+  emit("amounts", amounts.value)
 }
 
-async function createInvoice() {
-  try {
-    dInvoice.value.v4vapp.amountToSend = Math.round(
-      dInvoice.value.v4vapp.amountToSend
-    )
-    modifyComment()
-    const response = await callBackGenerateInvoice(
-      dInvoice.value.callback,
-      dInvoice.value.v4vapp.amountToSend,
-      dInvoice.value.v4vapp?.comment
-    )
-    dInvoice.value.askDetails = false
-    dInvoice.value.callback = response
-    emit("newInvoice", response)
-    emit("amounts", amounts.value)
-  } catch (error) {
-    console.log("error", error)
-  }
-}
+// function modifyComment() {
+//   if (dInvoice.value.hiveHbd === "hbd") {
+//     if (dInvoice.value.v4vapp.comment === undefined) {
+//       dInvoice.value.v4vapp.comment = "#HBD"
+//     } else {
+//       dInvoice.value.v4vapp.comment += " #HBD"
+//     }
+//   }
+// }
+
+// async function createInvoice() {
+//   try {
+//     dInvoice.value.v4vapp.amountToSend = Math.round(
+//       dInvoice.value.v4vapp.amountToSend
+//     )
+//     modifyComment()
+//     const response = await callBackGenerateInvoice(
+//       dInvoice.value.callback,
+//       dInvoice.value.v4vapp.amountToSend,
+//       dInvoice.value.v4vapp?.comment
+//     )
+//     dInvoice.value.askDetails = false
+//     dInvoice.value.callback = response
+//     emit("newInvoice", response)
+//     emit("amounts", amounts.value)
+//   } catch (error) {
+//     console.log("error", error)
+//   }
+// }
 </script>
 
 <style lang="scss" scoped>

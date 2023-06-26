@@ -1,13 +1,16 @@
 <template>
   <div class="flex col text-center" @click="copyText">
-    <a :href="qrText" ref="qrCodeContainer" class="invoice-qrcode"></a>
+    <a :href="qrText" class="invoice-qrcode">
+      <div ref="qrCodeContainer">
+      </div>
+    </a>
   </div>
 </template>
 
 <script setup>
 import { useHiveAvatarURL } from "src/use/useHive"
 import { computed, ref, onMounted, onUpdated } from "vue"
-import { copyToClipboard, useQuasar } from "quasar"
+import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
 import QRCodeStyling from "qr-code-styling"
 
@@ -51,8 +54,6 @@ const downloadOptions = computed(() => {
     extension: "webp",
   }
 })
-
-
 
 onUpdated(async () => {
   qrCode.value = new QRCodeStyling({
