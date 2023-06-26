@@ -20,22 +20,51 @@
         />
       </q-card-section>
       <q-card-section>
-        <QRStylingCreateQRCode
+        <CreateQRCode
           :qr-text="qrText"
           :hive-accname="hiveAccObj.value"
+          @qr-code="(val) => (qrCode = val)"
         />
       </q-card-section>
       <q-card-section>
-        <q-btn
-          :label="amountButton"
-          name="amount"
-          rounded
-          color="primary"
-          text-color="black"
-          @click="setAmount"
-        >
-          <q-tooltip>{{ $t("amount") }}</q-tooltip>
-        </q-btn>
+        <div class="flex column text-center q-gutter-sm">
+          <q-btn
+            :label="amountButton"
+            name="amount"
+            rounded
+            color="primary"
+            @click="setAmount"
+          >
+            <q-tooltip>{{ $t("amount_to_send") }}</q-tooltip>
+          </q-btn>
+          <q-btn
+            :label="$t('copy')"
+            name="copy"
+            rounded
+            color="primary"
+            @click="copyText"
+          >
+            <q-tooltip>{{ $t("copy_qrcode") }}</q-tooltip>
+          </q-btn>
+          <q-btn
+            :label="$t('pay')"
+            name="pay"
+            rounded
+            color="primary"
+            :href="qrText"
+          >
+            <q-tooltip>{{ $t("pay_tooltip") }}</q-tooltip>
+          </q-btn>
+          <q-btn
+            :label="$t('download')"
+            name="pay"
+            rounded
+            color="primary"
+            @click="downloadQRCode"
+          >
+            <q-tooltip>{{ $t("download_tooltip") }}</q-tooltip>
+          </q-btn>
+        </div>
       </q-card-section>
     </q-card>
     <AskDetailsDialog
@@ -47,12 +76,12 @@
 </template>
 
 <script setup>
-import QRStylingCreateQRCode from "components/qrcode/QRStylingCreateQRCode.vue"
-import { computed, onMounted, ref, watch } from "vue"
+import CreateQRCode from "components/qrcode/CreateQRCode.vue"
+import { onMounted, ref, watch } from "vue"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
-import { useQuasar } from "quasar"
+import { useQuasar, copyToClipboard } from "quasar"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import {
   useDecodeLightningInvoice,
@@ -69,6 +98,7 @@ const t = useI18n().t
 const quasar = useQuasar()
 
 const qrText = ref("")
+const qrCode = ref(null)
 
 onMounted(() => {
   if (storeUser.currentUser) {
@@ -125,6 +155,20 @@ function getHiveHbdAddress(username) {
   } else {
     return username + `@v4v.app`
   }
+}
+
+function copyText() {
+  console.log(qrText.value)
+  copyToClipboard(qrText.value)
+  quasar.notify({
+    message: t("copied"),
+    color: "positive",
+    icon: "check_circle",
+  })
+}
+
+function downloadQRCode() {
+  qrCode.value.download({ name: hiveAccObj.value.value, extension: "webp" })
 }
 
 async function setAmount() {

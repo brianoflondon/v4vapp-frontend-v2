@@ -48,8 +48,13 @@ export default {
 
   // Get Hive
   amount: "Amount",
-  copy_qrcode: "Click to copy QR code",
+  copy: "Copy",
+  copy_qrcode: "Click to copy QR code to clipboard",
+  pay: "Pay",
+  pay_tooltip: "Pay this invoice with installed Lighting app",
   copied: "Copied to clipboard",
+  download: "Download",
+  download_tooltip: "Download QR code as a file",
   downloading_qrcode: "Downloading QR code",
 
   // SideMenu

@@ -1,68 +1,27 @@
 <template>
   <div class="flex col text-center" @click="copyText">
-    <QRCodeVue3
-      ref="lightningAddressQRCode"
-      :key="props.qrText"
-      :width="props.width"
-      :height="props.height"
-      :value="props.qrText"
-      :image="avatarUrl"
-      margin="5"
-      :qrOptions="{ typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'M' }"
-      :imageOptions="{
-        hideBackgroundDots: false,
-        imageSize: 0.4,
-        margin: 0,
-        crossOrigin: 'anonymous',
-      }"
-      :dotsOptions="{
-        type: 'square',
-        color: '#26249a',
-        gradient: {
-          type: 'linear',
-          rotation: 0,
-          colorStops: [
-            { offset: 0, color: '#000000' },
-            { offset: 1, color: '#000000' },
-          ],
-        },
-      }"
-      :backgroundOptions="{ color: '#ffffff' }"
-      :cornersSquareOptions="{ type: 'square', color: '#000000' }"
-      :cornersDotOptions="{ type: undefined, color: '#000000' }"
-      :download="false"
-      myclass="my-qur"
-      imgclass="img-qr"
-      :downloadOptions="downloadOptions"
-    />
-    <q-tooltip>{{ $t("copy_qrcode") }}</q-tooltip>
+    <a :href="qrText" ref="qrCodeContainer" class="invoice-qrcode"></a>
   </div>
 </template>
 
 <script setup>
 import { useHiveAvatarURL } from "src/use/useHive"
-import QRCodeVue3 from "qrcode-vue3"
-import { computed, ref } from "vue"
+import { computed, ref, onMounted, onUpdated } from "vue"
 import { copyToClipboard, useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
+import QRCodeStyling from "qr-code-styling"
 
 const quasar = useQuasar()
 const t = useI18n().t
 
-const lightningAddressQRCode = ref(null)
+const qrCodeContainer = ref()
+const qrCode = ref()
 
-async function downloadQRCode() {
-  console.log("downloadQRCode")
-  console.log("lightningAddressQRCode", lightningAddressQRCode.value)
-  const imageDataUrl = await lightningAddressQRCode.value.getImageDataUrl()
-
-  console.log("downloadUrl", downloadUrl)
-}
-
+const emit = defineEmits(["qrCode"])
 const props = defineProps({
   qrText: {
     type: String,
-    default: "",
+    required: true,
   },
   width: {
     type: Number,
@@ -78,12 +37,10 @@ const props = defineProps({
   },
 })
 
-console.log("props.qrText", props.qrText)
-
 const avatarUrl = computed(() => {
   return useHiveAvatarURL({
     hiveAccname: props.hiveAccname,
-    size: "small",
+    size: "medium",
     reason: "qr-code",
   })
 })
@@ -95,15 +52,45 @@ const downloadOptions = computed(() => {
   }
 })
 
-function copyText() {
-  copyToClipboard(props.qrText)
-  quasar.notify({
-    message: t("copied"),
-    color: "positive",
-    icon: "check_circle",
-  })
-}
 
+
+onUpdated(async () => {
+  qrCode.value = new QRCodeStyling({
+    width: props.width,
+    height: props.height,
+    type: "webp",
+    data: props.qrText,
+    image: avatarUrl.value,
+    qrOptions: {
+      typeNumber: "0",
+      mode: "Byte",
+      errorCorrectionLevel: "M",
+      cellSize: 6,
+      margin: 0,
+    },
+    dotsOptions: {
+      color: "#1976D2",
+      type: "square",
+    },
+    backgroundOptions: {
+      color: quasar.dark.isActive ? "#03002c" : "#f5f5f5",
+    },
+    margin: 5,
+    imageOptions: {
+      crossOrigin: "anonymous",
+      hideBackgroundDots: false,
+      imageSize: 0.4,
+      margin: 0,
+    },
+  })
+  qrCodeContainer.value.innerHTML = ""
+  qrCode.value.append(qrCodeContainer.value)
+  emit("qrCode", qrCode.value)
+})
+
+onMounted(async () => {
+  console.log("onMounted")
+})
 </script>
 
 <style lang="scss" scoped></style>

@@ -29,7 +29,7 @@
                 type="text"
                 inputmode="numeric"
                 pattern="\d*"
-                :label="$t('send') + ' (Sats)'"
+                label="Sats"
                 stack-label
                 debounce="1000"
                 v-autofocus
@@ -48,7 +48,7 @@
                 type="text"
                 pattern="\d*"
                 inputmode="numeric"
-                :label="$t('send') + ' (HBD)'"
+                label="HBD"
                 stack-label
                 debounce="1000"
                 :input-style="{ 'text-align': 'right' }"
@@ -62,7 +62,7 @@
                 type="text"
                 pattern="\d*"
                 inputmode="numeric"
-                :label="$t('send') + ' (Hive)'"
+                label="Hive"
                 stack-label
                 debounce="1000"
                 :input-style="{ 'text-align': 'right' }"
@@ -70,10 +70,10 @@
               />
             </div>
           </div>
-          <div class="row amount-buttons q-py-sm">
+          <div class="row amount-buttons q-py-sm q-gutter-sm">
             <q-btn rounded label = "$1" />
-            <q-btn>5</q-btn>
-            <q-btn>10</q-btn>
+            <q-btn rounded label>5</q-btn>
+            <q-btn rounded label>10</q-btn>
           </div>
           <div class="row sats-slider q-py-sm">
             <q-badge color="primary"> Sats: </q-badge>
