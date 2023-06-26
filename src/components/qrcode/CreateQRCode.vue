@@ -1,18 +1,26 @@
 <template>
   <div class="flex col text-center" @click="copyText">
-    <a :href="qrText" class="invoice-qrcode">
-      <div v-show="!loading" ref="qrCodeContainer"></div>
-    </a>
     <div
-      v-if="loading"
+      class="text-center items-center"
       :style="{
-        width: '290px',
-        height: '290px',
+        width: '320px',
+        height: '320px',
       }"
     >
-      <q-inner-loading :showing="loading">
-        <q-spinner-gears size="50px" color="primary" />
-      </q-inner-loading>
+      <a :href="qrText" class="invoice-qrcode">
+        <div v-show="!loading" ref="qrCodeContainer"></div>
+      </a>
+      <div
+        v-if="loading"
+        :style="{
+          width: '150px',
+          height: '150px',
+        }"
+      >
+        <q-inner-loading :showing="loading">
+          <q-spinner-gears size="200px" color="primary" />
+        </q-inner-loading>
+      </div>
     </div>
   </div>
 </template>
