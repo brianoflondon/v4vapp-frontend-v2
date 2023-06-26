@@ -1,6 +1,6 @@
 <template>
   <div v-if="dInvoice">
-    <q-dialog v-model="dInvoice.askDetails" @show="showDialog">
+    <q-dialog class="q-mx-lg" v-model="dInvoice.askDetails" @show="showDialog">
       <q-card>
         <q-card-section>
           <div class="row q-pa-sm">
@@ -23,7 +23,7 @@
           </div>
           <!-- SATS INPUT -->
           <div class="row q-pb-none input-amounts justify-around">
-            <div class="input-sats input-amount q-pa-sm">
+            <div class="input-sats input-amount q-pa-none">
               <q-input
                 v-model="amounts.sats"
                 type="text"
@@ -42,7 +42,7 @@
               />
             </div>
             <!-- USD INPUT -->
-            <div class="input-hbd input-amount q-pa-sm">
+            <div class="input-hbd input-amount q-pa-none">
               <q-input
                 v-model="amounts.hbd"
                 type="text"
@@ -56,7 +56,7 @@
               />
             </div>
             <!-- USD INPUT -->
-            <div class="input-hive input-amount q-pa-sm">
+            <div class="input-hive input-amount q-pa-none">
               <q-input
                 v-model="amounts.hive"
                 type="text"
@@ -70,19 +70,24 @@
               />
             </div>
           </div>
-        </q-card-section>
-        <q-card-section class="sats-slider q-py-none q-px-sm">
-          <q-badge color="secondary"> Sats: </q-badge>
-          <q-slider
-            v-model="amounts.satsNum"
-            :min="dInvoice.v4vapp.metadata.minSats"
-            :max="dInvoice.v4vapp.metadata.maxSats"
-            :step="100"
-            label
-            label-always
-            switch-label-side
-            @update:model-value="(val) => updateAmounts(val, 'sats')"
-          ></q-slider>
+          <div class="row amount-buttons q-py-sm">
+            <q-btn rounded label = "$1" />
+            <q-btn>5</q-btn>
+            <q-btn>10</q-btn>
+          </div>
+          <div class="row sats-slider q-py-sm">
+            <q-badge color="primary"> Sats: </q-badge>
+            <q-slider
+              v-model="amounts.satsNum"
+              :min="dInvoice.v4vapp.metadata.minSats"
+              :max="dInvoice.v4vapp.metadata.maxSats"
+              :step="100"
+              label
+              label-always
+              switch-label-side
+              @update:model-value="(val) => updateAmounts(val, 'sats')"
+            ></q-slider>
+          </div>
         </q-card-section>
         <q-card-section
           v-if="dInvoice?.v4vapp?.metadata?.commentLength"
@@ -140,7 +145,7 @@ const amounts = ref({
   sats: 0,
   hbd: 0,
   hive: 0,
-  satsNum: 0,
+  satsNum: 1000,
 })
 const main_message = ref("")
 
@@ -202,7 +207,7 @@ function updateAmounts(amount, currency) {
     errorMessage.value = ""
     errorState.value = false
   }
-  amounts.value.satsNum = sats.toFixed(0)
+  amounts.value.satsNum = sats
   amounts.value.sats = tidyNumber(sats.toFixed(0))
   amounts.value.hive = tidyNumber(hive.toFixed(3))
   amounts.value.hbd = tidyNumber(hbd.toFixed(2))

@@ -6,7 +6,9 @@
           width="50px"
           class="q-mr-sm"
           src="site-logo/v4vapp-logo-shadows.svg"
-        />
+        >
+          <q-tooltip>{{ appName }} - {{ appVersion }}</q-tooltip>
+        </q-img>
       </q-toolbar-title>
       <div class="q-pa-none">
         <TabBar />
@@ -24,7 +26,7 @@
 import LanguageSelector from "components/utils/LanguageSelector.vue"
 import DarkSelector from "components/utils/DarkSelector.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
-import TabBar from "components/TabBar.vue";
+import TabBar from "components/TabBar.vue"
 const rightDrawerOpen = defineModel(false)
 
 const { appName, appVersion } = useAppDetails()

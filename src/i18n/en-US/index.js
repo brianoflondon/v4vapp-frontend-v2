@@ -93,6 +93,7 @@ export default {
   send: "Send",
   receive: "Receive",
   podcasts: "Podcasts",
+  pods: "Pods",
 
   // Ask Details dialog
   asking_details: "You are about to pay:",

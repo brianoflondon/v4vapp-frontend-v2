@@ -20,7 +20,10 @@
         />
       </q-card-section>
       <q-card-section>
-        <CreateQRCode :qr-text="qrText" :hive-accname="hiveAccObj.value" />
+        <QRStylingCreateQRCode
+          :qr-text="qrText"
+          :hive-accname="hiveAccObj.value"
+        />
       </q-card-section>
       <q-card-section>
         <q-btn
@@ -45,6 +48,7 @@
 
 <script setup>
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
+import QRStylingCreateQRCode from "components/qrcode/QRStylingCreateQRCode.vue"
 import { computed, onMounted, ref, watch } from "vue"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import { useStoreUser } from "src/stores/storeUser"
@@ -102,7 +106,7 @@ function resetValues() {
 }
 
 function setLightningAddress() {
-  if(!hiveAccObj.value.value) {
+  if (!hiveAccObj.value.value) {
     qrText.value = "lightning:v4vapp@v4v.app"
   }
   qrText.value = "lightning:" + getHiveHbdAddress(hiveAccObj.value.value)
