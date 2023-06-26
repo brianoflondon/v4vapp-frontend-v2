@@ -11,10 +11,6 @@
     <q-card v-if="votedFor.proposal && votedFor.witness">
       <q-card-section>
         <div class="text-h6">{{ $t("thank_you") }}</div>
-        <pre
-          >{{ votedFor }}
-          Proxy: {{ proxy }}</pre
-        >
       </q-card-section>
       <q-card-section>
         <q-img src="/site-logo/v4vapp-logo-shadows.svg"></q-img>
@@ -111,20 +107,16 @@ if (!modelValue.value?.proposalId) {
 
 onMounted(async () => {
   storeUser.update()
-  console.log("onMounted voteProposal.vue")
-  console.log(storeUser.currentUser)
   if (storeUser.currentUser) {
     hiveAccname.value["value"] = storeUser.currentUser
     modelValue.value.hiveUser = storeUser.currentUser
   }
-  await checkVotes(modelValue.value.hiveUser, modelValue.value.proposalId)
 })
 
 // Watches to see if a new hive account name is selected
 watch(
   () => hiveAccname.value.value,
   async (newVal, oldVal) => {
-    console.log("watch hiveAccname.value.value", oldVal, " >>> ", newVal)
     if (newVal && oldVal === null) {
       modelValue.value.hiveUser = newVal
     }
@@ -135,32 +127,21 @@ watch(
 async function checkVotes(username, proposalId) {
   console.log("checkVotes", username, proposalId)
   const votes = await useGetHiveProposalVotes(username, proposalId)
-  console.log("proposal votes: ", votes)
   if (votes) {
     votedFor.value.proposal = true
   }
   proxy.value = await useCheckProxyVote(username)
-  console.log("proxy: ", proxy.value)
   username = proxy.value || username
-  console.log("username: ", username)
 
   const witnessVotes = await useGetHiveWitnessVotes(username, "brianoflondon")
-  console.log("witnessVotes: ", witnessVotes)
   votedFor.value.witness = witnessVotes
 }
 
 // Function run when the vote button is clicked
 async function vote() {
-  console.log("vote button pushed")
-  console.log("hiveAccname.value", hiveAccname.value)
-  console.log("storeUser.currentUser", storeUser.currentUser)
-  console.log("modelValue.value", modelValue.value)
+  console.log("modelValue.value.hiveUser: ", modelValue.value.hiveUser)
   if (!modelValue.value.hiveUser) {
     modelValue.value.hiveUser = hiveAccname.value.value || storeUser.currentUser
-  }
-  console.log("modelValue.value", modelValue.value)
-  if (modelValue.value.hiveUser) {
-    await checkVotes(modelValue.value.hiveUser, modelValue.value.proposalId)
   }
   hiveAccname.value.value = modelValue.value.hiveUser
   modelValue.value.showDialog = true
@@ -225,7 +206,6 @@ async function doVotes() {
 }
 
 function hideDialog() {
-  console.log("hideDialog")
   modelValue.value.hiveUser = ""
   hiveAccname.value = { label: "", value: "", caption: "" }
   modelValue.value.showDialog = false

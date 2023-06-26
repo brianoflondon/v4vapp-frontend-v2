@@ -94,9 +94,6 @@ const props = defineProps({
   },
 })
 
-console.log('hiveSelectFancyAcc props', props)
-
-
 function enterFn(input) {
   console.log("enterFn", input)
 }
