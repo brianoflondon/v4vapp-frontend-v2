@@ -1,5 +1,5 @@
 <template>
-  <div class="flex col text-center" @click="copyText">
+  <div class="flex col text-center q-pa-none q-ma-none" @click="copyText">
     <div
       class="text-center items-center"
       :style="{
@@ -8,7 +8,13 @@
       }"
     >
       <a :href="qrText" class="invoice-qrcode">
-        <div v-show="!loading" ref="qrCodeContainer"></div>
+        <transition
+          appear
+          enter-active-class="animated fadeIn"
+          leave-active-class="animated fadeOut"
+        >
+          <div v-show="!loading" ref="qrCodeContainer"></div>
+        </transition>
       </a>
       <div
         v-if="loading"

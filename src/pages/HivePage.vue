@@ -4,42 +4,52 @@
       rounded
       class="outer-wrapper row justify-center q-gutter-sm q-pt-lg"
     >
-      <q-card-section>
-        <HiveSelectFancyAcc dense v-model="hiveAccObj" fancy-options />
-      </q-card-section>
-      <q-card-section>
-        <q-btn-toggle
-          v-model="hiveHbd"
-          push
-          glossy
-          toggle-color="primary"
-          :options="[
-            { label: 'HBD', value: 'hbd' },
-            { label: 'Hive', value: 'hive' },
-          ]"
-        />
-      </q-card-section>
-      <q-card-section>
-        <CreateQRCode
-          :qr-text="qrText"
-          :loading="loading"
-          :hive-accname="hiveAccObj.value"
-          @qr-code="(val) => (qrCode = val)"
-        />
-        <div v-if="false" class="q-pt-none">
-          <q-linear-progress
-            class="invoice-timer"
-            size="10px"
-            :value="countdownTimer"
-            color="positive"
-          >
-          </q-linear-progress>
+      <div class="flex column text-center">
+        <div class="flex row justify-center">
+          <q-card-section>
+            <HiveSelectFancyAcc dense v-model="hiveAccObj" fancy-options />
+          </q-card-section>
+          <q-card-section>
+            <q-btn-toggle
+              v-model="hiveHbd"
+              push
+              dense
+              glossy
+              toggle-color="primary"
+              :options="[
+                { label: 'HBD', value: 'hbd' },
+                { label: 'Hive', value: 'hive' },
+              ]"
+            />
+          </q-card-section>
         </div>
-      </q-card-section>
-      <q-card-section class="action-buttons">
-        <div class="flex column text-center q-gutter-sm">
+        <div class="flex row justify-center">
+          <q-card-section>
+            <CreateQRCode
+              :qr-text="qrText"
+              :loading="loading"
+              :hive-accname="hiveAccObj.value"
+              @qr-code="(val) => (qrCode = val)"
+            />
+            <div v-if="false" class="q-pt-none">
+              <q-linear-progress
+                class="invoice-timer"
+                size="10px"
+                :value="0.5"
+                color="positive"
+              >
+              </q-linear-progress>
+            </div>
+          </q-card-section>
+        </div>
+      </div>
+      <q-card-section class="q-pt-sm">
+        <div
+          class="action-buttons flex row text-center justify-center q-pt-sm q-gutter-sm"
+        >
           <q-btn
             :label="amountButton"
+            icon="attach_money"
             name="amount"
             rounded
             color="primary"
@@ -49,6 +59,7 @@
           </q-btn>
           <q-btn
             :label="$t('copy')"
+            icon="content_copy"
             name="copy"
             rounded
             color="primary"
@@ -58,6 +69,7 @@
           </q-btn>
           <q-btn
             :label="$t('pay')"
+            icon="payment"
             name="pay"
             rounded
             color="primary"
@@ -67,7 +79,8 @@
           </q-btn>
           <q-btn
             :label="$t('download')"
-            name="pay"
+            icon="download"
+            name="download"
             rounded
             color="primary"
             @click="downloadQRCode"
@@ -141,11 +154,14 @@ watch(hiveHbd, async (newVal, oldVal) => {
   if (amounts.value?.sats) {
     loading.value = true
     qrText.value = "lightning:" + getHiveHbdAddress(hiveAccObj.value.value)
-    const oldComment = dInvoice.value.v4vapp.comment.replace(/#HBD/g, "").trim()
+    if (dInvoice.value.v4vapp.comment) {
+      dInvoice.value.v4vapp.comment = dInvoice.value.v4vapp.comment
+        .replace(/#HBD/g, "")
+        .trim()
+    }
     const oldMetadata = dInvoice.value.v4vapp.metadata
     dInvoice.value.hiveHbd = newVal
     dInvoice.value = await useDecodeLightningInvoice(qrText.value)
-    dInvoice.value.v4vapp.comment = oldComment
     dInvoice.value.v4vapp.metadata = oldMetadata
     dInvoice.value.v4vapp.amountToSend = amounts.value.satsNum
     const invoice = await useCreateInvoice(dInvoice.value)
@@ -235,4 +251,26 @@ async function receiveAmounts(val) {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@media screen and (max-width: 600px) {
+  .action-buttons {
+    // background-color: purple;
+    flex-direction: row;
+  }
+}
+
+@media screen and (min-width: 601px) {
+  .action-buttons {
+    // background-color: green;
+    flex-direction: column;
+  }
+}
+
+div {
+  // border: 1px solid red;
+}
+// .action-buttons {
+//   background-color: green;
+//   flex-direction: column;
+// }
+</style>
