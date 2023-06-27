@@ -145,7 +145,6 @@ async function anythingDecode(invoice) {
         "Content-Type": "application/json",
       },
     })
-    console.log(response.data)
     return response.data
   } catch (error) {
     console.error(error)
@@ -194,7 +193,6 @@ export async function callBackGenerateInvoice(callbackURL, amount, comment) {
   let url = new URL(baseURL)
   url.search = new URLSearchParams(params).toString()
   let combined = url.toString()
-  console.log(combined)
 
   const v4vappUrl = "/lnurlp/proxy/callback/"
   try {
@@ -218,7 +216,6 @@ export async function callBackGenerateInvoice(callbackURL, amount, comment) {
  */
 async function decodeMetadata(decodedInvoice) {
   let result = await JSON.parse(decodedInvoice.metadata)
-  console.log(result)
   let decoded = result.reduce((obj, item) => {
     obj[item[0]] = item[1]
     return obj
@@ -249,6 +246,5 @@ async function decodeMetadata(decodedInvoice) {
     decoded.maxSats = maximumPayment
   }
 
-  console.log("useLightning decoded ", decoded)
   return decoded
 }

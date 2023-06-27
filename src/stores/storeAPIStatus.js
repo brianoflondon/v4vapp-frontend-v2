@@ -86,7 +86,7 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
         try {
           this.isKeychainIn = await keychain.isKeychainInstalled()
         } catch (error) {
-          console.log({ error })
+          console.error({ error })
         }
       }
       onDownload()

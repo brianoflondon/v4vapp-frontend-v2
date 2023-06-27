@@ -117,9 +117,7 @@ onUpdated(async () => {
   emit("qrCode", qrCode.value)
 })
 
-onMounted(async () => {
-  console.log("onMounted")
-})
+
 </script>
 
 <style lang="scss" scoped></style>

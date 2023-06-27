@@ -84,7 +84,6 @@ function filterFn(val, update, abort) {
 }
 
 async function filterFnAutoselect(val, update, abort) {
-  console.log("val", val)
   // await new Promise((resolve) => setTimeout(resolve, 300))
   update(
     async () => {
@@ -105,6 +104,5 @@ async function filterFnAutoselect(val, update, abort) {
 }
 
 const abortFilterFn = () => {
-  console.log("delayed filter aborted")
 }
 </script>

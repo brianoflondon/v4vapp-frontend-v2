@@ -150,7 +150,6 @@ const amounts = ref({
 const main_message = ref("")
 
 function showDialog() {
-  console.log("dInvoice", dInvoice.value.makingInvoice)
   if (dInvoice.value?.makingInvoice) {
     main_message.value = t("making_invoice")
   } else {
@@ -220,41 +219,10 @@ const vAutofocus = {
 }
 
 async function createInvoice() {
-  console.log("dInvoice callback", dInvoice.value.callback)
   const newInvoice = await useCreateInvoice(dInvoice.value)
   emit("newInvoice", newInvoice)
   emit("amounts", amounts.value)
 }
-
-// function modifyComment() {
-//   if (dInvoice.value.hiveHbd === "hbd") {
-//     if (dInvoice.value.v4vapp.comment === undefined) {
-//       dInvoice.value.v4vapp.comment = "#HBD"
-//     } else {
-//       dInvoice.value.v4vapp.comment += " #HBD"
-//     }
-//   }
-// }
-
-// async function createInvoice() {
-//   try {
-//     dInvoice.value.v4vapp.amountToSend = Math.round(
-//       dInvoice.value.v4vapp.amountToSend
-//     )
-//     modifyComment()
-//     const response = await callBackGenerateInvoice(
-//       dInvoice.value.callback,
-//       dInvoice.value.v4vapp.amountToSend,
-//       dInvoice.value.v4vapp?.comment
-//     )
-//     dInvoice.value.askDetails = false
-//     dInvoice.value.callback = response
-//     emit("newInvoice", response)
-//     emit("amounts", amounts.value)
-//   } catch (error) {
-//     console.log("error", error)
-//   }
-// }
 </script>
 
 <style lang="scss" scoped>

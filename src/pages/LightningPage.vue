@@ -211,10 +211,6 @@ const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 
-onMounted(() => {
-  // console.log("mounted")
-})
-
 let countTimer = null
 
 // Invoice hint shows expiry time and sats costs and fee
@@ -532,7 +528,6 @@ function toggleCamera() {
 
 async function payInvoice(val) {
   // Pay the invoice using Hive Keychain
-  console.log("payInvoice", val)
   const currency = val
   let amount = 0
   if (currency == "HIVE") {
@@ -544,11 +539,9 @@ async function payInvoice(val) {
   dInvoice.value.progress.push(`Requesting ${amount} ${currency}`)
   // replace null with logged in user
   let username = null
-  console.log("storeUser.currentUser", storeUser.currentUser)
   if (storeUser.currentUser) {
     username = storeUser.currentUser
   }
-  console.log("username", username)
   const result = await useHiveKeychainTransfer(username, amount, currency, memo)
 
   if (result.success) {
@@ -582,7 +575,6 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
   await new Promise((resolve) => setTimeout(resolve, 5000))
   const transactions = await useGetHiveTransactionHistory(username)
   const transaction_found = findObjectBefore(transactions, trx_id)
-  console.log("transaction_found", transaction_found)
   if (!transaction_found) {
     if (count < 20) {
       const message = `${t("waiting_for")} ${count}/20`

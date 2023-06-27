@@ -30,7 +30,6 @@ export class HiveUser {
 
   get timeAgo() {
     const temp = formatTimeAgo(this.loginAge)
-    console.log("timeAgo", temp)
     return temp
   }
 
@@ -94,8 +93,6 @@ export const useStoreUser = defineStore("useStoreUser", {
   actions: {
     update() {
       const onOpen = async () => {
-        console.log("onOpen in useStoreUser")
-        console.log("this.currentProfile", this.currentProfile)
         if(this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
         this.currentProfile = this.currentDetails?.profile
@@ -103,12 +100,9 @@ export const useStoreUser = defineStore("useStoreUser", {
       onOpen()
     },
     async login(hiveAccname, keySelected) {
-      console.log("login", hiveAccname, keySelected)
       try {
         const hiveDetails = await useHiveDetails(hiveAccname)
-        console.log("looking up hiveDetails ", hiveDetails)
         const profileName = hiveDetails?.profile?.name || hiveAccname
-        console.log("profileName", profileName)
         if (hiveDetails) {
           const newUser = new HiveUser(hiveAccname, profileName, keySelected)
           this.users[hiveAccname] = newUser
@@ -118,7 +112,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.update()
         }
       } catch (err) {
-        console.log(err)
+        console.error(err)
       }
     },
     switchUser(hiveAccname) {

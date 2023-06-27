@@ -132,7 +132,6 @@ watch(
 )
 
 async function checkVotes(username, proposalId) {
-  console.log("checkVotes", username, proposalId)
   const votes = await useGetHiveProposalVotes(username, proposalId)
   if (votes) {
     votedFor.value.proposal = true
@@ -146,7 +145,6 @@ async function checkVotes(username, proposalId) {
 
 // Function run when the vote button is clicked
 async function vote() {
-  console.log("modelValue.value.hiveUser: ", modelValue.value.hiveUser)
   if (!modelValue.value.hiveUser) {
     modelValue.value.hiveUser = hiveAccname.value.value || storeUser.currentUser
   }
@@ -155,13 +153,10 @@ async function vote() {
 }
 
 async function doVotes() {
-  console.log("doVotes")
   let username = modelValue.value.hiveUser
   if (hiveAccname.value.value) {
     username = hiveAccname.value.value
   }
-  console.log("username: ", { username })
-  console.log()
   if (!votedFor.value.proposal) {
     try {
       const keychain = new KeychainSDK(window)
@@ -176,10 +171,8 @@ async function doVotes() {
       const updateproposalvote = await keychain.updateProposalVote(
         formParamsAsObject.data
       )
-      console.log({ updateproposalvote })
       votedFor.value.proposal = true
     } catch (error) {
-      console.log({ error })
     }
   }
   if (!votedFor.value.witness && !proxy.value) {
@@ -193,13 +186,11 @@ async function doVotes() {
         },
       }
       const witnessvote = await keychain.witnessVote(formParamsAsObject.data)
-      console.log({ witnessvote })
       votedFor.value.witness = true
     } catch (error) {
-      console.log({ error })
+      console.error({ error })
     }
   } else if (proxy.value) {
-    console.log("voting by proxy proxy.value: ", proxy.value)
   }
   if (votedFor.value.witness || votedFor.value.proposal) {
     q.notify({

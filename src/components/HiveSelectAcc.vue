@@ -101,7 +101,6 @@ async function updateOptions(val) {
 
 async function filterFnAutoselect(val, update, abort) {
   // Finds relevant Hive accounts for the options drop down
-  // console.log("filter", val, update, abort)
   update(
     async () => {
       await updateOptions(val)
@@ -119,7 +118,6 @@ async function filterFnAutoselect(val, update, abort) {
 }
 
 const abortFilterFn = () => {
-  console.log("delayed filter aborted")
 }
 </script>
 

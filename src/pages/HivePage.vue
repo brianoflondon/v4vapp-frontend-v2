@@ -41,9 +41,7 @@
         </div>
       </div>
       <div class="q-pt-none">
-        <div
-          class="action-buttons flex row text-center justify-center q-pt-sm q-gutter-sm"
-        >
+        <div class="action-buttons flex row q-pt-sm q-gutter-sm">
           <q-btn
             :label="amountButton"
             icon="attach_money"
@@ -92,7 +90,7 @@
           >
             <q-tooltip>{{ $t("download_tooltip") }}</q-tooltip>
           </q-btn>
-          <div class="vote-button q-pa-lg text-center">
+          <div class="vote-button text-center">
             <VoteProposal v-model="voteOptions" />
           </div>
         </div>
@@ -152,7 +150,6 @@ onMounted(() => {
 })
 
 watch(storeUser, async (val) => {
-  console.log("storeUser", val.currentUser)
   hiveAccObj.value = {
     label: val.hiveAccname,
     value: val.hiveAccname,
@@ -218,7 +215,6 @@ function getHiveHbdAddress(username) {
 }
 
 function copyText() {
-  console.log(qrText.value)
   copyToClipboard(qrText.value)
   quasar.notify({
     message: t("copied"),
@@ -246,22 +242,19 @@ async function setAmount() {
   }
   try {
     dInvoice.value = await useDecodeLightningInvoice(qrText.value)
-    console.log("dInvoice.value", dInvoice.value)
     dInvoice.value.makingInvoice = true
     dInvoice.value.hiveHbd = hiveHbd.value
     dInvoice.value.askDetails = true
   } catch (e) {
-    console.log("e", e)
+    console.error("error:", e)
   }
 }
 
 function receiveNewInvoice(val) {
-  console.log("receiveNewInvoice", val)
   qrText.value = "lightning:" + val.pr
 }
 
 async function receiveAmounts(val) {
-  console.log("receiveAmounts", val)
   amounts.value = val
   setAmountButton()
 }
@@ -270,14 +263,12 @@ async function receiveAmounts(val) {
 <style lang="scss" scoped>
 @media screen and (max-width: 600px) {
   .action-buttons {
-    // background-color: purple;
     flex-direction: row;
+    justify-content: space-evenly;
   }
 }
-
 @media screen and (min-width: 601px) {
   .action-buttons {
-    // background-color: green;
     flex-direction: column;
   }
 }
