@@ -160,6 +160,14 @@ function showDialog() {
   }
 }
 
+function calcSatsFeeOnly(sats) {
+  let satsWithFees = sats
+  satsWithFees *= 1 + storeAPIStatus.apiStatus.config.conv_fee_percent
+  satsWithFees += storeAPIStatus.apiStatus.config.conv_fee_sats
+  console.log("satsWithFees", satsWithFees, "fee", satsWithFees - sats)
+  return satsWithFees - sats
+}
+
 function updateAmounts(amount, currency) {
   if (amount === "") {
     amount = "1"
@@ -170,16 +178,29 @@ function updateAmounts(amount, currency) {
     amount = parseFloat(amount.replace(/,/g, ""), 10)
   }
   let sats, hive, hbd
-
+  // Sending is true for sending Hive to Lightning
+  const sending = dInvoice.value.sending
+  console.log("sending", sending)
   switch (currency) {
     case "sats":
       sats = parseInt(amount)
+      if (sending) {
+        amount += calcSatsFeeOnly(sats)
+      } else {
+        amount -= calcSatsFeeOnly(sats)
+      }
+      console.log("amount", amount)
       hive = amount / storeAPIStatus.hiveSatsNumber
       hbd = amount / storeAPIStatus.HBDSatsNumber
       break
 
     case "hive":
       sats = amount * storeAPIStatus.hiveSatsNumber
+      if (sending) {
+        sats -= calcSatsFeeOnly(sats)
+      } else {
+        sats += calcSatsFeeOnly(sats)
+      }
       hive = amount
       hbd =
         (amount * storeAPIStatus.hiveSatsNumber) / storeAPIStatus.HBDSatsNumber
@@ -187,6 +208,11 @@ function updateAmounts(amount, currency) {
 
     case "hbd":
       sats = amount * storeAPIStatus.HBDSatsNumber
+      if (sending) {
+        sats -= calcSatsFeeOnly(sats)
+      } else {
+        sats += calcSatsFeeOnly(sats)
+      }
       hive =
         (amount * storeAPIStatus.HBDSatsNumber) / storeAPIStatus.hiveSatsNumber
       hbd = amount

@@ -244,6 +244,7 @@ async function setAmount() {
     dInvoice.value = await useDecodeLightningInvoice(qrText.value)
     dInvoice.value.makingInvoice = true
     dInvoice.value.hiveHbd = hiveHbd.value
+    dInvoice.value.sending = false   // Flag to show this is for receiving Lightning to Hive
     dInvoice.value.askDetails = true
   } catch (e) {
     console.error("error:", e)
