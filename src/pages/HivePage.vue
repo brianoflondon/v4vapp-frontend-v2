@@ -2,11 +2,11 @@
   <q-page>
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div class="flex column text-center">
-        <div class="flex row justify-center">
-          <div>
+        <div class="flex row justify-center items-center">
+          <div class="q-pa-sm">
             <HiveSelectFancyAcc dense v-model="hiveAccObj" fancy-options />
           </div>
-          <div>
+          <div class="q-pa-sm">
             <q-btn-toggle
               v-model="hiveHbd"
               push
@@ -20,7 +20,7 @@
             />
           </div>
         </div>
-        <div class="q-pt-md flex row justify-center">
+        <div class="q-pa-md flex row justify-center">
           <div>
             <CreateQRCode
               :qr-text="qrText"
@@ -51,6 +51,8 @@
             rounded
             color="primary"
             @click="setAmount"
+            class="btn-fixed-width"
+            align="between"
           >
             <q-tooltip>{{ $t("amount_to_send") }}</q-tooltip>
           </q-btn>
@@ -61,6 +63,8 @@
             rounded
             color="primary"
             @click="copyText"
+            class="btn-fixed-width"
+            align="between"
           >
             <q-tooltip>{{ $t("copy_qrcode") }}</q-tooltip>
           </q-btn>
@@ -71,6 +75,8 @@
             rounded
             color="primary"
             :href="qrText"
+            class="btn-fixed-width"
+            align="between"
           >
             <q-tooltip>{{ $t("pay_tooltip") }}</q-tooltip>
           </q-btn>
@@ -81,9 +87,14 @@
             rounded
             color="primary"
             @click="downloadQRCode"
+            class="btn-fixed-width"
+            align="between"
           >
             <q-tooltip>{{ $t("download_tooltip") }}</q-tooltip>
           </q-btn>
+          <div class="vote-button q-pa-lg text-center">
+            <VoteProposal v-model="voteOptions" />
+          </div>
         </div>
       </div>
     </div>
@@ -107,6 +118,14 @@ import {
   useDecodeLightningInvoice,
   useCreateInvoice,
 } from "src/use/useLightningInvoice"
+
+import VoteProposal from "components/utils/VoteProposal.vue"
+
+const voteOptions = ref({
+  hiveUser: "",
+  showButton: true,
+  showDialog: false,
+})
 
 const dInvoice = ref({})
 const amounts = ref({})

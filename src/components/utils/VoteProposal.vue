@@ -1,6 +1,14 @@
 <template>
   <div v-if="modelValue?.showButton">
-    <q-btn :label="$t('vote')" rounded color="primary" @click="vote">
+    <q-btn
+      class="btn-fixed-width"
+      align="around"
+      :label="$t('vote')"
+      rounded
+      color="secondary"
+      icon="how_to_vote"
+      @click="vote"
+    >
       <q-tooltip>
         {{ $t("vote_for_proposal") }} {{ modelValue.proposalId }}
         {{ $t("and") }} {{ $t("witness") }} {{ $t("please") }}
@@ -38,7 +46,6 @@
           {{ $t("vote_for_proposal") }} {{ modelValue.proposalId }}
           {{ $t("and") }} {{ $t("witness") }} {{ $t("please") }}
         </div>
-        <pre>{{ votedFor }} {{ proxy }}</pre>
         <q-btn
           :label="$t('vote')"
           name="Vote Proposal"

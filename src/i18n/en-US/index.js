@@ -31,6 +31,7 @@ export default {
 
   // Lightning Page
   lightning: "Lightning",
+  hive: "Hive",
 
   // Login
   keychain_not_installed: "Keychain is not installed",
@@ -61,6 +62,9 @@ export default {
   page: "Page",
   home: "Home",
   status: "Status",
+
+  // Status Page
+  status_page_message: "Status page is under construction, in the meantime please visit Hive.",
 
   // Pricebar
   sats: "シ",

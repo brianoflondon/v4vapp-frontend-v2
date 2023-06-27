@@ -1,53 +1,48 @@
 <template>
-  <q-page class="flex flex-center">
-    <q-card class="index-card text-center q-pa-lg">
-      <q-card-section>
-        <div class="text-h6">{{ $t("status") }} {{ $t("page") }}</div>
-        <div class="text-subtitle2">Brian of London</div>
-      </q-card-section>
-      <q-card-section>
-        <div class="hive-login-window">
-          <HiveLogin v-model="hiveAccObj" />
-        </div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        {{ $t("index_page_message") }}
-        <a href="https://peakd.com/created/v4vapp-v2">Hive</a>
-      </q-card-section>
-      <q-card-section
-        :class="{
-          'is-logged-in': hiveAccObj?.loggedIn,
-          'not-logged-in': !hiveAccObj?.loggedIn,
-        }"
-      >
-        {{ hiveAccObj }}
-      </q-card-section>
-    </q-card>
+  <q-page>
+    <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
+      <div class="q-pa-md row items-start q-gutter-md">
+        <q-card class="my-card" flat bordered>
+          <a
+            href="https://peakd.com/hive-110369/@v4vapp/hive-to-lightning-gateway-fees"
+            target="_blank"
+          >
+            <q-img src="site-logo/v4vapp-logo-shadows.svg" :ratio="16 / 11" />
+          </a>
+          <q-card-section>
+            <div class="text-overline text-orange-9">V4V.app</div>
+            <div class="text-h5 q-mt-sm q-mb-xs">{{ $t("status") }}</div>
+            <a
+              href="https://peakd.com/hive-110369/@v4vapp/hive-to-lightning-gateway-fees"
+              target="_blank"
+            >
+              <div class="text-caption text-grey">
+                {{ $t("status_page_message") }}
+              </div>
+            </a>
+          </q-card-section>
+          <q-card-section>
+            <div class="vote-button q-pa-lg text-center">
+              <VoteProposal v-model="voteOptions" />
+            </div>
+          </q-card-section>
+      </q-card>
+      </div>
+    </div>
   </q-page>
 </template>
 
 <script setup>
 import { ref } from "vue"
-import HiveLogin from "components/HiveLogin.vue"
 import { useI18n } from "vue-i18n"
+import VoteProposal from "components/utils/VoteProposal.vue"
 const { t } = useI18n()
-const hiveAccObj = ref("")
+
+const voteOptions = ref({
+  hiveUser: "",
+  showButton: true,
+  showDialog: false,
+})
 </script>
 
-<style lang="sass" scoped>
-.index-card
-  width: 90%
-  height: auto
-  max-width: 800px
-  min-width: 200px
-
-.image-container img
-  width: 100%
-  height: auto
-
-.is-logged-in
-  background: radial-gradient(circle, #35a2ff 0%, #014a88 100%)
-
-.not-logged-in
-  background: radial-gradient(circle, #333333 0%, #880000 100%)
-</style>
+<style lang="sass" scoped></style>
