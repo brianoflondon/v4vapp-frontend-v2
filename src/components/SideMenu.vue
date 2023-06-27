@@ -37,17 +37,23 @@ const linkList = ref([
     link: "/lnd",
   },
   {
-    title: t("status"),
-    caption: t("status"),
-    icon: "hive",
-    link: "status",
+    title: t("hive"),
+    caption: t("hive"),
+    icon: "fa-brands fa-hive",
+    link: "/hive",
   },
   {
-    title: "Select Demo",
-    caption: "Select Demo",
-    icon: "javascript",
-    link: "selectdemo",
+    title: t("status"),
+    caption: t("status"),
+    icon: "circle",
+    link: "status",
   },
+  // {
+  //   title: "Select Demo",
+  //   caption: "Select Demo",
+  //   icon: "javascript",
+  //   link: "selectdemo",
+  // },
 ])
 const hiveUsername = ref("")
 const hiveDetails = ref(null)

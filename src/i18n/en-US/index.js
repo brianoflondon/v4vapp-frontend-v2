@@ -31,6 +31,7 @@ export default {
 
   // Lightning Page
   lightning: "Lightning",
+  hive: "Hive",
 
   // Login
   keychain_not_installed: "Keychain is not installed",
@@ -38,6 +39,7 @@ export default {
   hive_login: "Hive Login",
   login: "Login",
   login_as: "Login as",
+  login_with: "Login with",
   hive_keychain: "Hive Keychain",
   login_in_progress: "Login in progress",
   login_failed: "Login failed",
@@ -45,10 +47,24 @@ export default {
   sign_this: "Sign this",
   matches: "matches",
 
+  // Get Hive
+  amount: "Amount",
+  copy: "Copy",
+  copy_qrcode: "Click to copy QR code to clipboard",
+  pay: "Pay",
+  pay_tooltip: "Pay this invoice with installed Lighting app",
+  copied: "Copied to clipboard",
+  download: "Download",
+  download_tooltip: "Download QR code as a file",
+  downloading_qrcode: "Downloading QR code",
+
   // SideMenu
   page: "Page",
   home: "Home",
   status: "Status",
+
+  // Status Page
+  status_page_message: "Status page is under construction, in the meantime please visit Hive.",
 
   // Pricebar
   sats: "シ",
@@ -80,11 +96,18 @@ export default {
   thank_you_for_voting: "Thank you for voting!",
   vote_witness: "Vote for my Hive Witness",
   vote_proposal: "Vote for my DHF Proposal",
+  thank_you: "Thank you for voting already!",
+
+  // Tab Bar
+  send: "Send",
+  receive: "Receive",
+  podcasts: "Podcasts",
+  pods: "Pods",
 
   // Ask Details dialog
   asking_details: "You are about to pay:",
+  making_invoice: "You are about to create an invoice for:",
   amount_to_send: "Amount to send",
-  send: "Send",
   too_low: "Amount too low",
   too_high: "Amount too high",
   comment_length: "Comment is too long",

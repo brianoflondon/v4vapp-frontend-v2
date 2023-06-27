@@ -12,6 +12,7 @@
           fancyOptions
         />
       </q-item>
+      <q-item>{{ $t("login_with") }}:</q-item>
       <q-item dense>
         <q-btn
           :disable="

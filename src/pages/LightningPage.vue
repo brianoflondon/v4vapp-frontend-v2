@@ -11,7 +11,6 @@
         <ShowProgress v-model="dInvoice" />
       </div>
       <div class="camera-toggle-invoice">
-
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
             <div class="camera-toggle">
@@ -188,7 +187,6 @@ import VoteProposal from "components/utils/VoteProposal.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
-import SendOrReceive from "components/lightning/SendOrReceive.vue"
 import { useStoreUser } from "src/stores/storeUser"
 
 const invoiceText = ref(null)

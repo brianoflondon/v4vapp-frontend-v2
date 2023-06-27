@@ -1,11 +1,11 @@
 <template>
   <div v-if="dInvoice">
-    <q-dialog v-model="dInvoice.askDetails" @show="showDialog">
+    <q-dialog class="q-mx-lg" v-model="dInvoice.askDetails" @show="showDialog">
       <q-card>
         <q-card-section>
-          <div class="row q-pa-md">
+          <div class="row q-pa-sm">
             <div class="left-side-details col-7 q-gutter-md">
-              <p>{{ $t("asking_details") }}</p>
+              <p>{{ main_message }}</p>
               <p>
                 <strong>{{ dInvoice?.v4vapp?.metadata?.requestString }}</strong>
               </p>
@@ -22,14 +22,14 @@
             </div>
           </div>
           <!-- SATS INPUT -->
-          <div class="row input-amounts justify-around">
-            <div class="input-sats input-amount q-pa-sm">
+          <div class="row q-pb-none input-amounts justify-around">
+            <div class="input-sats input-amount q-pa-none">
               <q-input
                 v-model="amounts.sats"
                 type="text"
                 inputmode="numeric"
                 pattern="\d*"
-                :label="$t('send') + ' (Sats)'"
+                label="Sats"
                 stack-label
                 debounce="1000"
                 v-autofocus
@@ -42,13 +42,13 @@
               />
             </div>
             <!-- USD INPUT -->
-            <div class="input-hbd input-amount q-pa-sm">
+            <div class="input-hbd input-amount q-pa-none">
               <q-input
                 v-model="amounts.hbd"
                 type="text"
                 pattern="\d*"
                 inputmode="numeric"
-                :label="$t('send') + ' (HBD)'"
+                label="HBD"
                 stack-label
                 debounce="1000"
                 :input-style="{ 'text-align': 'right' }"
@@ -56,13 +56,13 @@
               />
             </div>
             <!-- USD INPUT -->
-            <div class="input-hive input-amount q-pa-sm">
+            <div class="input-hive input-amount q-pa-none">
               <q-input
                 v-model="amounts.hive"
                 type="text"
                 pattern="\d*"
                 inputmode="numeric"
-                :label="$t('send') + ' (Hive)'"
+                label="Hive"
                 stack-label
                 debounce="1000"
                 :input-style="{ 'text-align': 'right' }"
@@ -70,10 +70,28 @@
               />
             </div>
           </div>
+          <div v-if="false" class="row amount-buttons q-py-sm q-gutter-sm">
+            <q-btn rounded label="$1" />
+            <q-btn rounded label>5</q-btn>
+            <q-btn rounded label>10</q-btn>
+          </div>
+          <div class="row sats-slider q-py-sm">
+            <q-badge color="primary"> Sats: </q-badge>
+            <q-slider
+              v-model="amounts.satsNum"
+              :min="dInvoice.v4vapp.metadata.minSats"
+              :max="dInvoice.v4vapp.metadata.maxSats"
+              :step="100"
+              label
+              label-always
+              switch-label-side
+              @update:model-value="(val) => updateAmounts(val, 'sats')"
+            ></q-slider>
+          </div>
         </q-card-section>
         <q-card-section
           v-if="dInvoice?.v4vapp?.metadata?.commentLength"
-          class="q-pa-md"
+          class="q-pa-sm"
         >
           <q-input
             v-model="dInvoice.v4vapp.comment"
@@ -112,7 +130,7 @@
 
 <script setup>
 import { ref } from "vue"
-import { callBackGenerateInvoice } from "src/use/useLightningInvoice"
+import { useCreateInvoice } from "src/use/useLightningInvoice"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { tidyNumber } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
@@ -120,16 +138,24 @@ const t = useI18n().t
 
 const storeAPIStatus = useStoreAPIStatus()
 const dInvoice = defineModel({})
-const emit = defineEmits(["newInvoice"])
+const emit = defineEmits(["newInvoice", "amounts"])
 const errorMessage = ref("")
 const errorState = ref(false)
 const amounts = ref({
   sats: 0,
   hbd: 0,
   hive: 0,
+  satsNum: 1000,
 })
+const main_message = ref("")
 
 function showDialog() {
+  console.log("dInvoice", dInvoice.value.makingInvoice)
+  if (dInvoice.value?.makingInvoice) {
+    main_message.value = t("making_invoice")
+  } else {
+    main_message.value = t("asking_details")
+  }
   if (dInvoice.value.v4vapp.amountToSend) {
     updateAmounts(dInvoice.value.v4vapp.amountToSend, "sats")
   }
@@ -181,7 +207,7 @@ function updateAmounts(amount, currency) {
     errorMessage.value = ""
     errorState.value = false
   }
-
+  amounts.value.satsNum = sats
   amounts.value.sats = tidyNumber(sats.toFixed(0))
   amounts.value.hive = tidyNumber(hive.toFixed(3))
   amounts.value.hbd = tidyNumber(hbd.toFixed(2))
@@ -194,22 +220,41 @@ const vAutofocus = {
 }
 
 async function createInvoice() {
-  try {
-    dInvoice.value.v4vapp.amountToSend = Math.round(
-      dInvoice.value.v4vapp.amountToSend
-    )
-    const response = await callBackGenerateInvoice(
-      dInvoice.value.callback,
-      dInvoice.value.v4vapp.amountToSend,
-      dInvoice.value.v4vapp?.comment
-    )
-    dInvoice.value.askDetails = false
-    dInvoice.value.callback = response
-    emit("newInvoice", response)
-  } catch (error) {
-    console.log("error", error)
-  }
+  console.log("dInvoice callback", dInvoice.value.callback)
+  const newInvoice = await useCreateInvoice(dInvoice.value)
+  emit("newInvoice", newInvoice)
+  emit("amounts", amounts.value)
 }
+
+// function modifyComment() {
+//   if (dInvoice.value.hiveHbd === "hbd") {
+//     if (dInvoice.value.v4vapp.comment === undefined) {
+//       dInvoice.value.v4vapp.comment = "#HBD"
+//     } else {
+//       dInvoice.value.v4vapp.comment += " #HBD"
+//     }
+//   }
+// }
+
+// async function createInvoice() {
+//   try {
+//     dInvoice.value.v4vapp.amountToSend = Math.round(
+//       dInvoice.value.v4vapp.amountToSend
+//     )
+//     modifyComment()
+//     const response = await callBackGenerateInvoice(
+//       dInvoice.value.callback,
+//       dInvoice.value.v4vapp.amountToSend,
+//       dInvoice.value.v4vapp?.comment
+//     )
+//     dInvoice.value.askDetails = false
+//     dInvoice.value.callback = response
+//     emit("newInvoice", response)
+//     emit("amounts", amounts.value)
+//   } catch (error) {
+//     console.log("error", error)
+//   }
+// }
 </script>
 
 <style lang="scss" scoped>

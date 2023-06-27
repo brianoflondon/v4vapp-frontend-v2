@@ -1,16 +1,34 @@
 <template>
   <div v-if="modelValue?.showButton">
-    <q-btn :label="$t('vote')" rounded color="primary" @click="vote">
+    <q-btn
+      class="btn-fixed-width top-bar"
+      align="around"
+      :label="$t('vote')"
+      rounded
+      color="secondary"
+      icon="how_to_vote"
+      @click="vote"
+    >
       <q-tooltip>
         {{ $t("vote_for_proposal") }} {{ modelValue.proposalId }}
         {{ $t("and") }} {{ $t("witness") }} {{ $t("please") }}
       </q-tooltip>
     </q-btn>
   </div>
-  <q-dialog v-model="modelValue.showDialog">
-    <q-card>
+  <q-dialog v-model="modelValue.showDialog" @hide="hideDialog">
+    <q-card v-if="votedFor.proposal && votedFor.witness">
+      <q-card-section>
+        <div class="text-h6">{{ $t("thank_you") }}</div>
+      </q-card-section>
+      <q-card-section>
+        <q-img src="/site-logo/v4vapp-logo-shadows.svg"></q-img>
+      </q-card-section>
+    </q-card>
+    <q-card v-if="!(votedFor.proposal && votedFor.witness)">
       <div v-if="!modelValue.hiveUser">
-        <q-card-section class="row items-center q-pb-none">
+        <q-card-section
+          class="hive-accname-selector row items-center q-pb-none"
+        >
           <div class="text-h7">{{ $t("enter_hive_account") }}</div>
         </q-card-section>
         <q-card-section>
@@ -18,7 +36,7 @@
         </q-card-section>
       </div>
       <q-card-section class="text-center">
-        <p class="text-h6">{{ $t("voting_as") }} @{{ hiveAccname }}</p>
+        <p class="text-h6">{{ $t("voting_as") }} @{{ hiveAccname.value }}</p>
       </q-card-section>
       <q-card-section class="text-center">
         <p>
@@ -28,23 +46,9 @@
           {{ $t("vote_for_proposal") }} {{ modelValue.proposalId }}
           {{ $t("and") }} {{ $t("witness") }} {{ $t("please") }}
         </div>
-        <pre>{{ votedFor }}</pre>
         <q-btn
-          :label="$t('vote_proposal')"
+          :label="$t('vote')"
           name="Vote Proposal"
-          rounded
-          color="primary"
-          text-color="black"
-          @click="doVotes"
-        >
-          <q-tooltip>
-            {{ $t("vote_for_proposal") }} {{ modelValue.proposalId }}
-            {{ $t("and") }} {{ $t("witness") }} {{ $t("please") }}
-          </q-tooltip>
-        </q-btn>
-        <q-btn
-          :label="$t('vote_witness')"
-          name="Vote Witness"
           rounded
           color="primary"
           text-color="black"
@@ -61,13 +65,14 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue"
+import { onMounted, ref, watch } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { KeychainSDK } from "keychain-sdk"
 import { useStoreUser } from "src/stores/storeUser"
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
 import {
+  useCheckProxyVote,
   useGetHiveProposalVotes,
   useGetHiveWitnessVotes,
 } from "src/use/useHive"
@@ -79,6 +84,7 @@ const votedFor = ref({
   proposal: false,
   witness: false,
 })
+const proxy = ref(false)
 
 storeUser.update()
 const modelValue = defineModel({
@@ -100,55 +106,51 @@ const modelValue = defineModel({
   },
 })
 
+const hiveAccname = ref({ label: "", value: modelValue.hiveUser, caption: "" })
+
 if (!modelValue.value?.proposalId) {
   modelValue.value.proposalId = "265"
 }
 
 onMounted(async () => {
   storeUser.update()
-  console.log("onMounted voteProposal.vue")
-  console.log(storeUser.currentUser)
   if (storeUser.currentUser) {
-    hiveAccname.value = storeUser.currentUser
+    hiveAccname.value["value"] = storeUser.currentUser
     modelValue.value.hiveUser = storeUser.currentUser
   }
-  await checkVotes()
 })
 
-async function checkVotes() {
-  console.log("checkVotes")
-  const votes = await useGetHiveProposalVotes(
-    storeUser.currentUser,
-    modelValue.value.proposalId
-  )
-  console.log("votes: ", votes)
+// Watches to see if a new hive account name is selected
+watch(
+  () => hiveAccname.value.value,
+  async (newVal, oldVal) => {
+    if (newVal && oldVal === null) {
+      modelValue.value.hiveUser = newVal
+    }
+    await checkVotes(modelValue.value.hiveUser, modelValue.value.proposalId)
+  }
+)
+
+async function checkVotes(username, proposalId) {
+  console.log("checkVotes", username, proposalId)
+  const votes = await useGetHiveProposalVotes(username, proposalId)
   if (votes) {
     votedFor.value.proposal = true
   }
-  const witnessVotes = await useGetHiveWitnessVotes(
-    storeUser.currentUser,
-    "brianoflondon"
-  )
+  proxy.value = await useCheckProxyVote(username)
+  username = proxy.value || username
+
+  const witnessVotes = await useGetHiveWitnessVotes(username, "brianoflondon")
   votedFor.value.witness = witnessVotes
-  console.log("witnessVotes: ", witnessVotes)
 }
 
-const hiveAccname = ref({ label: "", value: modelValue.hiveUser, caption: "" })
-
+// Function run when the vote button is clicked
 async function vote() {
-  console.log("vote")
-  const votes = await useGetHiveProposalVotes(
-    storeUser.currentUser,
-    modelValue.value.proposalId
-  )
-  console.log("votes: ", votes)
-
-  if (storeUser.currentUser) {
-    hiveAccname.value = storeUser.currentUser
-    modelValue.value.hiveUser = storeUser.currentUser
+  console.log("modelValue.value.hiveUser: ", modelValue.value.hiveUser)
+  if (!modelValue.value.hiveUser) {
+    modelValue.value.hiveUser = hiveAccname.value.value || storeUser.currentUser
   }
-  storeUser.update()
-  console.log(modelValue.value)
+  hiveAccname.value.value = modelValue.value.hiveUser
   modelValue.value.showDialog = true
 }
 
@@ -160,43 +162,46 @@ async function doVotes() {
   }
   console.log("username: ", { username })
   console.log()
-  let witnessVoted = false
-  let proposalVoted = false
-  try {
-    const keychain = new KeychainSDK(window)
-    const formParamsAsObject = {
-      data: {
-        username: username,
-        proposal_ids: [modelValue.value.proposalId],
-        approve: true,
-        extensions: [modelValue.value.proposalId],
-      },
+  if (!votedFor.value.proposal) {
+    try {
+      const keychain = new KeychainSDK(window)
+      const formParamsAsObject = {
+        data: {
+          username: username,
+          proposal_ids: [modelValue.value.proposalId],
+          approve: true,
+          extensions: [modelValue.value.proposalId],
+        },
+      }
+      const updateproposalvote = await keychain.updateProposalVote(
+        formParamsAsObject.data
+      )
+      console.log({ updateproposalvote })
+      votedFor.value.proposal = true
+    } catch (error) {
+      console.log({ error })
     }
-    const updateproposalvote = await keychain.updateProposalVote(
-      formParamsAsObject.data
-    )
-    console.log({ updateproposalvote })
-    proposalVoted = true
-  } catch (error) {
-    console.log({ error })
   }
-
-  try {
-    const keychain = new KeychainSDK(window)
-    const formParamsAsObject = {
-      data: {
-        username: username,
-        witness: "brianoflondon",
-        vote: true,
-      },
+  if (!votedFor.value.witness && !proxy.value) {
+    try {
+      const keychain = new KeychainSDK(window)
+      const formParamsAsObject = {
+        data: {
+          username: username,
+          witness: "brianoflondon",
+          vote: true,
+        },
+      }
+      const witnessvote = await keychain.witnessVote(formParamsAsObject.data)
+      console.log({ witnessvote })
+      votedFor.value.witness = true
+    } catch (error) {
+      console.log({ error })
     }
-    const witnessvote = await keychain.witnessVote(formParamsAsObject.data)
-    console.log({ witnessvote })
-    witnessVoted = true
-  } catch (error) {
-    console.log({ error })
+  } else if (proxy.value) {
+    console.log("voting by proxy proxy.value: ", proxy.value)
   }
-  if (witnessVoted || proposalVoted) {
+  if (votedFor.value.witness || votedFor.value.proposal) {
     q.notify({
       message: t("thank_you_for_voting"),
       type: "positive",
@@ -204,6 +209,12 @@ async function doVotes() {
       timeout: 5000,
     })
   }
+  modelValue.value.showDialog = false
+}
+
+function hideDialog() {
+  modelValue.value.hiveUser = ""
+  hiveAccname.value = { label: "", value: "", caption: "" }
   modelValue.value.showDialog = false
 }
 </script>

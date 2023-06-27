@@ -81,6 +81,7 @@ const options = ref([])
 const model = ref()
 const avatar = ref(useBlankProfileURL())
 const emit = defineEmits(["updateValue"])
+
 const props = defineProps({
   label: {
     type: String,
