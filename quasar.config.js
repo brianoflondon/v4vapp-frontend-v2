@@ -8,8 +8,8 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
-const { configure } = require("quasar/wrappers");
-const path = require("path");
+const { configure } = require("quasar/wrappers")
+const path = require("path")
 
 module.exports = configure(function (/* ctx */) {
   return {
@@ -37,7 +37,7 @@ module.exports = configure(function (/* ctx */) {
     extras: [
       // 'ionicons-v4',
       // 'mdi-v5',
-      // 'fontawesome-v6',
+      "fontawesome-v6",
       // 'eva-icons',
       // 'themify',
       // 'line-awesome',
@@ -71,7 +71,13 @@ module.exports = configure(function (/* ctx */) {
       // distDir
 
       // extendViteConf (viteConf) {},
-      // viteVuePluginOptions: {},
+
+      // added to use the new defineModel macro in Vue 3.3.0
+      viteVuePluginOptions: {
+        script: {
+          defineModel: true,
+        },
+      },
 
       vitePlugins: [
         [
@@ -112,7 +118,7 @@ module.exports = configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: [],
+      plugins: ["Notify", "LocalStorage", "SessionStorage"],
     },
 
     // animations: 'all', // --- includes all animations
@@ -210,5 +216,5 @@ module.exports = configure(function (/* ctx */) {
       // extendBexScriptsConf (esbuildConf) {}
       // extendBexManifestJson (json) {}
     },
-  };
-});
+  }
+})

@@ -27,3 +27,9 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
+
+
+# ENV FILES
+.env
+.env.*
+

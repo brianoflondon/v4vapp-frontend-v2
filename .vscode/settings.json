@@ -16,5 +16,8 @@
     "activityBar.background": "#063147",
     "titleBar.activeBackground": "#094464",
     "titleBar.activeForeground": "#F6FBFE"
-  }
+  },
+  "cSpell.words": [
+    "pinia"
+  ]
 }
