@@ -94,9 +94,7 @@ const props = defineProps({
   },
 })
 
-function enterFn(input) {
-  console.log("enterFn", input)
-}
+function enterFn(input) {}
 
 function escFn(input) {
   // If Esc is pressed, the model is cleared
@@ -169,9 +167,7 @@ async function slowFillCaptions() {
   )
 }
 
-const abortFilterFn = () => {
-  console.log("delayed filter aborted")
-}
+const abortFilterFn = () => {}
 </script>
 
 <style lang="scss" scoped>

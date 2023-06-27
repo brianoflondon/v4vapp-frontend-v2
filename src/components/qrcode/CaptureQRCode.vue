@@ -8,17 +8,14 @@
 <script setup>
 import { QrcodeStream } from "vue-qrcode-reader"
 import { ref } from "vue"
-console.log("CaptureQRCode.vue")
 const result = ref("")
 const error = ref("")
 
 const onDecode = (resultData) => {
-  console.log("CaptureQRCode.vue")
   result.value = resultData
 }
 
 const onInit = async (promise) => {
-  console.log("CaptureQRCode.vue")
   try {
     await promise
   } catch (errorEvent) {

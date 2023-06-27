@@ -88,8 +88,6 @@ const q = useQuasar()
 
 onMounted(async () => {
   isKeychain.value = await useIsHiveKeychainInstalled()
-  console.log("hiveAccObj", hiveAccObj.value)
-  console.log("isKeychain", isKeychain.value)
 })
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -128,10 +126,7 @@ async function login(username) {
       keyType: props.keyType,
     })
     if (result.success && result?.data?.message == signMessage) {
-      console.log("result message", result.data.message)
-      console.log("result", result)
       hiveAccObj.value["loggedIn"] = true
-      console.log("hiveAccObj", hiveAccObj)
       storeUser.login(username, props.keyType)
       note({
         icon: "done", // we add an icon
@@ -159,7 +154,7 @@ async function login(username) {
     }
   } catch (error) {
     hiveAccObj.value["loggedIn"] = false
-    console.log("error: ", error)
+    console.error("error: ", error)
     note({
       icon: "cancel", // we add an icon
       spinner: false, // we reset the spinner setting so the icon can be displayed

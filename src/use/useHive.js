@@ -23,7 +23,6 @@ export async function useHiveDetails(hiveAccname) {
     const res = await hiveTx.call("condenser_api.get_accounts", [[hiveAccname]])
     let hiveDetails = res.result[0]
     hiveDetails["profile"] = await extractProfile(hiveDetails)
-    console.log("hiveDetails", hiveDetails)
     return hiveDetails
   } catch (e) {
     return null
@@ -42,9 +41,8 @@ export async function useHiveProfile(hiveAccname) {
       hiveAccname, // observer account
     ])
     return profile.result
-    //curl -s --data '{"jsonrpc":"2.0", "method":"bridge.get_profile", "params":{"account": "alice", "observer": "bob"}, "id":1}' https://api.hive.blog
   } catch (e) {
-    console.log("Error:", e)
+    console.error("Error:", e)
     return null
   }
 }
@@ -190,7 +188,6 @@ export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
       )
 
       if (matchingProposals.length > 0) {
-        console.log("Found matching proposals:", matchingProposals)
         return matchingProposals
       }
 
@@ -201,7 +198,6 @@ export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
       return null
     }
   }
-  console.log("Proposal Nothing found")
   return false
 }
 
@@ -213,7 +209,6 @@ export async function useCheckProxyVote(hiveAccname) {
 
   const details = await useHiveDetails(hiveAccname)
   const proxy = details?.proxy
-  console.log("details in useGetHiveWitnessVotes", details?.proxy)
 
   if (proxy) {
     return proxy
@@ -236,7 +231,6 @@ export async function useGetHiveWitnessVotes(hiveAccname, witness) {
       "database_api.list_witness_votes",
       params
     )
-    console.log("witnes votes", response.result)
     if (response.result?.votes.length > 0) {
       if (
         response.result.votes[0].witness === witness &&
@@ -263,7 +257,7 @@ export async function useIsHiveKeychainInstalled() {
     const isKeychainIn = await keychain.isKeychainInstalled()
     return isKeychainIn
   } catch (error) {
-    console.log({ error })
+    console.error({ error })
   }
   return false
 }
@@ -295,10 +289,9 @@ export async function useHiveKeychainLogin({
       keychainParams.data,
       keychainParams.options
     )
-    console.log(loginResult)
     return loginResult
   } catch (error) {
-    console.log({ error })
+    console.error({ error })
     return error
   }
 }
@@ -338,7 +331,7 @@ export async function useHiveKeychainTransfer(
     console.log({ transfer })
     return transfer
   } catch (error) {
-    console.log({ error })
+    console.error({ error })
     return error
   }
 }
@@ -368,7 +361,7 @@ export async function useGetHiveTransactionHistory(
     // const transfers = history.result.filter((item) => item[1].op[0] === "transfer")
     // return transfers.reverse()
   } catch (error) {
-    console.log({ error })
+    console.error({ error })
     return null
   }
 }

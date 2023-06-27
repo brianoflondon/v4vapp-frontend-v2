@@ -167,7 +167,6 @@ async function filterFnAutoselect(val, update, abort) {
 }
 
 const abortFilterFn = () => {
-  console.log("delayed filter aborted")
 }
 </script>
 
