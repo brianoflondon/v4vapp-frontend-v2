@@ -70,7 +70,7 @@
               />
             </div>
           </div>
-          <div class="row amount-buttons q-py-sm q-gutter-sm">
+          <div v-if="false" class="row amount-buttons q-py-sm q-gutter-sm">
             <q-btn rounded label="$1" />
             <q-btn rounded label>5</q-btn>
             <q-btn rounded label>10</q-btn>

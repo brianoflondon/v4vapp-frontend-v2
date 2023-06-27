@@ -1,7 +1,7 @@
 <template>
   <div v-if="modelValue?.showButton">
     <q-btn
-      class="btn-fixed-width"
+      class="btn-fixed-width top-bar"
       align="around"
       :label="$t('vote')"
       rounded
