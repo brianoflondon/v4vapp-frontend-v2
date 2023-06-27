@@ -1,15 +1,12 @@
 <template>
   <q-page>
-    <q-card
-      rounded
-      class="outer-wrapper row justify-center q-gutter-sm q-pt-lg"
-    >
+    <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div class="flex column text-center">
         <div class="flex row justify-center">
-          <q-card-section>
+          <div>
             <HiveSelectFancyAcc dense v-model="hiveAccObj" fancy-options />
-          </q-card-section>
-          <q-card-section>
+          </div>
+          <div>
             <q-btn-toggle
               v-model="hiveHbd"
               push
@@ -21,10 +18,10 @@
                 { label: 'Hive', value: 'hive' },
               ]"
             />
-          </q-card-section>
+          </div>
         </div>
-        <div class="flex row justify-center">
-          <q-card-section>
+        <div class="q-pt-md flex row justify-center">
+          <div>
             <CreateQRCode
               :qr-text="qrText"
               :loading="loading"
@@ -40,10 +37,10 @@
               >
               </q-linear-progress>
             </div>
-          </q-card-section>
+          </div>
         </div>
       </div>
-      <q-card-section class="q-pt-sm">
+      <div class="q-pt-none">
         <div
           class="action-buttons flex row text-center justify-center q-pt-sm q-gutter-sm"
         >
@@ -88,8 +85,8 @@
             <q-tooltip>{{ $t("download_tooltip") }}</q-tooltip>
           </q-btn>
         </div>
-      </q-card-section>
-    </q-card>
+      </div>
+    </div>
     <AskDetailsDialog
       v-model="dInvoice"
       @amounts="(val) => receiveAmounts(val)"
