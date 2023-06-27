@@ -46,6 +46,12 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
         ? state.apiStatus.crypto.hive_dollar.btc * 100000000
         : null
     },
+    hiveFeeNumber: (state) => {
+      return state.apiStatus ? state.hiveSatsNumber * state.conv_fee_sats : null
+    },
+    HBDFeeNumber: (state) => {
+      return state.apiStatus ? state.HBDSatsNumber * state.conv_fee_sats : null
+    },
     hiveBTCNumber: (state) => {
       return state.apiStatus ? state.apiStatus.crypto.hive.btc : null
     },

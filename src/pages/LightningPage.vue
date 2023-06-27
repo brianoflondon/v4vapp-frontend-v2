@@ -450,6 +450,7 @@ async function decodeInvoice() {
         // make sure we clear any earlier errors
         invoiceValid.value = null
         errorMessage.value = ""
+        dInvoice.value.sending = true   // Flag to show this is for sending Hive to Lightning
         dInvoice.value.askDetails = true
         return
       } else {
