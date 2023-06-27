@@ -42,7 +42,7 @@
       </div>
       <div class="q-pt-none">
         <div
-          class="action-buttons flex row text-center justify-center q-pt-sm q-gutter-sm"
+          class="action-buttons  flex row text-center justify-center items-center q-pt-sm q-gutter-sm"
         >
           <q-btn
             :label="amountButton"
