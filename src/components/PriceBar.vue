@@ -14,7 +14,7 @@
         </strong>
       </span>
       <span v-if="!smallScreen" class="price-bar-item hbd-price q-pa-xs">
-        <span><i class="fa-brands fa-hive" /></span>
+        <span><i class="fa-brands fa-hive" style="color: green" /></span>
         <strong>${{ storeAPIStatus.hbd }}</strong>
       </span>
       <span class="price-bar-item api-status-indicator q-pl-lg q-pa-xs">
@@ -103,6 +103,4 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
 }
-
-
 </style>
