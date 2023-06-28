@@ -90,7 +90,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       console.log("hiveTotal", hiveTotal)
       console.log("hbd in Hive", hbdBalance / storeAPIStatus.hiveHBDNumber)
       const satsTotal = Math.round(
-        hiveTotal * storeAPIStatus.HBDSatsNumber
+        hiveTotal * storeAPIStatus.hiveSatsNumber
       ).toLocaleString()
 
       return satsTotal
