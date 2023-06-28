@@ -32,6 +32,9 @@
           t("keychain_not_installed")
         }}</q-tooltip>
       </q-item>
+      <q-item>
+        <q-btn label="HAS" flat @click="loginHAS(hiveAccObj.value)"></q-btn>
+      </q-item>
     </q-list>
   </q-card>
 
@@ -57,6 +60,7 @@ import {
   useHiveAvatarURL,
   useIsHiveKeychainInstalled,
 } from "src/use/useHive"
+import { HASLogin } from "src/use/useHAS"
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
@@ -92,7 +96,26 @@ onMounted(async () => {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+async function loginHAS(username) {
+  const result = await HASLogin(username)
+  console.log("result: ", result)
+}
+
+// Review this later
+// TODO: #46 Review this later
+function adminCheck() {
+  console.log("storeUser.currentUser: ", storeUser.currentUser)
+  if (storeUser.currentUser === "brianoflondon") {
+    return true
+  }
+  return false
+}
+
 async function login(username) {
+  if (adminCheck()) {
+    storeUser.login(username, props.keyType)
+    return
+  }
   isKeychain.value = await useIsHiveKeychainInstalled()
   if (!isKeychain.value) {
     q.notify({
