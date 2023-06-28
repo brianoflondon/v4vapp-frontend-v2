@@ -86,9 +86,9 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (isNaN(hiveBalance) || isNaN(hbdBalance)) {
         return "Invalid balance"
       }
-      const hiveTotal = hiveBalance + hbdBalance * storeAPIStatus.hiveHBDNumber
+      const hiveTotal = hiveBalance + hbdBalance / storeAPIStatus.hiveHBDNumber
       console.log("hiveTotal", hiveTotal)
-      console.log("hbd in Hive", hbdBalance * storeAPIStatus.hiveHBDNumber)
+      console.log("hbd in Hive", hbdBalance / storeAPIStatus.hiveHBDNumber)
       const satsTotal = Math.round(
         hiveTotal * storeAPIStatus.HBDSatsNumber
       ).toLocaleString()
