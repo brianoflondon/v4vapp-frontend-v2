@@ -70,20 +70,38 @@
               />
             </div>
           </div>
-          <div v-if="false" class="row amount-buttons q-py-sm q-gutter-sm">
-            <q-btn rounded label="$1" />
-            <q-btn rounded label>5</q-btn>
-            <q-btn rounded label>10</q-btn>
+          <div v-if="true" class="row amount-buttons q-py-sm q-gutter-sm">
+            <NumberButtons
+              @button-pressed="(val) => updateAmounts(val, 'hbd')"
+            />
+          </div>
+          <div class="row hbd-slider q-py-sm">
+            <q-badge color="green-10"> HBD: </q-badge>
+            <q-slider
+              v-model="amounts.hbdNum"
+              color="green-10"
+              :min="
+                dInvoice.v4vapp.metadata.minSats / storeAPIStatus.HBDSatsNumber
+              "
+              :max="
+                dInvoice.v4vapp.metadata.maxSats /
+                  storeAPIStatus.HBDSatsNumber -
+                3
+              "
+              label
+              switch-label-side
+              @update:model-value="(val) => updateAmounts(val, 'hbd')"
+            ></q-slider>
           </div>
           <div class="row sats-slider q-py-sm">
             <q-badge color="primary"> Sats: </q-badge>
             <q-slider
               v-model="amounts.satsNum"
+              color="primary"
               :min="dInvoice.v4vapp.metadata.minSats"
               :max="dInvoice.v4vapp.metadata.maxSats"
               :step="100"
               label
-              label-always
               switch-label-side
               @update:model-value="(val) => updateAmounts(val, 'sats')"
             ></q-slider>
@@ -134,6 +152,7 @@ import { useCreateInvoice } from "src/use/useLightningInvoice"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { tidyNumber } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
+import NumberButtons from "components/utils/NumberButtons.vue"
 const t = useI18n().t
 
 const storeAPIStatus = useStoreAPIStatus()
@@ -164,7 +183,6 @@ function calcSatsFeeOnly(sats) {
   let satsWithFees = sats
   satsWithFees *= 1 + storeAPIStatus.apiStatus.config.conv_fee_percent
   satsWithFees += storeAPIStatus.apiStatus.config.conv_fee_sats
-  console.log("satsWithFees", satsWithFees, "fee", satsWithFees - sats)
   return satsWithFees - sats
 }
 
@@ -189,7 +207,6 @@ function updateAmounts(amount, currency) {
       } else {
         amount -= calcSatsFeeOnly(sats)
       }
-      console.log("amount", amount)
       hive = amount / storeAPIStatus.hiveSatsNumber
       hbd = amount / storeAPIStatus.HBDSatsNumber
       break
@@ -232,7 +249,9 @@ function updateAmounts(amount, currency) {
     errorMessage.value = ""
     errorState.value = false
   }
-  amounts.value.satsNum = sats
+  amounts.value.satsNum = parseFloat(sats.toFixed(0))
+  amounts.value.hbdNum = parseFloat(hbd.toFixed(2))
+  console.log("amounts.value.hbdNum", amounts.value.hbdNum)
   amounts.value.sats = tidyNumber(sats.toFixed(0))
   amounts.value.hive = tidyNumber(hive.toFixed(3))
   amounts.value.hbd = tidyNumber(hbd.toFixed(2))
