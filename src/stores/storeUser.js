@@ -82,13 +82,13 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       const hiveBalance = parseFloat(this.currentDetails.balance)
       const hbdBalance = parseFloat(this.currentDetails.hbd_balance)
-      console.log("hiveBalance", hiveBalance, "hbdBalance", hbdBalance)
+      // console.log("hiveBalance", hiveBalance, "hbdBalance", hbdBalance)
       if (isNaN(hiveBalance) || isNaN(hbdBalance)) {
         return "Invalid balance"
       }
       const hiveTotal = hiveBalance + hbdBalance / storeAPIStatus.hiveHBDNumber
-      console.log("hiveTotal", hiveTotal)
-      console.log("hbd in Hive", hbdBalance / storeAPIStatus.hiveHBDNumber)
+      // console.log("hiveTotal", hiveTotal)
+      // console.log("hbd in Hive", hbdBalance / storeAPIStatus.hiveHBDNumber)
       const satsTotal = Math.round(
         hiveTotal * storeAPIStatus.hiveSatsNumber
       ).toLocaleString()
