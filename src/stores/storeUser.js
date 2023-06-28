@@ -73,15 +73,22 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     satsBalance() {
       // Return the sum of Hive and HBD in sats
-      if (!this.currentDetails) {
+      if (
+        !this.currentDetails ||
+        !storeAPIStatus.HBDSatsNumber ||
+        !storeAPIStatus.hiveHBDNumber
+      ) {
         return "💰💰💰"
       }
       const hiveBalance = parseFloat(this.currentDetails.balance)
       const hbdBalance = parseFloat(this.currentDetails.hbd_balance)
+      console.log("hiveBalance", hiveBalance, "hbdBalance", hbdBalance)
       if (isNaN(hiveBalance) || isNaN(hbdBalance)) {
         return "Invalid balance"
       }
-      const hiveTotal = hiveBalance * storeAPIStatus.hiveHBDNumber
+      const hiveTotal = hiveBalance + hbdBalance * storeAPIStatus.hiveHBDNumber
+      console.log("hiveTotal", hiveTotal)
+      console.log("hbd in Hive", hbdBalance * storeAPIStatus.hiveHBDNumber)
       const satsTotal = Math.round(
         hiveTotal * storeAPIStatus.HBDSatsNumber
       ).toLocaleString()
@@ -93,7 +100,7 @@ export const useStoreUser = defineStore("useStoreUser", {
   actions: {
     update() {
       const onOpen = async () => {
-        if(this.currentUser === this.hiveDetails?.name) return
+        if (this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
         this.currentProfile = this.currentDetails?.profile
       }
@@ -117,7 +124,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     switchUser(hiveAccname) {
       try {
-        console.log("switchUser to ", hiveAccname," from ", this.currentUser)
+        console.log("switchUser to ", hiveAccname, " from ", this.currentUser)
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
           // test if login is still valid
