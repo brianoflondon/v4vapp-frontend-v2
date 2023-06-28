@@ -60,7 +60,7 @@ import {
   useHiveAvatarURL,
   useIsHiveKeychainInstalled,
 } from "src/use/useHive"
-import { HASLogin } from "src/use/useHAS"
+// import { HASLogin } from "src/use/useHAS"
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
@@ -96,10 +96,10 @@ onMounted(async () => {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-async function loginHAS(username) {
-  const result = await HASLogin(username)
-  console.log("result: ", result)
-}
+// async function loginHAS(username) {
+//   const result = await HASLogin(username)
+//   console.log("result: ", result)
+// }
 
 // Review this later
 // TODO: #46 Review this later
