@@ -8,11 +8,19 @@ import { formatTimeAgo } from "@vueuse/core"
 const storeAPIStatus = useStoreAPIStatus()
 
 export class HiveUser {
-  constructor(hiveAccname, profileName, keySelected, timestamp = Date.now()) {
+  constructor(
+    hiveAccname,
+    profileName,
+    keySelected,
+    authKey = null,
+    expire = null,
+    timestamp = Date.now()
+  ) {
     this.hiveAccname = hiveAccname
     this.profileName = profileName
     this.keySelected = keySelected
-    this.timestamp = timestamp
+    this.authKey = authKey
+    this.expire = expire
   }
 
   toJSON() {
@@ -20,6 +28,8 @@ export class HiveUser {
       hiveAccname: this.hiveAccname,
       profileName: this.profileName,
       keySelected: this.keySelected,
+      authKey: this.authKey,
+      expire: this.expire,
       timestamp: this.timestamp,
     }
   }
@@ -38,6 +48,8 @@ export class HiveUser {
       hiveAccname: this.hiveAccname,
       profileName: this.profileName,
       keySelected: this.keySelected,
+      authKey: this.authKey,
+      expire: this.expire,
       timestamp: this.timestamp,
       loginAge: this.loginAge,
     }
@@ -106,12 +118,18 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       onOpen()
     },
-    async login(hiveAccname, keySelected) {
+    async login(hiveAccname, keySelected, authKey = null, expire = null) {
       try {
         const hiveDetails = await useHiveDetails(hiveAccname)
         const profileName = hiveDetails?.profile?.name || hiveAccname
         if (hiveDetails) {
-          const newUser = new HiveUser(hiveAccname, profileName, keySelected)
+          const newUser = new HiveUser(
+            hiveAccname,
+            profileName,
+            keySelected,
+            authKey,
+            expire
+          )
           this.users[hiveAccname] = newUser
           this.currentUser = hiveAccname
           this.currentDetails = hiveDetails
@@ -125,6 +143,9 @@ export const useStoreUser = defineStore("useStoreUser", {
     switchUser(hiveAccname) {
       try {
         console.log("switchUser to ", hiveAccname, " from ", this.currentUser)
+        console.log("this.users", this.users)
+        const nextUser = this.users[hiveAccname]
+        console.log("nextUser", nextUser)
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
           // test if login is still valid

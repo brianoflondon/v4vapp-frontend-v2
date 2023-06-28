@@ -19,5 +19,8 @@
   },
   "cSpell.words": [
     "pinia"
+  ],
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "develop"
   ]
 }

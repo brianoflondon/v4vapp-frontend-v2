@@ -32,9 +32,12 @@
           t("keychain_not_installed")
         }}</q-tooltip>
       </q-item>
-      <q-item v-if="false">
-        <q-btn label="HAS" flat @click="loginHAS(hiveAccObj.value)"></q-btn>
+      <q-item v-if="true">
+        <q-btn label="HAS" flat @click="loginHAS(hiveAccObj?.value)"></q-btn>
       </q-item>
+      <div class="flex justify-center">
+        <div ref="qrCodeContainer"></div>
+      </div>
     </q-list>
   </q-card>
 
@@ -53,18 +56,19 @@
  *
  */
 
-import { ref, onMounted } from "vue"
+import { ref, watch, onMounted } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import {
   useHiveKeychainLogin,
   useHiveAvatarURL,
   useIsHiveKeychainInstalled,
 } from "src/use/useHive"
-// import { HASLogin } from "src/use/useHAS"
+import { useHAS, HASLogin } from "src/use/useHAS"
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
+import QRCodeStyling from "qr-code-styling"
 
 const storeUser = useStoreUser()
 const hiveAccObj = defineModel({})
@@ -88,18 +92,58 @@ const props = defineProps({
 })
 
 const t = useI18n().t
-const q = useQuasar()
+const quasar = useQuasar()
+
+const { qrCodeText } = useHAS()
+const qrCodeContainer = ref()
+
+async function loginHAS(username = "brianoflondon") {
+  try {
+    await HASLogin(username)
+  } catch (error) {
+    console.log("error: ", error)
+  }
+}
+
+watch(qrCodeText, (newValue) => {
+  console.log("newValue: ", newValue)
+  const qrCode = new QRCodeStyling({
+    width: 200,
+    height: 200,
+    type: "webp",
+    data: newValue,
+    // image: avatarUrl.value,
+    qrOptions: {
+      typeNumber: "0",
+      mode: "Byte",
+      errorCorrectionLevel: "M",
+      cellSize: 6,
+      margin: 0,
+    },
+    dotsOptions: {
+      color: "#1976D2",
+      type: "square",
+    },
+    backgroundOptions: {
+      color: quasar.dark.isActive ? "#03002c" : "#f5f5f5",
+    },
+    margin: 5,
+    imageOptions: {
+      crossOrigin: "anonymous",
+      hideBackgroundDots: false,
+      imageSize: 0.4,
+      margin: 0,
+    },
+  })
+  qrCodeContainer.value.innerHTML = ""
+  qrCode.append(qrCodeContainer.value)
+})
 
 onMounted(async () => {
   isKeychain.value = await useIsHiveKeychainInstalled()
 })
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
-// async function loginHAS(username) {
-//   const result = await HASLogin(username)
-//   console.log("result: ", result)
-// }
 
 // Review this later
 // TODO: #46 Review this later
@@ -118,7 +162,7 @@ async function login(username) {
   }
   isKeychain.value = await useIsHiveKeychainInstalled()
   if (!isKeychain.value) {
-    q.notify({
+    quasar.notify({
       timeout: 2000,
       message: t("keychain_not_installed"),
       position: position,
@@ -133,7 +177,7 @@ async function login(username) {
   const signMessage = words.join("-")
   const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
   try {
-    const note = q.notify({
+    const note = quasar.notify({
       group: false, // required to be updatable
       timeout: 0, // we want to be in control when it gets dismissed
       avatar: avatarUrl,
