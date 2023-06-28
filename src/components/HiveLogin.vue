@@ -32,7 +32,7 @@
           t("keychain_not_installed")
         }}</q-tooltip>
       </q-item>
-      <q-item>
+      <q-item v-if="false">
         <q-btn label="HAS" flat @click="loginHAS(hiveAccObj.value)"></q-btn>
       </q-item>
     </q-list>
