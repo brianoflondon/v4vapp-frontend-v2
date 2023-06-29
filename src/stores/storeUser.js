@@ -142,6 +142,12 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.currentDetails = null
       this.currentProfile = null
     },
+    async logoutAll() {
+      this.users = {}
+      this.currentUser = null
+      this.currentDetails = null
+      this.currentProfile = null
+    },
   },
   persist: {
     enabled: true,
