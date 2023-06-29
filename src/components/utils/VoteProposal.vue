@@ -172,8 +172,7 @@ async function doVotes() {
         formParamsAsObject.data
       )
       votedFor.value.proposal = true
-    } catch (error) {
-    }
+    } catch (error) {}
   }
   if (!votedFor.value.witness && !proxy.value) {
     try {
@@ -200,7 +199,10 @@ async function doVotes() {
       timeout: 5000,
     })
   }
-  modelValue.value.showDialog = false
+  // wait 5 seconds and then close the dialog
+  setTimeout(() => {
+    modelValue.value.showDialog = false
+  }, 5000)
 }
 
 function hideDialog() {

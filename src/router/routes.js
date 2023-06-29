@@ -7,14 +7,19 @@ const routes = [
       { path: "/lnd", component: () => import("pages/LightningPage.vue") },
       { path: "/hive", component: () => import("pages/HivePage.vue") },
       { path: "/index", component: () => import("pages/IndexPage.vue") },
+      { path: "/vote", component: () => import("pages/VoteNow.vue") },
       { path: "/status", component: () => import("pages/StatusPage.vue") },
       {
         path: "/selectdemo",
-        component: () => import("pages/HiveSelectDemoPage.vue"),
+        component: () => import("pages/demo/HiveSelectDemoPage.vue"),
       },
       {
         path: "/selectdemo2",
-        component: () => import("pages/HiveSelectDemoPage2.vue"),
+        component: () => import("pages/demo/HiveSelectDemoPage2.vue"),
+      },
+      {
+        path: "/qrdemo",
+        component: () => import("pages/demo/QRDemo.vue"),
       },
     ],
   },

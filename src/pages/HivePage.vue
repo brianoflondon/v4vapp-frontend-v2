@@ -26,6 +26,8 @@
               :qr-text="qrText"
               :loading="loading"
               :hive-accname="hiveAccObj.value"
+              :width="300"
+              :height="300"
               @qr-code="(val) => (qrCode = val)"
             />
             <div v-if="false" class="q-pt-none">
