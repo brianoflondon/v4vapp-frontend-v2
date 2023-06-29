@@ -36,6 +36,14 @@
         <q-btn label="HAS" flat @click="loginHAS(hiveAccObj.value)"></q-btn>
       </q-item>
     </q-list>
+    <div class="flex justify-center">
+      <div class="text-center q-pa-md">
+        <q-btn rounded @click="storeUser.logout()" label="Logout" />
+      </div>
+      <div class="text-center q-pa-md">
+        <q-btn rounded @click="storeUser.logoutAll()" label="Logout All" />
+      </div>
+    </div>
   </q-card>
 
   <div></div>

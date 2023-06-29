@@ -4,9 +4,6 @@
       <UserList />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
-    <div class="text-center q-pa-md">
-      <q-btn @click="storeUser.logout()" label="Logout" />
-    </div>
     <q-list>
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
     </q-list>
@@ -14,6 +11,7 @@
 </template>
 
 <script setup>
+// TODO: #51 Add translations for this logout and logout all buttons
 import { ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
