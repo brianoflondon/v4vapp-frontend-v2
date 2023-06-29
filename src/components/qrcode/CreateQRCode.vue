@@ -56,6 +56,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  expires: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const avatarUrl = computed(() => {
@@ -134,6 +138,7 @@ async function newQRCode() {
 
 function openLinkInNewWindow() {
   const url = props.qrText
+  console.log("url", url)
   window.open(url, "_blank")
 }
 </script>

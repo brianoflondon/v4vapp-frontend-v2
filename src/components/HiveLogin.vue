@@ -32,11 +32,14 @@
           t("keychain_not_installed")
         }}</q-tooltip>
       </q-item>
-      <q-item v-if="true">
-        <q-btn label="HAS" flat @click="loginHAS(hiveAccObj?.value)"></q-btn>
+      <q-item>
+        <q-btn label="HAS" rounded @click="loginHAS(hiveAccObj?.value)"></q-btn>
       </q-item>
-      <div class="flex justify-center">
-        <div ref="qrCodeContainer"></div>
+      <div v-if="displayQRCode" class="flex justify-center">
+        <div>
+          <CreateQRCode :qrText="qrCodeText" :width="200" :height="200" />
+          {{ expiry - Date.now() }}
+        </div>
       </div>
     </q-list>
     <div class="flex justify-center">
@@ -76,10 +79,12 @@ import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
-import QRCodeStyling from "qr-code-styling"
+import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
 
 const storeUser = useStoreUser()
 const hiveAccObj = defineModel({})
+
+const displayQRCode = ref(false)
 
 if (Platform.is.mobile) {
   console.log("Running on a mobile device")
@@ -102,8 +107,7 @@ const props = defineProps({
 const t = useI18n().t
 const quasar = useQuasar()
 
-const { qrCodeText } = useHAS()
-const qrCodeContainer = ref()
+const { qrCodeText, expiry } = useHAS()
 
 async function loginHAS(username = "brianoflondon") {
   try {
@@ -115,36 +119,7 @@ async function loginHAS(username = "brianoflondon") {
 
 watch(qrCodeText, (newValue) => {
   console.log("newValue: ", newValue)
-  const qrCode = new QRCodeStyling({
-    width: 200,
-    height: 200,
-    type: "webp",
-    data: newValue,
-    // image: avatarUrl.value,
-    qrOptions: {
-      typeNumber: "0",
-      mode: "Byte",
-      errorCorrectionLevel: "M",
-      cellSize: 6,
-      margin: 0,
-    },
-    dotsOptions: {
-      color: "#1976D2",
-      type: "square",
-    },
-    backgroundOptions: {
-      color: quasar.dark.isActive ? "#03002c" : "#f5f5f5",
-    },
-    margin: 5,
-    imageOptions: {
-      crossOrigin: "anonymous",
-      hideBackgroundDots: false,
-      imageSize: 0.4,
-      margin: 0,
-    },
-  })
-  qrCodeContainer.value.innerHTML = ""
-  qrCode.append(qrCodeContainer.value)
+  displayQRCode.value = true
 })
 
 onMounted(async () => {

@@ -4,9 +4,10 @@ import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 
 const qrCodeText = ref("This is a test QR Code")
+const expiry = ref(0)
 const storeUser = useStoreUser()
 export function useHAS() {
-  return { qrCodeText }
+  return { qrCodeText, expiry }
 }
 
 let auth_payload = {}
@@ -64,6 +65,8 @@ export async function HASLogin(username = "", keyType = "posting") {
     console.log("challenge_data", challenge_data)
     HAS.authenticate(auth, APP_META, challenge_data, (req) => {
       console.log("response", req) // process auth_wait
+      console.log('expires in ', (req.expire - Date.now()) / 1000, 'secs')
+      expiry.value = req.expire
       auth_payload = {
         account: req.account,
         uuid: req.uuid,
@@ -94,6 +97,6 @@ function resolve(res) {
 
 function reject(err) {
   console.log("reject", err)
-  qrCodeText.value = null
+  qrCodeText.value = ""
   auth_payload = {}
 }
