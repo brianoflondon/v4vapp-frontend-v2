@@ -11,11 +11,15 @@ const routes = [
       { path: "/status", component: () => import("pages/StatusPage.vue") },
       {
         path: "/selectdemo",
-        component: () => import("pages/HiveSelectDemoPage.vue"),
+        component: () => import("pages/demo/HiveSelectDemoPage.vue"),
       },
       {
         path: "/selectdemo2",
-        component: () => import("pages/HiveSelectDemoPage2.vue"),
+        component: () => import("pages/demo/HiveSelectDemoPage2.vue"),
+      },
+      {
+        path: "/qrdemo",
+        component: () => import("pages/demo/QRDemo.vue"),
       },
     ],
   },
