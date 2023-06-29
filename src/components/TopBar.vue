@@ -13,7 +13,6 @@
       <div class="q-pa-none">
         <TabBar />
       </div>
-      <!-- <div class="text-caption">{{ appName }} v{{ appVersion }}</div> -->
       <q-space />
       <LanguageSelector />
       <DarkSelector />

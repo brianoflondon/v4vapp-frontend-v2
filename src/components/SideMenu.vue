@@ -16,13 +16,9 @@ import { ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
 import UserList from "components/hive/UserList.vue"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { useHiveDetails, useHiveAvatarURL } from "src/use/useHive.js"
+import { useHiveDetails } from "src/use/useHive.js"
 import HiveLogin from "components/HiveLogin.vue"
-import { useStoreUser } from "src/stores/storeUser"
-import "src/assets/hive-tx.min.js"
-
-const storeUser = useStoreUser()
+const rightDrawerOpen = defineModel(false)
 
 const hiveAccObj = ref()
 

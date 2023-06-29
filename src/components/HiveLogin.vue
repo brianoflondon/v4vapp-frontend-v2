@@ -20,7 +20,7 @@
             hiveAccObj === '' ||
             hiveAccObj === null
           "
-          flat
+          rounded
           :label="t('hive_keychain')"
           icon="img:keychain/hive-keychain-round.svg"
           @click="login(hiveAccObj?.value)"
