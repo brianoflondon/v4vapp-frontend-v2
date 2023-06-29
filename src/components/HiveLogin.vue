@@ -20,7 +20,7 @@
             hiveAccObj === '' ||
             hiveAccObj === null
           "
-          flat
+          rounded
           :label="t('hive_keychain')"
           icon="img:keychain/hive-keychain-round.svg"
           @click="login(hiveAccObj?.value)"
@@ -39,6 +39,14 @@
         <div ref="qrCodeContainer"></div>
       </div>
     </q-list>
+    <div class="flex justify-center">
+      <div class="text-center q-pa-md">
+        <q-btn rounded @click="storeUser.logout()" label="Logout" />
+      </div>
+      <div class="text-center q-pa-md">
+        <q-btn rounded @click="storeUser.logoutAll()" label="Logout All" />
+      </div>
+    </div>
   </q-card>
 
   <div></div>

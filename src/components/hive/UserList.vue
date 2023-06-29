@@ -25,9 +25,8 @@
 </template>
 
 <script setup>
-import { useStoreUser, HiveUser } from "src/stores/storeUser"
+import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { store } from "quasar/wrappers"
 const storeUser = useStoreUser()
 
 function doClick(item) {
