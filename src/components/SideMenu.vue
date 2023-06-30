@@ -18,6 +18,9 @@ import EssentialLink from "components/EssentialLink.vue"
 import UserList from "components/hive/UserList.vue"
 import { useHiveDetails } from "src/use/useHive.js"
 import HiveLogin from "components/HiveLogin.vue"
+import { useStoreUser } from "src/stores/storeUser"
+
+const storeUser = useStoreUser()
 const rightDrawerOpen = defineModel(false)
 
 const hiveAccObj = ref()
@@ -42,12 +45,6 @@ const linkList = ref([
     icon: "circle",
     link: "status",
   },
-  // {
-  //   title: "Select Demo",
-  //   caption: "Select Demo",
-  //   icon: "javascript",
-  //   link: "selectdemo",
-  // },
 ])
 const hiveUsername = ref("")
 const hiveDetails = ref(null)

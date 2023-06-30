@@ -88,11 +88,10 @@ const htmlText =
 watch(
   () => props.loading,
   async (newVal) => {
-    console.log("loading", newVal)
+    // console.log("loading", newVal)
     if (newVal) {
       qrCodeContainer.value.innerHTML = htmlText
       await nextTick()
-      console.log("qrCodeContainer", qrCodeContainer.value.innerHTML)
     } else {
       await newQRCode()
     }

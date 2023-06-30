@@ -1,9 +1,8 @@
 import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
-import { useStorage } from "@vueuse/core"
+import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { tidyNumber } from "src/use/useUtils.js"
-import { formatTimeAgo } from "@vueuse/core"
 
 const storeAPIStatus = useStoreAPIStatus()
 
@@ -12,15 +11,17 @@ export class HiveUser {
     hiveAccname,
     profileName,
     keySelected,
+    timestamp = null,
     authKey = null,
-    expire = null,
-    timestamp = Date.now()
+    expire = null
   ) {
     this.hiveAccname = hiveAccname
     this.profileName = profileName
     this.keySelected = keySelected
     this.authKey = authKey
     this.expire = expire
+    if (!timestamp) timestamp = Date.now()
+    this.timestamp = timestamp
   }
 
   toJSON() {
@@ -28,19 +29,31 @@ export class HiveUser {
       hiveAccname: this.hiveAccname,
       profileName: this.profileName,
       keySelected: this.keySelected,
+      timestamp: this.timestamp,
       authKey: this.authKey,
       expire: this.expire,
-      timestamp: this.timestamp,
     }
   }
 
+  // Return the time since the login in seconds
   get loginAge() {
-    return Date.now() - this.timestamp
+    return (Date.now() - this.timestamp) / 1000
   }
 
-  get timeAgo() {
-    const temp = formatTimeAgo(this.loginAge)
-    return temp
+  // Return the time ago since the login Human readable
+  get loginAgeHuman() {
+    return formatTimeAgo(this.timestamp)
+  }
+
+  // Return the time left before the HAS login expires
+  get loginHASExpire() {
+    if (!this.expire) return null
+    return (this.expire - Date.now()) / 1000
+  }
+
+  get loginHASExpireHuman() {
+    if (!this.expire) return null
+    return formatTimeAgo(this.expire)
   }
 
   get allData() {
@@ -72,6 +85,32 @@ export const useStoreUser = defineStore("useStoreUser", {
     profileName() {
       if (!this.currentUser) return null
       return this.users[this.currentUser].profileName
+    },
+    loginAge() {
+      if (!this.currentUser) return null
+      const hiveUser = this.users[this.currentUser]
+      return (Date.now() - hiveUser.timestamp) / 1000
+    },
+    loginHASExpire() {
+      if (!this.currentUser) return null
+      const hiveUser = this.users[this.currentUser]
+      if (!hiveUser.expire) return null
+      return (hiveUser.expire - Date.now()) / 1000
+    },
+    getUser: (state) => {
+      return (hiveAccname) => {
+        const temp = state.users[hiveAccname]
+        if (!temp) return null
+        const hiveUser = new HiveUser(
+          temp.hiveAccname,
+          temp.profileName,
+          temp.keySelected,
+          temp.timestamp,
+          temp.authKey,
+          temp.expire
+        )
+        return hiveUser
+      }
     },
     hiveBalance() {
       if (!this.currentDetails) return "💰💰💰"
@@ -127,6 +166,7 @@ export const useStoreUser = defineStore("useStoreUser", {
             hiveAccname,
             profileName,
             keySelected,
+            Date.now(),
             authKey,
             expire
           )
@@ -143,11 +183,10 @@ export const useStoreUser = defineStore("useStoreUser", {
     switchUser(hiveAccname) {
       try {
         console.log("switchUser to ", hiveAccname, " from ", this.currentUser)
-        console.log("this.users", this.users)
-        const nextUser = this.users[hiveAccname]
-        console.log("nextUser", nextUser)
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
+          console.log("this.loginAge", this.loginAge)
+          console.log("this.loginHASExpire", this.loginHASExpire)
           // test if login is still valid
           this.update()
         }

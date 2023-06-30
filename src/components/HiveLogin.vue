@@ -118,6 +118,10 @@ async function loginHAS(username = "brianoflondon") {
 }
 
 watch(qrCodeText, (newValue) => {
+  if (newValue === null) {
+    displayQRCode.value = false
+    return
+  }
   console.log("newValue: ", newValue)
   displayQRCode.value = true
 })

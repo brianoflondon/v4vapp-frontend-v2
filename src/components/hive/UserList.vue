@@ -17,7 +17,18 @@
         <q-item-section>
           <q-item-label>{{ user.profileName }}</q-item-label>
           <q-item-label caption>@{{ user.hiveAccname }}</q-item-label>
-          <q-item-label caption>{{ user.timeAgo }}</q-item-label>
+          <q-item-label caption
+            >HAS:
+            {{
+              storeUser.getUser(user.hiveAccname).loginHASExpireHuman
+            }}</q-item-label
+          >
+          <q-item-label caption
+            >Login:
+            {{
+              storeUser.getUser(user.hiveAccname).loginAgeHuman
+            }}</q-item-label
+          >
         </q-item-section>
       </q-item>
     </q-list>

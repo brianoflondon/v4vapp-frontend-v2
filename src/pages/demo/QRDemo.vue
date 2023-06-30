@@ -22,12 +22,16 @@
       :qr-text="qrText"
       hiveAccname="v4vapp"
       :loading="loading"
-      @qr-code="val = qrCode = val"
+      @qr-code="(val) => (qrCode = val)"
     />
+  </div>
+  <div v-if="qrCode?._container">
+    <div v-html="qrCode._container.innerHTML"></div>
   </div>
   <div>
     <p>Some text after the QR code</p>
     <p>{{ qrText }} - loading: {{ loading }}</p>
+    <pre>{{ qrCode }}</pre>
   </div>
   <div ref="gearsTest"></div>
 </template>

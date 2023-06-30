@@ -87,6 +87,7 @@ export default {
   self_payment: "Can't send to v4v.app",
   invoice_hint: "Paste an invoice or scan a QR code",
   waiting_for: "Waiting for reply transaction to appear on Hive blockchain",
+  invoice_provider_not_working: "Lightning Invoice provider is not working right now, try later or check the address",
 
   // Please vote
   voting_as: "Voting as",
