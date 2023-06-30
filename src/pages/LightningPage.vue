@@ -378,6 +378,19 @@ const invoiceLabel = computed(() => {
 })
 
 function receiveNewInvoice(val) {
+  if (val === null) {
+    // Need to notify of problem with Lightning service of invoice provider
+    console.log("Lightning service provider not working")
+    dInvoice.value.askDetails = false
+    q.notify({
+      message: t("invoice_provider_not_working"),
+      color: "warning",
+      icon: "report_problem",
+      position: "top",
+      timeout: 3000,
+    })
+    return
+  }
   callbackResult.value = val
   invoiceText.value = val.pr
   decodeInvoice()
