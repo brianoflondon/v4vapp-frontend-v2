@@ -35,6 +35,9 @@
       <q-item>
         <q-btn label="HAS" rounded @click="loginHAS(hiveAccObj?.value)"></q-btn>
       </q-item>
+      <q-item>
+        <q-btn label="HAS Transfer" rounded @click="testHASTransfer()"></q-btn>
+      </q-item>
       <div v-if="displayQRCode" class="flex justify-center">
         <div>
           <CreateQRCode :qrText="qrCodeText" :width="200" :height="200" />
@@ -74,7 +77,7 @@ import {
   useHiveAvatarURL,
   useIsHiveKeychainInstalled,
 } from "src/use/useHive"
-import { useHAS, HASLogin } from "src/use/useHAS"
+import { useHAS, HASLogin, HASbroadcast } from "src/use/useHAS"
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
@@ -140,6 +143,10 @@ function adminCheck() {
     return true
   }
   return false
+}
+
+function testHASTransfer() {
+  HASbroadcast()
 }
 
 async function login(username) {

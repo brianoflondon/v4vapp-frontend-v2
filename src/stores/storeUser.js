@@ -97,6 +97,13 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveUser.expire) return null
       return (hiveUser.expire - Date.now()) / 1000
     },
+    authKey() {
+      if (!this.currentUser) return null
+      const hiveUser = this.users[this.currentUser]
+      if (!hiveUser.authKey) return null
+      return hiveUser.authKey
+    },
+    // Return the HiveUser object for the passed user hiveAccname
     getUser: (state) => {
       return (hiveAccname) => {
         const temp = state.users[hiveAccname]
@@ -110,6 +117,17 @@ export const useStoreUser = defineStore("useStoreUser", {
           temp.expire
         )
         return hiveUser
+      }
+    },
+    // Return true if the user is logged in via Hive Keychain
+    // Returns false if the user is logged in via HAS
+    // Returns null if the user is not logged in
+    getKeychain: (state) => {
+      return (hiveAccname) => {
+        const temp = state.users[hiveAccname]
+        if (!temp) return null
+        if (temp.authKey) return false
+        return true
       }
     },
     hiveBalance() {

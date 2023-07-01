@@ -2,6 +2,7 @@ import HAS from "hive-auth-wrapper"
 
 import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
+import { store } from "quasar/wrappers"
 
 const qrCodeText = ref("This is a test QR Code")
 const expiry = ref(0)
@@ -12,19 +13,20 @@ export function useHAS() {
 
 let auth_payload = {}
 
+// Login to HAS
 export async function HASLogin(username = "", keyType = "posting") {
   // Your application information
   if (username === "") {
     console.error("username is empty")
     resolve(false)
   }
-  const existingAuth = storeUser.users[username]
+  const existingAuth = storeUser.getUser(username)
+  console.log("existingAuth", existingAuth)
   if (existingAuth) {
     console.log("existingAuth", existingAuth)
     if (existingAuth.authKey && existingAuth.expire > Date.now()) {
-      // token exists and is still valid - no need to login again
       console.log(
-        "token expires in: ",
+        "login expires in: ",
         (existingAuth.expire - Date.now()) / 1000 / 60,
         "min"
       )
@@ -65,7 +67,7 @@ export async function HASLogin(username = "", keyType = "posting") {
     console.log("challenge_data", challenge_data)
     HAS.authenticate(auth, APP_META, challenge_data, (req) => {
       console.log("response", req) // process auth_wait
-      console.log('expires in ', (req.expire - Date.now()) / 1000, 'secs')
+      console.log("expires in ", (req.expire - Date.now()) / 1000, "secs")
       expiry.value = req.expire
       auth_payload = {
         account: req.account,
@@ -82,6 +84,7 @@ export async function HASLogin(username = "", keyType = "posting") {
   }
 }
 
+// Authentication request approved
 function resolve(res) {
   console.log("resolve", res.data)
   console.log("auth_payload", auth_payload)
@@ -95,8 +98,45 @@ function resolve(res) {
   auth_payload = {}
 }
 
+// Authentication request rejected or error occured
 function reject(err) {
   console.log("reject", err)
   qrCodeText.value = ""
   auth_payload = {}
+}
+
+export async function HASbroadcast(operation) {
+  // Broadcast a message to the user
+  // Create an authentication object
+
+  const op = [
+    "transfer",
+    {
+      from: "v4vapp.dev",
+      to: "v4vapp.dev",
+      amount: "1.001 HIVE",
+      memo: "memo",
+    },
+  ]
+  // Retrieving connection status
+  const status = HAS.status()
+
+  const auth = {
+    username: "v4vapp.dev", // (required)
+    key: storeUser.authKey,
+    token: ""
+  }
+
+  auth_payload = {
+    account: "v4vapp.dev",
+    uuid: storeUser.authKey,
+    key: "active",
+    host: status.host,
+  }
+
+  HAS.broadcast(auth, op[0], [op], (evt) => {
+    console.log(evt) // process sign_wait
+  })
+    .then((res) => resolve(res)) // transaction approved and successfully broadcasted
+    .catch((err) => reject(err)) // transaction rejected or failed
 }
