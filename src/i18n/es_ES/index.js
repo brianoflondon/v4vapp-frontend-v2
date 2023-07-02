@@ -21,7 +21,7 @@ export default {
   keychain_installed: 'Keychain está instalado',
   keychain_missing: 'Keychain is Missing',
   // IndexPage
-  index_page_message: 'Para obtener más información sobre este proyecto, visite',
+  index_page_message: 'For more information about this project, please visit',
   // Selector
   hive_account: 'Hive Account',
   // Lightning Page
