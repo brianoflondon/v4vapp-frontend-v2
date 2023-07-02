@@ -463,7 +463,7 @@ async function decodeInvoice() {
         // make sure we clear any earlier errors
         invoiceValid.value = null
         errorMessage.value = ""
-        dInvoice.value.sending = true   // Flag to show this is for sending Hive to Lightning
+        dInvoice.value.sending = true // Flag to show this is for sending Hive to Lightning
         dInvoice.value.askDetails = true
         return
       } else {
@@ -589,6 +589,7 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
   await new Promise((resolve) => setTimeout(resolve, 5000))
   const transactions = await useGetHiveTransactionHistory(username)
   const transaction_found = findObjectBefore(transactions, trx_id)
+  const memo = ""
   if (!transaction_found) {
     if (count < 20) {
       const message = `${t("waiting_for")} ${count}/20`
@@ -607,9 +608,19 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
       })
       await checkHiveTransaction(username, trx_id, notif, count)
     }
+    memo = `${t("transfer")}: ${t("not_found")}:`
+    notif({
+      color: "negative",
+      avatar: "site-logo/v4vapp-logo.svg",
+      timeout: 10000,
+      message: memo,
+      position: "top",
+    })
     return
   }
-  const memo = `Transfer: ${transaction_found.op[1].amount}\n${transaction_found.op[1].memo}`
+  memo = `${t("transfer")}: ${transaction_found.op[1].amount}\n${
+    transaction_found.op[1].memo
+  }`
   dInvoice.value.progress.push(memo)
   notif({
     color: "positive",
