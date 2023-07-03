@@ -73,6 +73,7 @@
             >
             </q-linear-progress>
           </div>
+          <CountdownBar :expiry="dInvoice?.timeExpireDate" />
           <div v-show="false" class="amounts-display flex justify-evenly">
             <div class="q-pa-xs input-amount-readonly">
               <q-input
@@ -184,6 +185,7 @@ import {
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
+import CountdownBar from "components/utils/CountdownBar.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"

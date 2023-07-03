@@ -13,13 +13,15 @@ export class HiveUser {
     keySelected,
     timestamp = null,
     authKey = null,
-    expire = null
+    expire = null,
+    token = null
   ) {
     this.hiveAccname = hiveAccname
     this.profileName = profileName
     this.keySelected = keySelected
     this.authKey = authKey
     this.expire = expire
+    this.token = token
     if (!timestamp) timestamp = Date.now()
     this.timestamp = timestamp
   }
@@ -32,6 +34,7 @@ export class HiveUser {
       timestamp: this.timestamp,
       authKey: this.authKey,
       expire: this.expire,
+      token: this.token,
     }
   }
 
@@ -63,6 +66,7 @@ export class HiveUser {
       keySelected: this.keySelected,
       authKey: this.authKey,
       expire: this.expire,
+      token: this.token,
       timestamp: this.timestamp,
       loginAge: this.loginAge,
     }
@@ -103,6 +107,12 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveUser.authKey) return null
       return hiveUser.authKey
     },
+    token() {
+      if (!this.currentUser) return null
+      const hiveUser = this.users[this.currentUser]
+      if (!hiveUser.token) return null
+      return hiveUser.token
+    },
     // Return the HiveUser object for the passed user hiveAccname
     getUser: (state) => {
       return (hiveAccname) => {
@@ -114,7 +124,8 @@ export const useStoreUser = defineStore("useStoreUser", {
           temp.keySelected,
           temp.timestamp,
           temp.authKey,
-          temp.expire
+          temp.expire,
+          temp.token
         )
         return hiveUser
       }
@@ -175,7 +186,13 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       onOpen()
     },
-    async login(hiveAccname, keySelected, authKey = null, expire = null) {
+    async login(
+      hiveAccname,
+      keySelected,
+      authKey = null,
+      expire = null,
+      token = null
+    ) {
       try {
         const hiveDetails = await useHiveDetails(hiveAccname)
         const profileName = hiveDetails?.profile?.name || hiveAccname
@@ -186,7 +203,8 @@ export const useStoreUser = defineStore("useStoreUser", {
             keySelected,
             Date.now(),
             authKey,
-            expire
+            expire,
+            token
           )
           this.users[hiveAccname] = newUser
           this.currentUser = hiveAccname

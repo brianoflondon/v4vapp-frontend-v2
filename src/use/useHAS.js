@@ -2,7 +2,7 @@ import HAS from "hive-auth-wrapper"
 
 import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
-import { store } from "quasar/wrappers"
+import { v4 as uuidv4 } from "uuid"
 
 const qrCodeText = ref("This is a test QR Code")
 const expiry = ref(0)
@@ -41,10 +41,13 @@ export async function HASLogin(username = "", keyType = "posting") {
   }
 
   // Create an authentication object
+  // generate random uuid
+  const myAuthKey = uuidv4()
+
   const auth = {
     username: username, // required - replace "username" with your Hive account name (without the @)
     expire: undefined,
-    key: keyType,
+    key: myAuthKey,
   }
 
   // Retrieving connection status
@@ -65,6 +68,7 @@ export async function HASLogin(username = "", keyType = "posting") {
       }),
     }
     console.log("challenge_data", challenge_data)
+
     HAS.authenticate(auth, APP_META, challenge_data, (req) => {
       console.log("response", req) // process auth_wait
       console.log("expires in ", (req.expire - Date.now()) / 1000, "secs")
@@ -72,7 +76,7 @@ export async function HASLogin(username = "", keyType = "posting") {
       auth_payload = {
         account: req.account,
         uuid: req.uuid,
-        key: req.key,
+        key: myAuthKey,
         host: status.host,
       }
       const auth_payload_string = JSON.stringify(auth_payload)
@@ -90,9 +94,10 @@ function resolve(res) {
   console.log("auth_payload", auth_payload)
   storeUser.login(
     auth_payload.account,
+    "posting",
     auth_payload.key,
-    auth_payload.uuid,
-    res.data.expire
+    res.data.expire,
+    res.data.token
   )
   qrCodeText.value = null
   auth_payload = {}
@@ -105,6 +110,23 @@ function reject(err) {
   auth_payload = {}
 }
 
+
+function createOp(from, to, amount, memo) {
+
+
+
+  return [
+    "transfer",
+    {
+      from,
+      to,
+      amount,
+      memo,
+    },
+  ]
+}
+
+
 export async function HASbroadcast(operation) {
   // Broadcast a message to the user
   // Create an authentication object
@@ -112,31 +134,45 @@ export async function HASbroadcast(operation) {
   const op = [
     "transfer",
     {
-      from: "v4vapp.dev",
-      to: "v4vapp.dev",
+      from: storeUser.hiveAccname,
+      to: storeUser.hiveAccname,
       amount: "1.001 HIVE",
-      memo: "memo",
+      memo: "this is a memo",
     },
   ]
+
+  // const op = [
+  //   "vote",
+  //   {
+  //     voter: storeUser.hiveAccname,
+  //     author: "brianoflondon",
+  //     permlink: "automated-posting-lets-talk-about-it",
+  //     weight: 10000,
+  //   },
+  // ]
+
   // Retrieving connection status
   const status = HAS.status()
+  console.log(status)
 
   const auth = {
-    username: "v4vapp.dev", // (required)
+    username: storeUser.hiveAccname, // (required)
     key: storeUser.authKey,
-    token: ""
+    token: storeUser.token,
   }
 
-  auth_payload = {
-    account: "v4vapp.dev",
-    uuid: storeUser.authKey,
-    key: "active",
-    host: status.host,
-  }
+  console.log("auth", auth)
+  console.log("op", op)
 
-  HAS.broadcast(auth, op[0], [op], (evt) => {
-    console.log(evt) // process sign_wait
+  HAS.broadcast(auth, "active", [op], (evt) => {
+    console.log(evt)
   })
-    .then((res) => resolve(res)) // transaction approved and successfully broadcasted
-    .catch((err) => reject(err)) // transaction rejected or failed
+    .then((res) => {
+      console.log(res)
+      resolve(res)
+    })
+    .catch((err) => {
+      console.log(err)
+      reject(err)
+    })
 }
