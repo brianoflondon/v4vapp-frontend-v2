@@ -56,8 +56,7 @@ function generateQRCode() {
       dark: quasar.dark.isActive ? "#03002c" : "#f5f5f5",
     },
   }
-    = n < zOjla > `YTIBFY/lTHfD}PO5SSN4z{%_sum0
-}`  QRCode.toDataURL(props.qrText, options)
+  QRCode.toDataURL(props.qrText, options)
     .then((url) => {
       qrcodeUrl.value = url
     })
