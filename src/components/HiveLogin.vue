@@ -40,7 +40,7 @@
       </q-item>
       <div v-if="displayQRCode" class="flex justify-center">
         <div>
-          <CreateQRCode :qrText="qrCodeText" :width="200" :height="200" />
+          <CreateHASQRCode :qrText="qrCodeText" :width="200" :height="200" />
           {{ expiry - Date.now() }}
         </div>
       </div>
@@ -82,7 +82,7 @@ import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
-import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
+import CreateHASQRCode from "src/components/qrcode/CreateQRCode.vue"
 
 const storeUser = useStoreUser()
 const hiveAccObj = defineModel({})

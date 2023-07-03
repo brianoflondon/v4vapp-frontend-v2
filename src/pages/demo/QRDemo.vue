@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <CreateHASQRCode :qr-text="qrText"></CreateHASQRCode>
+  </div>
   <div class="">
     <div>
       <q-input v-model="qrText" style="max-width: 300px"></q-input>
@@ -38,7 +41,9 @@
 
 <script setup>
 import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
+import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue";
 import { ref, watch } from "vue"
+
 const qrText = ref("lightning:v4vapp@v4v.app")
 const loading = ref(false)
 const qrCode = ref()
