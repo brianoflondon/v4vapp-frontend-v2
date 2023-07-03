@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div @click="openLinkInNewWindow">
     <img :src="qrcodeUrl" :alt="qrText" />
   </div>
 </template>
@@ -63,5 +63,10 @@ function generateQRCode() {
     .catch((error) => {
       console.error("QR code generation failed:", error)
     })
+}
+
+function openLinkInNewWindow() {
+  const url = props.qrText
+  window.open(url, "_blank")
 }
 </script>

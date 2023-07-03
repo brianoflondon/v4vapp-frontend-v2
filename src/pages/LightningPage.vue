@@ -65,8 +65,10 @@
             </q-input>
           </div>
           <CountdownBar
+            class="q-pt-xs"
             :expiry="dInvoice?.timeExpireDate"
-            @message="(val) => (timeRemaining = val)"
+            @message="(val) => (timeMessage = val)"
+            @time-left="(val) => checkInvoiceProgress(val)"
           />
           <div v-show="false" class="amounts-display flex justify-evenly">
             <div class="q-pa-xs input-amount-readonly">
@@ -163,14 +165,10 @@
 
 <script setup>
 import { computed, ref, onMounted } from "vue"
-// import * as bolt11 from "src/assets/bolt11.min.js"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { QrcodeStream } from "qrcode-reader-vue3"
-import {
-  useDecodeLightningInvoice,
-  useGetTimeProgress,
-} from "src/use/useLightningInvoice"
+import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import {
   useHiveKeychainTransfer,
   useGetHiveTransactionHistory,
@@ -190,7 +188,6 @@ const invoiceValid = ref(null)
 const dInvoice = ref(null)
 const callbackResult = ref(null)
 const errorMessage = ref("")
-const countdownTimer = ref()
 const voteOptions = ref({
   hiveUser: "",
   showButton: true,
@@ -206,8 +203,7 @@ const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 
-let countTimer = null
-let timeRemaining = ref("")
+let timeMessage = ref("")
 // Invoice hint shows expiry time and sats costs and fee
 const invoiceHint = computed(() => {
   if (!invoiceValid.value) {
@@ -216,55 +212,12 @@ const invoiceHint = computed(() => {
     if (invoiceValid.value && dInvoice.value.timeLeft > 1) {
       const message = `${t("invoice")} ${sats.value} (${t("fee")}: ${
         satsFee.value
-      }) - ${t("expires")} ${timeRemaining.value}`
+      }) - ${t("expires")} ${timeMessage.value}`
       return message
     }
     return t("invoice_hint")
   }
 })
-
-function formatTime(timeInSeconds) {
-  const hours = Math.floor(timeInSeconds / 3600)
-  const minutes = Math.floor((timeInSeconds % 3600) / 60)
-  const seconds = Math.floor(timeInSeconds % 60)
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m ${seconds}s`
-  } else if (minutes > 0) {
-    return `${minutes}m ${seconds}s`
-  } else {
-    return `${seconds}s`
-  }
-}
-
-function checkExpiry() {
-  if (invoiceValid.value) {
-    countTimer = null
-    const [timeFraction, timeLeft] = useGetTimeProgress(dInvoice.value)
-    countdownTimer.value = timeFraction
-    const timeIntervalFor1PercentDrop = calculateTimeInterval(
-      timeFraction,
-      timeLeft,
-      0.01
-    )
-    if (timeLeft > 0) {
-      dInvoice.value.timeLeft = timeLeft
-      countTimer = setTimeout(checkExpiry, timeIntervalFor1PercentDrop * 1000)
-    } else {
-      errorMessage.value = t("invoice_expired")
-      invoiceValid.value = false
-      countTimer = null
-      countdownTimer.value = -1
-    }
-  }
-}
-
-function calculateTimeInterval(timeFraction, timeLeft, percent = 0.01) {
-  const percentTime = timeLeft / timeFraction // Calculate the time for 1% progress
-  const percentDrop = percentTime * percent // Calculate the time for 1% drop
-
-  return percentDrop // Return the time interval in seconds for a 1% drop
-}
 
 const sats = computed(() => {
   if (dInvoice.value?.millisatoshis) {
@@ -372,6 +325,25 @@ const invoiceLabel = computed(() => {
   return invoiceLabels[invoiceType()]
 })
 
+function checkInvoiceProgress(timeLeft) {
+  console.log("checkInvoiceProgress", timeLeft)
+  dInvoice.value.timeLeft = timeLeft
+  if (timeLeft < 0) {
+    // Check if invoice is expired return true if expired
+    console.log("Invoice expired")
+    dInvoice.value.errors.expired = true
+    dInvoice.value.errors.text.push("invoice_expired")
+    errorMessage.value = dInvoice.value?.errors.text
+      .map((error) => t(error))
+      .join(", ")
+    dInvoice.value.timeLeft = 0
+    invoiceValid.value = false
+    invoiceChecking.value = false
+    console.log("Invoice expired")
+    console.log("errors", dInvoice.value.errors)
+  }
+}
+
 function receiveNewInvoice(val) {
   if (val === null) {
     // Need to notify of problem with Lightning service of invoice provider
@@ -411,13 +383,10 @@ function invoiceType() {
 
 function clearReset() {
   errorMessage.value = ""
-  countdownTimer.value = -1
-  countTimer = null
   invoiceText.value = null
   invoiceValid.value = null
   invoiceChecking.value = false
   dInvoice.value = {}
-  dInvoice.value.progress = []
   cameraOn.value = false
   cameraShow.value = false
 }
@@ -447,12 +416,12 @@ async function decodeInvoice() {
     // decode the invoice
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
     if (dInvoice.value) {
+      console.log("dInvoice.value", dInvoice.value)
       dInvoice.value.progress = []
       invoiceValid.value = true
       invoiceChecking.value = false
       cameraOn.value = false
       cameraShow.value = false
-      checkExpiry()
       if (invoiceType() === "lightningAddress") {
         // need to ask for details including amount
         // make sure we clear any earlier errors

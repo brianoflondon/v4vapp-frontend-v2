@@ -10,7 +10,7 @@
             quasar.dark.isActive ? 'transparent' : 'transparent'
           }`,
         }"
-        @click="openLinkInNewWindow(qrText)"
+        @click="openLinkInNewWindow(qrTextPage)"
       >
         <div ref="qrCodeContainer"></div>
       </div>
@@ -136,8 +136,7 @@ async function newQRCode() {
 }
 
 function openLinkInNewWindow() {
-  const url = props.qrText
-  console.log("url", url)
+  const url = qrTextPage.value
   window.open(url, "_blank")
 }
 </script>

@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import {  onMounted, onUnmounted, ref, watch } from "vue"
+import { onMounted, onUnmounted, ref, watch } from "vue"
 import { formatTimeAgo } from "@vueuse/core"
 const fraction = ref(1)
 const timeLeft = ref(0)
@@ -38,7 +38,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(["message"])
+const emit = defineEmits(["message","timeLeft"])
 
 onMounted(() => {
   startTime.value = Math.floor(Date.now() / 1000)
@@ -58,6 +58,7 @@ function calcFraction() {
   const timeFraction = timeLeft.value / timeLengthInvoice
   fraction.value = timeFraction
   emit("message", expiresHuman())
+  emit("timeLeft", timeLeft.value)
 }
 
 let timer = null
@@ -65,10 +66,11 @@ let timer = null
 watch(
   () => props.expiry,
   (newValue, oldValue) => {
+    console.log("props.expiry changed", newValue, oldValue)
     expiryLocal.value = newValue
-    if (expiryLocal.value > 0) {
-      console.log("props.expiry changed", newValue, oldValue)
-      startTime.value = Math.floor(Date.now() / 1000)
+    console.log("expiryLocal.value", expiryLocal.value)
+    startTime.value = Math.floor(Date.now() / 1000)
+    if (expiryLocal.value > startTime.value) {
       calcFraction()
       console.log("fraction", fraction.value)
       timer = setInterval(() => {
@@ -77,6 +79,9 @@ watch(
         } else {
           clearInterval(timer)
           expiryLocal.value = 0
+          startTime.value = 0
+          emit("timeLeft", -1)
+          emit("message", "Expired")
         }
       }, 1000)
     }
