@@ -32,6 +32,8 @@ export default {
   // Lightning Page
   lightning: "Lightning",
   hive: "Hive",
+  transfer: "Transfer",
+  not_found: "Not found",
 
   // Login
   keychain_not_installed: "Keychain is not installed",

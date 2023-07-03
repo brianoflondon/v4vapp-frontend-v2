@@ -276,9 +276,9 @@ async function receiveAmounts(val) {
   }
 }
 
-div {
-  // border: 1px solid red;
-}
+// div {
+//   // border: 1px solid red;
+// }
 // .action-buttons {
 //   background-color: green;
 //   flex-direction: column;

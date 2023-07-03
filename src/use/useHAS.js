@@ -80,7 +80,7 @@ export async function HASLogin(username = "", keyType = "posting") {
       qrCodeText.value = URI
     })
       .then((res) => resolve(res)) // Authentication request approved
-      .catch((err) => reject(err)) // Authentication request rejected or error occured
+      .catch((err) => reject(err)) // Authentication request rejected or error occurred
   }
 }
 
@@ -98,7 +98,7 @@ function resolve(res) {
   auth_payload = {}
 }
 
-// Authentication request rejected or error occured
+// Authentication request rejected or error occurred
 function reject(err) {
   console.log("reject", err)
   qrCodeText.value = ""
