@@ -40,7 +40,7 @@
       </q-item>
       <div v-if="displayQRCode" class="flex justify-center">
         <div>
-          <CreateHASQRCode :qrText="qrCodeText" :width="200" :height="200" />
+          <CreateHASQRCode :qrText="qrCodeTextHAS" :width="200" :height="200" />
           {{ expiry - Date.now() }}
         </div>
       </div>
@@ -110,7 +110,7 @@ const props = defineProps({
 const t = useI18n().t
 const quasar = useQuasar()
 
-const { qrCodeText, expiry } = useHAS()
+const { qrCodeTextHAS, expiry } = useHAS()
 
 async function loginHAS(username = "brianoflondon") {
   try {
@@ -120,7 +120,7 @@ async function loginHAS(username = "brianoflondon") {
   }
 }
 
-watch(qrCodeText, (newValue) => {
+watch(qrCodeTextHAS, (newValue) => {
   if (newValue === null) {
     displayQRCode.value = false
     return
