@@ -107,7 +107,6 @@
             </div>
           </div>
         </div>
-
         <div
           class="payment-buttons row flex-center q-gutter-lg q-pt-md"
           v-show="invoiceValid"
