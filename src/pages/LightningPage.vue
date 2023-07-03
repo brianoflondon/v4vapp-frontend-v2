@@ -64,16 +64,10 @@
             -->
             </q-input>
           </div>
-          <div v-if="countdownTimer > 0" class="q-pt-sm">
-            <q-linear-progress
-              class="invoice-timer"
-              size="10px"
-              :value="countdownTimer"
-              color="positive"
-            >
-            </q-linear-progress>
-          </div>
-          <CountdownBar :expiry="dInvoice?.timeExpireDate" />
+          <CountdownBar
+            :expiry="dInvoice?.timeExpireDate"
+            @message="(val) => (timeRemaining = val)"
+          />
           <div v-show="false" class="amounts-display flex justify-evenly">
             <div class="q-pa-xs input-amount-readonly">
               <q-input
@@ -213,7 +207,7 @@ const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 
 let countTimer = null
-
+let timeRemaining = ref("")
 // Invoice hint shows expiry time and sats costs and fee
 const invoiceHint = computed(() => {
   if (!invoiceValid.value) {
@@ -222,7 +216,7 @@ const invoiceHint = computed(() => {
     if (invoiceValid.value && dInvoice.value.timeLeft > 1) {
       const message = `${t("invoice")} ${sats.value} (${t("fee")}: ${
         satsFee.value
-      }) - ${t("expires")} ${formatTime(dInvoice.value.timeLeft)}`
+      }) - ${t("expires")} ${timeRemaining.value}`
       return message
     }
     return t("invoice_hint")
