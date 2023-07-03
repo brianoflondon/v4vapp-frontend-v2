@@ -4,11 +4,11 @@ import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { v4 as uuidv4 } from "uuid"
 
-const qrCodeText = ref("This is a test QR Code")
+const qrCodeTextHAS = ref("This is a test QR Code")
 const expiry = ref(0)
 const storeUser = useStoreUser()
 export function useHAS() {
-  return { qrCodeText, expiry }
+  return { qrCodeTextHAS, expiry }
 }
 
 let auth_payload = {}
@@ -81,7 +81,7 @@ export async function HASLogin(username = "", keyType = "posting") {
       }
       const auth_payload_string = JSON.stringify(auth_payload)
       const URI = `has://auth_req/${btoa(auth_payload_string)}`
-      qrCodeText.value = URI
+      qrCodeTextHAS.value = URI
     })
       .then((res) => resolve(res)) // Authentication request approved
       .catch((err) => reject(err)) // Authentication request rejected or error occurred
@@ -99,14 +99,14 @@ function resolve(res) {
     res.data.expire,
     res.data.token
   )
-  qrCodeText.value = null
+  qrCodeTextHAS.value = null
   auth_payload = {}
 }
 
 // Authentication request rejected or error occurred
 function reject(err) {
   console.log("reject", err)
-  qrCodeText.value = ""
+  qrCodeTextHAS.value = ""
   auth_payload = {}
 }
 
