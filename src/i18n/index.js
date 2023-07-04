@@ -1,12 +1,9 @@
 import enUS from './en-US'
-import he from './he'
 import esES from './es-ES'
 
 export default {
   'en-US': enUS,
-  'he': he,
-  // spanish
-  'es': esES,
+  'es-ES': esES,
 }
 
 
