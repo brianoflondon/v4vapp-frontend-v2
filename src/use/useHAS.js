@@ -148,8 +148,8 @@ export async function useHASTransfer(username, amount, currency, memo) {
 
   HAS.broadcast(auth, "active", [operation], (evt) => {
     console.log(evt)
-    console.log("expires in ", (evt.expire - Date.now()) / 1000, "secs")
     expiry.value = evt.expire / 1000
+    return evt
   })
     .then((res) => {
       console.log("resolved: ", res)

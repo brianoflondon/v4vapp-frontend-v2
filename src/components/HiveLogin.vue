@@ -51,9 +51,7 @@
           @click="loginHAS(hiveAccObj?.value)"
         ></q-btn>
       </q-item>
-      <q-item>
-        <q-btn label="HAS Transfer" rounded @click="testHASTransfer()"></q-btn>
-      </q-item>
+
       <q-item clickable v-if="displayQRCode" class="flex column justify-center">
         <div>
           <CreateHASQRCode :qrText="qrCodeTextHAS" :width="200" :height="200" />
@@ -72,7 +70,6 @@
           >
         </div>
       </q-item>
-      <q-btn label="HAS Broadcast" rounded @click="testHASBroadcast()"></q-btn>
     </q-list>
     <div class="flex justify-center">
       <div class="text-center q-pa-md">

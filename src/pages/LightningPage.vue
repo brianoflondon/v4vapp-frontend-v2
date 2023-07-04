@@ -161,10 +161,10 @@
               rounded
             />
           </div>
-          <div>
-            HAS request: {{ expiry }}
-            <CountdownBar :expiry="expiry" />
-          </div>
+        </div>
+        <AskHASDialog v-model="HASDialog" />
+        <div>
+          <CountdownBar :expiry="expiry" />
         </div>
         <!-- Vote Button -->
         <div class="vote-button q-pa-lg text-center">
@@ -206,6 +206,7 @@ import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
 import { useHAS, useHASTransfer } from "src/use/useHAS.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
+import AskHASDialog from "components/hive/AskHASDialog.vue"
 import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
 import CountdownBar from "components/utils/CountdownBar.vue"
@@ -236,6 +237,7 @@ const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 
 const { qrCodeTextHAS, expiry } = useHAS()
+const HASDialog = ref({ show: true })
 
 let timeMessage = ref("")
 // Invoice hint shows expiry time and sats costs and fee
@@ -586,7 +588,15 @@ async function payInvoice(currency, method) {
       }
       break
     case "HAS":
-      result = await useHASTransfer(username, amount, currency, memo)
+      HASDialog.value.show = true
+      HASDialog.value.payment = {
+        username: username,
+        amount: amount,
+        currency: currency,
+        memo: memo,
+      }
+
+      // result = await useHASTransfer(username, amount, currency, memo)
       console.log("pay result", result)
       const message = `${t("open_HAS")} <a href="has://sign_wait/">Click</a>`
       dInvoice.value.progress.push(message)

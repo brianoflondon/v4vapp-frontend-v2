@@ -43,17 +43,12 @@ const emit = defineEmits(["message", "timeLeft"])
 onMounted(() => {
   startTime.value = Math.floor(Date.now() / 1000)
   expiryLocal.value = props.expiry
-  console.log(expiresHuman())
-  console.log("countdown bar mounted")
-  console.log("props.expiry", props.expiry)
-  console.log("startTime", startTime.value)
   if (props.expiry > startTime.value) {
     startTimer()
   }
 })
 
 function calcFraction() {
-  console.log("calcFraction", fraction.value)
   if (expiryLocal.value === 0) {
     fraction.value = 1
     return
@@ -84,7 +79,6 @@ function startTimer() {
   console.log("exires in", expiresIn())
   if (expiryLocal.value > startTime.value) {
     calcFraction()
-    console.log("fraction", fraction.value)
     timer = setInterval(() => {
       if (fraction.value > 0) {
         calcFraction()
