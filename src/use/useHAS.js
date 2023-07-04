@@ -1,4 +1,5 @@
 import HAS from "hive-auth-wrapper"
+import { serverHiveAccount } from "boot/axios"
 
 import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
@@ -110,11 +111,7 @@ function reject(err) {
   auth_payload = {}
 }
 
-
 function createOp(from, to, amount, memo) {
-
-
-
   return [
     "transfer",
     {
@@ -126,6 +123,41 @@ function createOp(from, to, amount, memo) {
   ]
 }
 
+export async function useHASTransfer(username, amount, currency, memo) {
+  console.log("useHASTransfer", username, amount, currency, memo)
+  amount = parseFloat(amount).toFixed(3)
+  const amountString = `${amount} ${currency}`
+  const operation = createOp(username, serverHiveAccount, amountString, memo)
+  console.log("operation", operation)
+
+  // Get details for this user
+  const user = storeUser.getUser(username)
+  if (!user || !user.authKey) {
+    // User not authenticated with HAS
+    await HASLogin(username)
+    return false
+  }
+
+  console.log("user", user)
+
+  const auth = {
+    username: user.hiveAccname, // (required)
+    key: user.authKey,
+    token: user.token,
+  }
+
+  HAS.broadcast(auth, "active", [operation], (evt) => {
+    console.log(evt)
+  })
+    .then((res) => {
+      console.log("resolved: ", res)
+      // resolve(res)
+    })
+    .catch((err) => {
+      console.log("error: ", err)
+      // reject(err)
+    })
+}
 
 export async function HASbroadcast(operation) {
   // Broadcast a message to the user

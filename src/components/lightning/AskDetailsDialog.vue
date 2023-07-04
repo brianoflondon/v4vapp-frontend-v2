@@ -113,7 +113,7 @@
         >
           <q-input
             v-model="dInvoice.v4vapp.comment"
-            label="Comment"
+            :label="$t('comment')"
             type="text"
             counter
             tabindex="2"

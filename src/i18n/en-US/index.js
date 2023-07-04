@@ -94,6 +94,10 @@ export default {
   invoice_hint: "Paste an invoice or scan a QR code",
   waiting_for: "Waiting for reply transaction to appear on Hive blockchain",
   invoice_provider_not_working: "Lightning Invoice provider is not working right now, try later or check the address",
+  requesting: "Requesting",
+
+  // HAS Process
+  open_HAS: "Open your HAS app",
 
   // Please vote
   voting_as: "Voting as",

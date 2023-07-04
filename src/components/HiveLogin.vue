@@ -23,6 +23,7 @@
             hiveAccObj === '' ||
             hiveAccObj === null
           "
+          align="left"
           rounded
           :label="t('hive_keychain')"
           icon="img:keychain/hive-keychain-round.svg"
@@ -44,8 +45,9 @@
             hiveAccObj === null
           "
           label="HAS"
+          align="left"
           rounded
-          icon="img:has/HiveAuth_logo.svg/"
+          icon="img:/has/hive-auth-logo.svg/"
           @click="loginHAS(hiveAccObj?.value)"
         ></q-btn>
       </q-item>
@@ -65,7 +67,8 @@
         </div>
         <div>
           <q-item-label caption
-            >@{{ hiveAccObj?.value }} {{ t('expires') }} {{ timeMessage }}</q-item-label
+            >@{{ hiveAccObj?.value }} {{ t("expires") }}
+            {{ timeMessage }}</q-item-label
           >
         </div>
       </q-item>
@@ -98,11 +101,11 @@
 
 import { ref, watch, onMounted } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
+import { useHiveAvatarURL } from "src/use/useHive"
 import {
   useHiveKeychainLogin,
-  useHiveAvatarURL,
   useIsHiveKeychainInstalled,
-} from "src/use/useHive"
+} from "src/use/useKeychain"
 import { useHAS, HASLogin, HASbroadcast } from "src/use/useHAS"
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"

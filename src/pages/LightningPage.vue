@@ -103,37 +103,66 @@
             </div>
           </div>
         </div>
-        <div
-          class="payment-buttons row flex-center q-gutter-lg q-pt-md"
-          v-show="invoiceValid"
-        >
-          <q-btn
-            class="payment-button-hive"
-            @click="payInvoice((value = 'HIVE'))"
-            :loading="storeApiStatus.payInvoice"
-            :disable="storeApiStatus.payInvoice"
-            icon="img:keychain/hive-keychain-round.svg"
-            icon-right="img:avatars/hive_logo_dark.svg"
-            :label="Hive"
-            :color="buttonColor.buttonColor"
-            :text-color="buttonColor.textColor"
-            size="md"
-            rounded
-          />
-          <q-btn
-            class="payment-button-hbd"
-            @click="payInvoice((value = 'HBD'))"
-            :loading="storeApiStatus.payInvoice"
-            :disable="storeApiStatus.payInvoice"
-            icon="img:keychain/hive-keychain-round.svg"
-            icon-right="img:/avatars/hbd_logo.svg"
-            :label="HBD"
-            :color="buttonColor.buttonColor"
-            :text-color="buttonColor.textColor"
-            size="md"
-            rounded
-          />
+        <!-- Payment Buttons -->
+        <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
+          <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
+            <q-btn
+              class="payment-button-hive"
+              @click="payInvoice('HIVE', 'HiveKeychain')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:keychain/hive-keychain-round.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              :label="Hive"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+            <q-btn
+              class="payment-button-hbd"
+              @click="payInvoice('HBD', 'HiveKeychain')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:keychain/hive-keychain-round.svg"
+              icon-right="img:/avatars/hbd_logo.svg"
+              :label="HBD"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+          </div>
+          <div class="has-buttons row flex-center q-gutter-lg">
+            <q-btn
+              class="payment-button-hive"
+              @click="payInvoice('HIVE', 'HAS')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:/has/hive-auth-logo.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              :label="Hive"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+            <q-btn
+              class="payment-button-hbd"
+              @click="payInvoice('HBD', 'HAS')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:/has/hive-auth-logo.svg"
+              icon-right="img:/avatars/hbd_logo.svg"
+              :label="HBD"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+          </div>
         </div>
+        <!-- Vote Button -->
         <div class="vote-button q-pa-lg text-center">
           <VoteProposal v-model="voteOptions" />
         </div>
@@ -169,10 +198,9 @@ import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { QrcodeStream } from "qrcode-reader-vue3"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
-import {
-  useHiveKeychainTransfer,
-  useGetHiveTransactionHistory,
-} from "src/use/useHive.js"
+import { useGetHiveTransactionHistory } from "src/use/useHive.js"
+import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
+import { useHASTransfer } from "src/use/useHAS.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
@@ -503,46 +531,66 @@ function toggleCamera() {
   }, 500)
 }
 
-async function payInvoice(val) {
+async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
-  const currency = val
+  console.log("payInvoice currency ", currency, "method ", method)
   let amount = 0
   if (currency == "HIVE") {
     amount = parseFloat(Hive.value) + 1
   } else if (currency == "HBD") {
     amount = parseFloat(HBD.value) + 1
   }
+  amount = amount.toFixed(3)
   const memo = `${dInvoice.value.paymentRequest} 2.v4v.app`
-  dInvoice.value.progress.push(`Requesting ${amount} ${currency}`)
+  dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
   let username = null
   if (storeUser.currentUser) {
     username = storeUser.currentUser
   }
-  const result = await useHiveKeychainTransfer(username, amount, currency, memo)
-
-  if (result.success) {
-    const notif = q.notify({
-      avatar: "site-logo/v4vapp-logo.svg",
-      color: "positive",
-      group: false,
-      timeout: 0,
-      message: result.message,
-      position: "top",
-    })
-    dInvoice.value.progress.push(result.message)
-    // Set the username for the Voting Button
-    voteOptions.value.hiveUser = result.data.username
-    checkHiveTransaction(result.data.username, result.result.id, notif)
-  } else {
-    dInvoice.value.progress.push(result.message)
-    q.notify({
-      color: "negative",
-      avatar: "site-logo/v4vapp-logo.svg",
-      timeout: 2000,
-      message: result.message,
-      position: "top",
-    })
+  let result = {}
+  switch (method) {
+    case "HiveKeychain":
+      // Hive Keychain process
+      result = await useHiveKeychainTransfer(username, amount, currency, memo)
+      console.log("pay result", result)
+      if (result.success) {
+        const notif = q.notify({
+          avatar: "site-logo/v4vapp-logo.svg",
+          color: "positive",
+          group: false,
+          timeout: 0,
+          message: result.message,
+          position: "top",
+        })
+        dInvoice.value.progress.push(result.message)
+        // Set the username for the Voting Button
+        voteOptions.value.hiveUser = result.data.username
+        checkHiveTransaction(result.data.username, result.result.id, notif)
+      } else {
+        dInvoice.value.progress.push(result.message)
+        q.notify({
+          color: "negative",
+          avatar: "site-logo/v4vapp-logo.svg",
+          timeout: 2000,
+          message: result.message,
+          position: "top",
+        })
+      }
+      break
+    case "HAS":
+      result = await useHASTransfer(username, amount, currency, memo)
+      const message = `${t("open_HAS")} <a href="has://auth_req/">Click</a>`
+      q.notify({
+        color: "positive",
+        html: true,
+        avatar: "site-logo/v4vapp-logo.svg",
+        timeout: 5000,
+        message: message,
+        position: "top",
+      })
+      // Code will finish within the useHAS code
+      break
   }
 }
 
