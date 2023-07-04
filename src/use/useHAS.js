@@ -148,6 +148,7 @@ export async function useHASTransfer(username, amount, currency, memo) {
 
   HAS.broadcast(auth, "active", [operation], (evt) => {
     console.log(evt)
+    return evt
   })
     .then((res) => {
       console.log("resolved: ", res)

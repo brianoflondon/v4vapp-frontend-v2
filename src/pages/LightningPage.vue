@@ -580,7 +580,8 @@ async function payInvoice(currency, method) {
       break
     case "HAS":
       result = await useHASTransfer(username, amount, currency, memo)
-      const message = `${t("open_HAS")} <a href="has://auth_req/">Click</a>`
+      console.log("pay result", result)
+      const message = `${t("open_HAS")} <a href="has://sign_wait/">Click</a>`
       q.notify({
         color: "positive",
         html: true,
