@@ -326,7 +326,6 @@ const invoiceLabel = computed(() => {
 })
 
 function checkInvoiceProgress(timeLeft) {
-  console.log("checkInvoiceProgress", timeLeft)
   dInvoice.value.timeLeft = timeLeft
   if (timeLeft < 0) {
     // Check if invoice is expired return true if expired
