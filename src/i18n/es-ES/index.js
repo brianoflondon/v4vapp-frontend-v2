@@ -13,10 +13,10 @@ export default {
   minutes: 'minutos',
   seconds: 'segundos',
   fee: 'comisión',
-  vote: 'Votaciones',
+  vote: 'voto',
   please: 'Por favor',
   and: 'y',
-  witness: 'Mi Hive Testigo',
+  witness: 'Testigo',
   // Keychain
   keychain_installed: 'Keychain está instalado',
   keychain_missing: 'Keychain is Missing',
@@ -43,7 +43,7 @@ export default {
   // Get Hive
   amount: 'Cantidad',
   copy: 'Copiar',
-  copy_qrcode: 'Haga clic para copiar el código QR al portapapeles',
+  copy_qrcode: 'Haga clic para copiar el código QR',
   pay: 'Pagar',
   pay_tooltip: 'Paga esta factura con la aplicación Lighting instalada',
   copied: 'Copiado al portapapeles',
@@ -53,18 +53,18 @@ export default {
   // SideMenu
   page: 'Page',
   home: 'Home',
-  status: 'Status',
+  status: 'Estado',
   // Status Page
   status_page_message: 'Status page is under construction, in the meantime please visit Hive.',
   // Pricebar
   sats: 'シ',
-  failure: 'Failure',
-  working: 'Working',
+  failure: 'Fallo',
+  working: 'Trabajando',
   keychain_installed: 'Keychain is Installed',
   keychain_missing: 'Keychain is Missing',
   reload_prices: 'Reload Prices',
   // Invoice
-  invoice: 'Invoice',
+  invoice: 'Factura',
   expires: 'expires',
   enter_invoice: 'lnbc.... o Lightning Address',
   valid_invoice: 'Invoice decoded',
@@ -85,8 +85,8 @@ export default {
   vote_proposal: 'Vote for my DHF Proposal',
   thank_you: 'Thank you for voting already!',
   // Tab Bar
-  send: 'Send',
-  receive: 'Receive',
+  send: 'Enviar',
+  receive: 'Recibir',
   podcasts: 'Podcasts',
   pods: 'Pods',
   // Ask Details dialog
