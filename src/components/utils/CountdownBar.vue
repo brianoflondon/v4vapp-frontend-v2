@@ -53,6 +53,7 @@ onMounted(() => {
 })
 
 function calcFraction() {
+  console.log("calcFraction", fraction.value)
   if (expiryLocal.value === 0) {
     fraction.value = 1
     return
@@ -80,6 +81,7 @@ watch(
 )
 
 function startTimer() {
+  console.log("exires in", expiresIn())
   if (expiryLocal.value > startTime.value) {
     calcFraction()
     console.log("fraction", fraction.value)

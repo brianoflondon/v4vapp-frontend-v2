@@ -161,6 +161,10 @@
               rounded
             />
           </div>
+          <div>
+            HAS request: {{ expiry }}
+            <CountdownBar :expiry="expiry" />
+          </div>
         </div>
         <!-- Vote Button -->
         <div class="vote-button q-pa-lg text-center">
@@ -200,7 +204,7 @@ import { QrcodeStream } from "qrcode-reader-vue3"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
-import { useHASTransfer } from "src/use/useHAS.js"
+import { useHAS, useHASTransfer } from "src/use/useHAS.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
@@ -230,6 +234,8 @@ const t = useI18n().t
 const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
+
+const { qrCodeTextHAS, expiry } = useHAS()
 
 let timeMessage = ref("")
 // Invoice hint shows expiry time and sats costs and fee
@@ -576,12 +582,15 @@ async function payInvoice(currency, method) {
           message: result.message,
           position: "top",
         })
+        return
       }
       break
     case "HAS":
       result = await useHASTransfer(username, amount, currency, memo)
       console.log("pay result", result)
       const message = `${t("open_HAS")} <a href="has://sign_wait/">Click</a>`
+      dInvoice.value.progress.push(message)
+
       q.notify({
         color: "positive",
         html: true,
