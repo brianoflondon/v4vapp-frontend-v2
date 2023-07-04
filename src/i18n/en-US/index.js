@@ -117,6 +117,7 @@ export default {
   amount_to_send: "Amount to send",
   too_low: "Amount too low",
   too_high: "Amount too high",
+  comment: "Comment",
   comment_length: "Comment is too long",
 
   // Camera
