@@ -19,6 +19,10 @@ export default {
   and: "and",
   witness: "My Hive Witness",
 
+  // Dark Mode Selector
+  change_light: "Change to light mode",
+  change_dark: "Change to dark mode",
+
   // Keychain
   keychain_installed: "Keychain is Installed",
   keychain_missing: "Keychain is Missing",
