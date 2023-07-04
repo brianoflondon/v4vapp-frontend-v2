@@ -1,9 +1,9 @@
 <template>
   <q-card>
     <q-list>
-      <q-item-label class="text-left q-pa-sm">{{
-        $t("login_as")
-      }}</q-item-label>
+      <q-item-label class="text-left q-pa-sm">
+        {{ $t("login_as") }}
+      </q-item-label>
       <q-item>
         <HiveSelectFancyAcc
           dense
@@ -12,9 +12,12 @@
           fancyOptions
         />
       </q-item>
-      <q-item>{{ $t("login_with") }}:</q-item>
+      <q-item-label class="text-left q-pa-sm">
+        {{ $t("login_with") }}:
+      </q-item-label>
       <q-item dense>
         <q-btn
+          style="width: 200px"
           :disable="
             typeof hiveAccObj === 'undefined' ||
             hiveAccObj === '' ||
@@ -23,7 +26,7 @@
           rounded
           :label="t('hive_keychain')"
           icon="img:keychain/hive-keychain-round.svg"
-          @click="login(hiveAccObj?.value)"
+          @click="loginKeychain(hiveAccObj?.value)"
         />
         <q-tooltip v-if="!hiveAccObj && isKeychain">{{
           t("enter_hive_account")
@@ -33,17 +36,40 @@
         }}</q-tooltip>
       </q-item>
       <q-item>
-        <q-btn label="HAS" rounded @click="loginHAS(hiveAccObj?.value)"></q-btn>
+        <q-btn
+          style="width: 200px"
+          :disable="
+            typeof hiveAccObj === 'undefined' ||
+            hiveAccObj === '' ||
+            hiveAccObj === null
+          "
+          label="HAS"
+          rounded
+          icon="img:has/HiveAuth_logo.svg/"
+          @click="loginHAS(hiveAccObj?.value)"
+        ></q-btn>
       </q-item>
       <q-item>
         <q-btn label="HAS Transfer" rounded @click="testHASTransfer()"></q-btn>
       </q-item>
-      <div v-if="displayQRCode" class="flex justify-center">
+      <q-item clickable v-if="displayQRCode" class="flex column justify-center">
         <div>
           <CreateHASQRCode :qrText="qrCodeTextHAS" :width="200" :height="200" />
-          {{ expiry - Date.now() }}
         </div>
-      </div>
+        <div>
+          <CountdownBar
+            :expiry="expiry / 1000"
+            :width="200"
+            @message="(val) => (timeMessage = val)"
+          />
+        </div>
+        <div>
+          <q-item-label caption
+            >@{{ hiveAccObj?.value }} {{ t('expires') }} {{ timeMessage }}</q-item-label
+          >
+        </div>
+      </q-item>
+      <q-btn label="HAS Broadcast" rounded @click="testHASBroadcast()"></q-btn>
     </q-list>
     <div class="flex justify-center">
       <div class="text-center q-pa-md">
@@ -83,11 +109,13 @@ import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
 import CreateHASQRCode from "src/components/qrcode/CreateQRCode.vue"
+import CountdownBar from "src/components/utils/CountdownBar.vue"
 
 const storeUser = useStoreUser()
 const hiveAccObj = defineModel({})
 
 const displayQRCode = ref(false)
+const timeMessage = ref()
 
 if (Platform.is.mobile) {
   console.log("Running on a mobile device")
@@ -112,8 +140,11 @@ const quasar = useQuasar()
 
 const { qrCodeTextHAS, expiry } = useHAS()
 
-async function loginHAS(username = "brianoflondon") {
+async function loginHAS(username) {
   try {
+    if (!username) {
+      return
+    }
     await HASLogin(username)
   } catch (error) {
     console.log("error: ", error)
@@ -121,6 +152,7 @@ async function loginHAS(username = "brianoflondon") {
 }
 
 watch(qrCodeTextHAS, (newValue) => {
+  console.log("qrCodeTextHAS newValue: ", newValue)
   if (newValue === null) {
     displayQRCode.value = false
     return
@@ -149,12 +181,16 @@ function testHASTransfer() {
   HASbroadcast()
 }
 
-async function login(username) {
+async function loginKeychain(username) {
   if (adminCheck()) {
     storeUser.login(username, props.keyType)
     return
   }
   isKeychain.value = await useIsHiveKeychainInstalled()
+  let position = "left"
+  if (Platform.is.mobile) {
+    position = "top"
+  }
   if (!isKeychain.value) {
     quasar.notify({
       timeout: 2000,
@@ -162,10 +198,6 @@ async function login(username) {
       position: position,
     })
     return
-  }
-  let position = "left"
-  if (Platform.is.mobile) {
-    position = "top"
   }
   const words = await useBip39(3)
   const signMessage = words.join("-")

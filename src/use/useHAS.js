@@ -106,7 +106,7 @@ function resolve(res) {
 // Authentication request rejected or error occurred
 function reject(err) {
   console.log("reject", err)
-  qrCodeTextHAS.value = ""
+  qrCodeTextHAS.value = null
   auth_payload = {}
 }
 

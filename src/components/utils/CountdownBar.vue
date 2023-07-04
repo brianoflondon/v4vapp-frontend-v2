@@ -38,13 +38,18 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(["message","timeLeft"])
+const emit = defineEmits(["message", "timeLeft"])
 
 onMounted(() => {
   startTime.value = Math.floor(Date.now() / 1000)
+  expiryLocal.value = props.expiry
+  console.log(expiresHuman())
   console.log("countdown bar mounted")
   console.log("props.expiry", props.expiry)
   console.log("startTime", startTime.value)
+  if (props.expiry > startTime.value) {
+    startTimer()
+  }
 })
 
 function calcFraction() {
@@ -70,23 +75,27 @@ watch(
     expiryLocal.value = newValue
     console.log("expiryLocal.value", expiryLocal.value)
     startTime.value = Math.floor(Date.now() / 1000)
-    if (expiryLocal.value > startTime.value) {
-      calcFraction()
-      console.log("fraction", fraction.value)
-      timer = setInterval(() => {
-        if (fraction.value > 0) {
-          calcFraction()
-        } else {
-          clearInterval(timer)
-          expiryLocal.value = 0
-          startTime.value = 0
-          emit("timeLeft", -1)
-          emit("message", "Expired")
-        }
-      }, 1000)
-    }
+    startTimer()
   }
 )
+
+function startTimer() {
+  if (expiryLocal.value > startTime.value) {
+    calcFraction()
+    console.log("fraction", fraction.value)
+    timer = setInterval(() => {
+      if (fraction.value > 0) {
+        calcFraction()
+      } else {
+        clearInterval(timer)
+        expiryLocal.value = 0
+        startTime.value = 0
+        emit("timeLeft", -1)
+        emit("message", "Expired")
+      }
+    }, 1000)
+  }
+}
 
 onUnmounted(() => {
   clearInterval(timer)
