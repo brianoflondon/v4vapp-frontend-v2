@@ -19,18 +19,17 @@
 </template>
 
 <script setup>
-import { useI18n } from "vue-i18n";
-const { locale } = useI18n({ useScope: "global" });
+import { useI18n } from "vue-i18n"
+const { locale } = useI18n({ useScope: "global" })
 
 const localeOptions = [
   { value: "en-US", label: "En" },
   { value: "es-ES", label: "Es" },
-  { value: "he", label: "He" },
-];
+]
 
 function onItemClick(label) {
   // Handle item click logic here
-  locale.value = label;
+  locale.value = label
 }
 </script>
 
