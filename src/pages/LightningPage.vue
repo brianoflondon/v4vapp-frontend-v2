@@ -233,7 +233,6 @@ const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 
-const { qrCodeTextHAS, expiry } = useHAS()
 const HASDialog = ref({ show: false })
 
 let timeMessage = ref("")
@@ -596,16 +595,7 @@ async function payInvoice(currency, method) {
       // result = await useHASTransfer(username, amount, currency, memo)
       console.log("pay result", result)
       const message = `${t("open_HAS")} <a href="has://sign_wait/">Click</a>`
-      dInvoice.value.progress.push(message)
-
-      q.notify({
-        color: "positive",
-        html: true,
-        avatar: "site-logo/v4vapp-logo.svg",
-        timeout: 5000,
-        message: message,
-        position: "top",
-      })
+      dInvoice.value.progress.push(`${t("open_HAS")}`)
       // Code will finish within the useHAS code
       break
   }

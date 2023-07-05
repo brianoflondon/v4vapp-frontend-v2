@@ -61,7 +61,7 @@ watch(storeUser, async (val) => {
 
 
 watch(hiveAccObj, async (val) => {
-  console.log("hiveAccObj", val)
+  console.debug("hiveAccObj", val)
   hiveUsername.value = val.value
   label.value = "Loading..."
   hiveDetails.value = await useHiveDetails(val.value)

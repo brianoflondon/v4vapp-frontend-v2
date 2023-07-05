@@ -2,11 +2,15 @@
   <div v-if="expiryLocal">
     <q-linear-progress
       class="invoice-timer"
-      size="10px"
+      name="invoice-timer"
+      size="20px"
       :value="fraction"
-      color="positive"
+      color="green-9"
       :style="{ width: `${width}px` }"
     >
+      <div class="absolute-full flex flex-center text-caption">
+        <q-badge color="white" text-color="accent" :label="expiresIn()" />
+      </div>
     </q-linear-progress>
   </div>
 </template>
@@ -18,6 +22,7 @@ const fraction = ref(1)
 const timeLeft = ref(0)
 const expiryLocal = ref(0)
 const startTime = ref(null)
+const timer = ref(null)
 
 function expiresHuman() {
   return formatTimeAgo(expiryLocal.value * 1000)
@@ -62,8 +67,6 @@ function calcFraction() {
   emit("timeLeft", timeLeft.value)
 }
 
-let timer = null
-
 watch(
   () => props.expiry,
   (newValue, oldValue) => {
@@ -76,14 +79,13 @@ watch(
 )
 
 function startTimer() {
-  console.log("exires in", expiresIn())
   if (expiryLocal.value > startTime.value) {
     calcFraction()
-    timer = setInterval(() => {
+    timer.value = setInterval(() => {
       if (fraction.value > 0) {
         calcFraction()
       } else {
-        clearInterval(timer)
+        clearInterval(timer.value)
         expiryLocal.value = 0
         startTime.value = 0
         emit("timeLeft", -1)
@@ -94,7 +96,7 @@ function startTimer() {
 }
 
 onUnmounted(() => {
-  clearInterval(timer)
+  clearInterval(timer.value)
 })
 
 function formatTime(timeInSeconds) {

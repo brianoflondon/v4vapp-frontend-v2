@@ -62,7 +62,7 @@
           </div>
           <div class="row">
             <CountdownBar
-              :expiry="expiry / 1000"
+              :expiry="expiry"
               :width="200"
               @message="(val) => (timeMessage = val)"
             />
@@ -145,7 +145,7 @@ const props = defineProps({
 const t = useI18n().t
 const quasar = useQuasar()
 
-const { qrCodeTextHAS, expiry } = useHAS()
+const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS()
 
 async function loginHAS(username) {
   try {
@@ -164,7 +164,6 @@ watch(qrCodeTextHAS, (newValue) => {
     displayQRCode.value = false
     return
   }
-  console.log("newValue: ", newValue)
   displayQRCode.value = true
 })
 

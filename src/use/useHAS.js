@@ -7,10 +7,11 @@ import { v4 as uuidv4 } from "uuid"
 
 const qrCodeTextHAS = ref("")
 const expiry = ref(0)
+const resolvedHAS = ref(null)
 const storeUser = useStoreUser()
 let pendingTransaction = null
 export function useHAS() {
-  return { qrCodeTextHAS, expiry }
+  return { qrCodeTextHAS, expiry, resolvedHAS }
 }
 
 let auth_payload = {}
@@ -74,7 +75,7 @@ export async function HASLogin(username = "", keyType = "posting") {
     HAS.authenticate(auth, APP_META, challenge_data, (req) => {
       console.log("response", req) // process auth_wait
       console.log("expires in ", (req.expire - Date.now()) / 1000, "secs")
-      expiry.value = req.expire
+      expiry.value = req.expire / 1000
       auth_payload = {
         account: req.account,
         uuid: req.uuid,
@@ -102,7 +103,9 @@ function resolve(res) {
     res.data.token
   )
   qrCodeTextHAS.value = null
+  expiry.value = 0
   auth_payload = {}
+  resolvedHAS.value = res
   if (pendingTransaction) {
     const start = Date.now()
     console.log("pendingTransaction delay executing now")
@@ -115,10 +118,19 @@ function resolve(res) {
   }
 }
 
+// Transaction approved
+function resolveTransaction(res) {
+  console.log("resolveTransaction", res)
+  resolvedHAS.value = res
+}
+
+
+
 // Authentication request rejected or error occurred
 function reject(err) {
   console.log("reject", err)
   qrCodeTextHAS.value = null
+  expiry.value = 0
   auth_payload = {}
 }
 
@@ -170,13 +182,15 @@ export async function useHASTransfer(username, amount, currency, memo) {
   })
     .then((res) => {
       console.log("resolved: ", res)
-      // resolve(res)
+      resolveTransaction(res)
     })
     .catch((err) => {
       console.log("error: ", err)
       // reject(err)
     })
 }
+
+
 
 export async function HASbroadcast(operation) {
   // Broadcast a message to the user

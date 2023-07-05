@@ -63,7 +63,6 @@ function generateQRCode() {
   QRCode.toDataURL(props.qrText, options)
     .then((url) => {
       qrcodeUrl.value = url
-      console.log("QR code generated")
     })
     .catch((error) => {
       console.error("QR code generation failed:", error)
