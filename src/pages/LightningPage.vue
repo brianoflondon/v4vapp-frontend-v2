@@ -194,7 +194,7 @@
 </style>
 
 <script setup>
-import { computed, ref, onMounted } from "vue"
+import { computed, ref, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { QrcodeStream } from "qrcode-reader-vue3"
@@ -420,6 +420,7 @@ function clearReset() {
   dInvoice.value = {}
   cameraOn.value = false
   cameraShow.value = false
+  HASDialog.value = { show: false }
 }
 
 function onDecode(content) {
@@ -593,7 +594,6 @@ async function payInvoice(currency, method) {
       }
 
       // result = await useHASTransfer(username, amount, currency, memo)
-      console.log("pay result", result)
       const message = `${t("open_HAS")} <a href="has://sign_wait/">Click</a>`
       dInvoice.value.progress.push(`${t("open_HAS")}`)
       // Code will finish within the useHAS code
@@ -601,13 +601,46 @@ async function payInvoice(currency, method) {
   }
 }
 
+watch(
+  HASDialog,
+  async (value) => {
+    console.log("LightningPage HASDialog.value changed ", value)
+    if (value) {
+      if (value.resolvedHAS && value.resolvedHAS.data) {
+        console.log("LightningPage transaction ID: ", value.resolvedHAS.data)
+        const message = `HAS Payment Sent`
+        dInvoice.value.progress.push(message)
+        const notif = q.notify({
+          avatar: "site-logo/v4vapp-logo.svg",
+          color: "positive",
+          group: false,
+          timeout: 0,
+          message: message,
+          position: "top",
+        })
+        await checkHiveTransaction(
+          value.payment.username,
+          value.resolvedHAS.data,
+          notif
+        )
+      }
+    }
+  },
+  { deep: true }
+)
+
 async function checkHiveTransaction(username, trx_id, notif, count = 0) {
-  // wait 5 seconds then check for a transaction
+  // wait 5 seconds then check for a transaction. Looks for the next transaction
+  // after the trx_id. If not found, wait another 5 seconds and check again.
+  if (trx_id == null) {
+    console.log("checkHiveTransaction trx_id is null")
+    return
+  }
   count += 1
   await new Promise((resolve) => setTimeout(resolve, 5000))
   const transactions = await useGetHiveTransactionHistory(username)
   const transaction_found = findObjectBefore(transactions, trx_id)
-  const memo = ""
+  let memo = ""
   if (!transaction_found) {
     if (count < 20) {
       const message = `${t("waiting_for")} ${count}/20`
@@ -625,6 +658,7 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
         position: "top",
       })
       await checkHiveTransaction(username, trx_id, notif, count)
+      return
     }
     memo = `${t("transfer")}: ${t("not_found")}:`
     notif({
@@ -636,8 +670,8 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
     })
     return
   }
-  memo = `${t("transfer")}: ${transaction_found.op[1].amount}\n${
-    transaction_found.op[1].memo
+  memo = `${t("transfer")}: ${transaction_found?.op[1].amount}\n${
+    transaction_found?.op[1].memo
   }`
   dInvoice.value.progress.push(memo)
   notif({

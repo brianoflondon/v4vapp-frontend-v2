@@ -178,7 +178,7 @@ export async function useHASTransfer(username, amount, currency, memo) {
     console.log("HAS return event", evt)
     console.log("expires in ", (evt.expire - Date.now()) / 1000, "secs")
     expiry.value = evt.expire / 1000
-    return evt
+    resolvedHAS.value = evt
   })
     .then((res) => {
       console.log("resolved: ", res)
@@ -186,7 +186,7 @@ export async function useHASTransfer(username, amount, currency, memo) {
     })
     .catch((err) => {
       console.log("error: ", err)
-      // reject(err)
+      reject(err)
     })
 }
 

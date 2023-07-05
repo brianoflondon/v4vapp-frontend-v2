@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, watch } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { useHAS, useHASTransfer } from "src/use/useHAS"
 import { useStoreUser } from "src/stores/storeUser"
@@ -88,17 +88,24 @@ async function startHASProcess() {
     }
   }
 
-  const result = await useHASTransfer(
+  await useHASTransfer(
     HASDialog.value.payment.username,
     HASDialog.value.payment.amount,
     HASDialog.value.payment.currency,
     HASDialog.value.payment.memo
   )
-  console.log("startHASProcess: result", result)
-  if (result) {
-    HASDialog.value.result = result
-  }
 }
+
+watch(
+  () => resolvedHAS.value,
+  (val) => {
+    console.log("watch HASDialog", val)
+    HASDialog.value["resolvedHAS"] = val
+    if (val.cmd === "sign_ack") {
+      HASDialog.value.show = false
+    }
+  }
+)
 </script>
 
 <style lang="scss" scoped></style>
