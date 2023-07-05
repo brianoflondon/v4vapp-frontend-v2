@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="q-pa-md">
-      <UserList />
+      <UserList @update="(val) => hiveUsername = val" />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
     <q-list>
@@ -50,6 +50,15 @@ const hiveUsername = ref("")
 const hiveDetails = ref(null)
 
 const label = ref(t("hive_account"))
+
+watch(storeUser, async (val) => {
+  hiveAccObj.value = {
+    label: val.hiveAccname,
+    value: val.hiveAccname,
+    caption: val.profileName,
+  }
+})
+
 
 watch(hiveAccObj, async (val) => {
   console.log("hiveAccObj", val)

@@ -124,6 +124,9 @@ export default {
   comment: "Comment",
   comment_length: "Comment is too long",
 
+  // HAS Details Page
+  resend_transaction: "Retry HAS transaction",
+
   // Camera
   NotAllowedError: "You need to grant camera access permission",
   NotSupportedError: "No camera found on this device",

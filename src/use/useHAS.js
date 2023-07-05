@@ -5,9 +5,10 @@ import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { v4 as uuidv4 } from "uuid"
 
-const qrCodeTextHAS = ref("This is a test QR Code")
+const qrCodeTextHAS = ref("")
 const expiry = ref(0)
 const storeUser = useStoreUser()
+let pendingTransaction = null
 export function useHAS() {
   return { qrCodeTextHAS, expiry }
 }
@@ -102,6 +103,16 @@ function resolve(res) {
   )
   qrCodeTextHAS.value = null
   auth_payload = {}
+  if (pendingTransaction) {
+    const start = Date.now()
+    console.log("pendingTransaction delay executing now")
+    // run the pending transaction AFTER a delay of 300ms to
+    // allow the login to complete
+    setTimeout(() => {
+      console.log("pendingTransaction executing now ", Date.now() - start, "ms")
+      pendingTransaction()
+    }, 3000)
+  }
 }
 
 // Authentication request rejected or error occurred
@@ -134,8 +145,13 @@ export async function useHASTransfer(username, amount, currency, memo) {
   const user = storeUser.getUser(username)
   if (!user || !user.authKey) {
     // User not authenticated with HAS
-    await HASLogin(username)
-    return false
+    console.log("user not authenticated with HAS")
+    pendingTransaction = function () {
+      useHASTransfer(username, amount, currency, memo)
+    }
+    console.log("pendingTransaction stored")
+    HASLogin(username)
+    return
   }
 
   console.log("user", user)
@@ -147,7 +163,8 @@ export async function useHASTransfer(username, amount, currency, memo) {
   }
 
   HAS.broadcast(auth, "active", [operation], (evt) => {
-    console.log(evt)
+    console.log("HAS return event", evt)
+    console.log("expires in ", (evt.expire - Date.now()) / 1000, "secs")
     expiry.value = evt.expire / 1000
     return evt
   })
@@ -174,16 +191,6 @@ export async function HASbroadcast(operation) {
       memo: "this is a memo",
     },
   ]
-
-  // const op = [
-  //   "vote",
-  //   {
-  //     voter: storeUser.hiveAccname,
-  //     author: "brianoflondon",
-  //     permlink: "automated-posting-lets-talk-about-it",
-  //     weight: 10000,
-  //   },
-  // ]
 
   // Retrieving connection status
   const status = HAS.status()

@@ -15,7 +15,7 @@
       <q-item-label class="text-left q-pa-sm">
         {{ $t("login_with") }}:
       </q-item-label>
-      <q-item dense>
+      <q-item dense class="justify-center">
         <q-btn
           style="width: 200px"
           :disable="
@@ -36,7 +36,7 @@
           t("keychain_not_installed")
         }}</q-tooltip>
       </q-item>
-      <q-item>
+      <q-item class="justify-center">
         <q-btn
           style="width: 200px"
           :disable="
@@ -51,23 +51,28 @@
           @click="loginHAS(hiveAccObj?.value)"
         ></q-btn>
       </q-item>
-
-      <q-item clickable v-if="displayQRCode" class="flex column justify-center">
-        <div>
-          <CreateHASQRCode :qrText="qrCodeTextHAS" :width="200" :height="200" />
-        </div>
-        <div>
-          <CountdownBar
-            :expiry="expiry / 1000"
-            :width="200"
-            @message="(val) => (timeMessage = val)"
-          />
-        </div>
-        <div>
-          <q-item-label caption
-            >@{{ hiveAccObj?.value }} {{ t("expires") }}
-            {{ timeMessage }}</q-item-label
-          >
+      <q-item class="justify-center" clickable v-if="displayQRCode">
+        <div class="flex column text-center justify-center">
+          <div class="row text-center justify-center">
+            <CreateHASQRCode
+              :qrText="qrCodeTextHAS"
+              :width="200"
+              :height="200"
+            />
+          </div>
+          <div class="row">
+            <CountdownBar
+              :expiry="expiry / 1000"
+              :width="200"
+              @message="(val) => (timeMessage = val)"
+            />
+          </div>
+          <div class="row">
+            <q-item-label caption
+              >@{{ hiveAccObj?.value }} {{ t("expires") }}
+              {{ timeMessage }}</q-item-label
+            >
+          </div>
         </div>
       </q-item>
     </q-list>
@@ -83,6 +88,8 @@
 
   <div></div>
 </template>
+
+<style lang="scss" scoped></style>
 
 <script setup>
 /**
@@ -108,7 +115,7 @@ import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
-import CreateHASQRCode from "src/components/qrcode/CreateQRCode.vue"
+import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue"
 import CountdownBar from "src/components/utils/CountdownBar.vue"
 
 const storeUser = useStoreUser()
@@ -153,7 +160,7 @@ async function loginHAS(username) {
 
 watch(qrCodeTextHAS, (newValue) => {
   console.log("qrCodeTextHAS newValue: ", newValue)
-  if (newValue === null) {
+  if (!newValue) {
     displayQRCode.value = false
     return
   }
@@ -258,9 +265,3 @@ async function loginKeychain(username) {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.fill-item {
-  flex: 1;
-}
-</style>

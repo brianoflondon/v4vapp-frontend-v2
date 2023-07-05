@@ -163,9 +163,6 @@
           </div>
         </div>
         <AskHASDialog v-model="HASDialog" />
-        <div>
-          <CountdownBar :expiry="expiry" />
-        </div>
         <!-- Vote Button -->
         <div class="vote-button q-pa-lg text-center">
           <VoteProposal v-model="voteOptions" />
@@ -237,7 +234,7 @@ const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 
 const { qrCodeTextHAS, expiry } = useHAS()
-const HASDialog = ref({ show: true })
+const HASDialog = ref({ show: false })
 
 let timeMessage = ref("")
 // Invoice hint shows expiry time and sats costs and fee

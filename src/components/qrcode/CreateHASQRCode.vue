@@ -35,13 +35,17 @@ const props = defineProps({
 const qrcodeUrl = ref("")
 
 onMounted(() => {
-  generateQRCode()
+  if (props.qrText) {
+    generateQRCode()
+  }
 })
 
 watch(
   () => props.qrText,
   () => {
-    generateQRCode()
+    if (props.qrText) {
+      generateQRCode()
+    }
   }
 )
 

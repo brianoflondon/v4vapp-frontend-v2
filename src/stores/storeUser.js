@@ -113,7 +113,11 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveUser.token) return null
       return hiveUser.token
     },
-    // Return the HiveUser object for the passed user hiveAccname
+    user() {
+      // Return the HiveUser object for the passed user hiveAccname
+      if (!this.currentUser) return null
+      return this.users[this.currentUser]
+    },
     getUser: (state) => {
       return (hiveAccname) => {
         const temp = state.users[hiveAccname]
@@ -221,8 +225,6 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.log("switchUser to ", hiveAccname, " from ", this.currentUser)
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
-          console.log("this.loginAge", this.loginAge)
-          console.log("this.loginHASExpire", this.loginHASExpire)
           // test if login is still valid
           this.update()
         }
