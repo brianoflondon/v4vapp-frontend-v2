@@ -606,7 +606,7 @@ watch(
   async (value) => {
     console.log("LightningPage HASDialog.value changed ", value)
     if (value) {
-      if (value.resolvedHAS && value.resolvedHAS.data) {
+      if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_ack") {
         console.log("LightningPage transaction ID: ", value.resolvedHAS.data)
         const message = `HAS Payment Sent`
         dInvoice.value.progress.push(message)
