@@ -1,5 +1,6 @@
 <template>
   <q-page>
+    <q-btn @click="HASDialog.show = !HASDialog.show" label="HAS" />
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
@@ -201,7 +202,6 @@ import { QrcodeStream } from "qrcode-reader-vue3"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
-import { useHAS, useHASTransfer } from "src/use/useHAS.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
 import ShowProgress from "components/lightning/ShowProgress.vue"
@@ -604,11 +604,20 @@ async function payInvoice(currency, method) {
 watch(
   HASDialog,
   async (value) => {
-    console.log("LightningPage HASDialog.value changed ", value)
     if (value) {
+      if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_nack") {
+        const message = `${t("rejected_payment")}`
+        dInvoice.value.progress.push(message)
+        q.notify({
+          color: "negative",
+          avatar: "site-logo/v4vapp-logo.svg",
+          timeout: 5000,
+          message: message,
+          position: "top",
+        })
+      }
       if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_ack") {
-        console.log("LightningPage transaction ID: ", value.resolvedHAS.data)
-        const message = `HAS Payment Sent`
+        const message = `${t("payment_sent")}`
         dInvoice.value.progress.push(message)
         const notif = q.notify({
           avatar: "site-logo/v4vapp-logo.svg",

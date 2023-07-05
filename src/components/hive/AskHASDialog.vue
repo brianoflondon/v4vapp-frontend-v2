@@ -12,17 +12,18 @@
           </q-toolbar-title>
           <q-btn flat round dense icon="close" v-close-popup />
         </q-toolbar>
-        <q-card-section v-if="storeUser.currentUser">
+        <q-card-section v-if="HASDialog?.payment?.username">
           <p>
-            Logged in as: <strong>@{{ storeUser.currentUser }}</strong>
+            {{ $t("logged_in_as") }}:
+            <strong>@{{ storeUser.currentUser }}</strong>
           </p>
-          <p>Please open your HAS app and authorize the transaction.</p>
+          <p>{{ $t("open_HAS_auth") }}</p>
         </q-card-section>
-        <q-card-section v-if="expiry > 0">
+        <q-card-section v-if="expiry > 0" align="center">
           <CountdownBar :expiry="expiry" />
         </q-card-section>
-
-        <q-card-section v-if="!storeUser.currentUser">
+        <q-card-section v-if="!HASDialog?.payment?.username" align="center">
+          <p>{{ $t("which_account") }}</p>
           <HiveSelectFancyAcc
             dense
             :label="$t('login_as')"
@@ -31,7 +32,7 @@
             fancyOptions
           />
         </q-card-section>
-        <q-card-section v-if="qrCodeTextHAS">
+        <q-card-section v-if="qrCodeTextHAS" align="center">
           <CreateHASQRCode
             :qrText="qrCodeTextHAS"
             :width="200"
@@ -39,7 +40,7 @@
           />
           {{ expiryMessage }}
         </q-card-section>
-        <q-card-section align="right">
+        <q-card-section align="center">
           <q-btn
             rounded
             :label="$t('resend_transaction')"
@@ -52,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue"
+import { onMounted, ref, watch } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { useHAS, useHASTransfer } from "src/use/useHAS"
 import { useStoreUser } from "src/stores/storeUser"
@@ -66,33 +67,10 @@ const expiryMessage = ref("")
 
 const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS()
 
-async function startHASProcess() {
-  console.log("startHASProcess")
-  if (!HASDialog.value?.payment.username) {
-    console.log("startHASProcess: HASDialog no username")
-    console.log("hiveAccObj", hiveAccObj.value)
-    if (hiveAccObj.value?.value) {
-      console.log("startHASProcess: has user", hiveAccObj.value.value)
-      HASDialog.value.payment.username = hiveAccObj.value.value
-      // Now check if we have an active HAS session.
-      const activeUser = storeUser.getUser(HASDialog.value.payment.username)
-      if (!activeUser) {
-        console.log("startHASProcess: no active HAS session")
-        console.log("logging in process needed")
-      }
-    } else {
-      console.log("startHASProcess: no user")
-      return
-    }
-  }
-
-  await useHASTransfer(
-    HASDialog.value.payment.username,
-    HASDialog.value.payment.amount,
-    HASDialog.value.payment.currency,
-    HASDialog.value.payment.memo
-  )
-}
+onMounted(async () => {
+  await checkUser()
+  console.log("mounted HASDialog")
+})
 
 watch(
   () => resolvedHAS.value,
@@ -104,6 +82,41 @@ watch(
     }
   }
 )
+
+async function checkUser() {
+  if (!HASDialog.value?.payment?.username) {
+    if (hiveAccObj.value?.value) {
+      console.log("startHASProcess: has user", hiveAccObj.value.value)
+      HASDialog.value.payment.username = hiveAccObj.value.value
+      // Now check if we have an active HAS session.
+      const activeUser = storeUser.getUser(HASDialog.value.payment.username)
+      if (!activeUser) {
+        console.log("startHASProcess: no active HAS session")
+        console.log("logging in process needed")
+      }
+    } else {
+      console.log("startHASProcess: no user")
+      if (storeUser.user?.authKey) {
+        HASDialog.value.payment.username = storeUser.hiveAccname
+        hiveAccObj.value.value = storeUser.hiveAccname
+      }
+      return
+    }
+  }
+}
+
+async function startHASProcess() {
+  await checkUser()
+  if (!HASDialog.value?.payment?.username) {
+    return
+  }
+  await useHASTransfer(
+    HASDialog.value.payment.username,
+    HASDialog.value.payment.amount,
+    HASDialog.value.payment.currency,
+    HASDialog.value.payment.memo
+  )
+}
 </script>
 
 <style lang="scss" scoped></style>

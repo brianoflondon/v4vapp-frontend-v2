@@ -110,7 +110,7 @@ import {
   useHiveKeychainLogin,
   useIsHiveKeychainInstalled,
 } from "src/use/useKeychain"
-import { useHAS, HASLogin, HASbroadcast } from "src/use/useHAS"
+import { useHAS, HASLogin } from "src/use/useHAS"
 import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
@@ -181,10 +181,6 @@ function adminCheck() {
     return true
   }
   return false
-}
-
-function testHASTransfer() {
-  HASbroadcast()
 }
 
 async function loginKeychain(username) {

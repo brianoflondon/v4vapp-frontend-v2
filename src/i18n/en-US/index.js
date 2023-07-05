@@ -97,7 +97,11 @@ export default {
   requesting: "Requesting",
 
   // HAS Process
+  logged_in_as: "Logged in as",
+  open_HAS_auth: "Please open your HAS app and authorize the transaction.",
   open_HAS: "Open your HAS app",
+  which_account: "Which account do you want to use?",
+  rejected_payment: "Payment rejected by user on HAS",
 
   // Please vote
   voting_as: "Voting as",
@@ -126,6 +130,7 @@ export default {
 
   // HAS Details Page
   resend_transaction: "Retry HAS transaction",
+  payment_sent: "HAS Payment Sent",
 
   // Camera
   NotAllowedError: "You need to grant camera access permission",

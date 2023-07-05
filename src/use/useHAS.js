@@ -124,7 +124,10 @@ function resolveTransaction(res) {
   resolvedHAS.value = res
 }
 
-
+function rejectTransaction(err) {
+  console.log("rejectTransaction", err)
+  resolvedHAS.value = err
+}
 
 // Authentication request rejected or error occurred
 function reject(err) {
@@ -186,48 +189,6 @@ export async function useHASTransfer(username, amount, currency, memo) {
     })
     .catch((err) => {
       console.log("error: ", err)
-      reject(err)
-    })
-}
-
-
-
-export async function HASbroadcast(operation) {
-  // Broadcast a message to the user
-  // Create an authentication object
-
-  const op = [
-    "transfer",
-    {
-      from: storeUser.hiveAccname,
-      to: storeUser.hiveAccname,
-      amount: "1.001 HIVE",
-      memo: "this is a memo",
-    },
-  ]
-
-  // Retrieving connection status
-  const status = HAS.status()
-  console.log(status)
-
-  const auth = {
-    username: storeUser.hiveAccname, // (required)
-    key: storeUser.authKey,
-    token: storeUser.token,
-  }
-
-  console.log("auth", auth)
-  console.log("op", op)
-
-  HAS.broadcast(auth, "active", [op], (evt) => {
-    console.log(evt)
-  })
-    .then((res) => {
-      console.log(res)
-      resolve(res)
-    })
-    .catch((err) => {
-      console.log(err)
-      reject(err)
+      rejectTransaction(err)
     })
 }
