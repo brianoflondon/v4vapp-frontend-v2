@@ -21,13 +21,7 @@
         <q-card-section v-if="expiry > 0">
           <CountdownBar :expiry="expiry" />
         </q-card-section>
-        <q-card-section align="right">
-          <q-btn
-            rounded
-            :label="$t('resend_transaction')"
-            @click="startHASProcess()"
-          />
-        </q-card-section>
+
         <q-card-section v-if="!storeUser.currentUser">
           <HiveSelectFancyAcc
             dense
@@ -45,9 +39,13 @@
           />
           {{ expiryMessage }}
         </q-card-section>
-        <pre>
-          {{ resolvedHAS }}
-        </pre>
+        <q-card-section align="right">
+          <q-btn
+            rounded
+            :label="$t('resend_transaction')"
+            @click="startHASProcess()"
+          />
+        </q-card-section>
       </q-card>
     </q-dialog>
   </div>
