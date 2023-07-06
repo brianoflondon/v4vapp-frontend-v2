@@ -1,6 +1,5 @@
 <template>
   <q-page>
-    <q-btn @click="HASDialog.show = !HASDialog.show" label="HAS" />
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
