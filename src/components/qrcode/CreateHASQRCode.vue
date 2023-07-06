@@ -1,6 +1,8 @@
 <template>
   <div @click="openLinkInNewWindow">
-    <img :src="qrcodeUrl" :alt="qrText" />
+    <a :href="qrText" target="_blank">
+      <img :src="qrcodeUrl" :alt="qrText" />
+    </a>
   </div>
 </template>
 
