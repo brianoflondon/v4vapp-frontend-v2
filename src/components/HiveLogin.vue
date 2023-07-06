@@ -1,89 +1,92 @@
 <template>
   <q-card>
     <q-list>
-      <q-item-label class="text-left q-pa-sm">
-        {{ $t("login_as") }}
-      </q-item-label>
-      <q-item>
-        <HiveSelectFancyAcc
-          dense
-          :label="props.label"
-          v-model="hiveAccObj"
-          fancyOptions
-        />
-      </q-item>
-      <q-item-label class="text-left q-pa-sm">
-        {{ $t("login_with") }}:
-      </q-item-label>
-      <q-item dense class="justify-center">
-        <q-btn
-          style="width: 200px"
-          :disable="
-            typeof hiveAccObj === 'undefined' ||
-            hiveAccObj === '' ||
-            hiveAccObj === null
-          "
-          align="left"
-          rounded
-          :label="t('hive_keychain')"
-          icon="img:keychain/hive-keychain-round.svg"
-          @click="loginKeychain(hiveAccObj?.value)"
-        />
-        <q-tooltip v-if="!hiveAccObj && isKeychain">{{
-          t("enter_hive_account")
-        }}</q-tooltip>
-        <q-tooltip v-if="!isKeychain">{{
-          t("keychain_not_installed")
-        }}</q-tooltip>
-      </q-item>
-      <q-item class="justify-center">
-        <q-btn
-          style="width: 200px"
-          :disable="
-            typeof hiveAccObj === 'undefined' ||
-            hiveAccObj === '' ||
-            hiveAccObj === null
-          "
-          label="HAS"
-          align="left"
-          rounded
-          icon="img:/has/hive-auth-logo.svg/"
-          @click="loginHAS(hiveAccObj?.value)"
-        ></q-btn>
-      </q-item>
-      <q-item class="justify-center" clickable v-if="displayQRCode">
-        <div class="flex column text-center justify-center">
-          <div class="row text-center justify-center">
-            <CreateHASQRCode
-              :qrText="qrCodeTextHAS"
-              :width="200"
-              :height="200"
-            />
+      <q-expansion-item
+        expand-separator
+        icon="perm_identity"
+        :label="$t('login_as')"
+      >
+        <q-item>
+          <HiveSelectFancyAcc
+            dense
+            :label="props.label"
+            v-model="hiveAccObj"
+            fancyOptions
+          />
+        </q-item>
+        <q-item-label class="text-left q-pa-sm">
+          {{ $t("login_with") }}:
+        </q-item-label>
+        <q-item dense class="justify-center">
+          <q-btn
+            style="width: 200px"
+            :disable="
+              typeof hiveAccObj === 'undefined' ||
+              hiveAccObj === '' ||
+              hiveAccObj === null
+            "
+            align="left"
+            rounded
+            :label="t('hive_keychain')"
+            icon="img:keychain/hive-keychain-round.svg"
+            @click="loginKeychain(hiveAccObj?.value)"
+          />
+          <q-tooltip v-if="!hiveAccObj && isKeychain">{{
+            t("enter_hive_account")
+          }}</q-tooltip>
+          <q-tooltip v-if="!isKeychain">{{
+            t("keychain_not_installed")
+          }}</q-tooltip>
+        </q-item>
+        <q-item class="justify-center">
+          <q-btn
+            style="width: 200px"
+            :disable="
+              typeof hiveAccObj === 'undefined' ||
+              hiveAccObj === '' ||
+              hiveAccObj === null
+            "
+            label="HAS"
+            align="left"
+            rounded
+            icon="img:/has/hive-auth-logo.svg/"
+            @click="loginHAS(hiveAccObj?.value)"
+          ></q-btn>
+        </q-item>
+        <q-item class="justify-center" clickable v-if="displayQRCode">
+          <div class="flex column text-center justify-center">
+            <div class="row text-center justify-center">
+              <CreateHASQRCode
+                :qrText="qrCodeTextHAS"
+                :width="200"
+                :height="200"
+              />
+            </div>
+            <div class="row">
+              <CountdownBar
+                :expiry="expiry"
+                :width="200"
+                @message="(val) => (timeMessage = val)"
+              />
+            </div>
+            <div class="row">
+              <q-item-label caption
+                >@{{ hiveAccObj?.value }} {{ t("expires") }}
+                {{ timeMessage }}</q-item-label
+              >
+            </div>
           </div>
-          <div class="row">
-            <CountdownBar
-              :expiry="expiry"
-              :width="200"
-              @message="(val) => (timeMessage = val)"
-            />
+        </q-item>
+        <q-item class="flex justify-center">
+          <div class="text-center q-pa-md">
+            <q-btn rounded @click="storeUser.logout()" label="Logout" />
           </div>
-          <div class="row">
-            <q-item-label caption
-              >@{{ hiveAccObj?.value }} {{ t("expires") }}
-              {{ timeMessage }}</q-item-label
-            >
+          <div class="text-center q-pa-md">
+            <q-btn rounded @click="storeUser.logoutAll()" label="Logout All" />
           </div>
-        </div>
-      </q-item>
+        </q-item>
+      </q-expansion-item>
     </q-list>
-    <div class="flex justify-center">
-      <div class="text-center q-pa-md">
-        <q-btn rounded @click="storeUser.logout()" label="Logout" />
-      </div>
-      <div class="text-center q-pa-md">
-        <q-btn rounded @click="storeUser.logoutAll()" label="Logout All" />
-      </div>
-    </div>
   </q-card>
 
   <div></div>
@@ -157,6 +160,8 @@ async function loginHAS(username) {
     console.log("error: ", error)
   }
 }
+
+
 
 watch(qrCodeTextHAS, (newValue) => {
   console.log("qrCodeTextHAS newValue: ", newValue)
