@@ -49,7 +49,7 @@
             label="HAS"
             align="left"
             rounded
-            icon="img:/has/hive-auth-logo.svg/"
+            icon="img:/has/hive-auth-logo.svg"
             @click="loginHAS(hiveAccObj?.value)"
           ></q-btn>
         </q-item>
