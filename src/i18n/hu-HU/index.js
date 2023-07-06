@@ -17,6 +17,10 @@ export default {
   please: 'Please',
   and: 'and',
   witness: 'My Hive Witness',
+  prices_fetched: 'Prices fetched',
+  // Dark Mode Selector
+  change_light: 'Change to light mode',
+  change_dark: 'Change to dark mode',
   // Keychain
   keychain_installed: 'Keychain is Installed',
   keychain_missing: 'Keychain is Missing',
@@ -27,6 +31,9 @@ export default {
   // Lightning Page
   lightning: 'Lightning',
   hive: 'Hive',
+  transfer: 'Transfer',
+  not_found: 'Not found',
+  Progress: 'Progress',
   // Login
   keychain_not_installed: 'Keychain is not installed',
   enter_hive_account: 'Please enter you Hive Account name',
@@ -57,7 +64,7 @@ export default {
   // Status Page
   status_page_message: 'Status page is under construction, in the meantime please visit Hive.',
   // Pricebar
-  sats: 'シ',
+  sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Failure',
   working: 'Working',
   keychain_installed: 'Keychain is Installed',
@@ -66,6 +73,7 @@ export default {
   // Invoice
   invoice: 'Invoice',
   expires: 'expires',
+  Expires: 'Expires',
   enter_invoice: 'lnbc.... or Lightning Address',
   valid_invoice: 'Invoice decoded',
   valid_lightning_address: 'Address decoded',
@@ -76,6 +84,14 @@ export default {
   self_payment: 'Can\'t send to v4v.app',
   invoice_hint: 'Paste an invoice or scan a QR code',
   waiting_for: 'Waiting for reply transaction to appear on Hive blockchain',
+  invoice_provider_not_working: 'Lightning Invoice provider is not working right now, try later or check the address',
+  requesting: 'Requesting',
+  // HAS Process
+  logged_in_as: 'Logged in as',
+  open_HAS_auth: 'Please open your HAS app and authorize the transaction.',
+  open_HAS: 'Open your HAS app',
+  which_account: 'Which account do you want to use?',
+  rejected_payment: 'Payment rejected by user on HAS',
   // Please vote
   voting_as: 'Voting as',
   vote_for_proposal: 'Vote DHF for proposal',
@@ -95,7 +111,11 @@ export default {
   amount_to_send: 'Amount to send',
   too_low: 'Amount too low',
   too_high: 'Amount too high',
+  comment: 'Comment',
   comment_length: 'Comment is too long',
+  // HAS Details Page
+  resend_transaction: 'Retry HAS transaction',
+  payment_sent: 'HAS Payment Sent',
   // Camera
   NotAllowedError: 'You need to grant camera access permission',
   NotSupportedError: 'No camera found on this device',
