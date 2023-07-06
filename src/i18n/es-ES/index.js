@@ -17,6 +17,10 @@ export default {
   please: 'Por favor',
   and: 'y',
   witness: 'Mi Testigo en Hive',
+  prices_fetched: 'Prices fetched',
+  // Dark Mode Selector
+  change_light: 'Change to light mode',
+  change_dark: 'Change to dark mode',
   // Keychain
   keychain_installed: 'Keychain está instalado',
   keychain_missing: 'Keychain no se encuentra',
@@ -27,6 +31,9 @@ export default {
   // Lightning Page
   lightning: 'Lightning',
   hive: 'Hive',
+  transfer: 'Transfer',
+  not_found: 'Not found',
+  Progress: 'Progress',
   // Login
   keychain_not_installed: 'Keychain no está instalada',
   enter_hive_account: 'Por favor, entre su usuario de Hive.',
@@ -57,15 +64,16 @@ export default {
   // Status Page
   status_page_message: 'Sitio en construcción, visita Hive mientras tanto.',
   // Pricebar
-  sats: 'sats',
+  sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Keychain no se encuentra',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
   expires: 'Expira en',
+  Expires: 'Expires',
   enter_invoice: 'lnbc.... o dirección lightning',
   valid_invoice: 'Factura descifrada',
   valid_lightning_address: 'Dirección descifrada',
@@ -76,6 +84,14 @@ export default {
   self_payment: 'No se puede enviar a v4v.app',
   invoice_hint: 'Pegue una factura o escaneé el QR',
   waiting_for: 'Esperando que su transacción sea validada',
+  invoice_provider_not_working: 'Lightning Invoice provider is not working right now, try later or check the address',
+  requesting: 'Requesting',
+  // HAS Process
+  logged_in_as: 'Logged in as',
+  open_HAS_auth: 'Please open your HAS app and authorize the transaction.',
+  open_HAS: 'Open your HAS app',
+  which_account: 'Which account do you want to use?',
+  rejected_payment: 'Payment rejected by user on HAS',
   // Please vote
   voting_as: 'Votar como',
   vote_for_proposal: 'Votar por la propuesta DHF',
@@ -95,7 +111,11 @@ export default {
   amount_to_send: 'Cantidad a enviar',
   too_low: 'La cantidad es muy baja',
   too_high: 'La cantidad es muy alta',
+  comment: 'Comment',
   comment_length: 'El comentario es muy largo',
+  // HAS Details Page
+  resend_transaction: 'Retry HAS transaction',
+  payment_sent: 'HAS Payment Sent',
   // Camera
   NotAllowedError: 'Necesitar dar permisos de acceso a tu cámara',
   NotSupportedError: 'No se encuentra una cámara en este dispositivo',
