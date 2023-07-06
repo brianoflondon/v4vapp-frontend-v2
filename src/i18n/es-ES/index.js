@@ -60,7 +60,7 @@ export default {
   sats: 'sats',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain está instalada',
+  keychain_installed: 'Keychain está instalado',
   keychain_missing: 'Keychain no se encuentra',
   reload_prices: 'Recargar precios',
   // Invoice
