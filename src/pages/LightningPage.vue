@@ -64,15 +64,12 @@
             -->
             </q-input>
           </div>
-          <div v-if="countdownTimer > 0" class="q-pt-sm">
-            <q-linear-progress
-              class="invoice-timer"
-              size="10px"
-              :value="countdownTimer"
-              color="positive"
-            >
-            </q-linear-progress>
-          </div>
+          <CountdownBar
+            class="q-pt-xs"
+            :expiry="dInvoice?.timeExpireDate"
+            @message="(val) => (timeMessage = val)"
+            @time-left="(val) => checkInvoiceProgress(val)"
+          />
           <div v-show="false" class="amounts-display flex justify-evenly">
             <div class="q-pa-xs input-amount-readonly">
               <q-input
@@ -106,38 +103,67 @@
             </div>
           </div>
         </div>
-
-        <div
-          class="payment-buttons row flex-center q-gutter-lg q-pt-md"
-          v-show="invoiceValid"
-        >
-          <q-btn
-            class="payment-button-hive"
-            @click="payInvoice((value = 'HIVE'))"
-            :loading="storeApiStatus.payInvoice"
-            :disable="storeApiStatus.payInvoice"
-            icon="img:keychain/hive-keychain-round.svg"
-            icon-right="img:avatars/hive_logo_dark.svg"
-            :label="Hive"
-            :color="buttonColor.buttonColor"
-            :text-color="buttonColor.textColor"
-            size="md"
-            rounded
-          />
-          <q-btn
-            class="payment-button-hbd"
-            @click="payInvoice((value = 'HBD'))"
-            :loading="storeApiStatus.payInvoice"
-            :disable="storeApiStatus.payInvoice"
-            icon="img:keychain/hive-keychain-round.svg"
-            icon-right="img:/avatars/hbd_logo.svg"
-            :label="HBD"
-            :color="buttonColor.buttonColor"
-            :text-color="buttonColor.textColor"
-            size="md"
-            rounded
-          />
+        <!-- Payment Buttons -->
+        <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
+          <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
+            <q-btn
+              class="payment-button-hive"
+              @click="payInvoice('HIVE', 'HiveKeychain')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:keychain/hive-keychain-round.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              :label="Hive"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+            <q-btn
+              class="payment-button-hbd"
+              @click="payInvoice('HBD', 'HiveKeychain')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:keychain/hive-keychain-round.svg"
+              icon-right="img:/avatars/hbd_logo.svg"
+              :label="HBD"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+          </div>
+          <div class="has-buttons row flex-center q-gutter-lg">
+            <q-btn
+              class="payment-button-hive"
+              @click="payInvoice('HIVE', 'HAS')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:/has/hive-auth-logo.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              :label="Hive"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+            <q-btn
+              class="payment-button-hbd"
+              @click="payInvoice('HBD', 'HAS')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:/has/hive-auth-logo.svg"
+              icon-right="img:/avatars/hbd_logo.svg"
+              :label="HBD"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+          </div>
         </div>
+        <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
+        <!-- Vote Button -->
         <div class="vote-button q-pa-lg text-center">
           <VoteProposal v-model="voteOptions" />
         </div>
@@ -168,22 +194,18 @@
 </style>
 
 <script setup>
-import { computed, ref, onMounted } from "vue"
-// import * as bolt11 from "src/assets/bolt11.min.js"
+import { computed, ref, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { QrcodeStream } from "qrcode-reader-vue3"
-import {
-  useDecodeLightningInvoice,
-  useGetTimeProgress,
-} from "src/use/useLightningInvoice"
-import {
-  useHiveKeychainTransfer,
-  useGetHiveTransactionHistory,
-} from "src/use/useHive.js"
+import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
+import { useGetHiveTransactionHistory } from "src/use/useHive.js"
+import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
+import AskHASDialog from "components/hive/AskHASDialog.vue"
 import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
+import CountdownBar from "components/utils/CountdownBar.vue"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
@@ -195,7 +217,6 @@ const invoiceValid = ref(null)
 const dInvoice = ref(null)
 const callbackResult = ref(null)
 const errorMessage = ref("")
-const countdownTimer = ref()
 const voteOptions = ref({
   hiveUser: "",
   showButton: true,
@@ -211,8 +232,9 @@ const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 
-let countTimer = null
+const HASDialog = ref({ show: false })
 
+let timeMessage = ref("")
 // Invoice hint shows expiry time and sats costs and fee
 const invoiceHint = computed(() => {
   if (!invoiceValid.value) {
@@ -221,55 +243,12 @@ const invoiceHint = computed(() => {
     if (invoiceValid.value && dInvoice.value.timeLeft > 1) {
       const message = `${t("invoice")} ${sats.value} (${t("fee")}: ${
         satsFee.value
-      }) - ${t("expires")} ${formatTime(dInvoice.value.timeLeft)}`
+      }) - ${t("expires")} ${timeMessage.value}`
       return message
     }
     return t("invoice_hint")
   }
 })
-
-function formatTime(timeInSeconds) {
-  const hours = Math.floor(timeInSeconds / 3600)
-  const minutes = Math.floor((timeInSeconds % 3600) / 60)
-  const seconds = Math.floor(timeInSeconds % 60)
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m ${seconds}s`
-  } else if (minutes > 0) {
-    return `${minutes}m ${seconds}s`
-  } else {
-    return `${seconds}s`
-  }
-}
-
-function checkExpiry() {
-  if (invoiceValid.value) {
-    countTimer = null
-    const [timeFraction, timeLeft] = useGetTimeProgress(dInvoice.value)
-    countdownTimer.value = timeFraction
-    const timeIntervalFor1PercentDrop = calculateTimeInterval(
-      timeFraction,
-      timeLeft,
-      0.01
-    )
-    if (timeLeft > 0) {
-      dInvoice.value.timeLeft = timeLeft
-      countTimer = setTimeout(checkExpiry, timeIntervalFor1PercentDrop * 1000)
-    } else {
-      errorMessage.value = t("invoice_expired")
-      invoiceValid.value = false
-      countTimer = null
-      countdownTimer.value = -1
-    }
-  }
-}
-
-function calculateTimeInterval(timeFraction, timeLeft, percent = 0.01) {
-  const percentTime = timeLeft / timeFraction // Calculate the time for 1% progress
-  const percentDrop = percentTime * percent // Calculate the time for 1% drop
-
-  return percentDrop // Return the time interval in seconds for a 1% drop
-}
 
 const sats = computed(() => {
   if (dInvoice.value?.millisatoshis) {
@@ -377,7 +356,38 @@ const invoiceLabel = computed(() => {
   return invoiceLabels[invoiceType()]
 })
 
+function checkInvoiceProgress(timeLeft) {
+  dInvoice.value.timeLeft = timeLeft
+  if (timeLeft < 0) {
+    // Check if invoice is expired return true if expired
+    console.log("Invoice expired")
+    dInvoice.value.errors.expired = true
+    dInvoice.value.errors.text.push("invoice_expired")
+    errorMessage.value = dInvoice.value?.errors.text
+      .map((error) => t(error))
+      .join(", ")
+    dInvoice.value.timeLeft = 0
+    invoiceValid.value = false
+    invoiceChecking.value = false
+    console.log("Invoice expired")
+    console.log("errors", dInvoice.value.errors)
+  }
+}
+
 function receiveNewInvoice(val) {
+  if (val === null) {
+    // Need to notify of problem with Lightning service of invoice provider
+    console.log("Lightning service provider not working")
+    dInvoice.value.askDetails = false
+    q.notify({
+      message: t("invoice_provider_not_working"),
+      color: "warning",
+      icon: "report_problem",
+      position: "top",
+      timeout: 3000,
+    })
+    return
+  }
   callbackResult.value = val
   invoiceText.value = val.pr
   decodeInvoice()
@@ -403,15 +413,13 @@ function invoiceType() {
 
 function clearReset() {
   errorMessage.value = ""
-  countdownTimer.value = -1
-  countTimer = null
   invoiceText.value = null
   invoiceValid.value = null
   invoiceChecking.value = false
   dInvoice.value = {}
-  dInvoice.value.progress = []
   cameraOn.value = false
   cameraShow.value = false
+  HASDialog.value = { show: false }
 }
 
 function onDecode(content) {
@@ -439,18 +447,18 @@ async function decodeInvoice() {
     // decode the invoice
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
     if (dInvoice.value) {
+      console.log("dInvoice.value", dInvoice.value)
       dInvoice.value.progress = []
       invoiceValid.value = true
       invoiceChecking.value = false
       cameraOn.value = false
       cameraShow.value = false
-      checkExpiry()
       if (invoiceType() === "lightningAddress") {
         // need to ask for details including amount
         // make sure we clear any earlier errors
         invoiceValid.value = null
         errorMessage.value = ""
-        dInvoice.value.sending = true   // Flag to show this is for sending Hive to Lightning
+        dInvoice.value.sending = true // Flag to show this is for sending Hive to Lightning
         dInvoice.value.askDetails = true
         return
       } else {
@@ -527,55 +535,120 @@ function toggleCamera() {
   }, 500)
 }
 
-async function payInvoice(val) {
+async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
-  const currency = val
+  console.log("payInvoice currency ", currency, "method ", method)
   let amount = 0
   if (currency == "HIVE") {
     amount = parseFloat(Hive.value) + 1
   } else if (currency == "HBD") {
     amount = parseFloat(HBD.value) + 1
   }
+  amount = amount.toFixed(3)
   const memo = `${dInvoice.value.paymentRequest} 2.v4v.app`
-  dInvoice.value.progress.push(`Requesting ${amount} ${currency}`)
+  dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
   let username = null
   if (storeUser.currentUser) {
     username = storeUser.currentUser
   }
-  const result = await useHiveKeychainTransfer(username, amount, currency, memo)
+  let result = {}
+  switch (method) {
+    case "HiveKeychain":
+      // Hive Keychain process
+      result = await useHiveKeychainTransfer(username, amount, currency, memo)
+      console.log("pay result", result)
+      if (result.success) {
+        const notif = q.notify({
+          avatar: "site-logo/v4vapp-logo.svg",
+          color: "positive",
+          group: false,
+          timeout: 0,
+          message: result.message,
+          position: "top",
+        })
+        dInvoice.value.progress.push(result.message)
+        // Set the username for the Voting Button
+        voteOptions.value.hiveUser = result.data.username
+        checkHiveTransaction(result.data.username, result.result.id, notif)
+      } else {
+        dInvoice.value.progress.push(result.message)
+        q.notify({
+          color: "negative",
+          avatar: "site-logo/v4vapp-logo.svg",
+          timeout: 2000,
+          message: result.message,
+          position: "top",
+        })
+        return
+      }
+      break
+    case "HAS":
+      HASDialog.value.show = true
+      HASDialog.value.payment = {
+        username: username,
+        amount: amount,
+        currency: currency,
+        memo: memo,
+      }
 
-  if (result.success) {
-    const notif = q.notify({
-      avatar: "site-logo/v4vapp-logo.svg",
-      color: "positive",
-      group: false,
-      timeout: 0,
-      message: result.message,
-      position: "top",
-    })
-    dInvoice.value.progress.push(result.message)
-    // Set the username for the Voting Button
-    voteOptions.value.hiveUser = result.data.username
-    checkHiveTransaction(result.data.username, result.result.id, notif)
-  } else {
-    dInvoice.value.progress.push(result.message)
-    q.notify({
-      color: "negative",
-      avatar: "site-logo/v4vapp-logo.svg",
-      timeout: 2000,
-      message: result.message,
-      position: "top",
-    })
+      // result = await useHASTransfer(username, amount, currency, memo)
+      const message = `${t("open_HAS")} <a href="has://sign_wait/">Click</a>`
+      dInvoice.value.progress.push(`${t("open_HAS")}`)
+      // Code will finish within the useHAS code
+      break
   }
 }
 
+watch(
+  HASDialog,
+  async (value) => {
+    if (value) {
+      if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_nack") {
+        const message = `${t("rejected_payment")}`
+        dInvoice.value.progress.push(message)
+        q.notify({
+          color: "negative",
+          avatar: "site-logo/v4vapp-logo.svg",
+          timeout: 5000,
+          message: message,
+          position: "top",
+        })
+      }
+      if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_ack") {
+        const message = `${t("payment_sent")}`
+        dInvoice.value.progress.push(message)
+        const notif = q.notify({
+          avatar: "site-logo/v4vapp-logo.svg",
+          color: "positive",
+          group: false,
+          timeout: 0,
+          message: message,
+          position: "top",
+        })
+        await checkHiveTransaction(
+          value.payment.username,
+          value.resolvedHAS.data,
+          notif
+        )
+      }
+    }
+  },
+  { deep: true }
+)
+
 async function checkHiveTransaction(username, trx_id, notif, count = 0) {
-  // wait 5 seconds then check for a transaction
+  // wait 5 seconds then check for a transaction. Looks for the next transaction
+  // after the trx_id. If not found, wait another 5 seconds and check again.
+  if (trx_id == null) {
+    console.log("checkHiveTransaction trx_id is null")
+    return
+  }
   count += 1
   await new Promise((resolve) => setTimeout(resolve, 5000))
   const transactions = await useGetHiveTransactionHistory(username)
   const transaction_found = findObjectBefore(transactions, trx_id)
+  let memo = ""
   if (!transaction_found) {
     if (count < 20) {
       const message = `${t("waiting_for")} ${count}/20`
@@ -593,10 +666,21 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
         position: "top",
       })
       await checkHiveTransaction(username, trx_id, notif, count)
+      return
     }
+    memo = `${t("transfer")}: ${t("not_found")}:`
+    notif({
+      color: "negative",
+      avatar: "site-logo/v4vapp-logo.svg",
+      timeout: 10000,
+      message: memo,
+      position: "top",
+    })
     return
   }
-  const memo = `Transfer: ${transaction_found.op[1].amount}\n${transaction_found.op[1].memo}`
+  memo = `${t("transfer")}: ${transaction_found?.op[1].amount}\n${
+    transaction_found?.op[1].memo
+  }`
   dInvoice.value.progress.push(memo)
   notif({
     color: "positive",

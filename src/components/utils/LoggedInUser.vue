@@ -2,6 +2,10 @@
   <div v-if="storeUser.currentUser" class="q-pa-sm">
     <q-avatar round size="sm">
       <img :src="avatar" />
+      <q-tooltip>
+        {{ storeUser.profileName }}<br>
+      @{{ storeUser.currentUser }}
+    </q-tooltip>
     </q-avatar>
   </div>
 </template>

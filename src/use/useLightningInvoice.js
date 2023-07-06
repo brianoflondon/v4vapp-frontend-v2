@@ -172,6 +172,11 @@ export async function useCreateInvoice(dInvoice) {
       dInvoice.v4vapp.amountToSend,
       dInvoice.v4vapp?.comment
     )
+    if (response === null) {
+      console.error("response from Lightning Service Provider is null")
+      return null
+    }
+    console.log("response in useLightning", response)
     dInvoice.askDetails = false
     dInvoice.callback = response
     return response

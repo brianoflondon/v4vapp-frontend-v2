@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md" style="max-width: 350px">
+  <div class="q-pa-md user-list" style="max-width: 350px">
     <q-list>
       <q-item
         clickable
@@ -7,7 +7,7 @@
         v-for="user in storeUser.users"
         :key="user.hiveAccname"
         :active="storeUser.currentUser === user.hiveAccname"
-        active-class="bg-grey-7 text-white"
+        active-class="user-list-active"
       >
         <q-item-section avatar>
           <q-avatar>
@@ -17,7 +17,15 @@
         <q-item-section>
           <q-item-label>{{ user.profileName }}</q-item-label>
           <q-item-label caption>@{{ user.hiveAccname }}</q-item-label>
-          <q-item-label caption>{{ user.timeAgo }}</q-item-label>
+          <q-tooltip caption>
+            {{ $t("Expires") }}
+            <br />
+            HAS:
+            {{ storeUser.getUser(user.hiveAccname).loginHASExpireHuman }}
+            <br />
+            Login:
+            {{ storeUser.getUser(user.hiveAccname).loginAgeHuman }}
+          </q-tooltip>
         </q-item-section>
       </q-item>
     </q-list>
@@ -29,8 +37,11 @@ import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 const storeUser = useStoreUser()
 
+const emit = defineEmits(["update"])
+
 function doClick(item) {
   storeUser.switchUser(item)
+  emit("update", item)
 }
 </script>
 

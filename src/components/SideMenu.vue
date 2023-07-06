@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="q-pa-md">
-      <UserList />
+      <UserList @update="(val) => hiveUsername = val" />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
     <q-list>
@@ -18,6 +18,9 @@ import EssentialLink from "components/EssentialLink.vue"
 import UserList from "components/hive/UserList.vue"
 import { useHiveDetails } from "src/use/useHive.js"
 import HiveLogin from "components/HiveLogin.vue"
+import { useStoreUser } from "src/stores/storeUser"
+
+const storeUser = useStoreUser()
 const rightDrawerOpen = defineModel(false)
 
 const hiveAccObj = ref()
@@ -42,24 +45,27 @@ const linkList = ref([
     icon: "circle",
     link: "status",
   },
-  // {
-  //   title: "Select Demo",
-  //   caption: "Select Demo",
-  //   icon: "javascript",
-  //   link: "selectdemo",
-  // },
 ])
 const hiveUsername = ref("")
 const hiveDetails = ref(null)
 
 const label = ref(t("hive_account"))
 
+watch(storeUser, async (val) => {
+  hiveAccObj.value = {
+    label: val.hiveAccname,
+    value: val.hiveAccname,
+    caption: val.profileName,
+  }
+})
+
+
 watch(hiveAccObj, async (val) => {
-  console.log("hiveAccObj", val)
-  hiveUsername.value = val.value
-  label.value = "Loading..."
-  hiveDetails.value = await useHiveDetails(val.value)
-  label.value = hiveDetails.value?.profile?.name || t("hive_account")
+  // console.debug("hiveAccObj", val)
+  // hiveUsername.value = val.value
+  // label.value = "Loading..."
+  // hiveDetails.value = await useHiveDetails(val.value)
+  // label.value = hiveDetails.value?.profile?.name || t("hive_account")
 })
 </script>
 

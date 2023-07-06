@@ -3,7 +3,6 @@ import esES from './es-ES'
 
 export default {
   'en-US': enUS,
-  // spanish
   'es-ES': esES,
 }
 
