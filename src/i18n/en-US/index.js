@@ -35,6 +35,7 @@ export default {
   hive: "Hive",
   transfer: "Transfer",
   not_found: "Not found",
+  Progress: "Progress",
 
   // Login
   keychain_not_installed: 'Keychain is not installed',
