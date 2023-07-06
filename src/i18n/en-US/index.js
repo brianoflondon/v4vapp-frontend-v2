@@ -73,7 +73,7 @@ export default {
   status_page_message: "Status page is under construction, in the meantime please visit Hive.",
 
   // Pricebar
-  sats: "シ",
+  sats: "satoshis (1/1000,000,000 BTC)",
   failure: "Failure",
   working: "Working",
   keychain_installed: "Keychain is Installed",
@@ -83,6 +83,7 @@ export default {
   // Invoice
   invoice: "Invoice",
   expires: "expires",
+  Expires: "Expires",
   enter_invoice: "lnbc.... or Lightning Address",
   valid_invoice: "Invoice decoded",
   valid_lightning_address: "Address decoded",
