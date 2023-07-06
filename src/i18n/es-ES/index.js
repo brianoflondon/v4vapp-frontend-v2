@@ -39,7 +39,7 @@ export default {
   login_failed: 'Acceso fallido',
   login_success: 'Acceso completado',
   sign_this: 'Firma la transacción',
-  matches: 'matches',
+  matches: 'coincide',
   // Get Hive
   amount: 'Cantidad',
   copy: 'Copiar',
@@ -57,7 +57,7 @@ export default {
   // Status Page
   status_page_message: 'Sitio en construcción, visita Hive mientras tanto.',
   // Pricebar
-  sats: 'satochis',
+  sats: 'sats',
   failure: 'Fallo',
   working: 'Trabajando',
   keychain_installed: 'Keychain está instalada',
