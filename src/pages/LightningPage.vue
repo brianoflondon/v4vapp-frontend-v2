@@ -163,7 +163,7 @@
             />
           </div>
         </div>
-        <AskHASDialog v-model="HASDialog" />
+        <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
         <!-- Vote Button -->
         <div class="vote-button q-pa-lg text-center">
           <VoteProposal v-model="voteOptions" />

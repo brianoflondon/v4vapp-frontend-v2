@@ -18,6 +18,7 @@ export default {
   please: "Please",
   and: "and",
   witness: "My Hive Witness",
+  prices_fetched: "Prices fetched",
 
   // Dark Mode Selector
   change_light: "Change to light mode",

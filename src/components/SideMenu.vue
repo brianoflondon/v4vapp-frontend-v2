@@ -61,11 +61,11 @@ watch(storeUser, async (val) => {
 
 
 watch(hiveAccObj, async (val) => {
-  console.debug("hiveAccObj", val)
-  hiveUsername.value = val.value
-  label.value = "Loading..."
-  hiveDetails.value = await useHiveDetails(val.value)
-  label.value = hiveDetails.value?.profile?.name || t("hive_account")
+  // console.debug("hiveAccObj", val)
+  // hiveUsername.value = val.value
+  // label.value = "Loading..."
+  // hiveDetails.value = await useHiveDetails(val.value)
+  // label.value = hiveDetails.value?.profile?.name || t("hive_account")
 })
 </script>
 
