@@ -10,7 +10,11 @@
         <strong>
           ${{ storeAPIStatus.hive }}
           &thinsp;/&thinsp;
-          {{ storeAPIStatus.hiveSats }}{{ $t("sats") }}
+          {{ storeAPIStatus.hiveSats }}
+          <span>
+            シ
+            <q-tooltip>シ {{ $t("sats") }}</q-tooltip>
+          </span>
         </strong>
       </span>
       <span v-if="!smallScreen" class="price-bar-item hbd-price q-pa-xs">
