@@ -95,6 +95,9 @@
           <div class="vote-button text-center">
             <VoteProposal v-model="voteOptions" />
           </div>
+          <div style="max-width: 200px">
+            <ExplanationBox class="q-pt-md"></ExplanationBox>
+          </div>
         </div>
       </div>
     </div>
@@ -118,6 +121,7 @@ import {
   useDecodeLightningInvoice,
   useCreateInvoice,
 } from "src/use/useLightningInvoice"
+import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 
 import VoteProposal from "components/utils/VoteProposal.vue"
 
@@ -246,7 +250,7 @@ async function setAmount() {
     dInvoice.value = await useDecodeLightningInvoice(qrText.value)
     dInvoice.value.makingInvoice = true
     dInvoice.value.hiveHbd = hiveHbd.value
-    dInvoice.value.sending = false   // Flag to show this is for receiving Lightning to Hive
+    dInvoice.value.sending = false // Flag to show this is for receiving Lightning to Hive
     dInvoice.value.askDetails = true
   } catch (e) {
     console.error("error:", e)
