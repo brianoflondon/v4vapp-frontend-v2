@@ -36,7 +36,7 @@ export default {
   Progress: 'Progress',
   // Login
   keychain_not_installed: 'Keychain no está instalada',
-  enter_hive_account: 'Por favor, entre su usuario de Hive.',
+  enter_hive_account: 'Por favor, entre su usuario de Hive',
   hive_login: 'Acceso con Hive',
   login: 'Acceder',
   login_as: 'Acceder como',
@@ -52,7 +52,7 @@ export default {
   copy: 'Copiar',
   copy_qrcode: 'Haga clic para copiar el código QR',
   pay: 'Pagar',
-  pay_tooltip: 'Paga esta factura con la aplicación Lighting instalada',
+  pay_tooltip: 'Paga esta factura con la aplicación Lightning instalada',
   copied: 'Copiado al portapapeles',
   download: 'Descargar',
   download_tooltip: 'Descargar el código QR como archivo',
@@ -67,17 +67,17 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain está instalado',
+  keychain_missing: 'Keychain no se encuentra',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
-  expires: 'Expira en',
+  expires: 'expira en',
   Expires: 'Expires',
-  enter_invoice: 'lnbc.... o dirección lightning',
+  enter_invoice: 'lnbc.... o dirección Lightning',
   valid_invoice: 'Factura descifrada',
   valid_lightning_address: 'Dirección descifrada',
-  invalid_invoice: 'Factura o dirección lightning inválida',
+  invalid_invoice: 'Factura o dirección Lightning inválida',
   invoice_too_low: 'La factura es menor que el mínimo requerido',
   invoice_too_high: 'La factura es mayor que el máximo requerido',
   invoice_expired: 'La factura ha expirado',
@@ -123,5 +123,14 @@ export default {
   OverconstrainedError: 'Las camaras instaladas no están disponibles',
   StreamApiNotSupportedError: 'La API STREAM no es soportada por este navegador',
   InsecureContextError: 'Se requiere de una conexión segura (HTTPS)',
-  OtherError: 'Error desconocido de la cámara'
+  OtherError: 'Error desconocido de la cámara',
+  // Explanation Box
+  explanation_title: 'What is this?',
+  explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
+  Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
+  The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
+  The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n
+
+
+  `
 };
