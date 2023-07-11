@@ -166,6 +166,9 @@
         <!-- Vote Button -->
         <div class="vote-button q-pa-lg text-center">
           <VoteProposal v-model="voteOptions" />
+          <div style="max-width: 265px">
+            <ExplanationBox class="q-pt-md"></ExplanationBox>
+          </div>
         </div>
       </div>
     </div>
@@ -210,6 +213,7 @@ import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
 import { useStoreUser } from "src/stores/storeUser"
+import ExplanationBox from "components/utils/ExplanationBox.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
