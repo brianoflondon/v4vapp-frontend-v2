@@ -94,9 +94,9 @@
           </q-btn>
           <div class="vote-button text-center">
             <VoteProposal v-model="voteOptions" />
-            <div style="max-width: 200px">
-              <ExplanationBox class="q-pt-md"></ExplanationBox>
-            </div>
+          </div>
+          <div style="max-width: 200px">
+            <ExplanationBox class="q-pt-md"></ExplanationBox>
           </div>
         </div>
       </div>

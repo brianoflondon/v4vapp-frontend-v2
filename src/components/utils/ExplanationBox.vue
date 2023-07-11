@@ -1,6 +1,6 @@
 <template>
+  <!-- default-opened -->
   <q-expansion-item
-    default-opened
     icon="question_answer"
     :label="$t('explanation_title')"
   >
