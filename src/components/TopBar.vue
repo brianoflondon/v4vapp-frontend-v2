@@ -31,7 +31,7 @@ import LoggedInUser from "components/utils/LoggedInUser.vue"
 const rightDrawerOpen = defineModel(false)
 
 const { appName, appVersion } = useAppDetails()
-console.log("appName", appName, "appVersion", appVersion)
+console.log("appName", appName.value, "appVersion", appVersion.value)
 const toggleRightDrawer = () => {
   rightDrawerOpen.value = !rightDrawerOpen.value
 }

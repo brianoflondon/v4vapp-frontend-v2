@@ -39,7 +39,7 @@
           dense
           @click="storeAPIStatus.update()"
         />
-        <q-tooltip>{{ lastUpdate }}</q-tooltip>
+        <q-tooltip>{{ $t('prices_fetched') }}: {{ storeAPIStatus.lastFetchTime }}</q-tooltip>
       </span>
       <span class="price-bar-item keychain-status-indicator q-pa-xs">
         <q-btn
@@ -72,15 +72,13 @@
 import { onMounted, onUnmounted, computed, ref } from "vue"
 import DarkSelector from "components/utils/DarkSelector.vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useDateFormat } from "@vueuse/core"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 
 const storeAPIStatus = useStoreAPIStatus()
 const t = useI18n().t
 const q = useQuasar()
-const lastUpdate = ref("")
-const lastFetch = useDateFormat(storeAPIStatus.fetchTimestamp, "HH:mm:ss")
+
 let timeoutId
 
 const smallScreen = computed(() => {
@@ -88,8 +86,13 @@ const smallScreen = computed(() => {
 })
 
 // run on mounted
-onMounted(() => {
-  scheduleUpdate()
+onMounted(async () => {
+  try {
+    await storeAPIStatus.update()
+    scheduleUpdate()
+  } catch (err) {
+    console.log("PriceBar err", err)
+  }
 })
 
 async function scheduleUpdate() {
@@ -97,7 +100,6 @@ async function scheduleUpdate() {
   await storeAPIStatus.update()
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 10 * 60 * 1000)
-  lastUpdate.value = `${t("prices_fetched")}: ${lastFetch.value}`
 }
 
 onUnmounted(() => {
