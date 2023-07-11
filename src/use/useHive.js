@@ -2,16 +2,14 @@
 //
 // Functions related to Hive
 // ----------------------------------------------------------------------------
-import axios, { apiURL } from "boot/axios"
+import { apiURL } from "boot/axios"
 import { Dark } from "quasar"
-import { KeychainSDK } from "keychain-sdk"
 
 import "src/assets/hive-tx.min.js"
 
 const useHiveAccountRegex =
   /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
 
-const serverHiveAccount = "v4vapp"
 
 export async function useHiveDetails(hiveAccname) {
   // returns Hive Profile and details for a given Hive hiveAccname
@@ -243,96 +241,6 @@ export async function useGetHiveWitnessVotes(hiveAccname, witness) {
   } catch (error) {
     console.error("An error occurred while fetching witness votes:", error)
     return null
-  }
-}
-
-/*************************************************
- ****     Hive Keycahin Functions
- **************************************************/
-
-const keychain = new KeychainSDK(window)
-
-export async function useIsHiveKeychainInstalled() {
-  try {
-    const isKeychainIn = await keychain.isKeychainInstalled()
-    return isKeychainIn
-  } catch (error) {
-    console.error({ error })
-  }
-  return false
-}
-
-export async function useHiveKeychainLogin({
-  hiveAccname,
-  message = null,
-  keyType = "posting",
-}) {
-  console.log("useHiveKeychainLogin")
-  const isKeychainIn = keychain.isKeychainInstalled()
-  if (!isKeychainIn || !hiveAccname) {
-    return null
-  }
-  if (!message) {
-    message = "Login to V4Vapp"
-  }
-  const keychainParams = {
-    data: {
-      username: hiveAccname,
-      message: message,
-      method: keyType,
-      title: "Login",
-    },
-    options: {},
-  }
-  try {
-    const loginResult = await keychain.login(
-      keychainParams.data,
-      keychainParams.options
-    )
-    return loginResult
-  } catch (error) {
-    console.error({ error })
-    return error
-  }
-}
-
-// -------- Hive Transfer --------
-
-/**
- * Performs a transfer using the Hive Keychain SDK.
- *
- * @param {string} username - The username of the sender.
- * @param {number} amount - The amount to be transferred.
- * @param {string} currency - The currency of the transfer.
- * @param {string} memo - The memo associated with the transfer.
- * @returns {Promise<Object>} - A Promise that resolves to the transfer object.
- * @throws {Error} - If an error occurs during the transfer process.
- */
-export async function useHiveKeychainTransfer(
-  username,
-  amount,
-  currency,
-  memo
-) {
-  try {
-    const keychain = new KeychainSDK(window)
-    amount = parseFloat(amount).toFixed(3)
-    const formParamsAsObject = {
-      data: {
-        username: username,
-        to: serverHiveAccount,
-        amount: amount,
-        memo: memo,
-        enforce: false,
-        currency: currency,
-      },
-    }
-    const transfer = await keychain.transfer(formParamsAsObject.data)
-    console.log({ transfer })
-    return transfer
-  } catch (error) {
-    console.error({ error })
-    return error
   }
 }
 

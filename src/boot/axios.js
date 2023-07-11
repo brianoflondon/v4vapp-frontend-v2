@@ -15,6 +15,8 @@ const myNodePubKey =
 const apiURL = "https://api.v4v.app/v1"
 // const apiURL = "http://127.0.0.1:1818/v1"
 
+const serverHiveAccount = "v4vapp"
+
 const api = axios.create({ baseURL: apiURL })
 
 export default boot(({ app }) => {
@@ -29,4 +31,4 @@ export default boot(({ app }) => {
   //       so you can easily perform requests against your app's API
 })
 
-export { axios, api, apiURL, myNodePubKey }
+export { axios, api, apiURL, myNodePubKey, serverHiveAccount }

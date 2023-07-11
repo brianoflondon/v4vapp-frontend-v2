@@ -113,7 +113,7 @@
         >
           <q-input
             v-model="dInvoice.v4vapp.comment"
-            label="Comment"
+            :label="$t('comment')"
             type="text"
             counter
             tabindex="2"
@@ -198,7 +198,6 @@ function updateAmounts(amount, currency) {
   let sats, hive, hbd
   // Sending is true for sending Hive to Lightning
   const sending = dInvoice.value.sending
-  console.log("sending", sending)
   switch (currency) {
     case "sats":
       sats = parseInt(amount)
@@ -251,7 +250,6 @@ function updateAmounts(amount, currency) {
   }
   amounts.value.satsNum = parseFloat(sats.toFixed(0))
   amounts.value.hbdNum = parseFloat(hbd.toFixed(2))
-  console.log("amounts.value.hbdNum", amounts.value.hbdNum)
   amounts.value.sats = tidyNumber(sats.toFixed(0))
   amounts.value.hive = tidyNumber(hive.toFixed(3))
   amounts.value.hbd = tidyNumber(hbd.toFixed(2))

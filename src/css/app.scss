@@ -2,15 +2,30 @@
 
 .body--dark {
   .top-bar,
-  .price-bar {
+  .price-bar,
+  .user-list-active {
     background-color: $bar-bg-dark;
     color: $primary;
   }
 }
 
+// .body--dark {
+//   .text-caption {
+//     color: $primary;
+//   }
+// }
+
+.body--light {
+  .user-list-active
+  .text-caption {
+    color: $grey-7
+  }
+}
+
 .body--light {
   .top-bar,
-  .price-bar {
+  .price-bar,
+  .user-list-active, {
     background-color: $bar-bg-light;
     color: whitesmoke;
   }

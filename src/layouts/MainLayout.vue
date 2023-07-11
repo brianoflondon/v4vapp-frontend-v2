@@ -4,7 +4,7 @@
       <TopBar v-model="rightDrawerOpen" />
     </q-header>
     <q-drawer show-if-above v-model="rightDrawerOpen" side="right" elevated>
-      <div><SideMenu /></div>
+      <div><SideMenu v-model="rightDrawerOpen" /></div>
     </q-drawer>
     <q-page-container>
       <router-view />

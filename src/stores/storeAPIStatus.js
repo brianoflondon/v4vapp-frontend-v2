@@ -2,6 +2,7 @@ import { defineStore } from "pinia"
 import { api } from "boot/axios"
 import { KeychainSDK } from "keychain-sdk"
 import { tidyNumber } from "src/use/useUtils"
+import { useDateFormat } from "@vueuse/core"
 
 const keychain = new KeychainSDK(window)
 
@@ -64,6 +65,14 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
     textBar() {
       // autocompletion ✨
       return `Bitcoin <strong>${this.bitcoin}<strong> ▪️ Hive <strong>${this.hive}<strong> ▪️ HBD<strong>${this.hbd}<strong> ▪️ ${this.statusDisp}`
+    },
+    lastFetch: (state) => {
+      if (!state.fetchTimestamp) return null
+      return state.fetchTimestamp
+    },
+    lastFetchTime: (state) => {
+      if (!state.fetchTimestamp) return null
+      return useDateFormat(state.lastFetch, 'HH:mm:ss')
     },
   },
 

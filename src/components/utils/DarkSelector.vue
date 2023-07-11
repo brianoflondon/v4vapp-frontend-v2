@@ -3,7 +3,7 @@
     <q-btn
       flat
       @click="$q.dark.toggle()"
-      :title="$q.dark.isActive ? 'Change to light mode' : 'Change to dark mode'"
+      :title="$q.dark.isActive ? $t('change_light') : $t('change_dark')"
       :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
       size="sm"
     />

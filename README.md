@@ -1,3 +1,5 @@
+[![Crowdin](https://badges.crowdin.net/v4vapp/localized.svg)](https://crowdin.com/project/v4vapp)
+
 # V4V.app (v4vapp-frontend-v2)
 
 Frontend for the V4V.app Website and WebApp

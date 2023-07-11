@@ -1,10 +1,10 @@
 <template>
   <div
-    class="q-pa-md"
+    class="progress-items q-pt-sm q-pb-md q-px-md" style="max-width: 350px"
     v-if="dInvoice?.progress && dInvoice?.progress.length > 0"
   >
     <q-list separator>
-      <q-item-label header>Progress</q-item-label>
+      <q-item-label header>{{ $t('Progress') }}</q-item-label>
       <q-separator />
       <q-item
         v-for="(item, index) in dInvoice.progress.slice().reverse()"

@@ -10,7 +10,7 @@
             quasar.dark.isActive ? 'transparent' : 'transparent'
           }`,
         }"
-        @click="openLinkInNewWindow(qrText)"
+        @click="openLinkInNewWindow(qrTextPage)"
       >
         <div ref="qrCodeContainer"></div>
       </div>
@@ -56,6 +56,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  expires: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const avatarUrl = computed(() => {
@@ -84,11 +88,10 @@ const htmlText =
 watch(
   () => props.loading,
   async (newVal) => {
-    console.log("loading", newVal)
+    // console.log("loading", newVal)
     if (newVal) {
       qrCodeContainer.value.innerHTML = htmlText
       await nextTick()
-      console.log("qrCodeContainer", qrCodeContainer.value.innerHTML)
     } else {
       await newQRCode()
     }
@@ -133,7 +136,7 @@ async function newQRCode() {
 }
 
 function openLinkInNewWindow() {
-  const url = props.qrText
+  const url = qrTextPage.value
   window.open(url, "_blank")
 }
 </script>

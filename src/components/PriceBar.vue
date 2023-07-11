@@ -10,7 +10,11 @@
         <strong>
           ${{ storeAPIStatus.hive }}
           &thinsp;/&thinsp;
-          {{ storeAPIStatus.hiveSats }}{{ $t("sats") }}
+          {{ storeAPIStatus.hiveSats }}
+          <span>
+            シ
+            <q-tooltip>シ {{ $t("sats") }}</q-tooltip>
+          </span>
         </strong>
       </span>
       <span v-if="!smallScreen" class="price-bar-item hbd-price q-pa-xs">
@@ -35,6 +39,7 @@
           dense
           @click="storeAPIStatus.update()"
         />
+        <q-tooltip>{{ $t('prices_fetched') }}: {{ storeAPIStatus.lastFetchTime }}</q-tooltip>
       </span>
       <span class="price-bar-item keychain-status-indicator q-pa-xs">
         <q-btn
@@ -64,7 +69,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, computed } from "vue"
+import { onMounted, onUnmounted, computed, ref } from "vue"
 import DarkSelector from "components/utils/DarkSelector.vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
@@ -81,12 +86,17 @@ const smallScreen = computed(() => {
 })
 
 // run on mounted
-onMounted(() => {
-  scheduleUpdate()
+onMounted(async () => {
+  try {
+    await storeAPIStatus.update()
+    scheduleUpdate()
+  } catch (err) {
+    console.log("PriceBar err", err)
+  }
 })
 
 async function scheduleUpdate() {
-  console.log("Updating prices")
+  // console.log("Updating prices")
   await storeAPIStatus.update()
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 10 * 60 * 1000)
