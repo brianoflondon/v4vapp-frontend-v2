@@ -123,5 +123,14 @@ export default {
   OverconstrainedError: 'Installed cameras are not suitable',
   StreamApiNotSupportedError: 'Stream API is not supported in this browser',
   InsecureContextError: 'Secure secure context required (HTTPS, localhost)',
-  OtherError: 'Unknown camera error'
+  OtherError: 'Unknown camera error',
+  // Explanation Box
+  explanation_title: 'What is this?',
+  explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
+  Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
+  The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
+  The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n
+
+
+  `
 };
