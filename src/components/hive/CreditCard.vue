@@ -1,5 +1,5 @@
 <template>
-  <q-card class="credit-card-background q-ma-xs">
+  <q-card @click="changeBackground" class="credit-card-background q-ma-xs">
     <q-img
       :src="creditCardBackground"
       width="365px"
@@ -79,8 +79,16 @@ import { useQuasar } from "quasar"
 
 const q = useQuasar()
 
+const backgroundImage = [
+  "dolphins",
+  "lightning01",
+  "lightning02",
+  "lightning03",
+  "lightning04",
+]
+const maxValue = backgroundImage.length
 // generate random number between 0 and 1
-const backgroundIndex = Math.floor(Math.random() * 3)
+const backgroundIndex = ref(Math.floor(Math.random() * maxValue))
 
 const lightDark = computed(() => {
   if (q.dark.isActive) {
@@ -89,12 +97,6 @@ const lightDark = computed(() => {
   return "light"
 })
 
-const backgroundImage = ref([
-  "dolphins",
-  "lightning01",
-  "lightning02",
-  "lightning03",
-])
 const creditCardStripStyle = computed(() => {
   if (q.dark.isActive) {
     return "background: rgba(0, 0, 0, 0.4)"
@@ -106,7 +108,7 @@ const creditCardOverlay = computed(() => {
   return `credit-card/overlay/${lightDark.value}/credit-card.webp`
 })
 const creditCardBackground = computed(() => {
-  return `credit-card/backgrounds/${backgroundImage.value[backgroundIndex]}.webp`
+  return `credit-card/backgrounds/${backgroundImage[backgroundIndex.value]}.webp`
 })
 const creditCardShading = computed(() => {
   if (q.dark.isActive) {
@@ -116,12 +118,11 @@ const creditCardShading = computed(() => {
   }
 })
 
-const creditCardImage = computed(() => {
-  if (q.dark.isActive) {
-    return "credit-card/credit-card-dolphins-dark.webp"
-  }
-  return "credit-card/credit-card-dolphins-light.webp"
-})
+function changeBackground() {
+  console.log("changeBackground")
+  backgroundIndex.value = (backgroundIndex.value + 1) % (maxValue)
+  console.log(backgroundIndex.value)
+}
 
 storeUser.update()
 </script>
