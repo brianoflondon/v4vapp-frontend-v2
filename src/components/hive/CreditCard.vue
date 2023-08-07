@@ -80,12 +80,15 @@ import { useQuasar } from "quasar"
 const q = useQuasar()
 
 const backgroundImage = [
-  "dolphins",
+  "sealogo01",
+  "sealogo02",
   "lightning01",
   "lightning02",
   "lightning03",
   "lightning04",
+  "dolphins",
 ]
+
 const maxValue = backgroundImage.length
 // generate random number between 0 and 1
 const backgroundIndex = ref(Math.floor(Math.random() * maxValue))
@@ -108,7 +111,9 @@ const creditCardOverlay = computed(() => {
   return `credit-card/overlay/${lightDark.value}/credit-card.webp`
 })
 const creditCardBackground = computed(() => {
-  return `credit-card/backgrounds/${backgroundImage[backgroundIndex.value]}.webp`
+  return `credit-card/backgrounds/${
+    backgroundImage[backgroundIndex.value]
+  }.webp`
 })
 const creditCardShading = computed(() => {
   if (q.dark.isActive) {
@@ -120,7 +125,7 @@ const creditCardShading = computed(() => {
 
 function changeBackground() {
   console.log("changeBackground")
-  backgroundIndex.value = (backgroundIndex.value + 1) % (maxValue)
+  backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
   console.log(backgroundIndex.value)
 }
 
