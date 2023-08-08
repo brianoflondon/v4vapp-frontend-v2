@@ -59,15 +59,15 @@
               <strong>{{ storeUser.satsBalance }}</strong>
             </td>
             <td>
-              <q-icon name="fa-brands fa-btc">
-                <q-tooltip>BTC equivalent in Sats</q-tooltip>
-              </q-icon>
+              シ
+              <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
             </td>
           </tr>
         </div>
       </div>
     </q-card-section>
   </q-card>
+  <p class="text-body2 text-weight-thin text-center" style="font-size:0.7rem;">シ = {{ $t("sats") }}</p>
 </template>
 
 <script setup>
