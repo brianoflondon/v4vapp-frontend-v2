@@ -21,6 +21,10 @@ const routes = [
         path: "/qrdemo",
         component: () => import("pages/demo/QRDemo.vue"),
       },
+      {
+        path: "/backgrounds",
+        component: () => import("pages/demo/CreditcardBackgrounds.vue"),
+      },
     ],
   },
 

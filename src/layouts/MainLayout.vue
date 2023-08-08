@@ -23,8 +23,5 @@ import TopBar from "components/TopBar.vue"
 const $q = useQuasar() // Enables Dark mode detection
 $q.dark.set("auto") // Enables Dark mode detection
 
-
 const rightDrawerOpen = ref(false)
-
-
 </script>
