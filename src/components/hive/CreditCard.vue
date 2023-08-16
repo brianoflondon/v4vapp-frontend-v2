@@ -31,19 +31,27 @@
               {{ storeUser.hiveAccname }}@v4v.app
             </div>
           </div>
+          <div style="font-size: 0.7rem">
+            <q-checkbox
+              v-model="savingsToggle"
+              checked-icon="savings"
+              unchecked-icon="savings"
+              :label="$t('savings')"
+            >
+            </q-checkbox>
+            <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
+          </div>
         </div>
         <div class="col-4 text-right">
           <tr>
-            <td class="numeric-cell">
-              {{ storeUser.hiveBalance }}
-            </td>
+            <td class="numeric-cell">{{ balances["hive"] }}<br /></td>
             <td>
               <q-icon name="fa-brands fa-hive" />
             </td>
           </tr>
           <tr>
             <td class="numeric-cell">
-              {{ storeUser.hbdBalance }}
+              {{ balances["hbd"] }}
             </td>
             <td class="q-pl-sm">
               <q-icon name="img:/avatars/hbd_logo.svg">
@@ -56,7 +64,11 @@
               class="table-border-top numeric-cell q-pt-xs"
               style="border-top: 1px solid"
             >
-              <strong>{{ storeUser.satsBalance }}</strong>
+              <strong>{{ balances["sats"] }}</strong
+              ><br />
+              <div style="font-size: 0.7rem; line-height: 0.3rem;">
+                +<q-icon name="savings"></q-icon>&nbsp;{{ balances["totalSats"] }}
+              </div>
             </td>
             <td>
               シ
@@ -67,7 +79,6 @@
       </div>
     </q-card-section>
   </q-card>
-  <p class="text-body2 text-weight-thin text-center" style="font-size:0.7rem;">シ = {{ $t("sats") }}</p>
 </template>
 
 <script setup>
@@ -78,6 +89,7 @@ const storeUser = useStoreUser()
 import { useQuasar } from "quasar"
 
 const q = useQuasar()
+const savingsToggle = ref(false)
 
 const backgroundImage = [
   "sealogo01",
@@ -98,6 +110,29 @@ const lightDark = computed(() => {
     return "dark"
   }
   return "light"
+})
+
+const balances = computed(() => {
+  console.log(
+    storeUser.satsBalance,
+    storeUser.savingsSatsBalance,
+    storeUser.totalSatsBalance
+  )
+  if (savingsToggle.value) {
+    return {
+      hive: storeUser.savingsHiveBalance,
+      hbd: storeUser.savingsHbdBalance,
+      sats: storeUser.savingsSatsBalance,
+      totalSats: storeUser.totalSatsBalance,
+    }
+  } else {
+    return {
+      hive: storeUser.hiveBalance,
+      hbd: storeUser.hbdBalance,
+      sats: storeUser.satsBalance,
+      totalSats: storeUser.totalSatsBalance,
+    }
+  }
 })
 
 const creditCardStripStyle = computed(() => {
