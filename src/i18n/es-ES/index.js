@@ -67,8 +67,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain está instalado',
+  keychain_missing: 'Keychain no se encuentra',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
@@ -125,12 +125,12 @@ export default {
   InsecureContextError: 'Se requiere de una conexión segura (HTTPS)',
   OtherError: 'Error desconocido de la cámara',
   // Explanation Box
-  explanation_title: 'What is this?',
+  explanation_title: 'What is this site?',
   explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
   Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
   The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
-  The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n
-
-
-  `
+  The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n`,
+  // Credit Card
+  savings: 'Savings',
+  savings_tooltip: 'Show the amounts stored in Hive\'s savings accounts for HBD and Hive'
 };
