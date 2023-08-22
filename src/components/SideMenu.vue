@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="q-pa-md">
-      <UserList @update="(val) => hiveUsername = val" />
+      <UserList @update="(val) => (hiveUsername = val)" />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
     <q-list>
@@ -40,6 +40,12 @@ const linkList = ref([
     link: "/hive",
   },
   {
+    title: t("transfer"),
+    caption: t("transfer"),
+    icon: "double_arrow",
+    link: "transfer",
+  },
+  {
     title: t("status"),
     caption: t("status"),
     icon: "circle",
@@ -47,7 +53,6 @@ const linkList = ref([
   },
 ])
 const hiveUsername = ref("")
-const hiveDetails = ref(null)
 
 const label = ref(t("hive_account"))
 
@@ -58,7 +63,6 @@ watch(storeUser, async (val) => {
     caption: val.profileName,
   }
 })
-
 
 watch(hiveAccObj, async (val) => {
   // console.debug("hiveAccObj", val)
