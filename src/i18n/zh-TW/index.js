@@ -125,12 +125,12 @@ export default {
   InsecureContextError: 'Secure secure context required (HTTPS, localhost)',
   OtherError: 'Unknown camera error',
   // Explanation Box
-  explanation_title: 'What is this?',
+  explanation_title: 'What is this site?',
   explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
   Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
   The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
-  The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n
-
-
-  `
+  The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n`,
+  // Credit Card
+  savings: 'Savings',
+  savings_tooltip: 'Show the amounts stored in Hive\'s savings accounts for HBD and Hive'
 };
