@@ -125,11 +125,7 @@ const optionsCurrency = Object.entries(optionsCur).map(([key, value]) => ({
   label: value.label,
   value: key,
 }))
-console.log(optionsCurrency)
-console.log("env", import.meta.env.api_url)
-if (process.env.DEV) {
-  console.log(`I'm on a development build`)
-}
+
 const optionsSelected = ref("HIVE")
 
 defineComponent({
@@ -145,7 +141,6 @@ const sendingToLabel = computed(
 )
 
 const hiveAmount = computed(() => {
-  console.log(optionsSelected.value)
   let answer = 0
   if (optionsSelected.value === "HIVE") {
     answer = Number(amount.value).toFixed(3)
@@ -169,7 +164,6 @@ const hiveAmount = computed(() => {
 })
 
 const allAmounts = computed(() => {
-  console.log(storeAPIStatus.apiStatus?.crypto?.hive?.usd)
   return {
     HIVE: Number(hiveAmount.value).toFixed(3),
     HBD: Number(hiveAmount.value * storeAPIStatus.hiveHBDNumber).toFixed(3),
@@ -210,7 +204,6 @@ async function copyNumToClipboard(value) {
 }
 
 watch(optionsSelected, () => {
-  console.log("optionSelected", optionsSelected.value)
   if (optionsSelected.value === "sats") {
     btnAmounts.value = btnAmountsSats
   } else {
@@ -257,14 +250,12 @@ const vAutofocus = {
 }
 
 onMounted(() => {
-  console.log(storeUser.hiveAccname)
   if (storeUser.hiveAccname) {
     hiveAccFrom.value = {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
       caption: storeUser.hiveAccname,
     }
-
     if (storeUser.hiveAccname === "v4vapp.tre") {
       hiveAccTo.value = {
         label: "deepcrypto8",

@@ -206,8 +206,6 @@ export const useStoreUser = defineStore("useStoreUser", {
     totalSatsBalance() {
       if (this.satsBalance === "💰💰💰") return "💰💰💰"
       if (this.savingsSatsBalance === "💰💰💰") return this.satsBalance
-      console.log("this.satsBalance", parseInt(this.satsBalance.replace(/,/g, ''), 10))
-      console.log("this.savingsSatsBalance", this.savingsSatsBalance)
       const totalSatsBalance = (
         parseInt(this.satsBalance.replace(/,/g, ""), 10) +
         parseInt(this.savingsSatsBalance.replace(/,/g, ""), 10)
