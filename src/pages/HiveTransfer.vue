@@ -1,6 +1,6 @@
 <template>
   <q-page>
-    <q-card class="q-pa-sm">
+    <div class="q-pa-sm">
       <div class="row q-pa-sm destinations">
         <div class="col-6 q-pr-sm v4vapp-sending-from">
           {{ sendingFromLabel }}
@@ -13,10 +13,18 @@
           <div class="q-pa-sm">
             <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
           </div>
+          <div>
+            <q-input
+              v-model="searchPodcast"
+              label="Podcast Index Search"
+              filled
+              debounce="400"
+            />
+          </div>
         </div>
       </div>
-      <div class="row q-pa-sm amount-buttons">
-        <div v-for="button in btnAmounts" :key="button.id" class="col q-pr-sm">
+      <div class="flex justify-center q-pa-sm amount-buttons">
+        <div v-for="button in btnAmounts" :key="button.id" class="q-pa-sm">
           <q-btn
             rounded
             color="primary"
@@ -70,7 +78,14 @@
           <q-input filled v-model="memo" label="Memo:" stack-label />
         </div>
       </div>
-    </q-card>
+    </div>
+    <div>
+      <q-list bordered separator>
+        <q-item clickable v-ripple v-for="item in result?.feeds" :key="item.id">
+          <q-item-section>{{ item.title }}</q-item-section>
+        </q-item>
+      </q-list>
+    </div>  
   </q-page>
 </template>
 
@@ -81,7 +96,7 @@ import { KeychainSDK } from "keychain-sdk"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
-
+import { api } from "boot/axios"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
 const hiveAccFrom = ref({ label: "", value: "", caption: "" })
@@ -266,4 +281,25 @@ onMounted(() => {
     }
   }
 })
+
+const searchPodcast = ref("")
+const result = ref()
+
+watch(searchPodcast, async (newValue, oldValue) => {
+  console.log("searchPodcast", newValue)
+  if (newValue.length > 2) {
+    await searchPodcastIndex()
+  }
+})
+
+const searchPodcastIndex = async () => {
+  const call = `/search/byterm?q=${searchPodcast.value}&val=lightning`
+  const res = await api.get("/pi/", {
+    params: { call: call },
+  })
+  if (res?.data?.status === "true") {
+    result.value = res.data
+  }
+  console.log("res", res)
+}
 </script>
