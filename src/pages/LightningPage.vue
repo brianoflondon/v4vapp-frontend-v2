@@ -550,7 +550,7 @@ async function payInvoice(currency, method) {
     amount = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(Hive.value)
   }
   amount = amount.toFixed(3)
-  const memo = `${dInvoice.value.paymentRequest} 2.v4v.app`
+  const memo = `${dInvoice.value.paymentRequest} v4v.app`
   dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
   let username = null
