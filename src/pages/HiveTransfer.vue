@@ -2,24 +2,16 @@
   <q-page>
     <div class="q-pa-sm">
       <div class="row q-pa-sm destinations">
-        <div class="col-6 q-pr-sm v4vapp-sending-from">
+        <div class="col-6 q-px-sm v4vapp-sending-from">
           {{ sendingFromLabel }}
-          <div class="q-pa-sm">
+          <div class="q-pa-none">
             <HiveSelectFancyAcc dense v-model="hiveAccFrom" fancy-options />
           </div>
         </div>
-        <div class="col-6 q-pr-sm v4vapp-sending-to">
+        <div class="col-6 q-px-sm v4vapp-sending-to">
           {{ sendingToLabel }}
-          <div class="q-pa-sm">
+          <div class="q-pa-none">
             <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
-          </div>
-          <div>
-            <q-input
-              v-model="searchPodcast"
-              label="Podcast Index Search"
-              filled
-              debounce="400"
-            />
           </div>
         </div>
       </div>
@@ -75,17 +67,61 @@
       </div>
       <div class="row q-pa-sm">
         <div class="col-8 q-pr-sm">
-          <q-input filled v-model="memo" label="Memo:" stack-label />
+          <q-input filled v-model="memo" label="Memo / Boost:" stack-label />
+        </div>
+        <div class="col-8 q-pr-sm">
+          <q-input
+            filled
+            v-model="podcastMemo"
+            label="Extra Details:"
+            stack-label
+            readonly
+          />
         </div>
       </div>
     </div>
-    <div>
+    <div class="q-pa-sm">
+      <div>
+        <q-input
+          v-model="searchPodcast"
+          label="Podcast Index Search"
+          filled
+          debounce="400"
+        />
+      </div>
+      <div v-if="selectedPodcast">
+        <q-list>
+          <q-item-label>{{ selectedPodcast.title }}</q-item-label>
+          <q-item
+            v-for="valueItem in valueBlocks?.value?.destinations"
+            :key="valueItem.id"
+          >
+            <q-item-section>
+              <q-item-label>{{ valueItem.name }} </q-item-label>
+              <q-item-caption>{{ valueItem.address }}</q-item-caption>
+            </q-item-section>
+            <q-item-section>{{ valueItem.split }}</q-item-section>
+          </q-item>
+        </q-list>
+      </div>
+
       <q-list bordered separator>
-        <q-item clickable v-ripple v-for="item in result?.feeds" :key="item.id">
-          <q-item-section>{{ item.title }}</q-item-section>
+        <q-item
+          clickable
+          v-ripple
+          v-for="item in result?.feeds"
+          :key="item.id"
+          @click="podcastClicked(item)"
+        >
+          <q-item-section>
+            <q-item-label>{{ item.title }}</q-item-label>
+            <q-item-label caption lines="3">
+              {{ item.description }}
+            </q-item-label>
+          </q-item-section>
         </q-item>
       </q-list>
-    </div>  
+    </div>
   </q-page>
 </template>
 
@@ -231,16 +267,25 @@ async function sendTransfer() {
     const keychain = new KeychainSDK(window)
 
     let currencyToSend = "HIVE"
+    let amountToSend = hiveAmount.value
+    console.log("amount", amount.value)
     if (optionsSelected.value === "HBD") {
+      amountToSend = parseFloat(amount.value).toFixed(3)
       currencyToSend = "HBD"
+    }
+    console.log("amountToSend", amountToSend)
+
+    let memoToSend = memo.value
+    if (podcastMemo.value) {
+      memoToSend = podcastMemo.value
     }
 
     const formParamsAsObject = {
       data: {
         username: hiveAccFrom.value.value,
         to: hiveAccTo.value.value,
-        amount: hiveAmount.value,
-        memo: memo.value,
+        amount: amountToSend,
+        memo: memoToSend,
         enforce: true,
         currency: currencyToSend,
       },
@@ -279,11 +324,24 @@ onMounted(() => {
       }
       memo.value = "100082561"
     }
+    if (storeUser.hiveAccname === "v4vapp.dev") {
+      hiveAccTo.value = {
+        label: "hivehydra",
+        value: "hivehydra",
+        caption: "hivehydra",
+      }
+      memo.value = "#brianoflondon@getalby.com"
+    }
   }
 })
 
+// ----------------- Podcast Index Search -----------------
+
 const searchPodcast = ref("")
+const selectedPodcast = ref()
 const result = ref()
+const valueBlocks = ref()
+// const podcastMemo = ref("")
 
 watch(searchPodcast, async (newValue, oldValue) => {
   console.log("searchPodcast", newValue)
@@ -301,5 +359,46 @@ const searchPodcastIndex = async () => {
     result.value = res.data
   }
   console.log("res", res)
+}
+
+async function getValueBlocks(podcastGuid) {
+  const call = `/value/byfeedguid?guid=${podcastGuid}`
+  console.log("call", call)
+  try {
+    const res = await api.get("/pi/", {
+      params: { call: call },
+    })
+    console.log(res)
+    if (res?.data?.status === "true") {
+      valueBlocks.value = res.data
+    }
+    console.log("res", res)
+  } catch (error) {
+    console.error("Error fetching data:", error)
+  }
+}
+
+const podcastMemo = computed(() => {
+  if (selectedPodcast.value) {
+    return (
+      "#podcastGuid | " +
+      selectedPodcast.value.podcastGuid +
+      " | " +
+      (hiveAmount.value * storeAPIStatus.hiveSatsNumber).toFixed(0) +
+      " sats | " +
+      amount.value +
+      " | " +
+      optionsSelected.value +
+      " | " + memo.value
+    )
+  } else {
+    return ""
+  }
+})
+
+async function podcastClicked(item) {
+  getValueBlocks(item.podcastGuid)
+  selectedPodcast.value = item
+  console.log("podcastClicked", item)
 }
 </script>
