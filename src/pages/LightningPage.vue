@@ -541,12 +541,13 @@ function toggleCamera() {
 
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
+  // Add 6 Hive to the amount to cover the fee or 2 HBD
   console.log("payInvoice currency ", currency, "method ", method)
   let amount = 0
   if (currency == "HIVE") {
-    amount = parseFloat(Hive.value) + 1
+    amount = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
-    amount = parseFloat(HBD.value) + 1
+    amount = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(Hive.value)
   }
   amount = amount.toFixed(3)
   const memo = `${dInvoice.value.paymentRequest} 2.v4v.app`
