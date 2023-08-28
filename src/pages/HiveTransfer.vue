@@ -82,11 +82,7 @@
         </div>
         <div class="col-4 q-pl-sm">
           <div class="row text-center justify-center">
-            <CreateHASQRCode
-              :qrText="qrCodeText"
-              :width="200"
-              :height="200"
-            />
+            <CreateHASQRCode :qrText="qrCodeText" :width="200" :height="200" />
           </div>
         </div>
       </div>
@@ -275,19 +271,23 @@ watch(optionsSelected, () => {
   }
 })
 
+const currencyToSend = computed(() => {
+  if (optionsSelected.value === "HBD") {
+    return "HBD"
+  }
+  return "HIVE"
+})
+
+const amountToSend = computed(() => {
+  if (optionsSelected.value === "HBD") {
+    return parseFloat(amount.value).toFixed(3)
+  }
+  return hiveAmount.value
+})
+
 async function sendTransfer() {
   try {
     const keychain = new KeychainSDK(window)
-
-    let currencyToSend = "HIVE"
-    let amountToSend = hiveAmount.value
-    console.log("amount", amount.value)
-    if (optionsSelected.value === "HBD") {
-      amountToSend = parseFloat(amount.value).toFixed(3)
-      currencyToSend = "HBD"
-    }
-    console.log("amountToSend", amountToSend)
-
     let memoToSend = memo.value
     if (podcastMemo.value) {
       memoToSend = podcastMemo.value
@@ -297,10 +297,10 @@ async function sendTransfer() {
       data: {
         username: hiveAccFrom.value.value,
         to: hiveAccTo.value.value,
-        amount: amountToSend,
+        amount: amountToSend.value,
         memo: memoToSend,
         enforce: true,
-        currency: currencyToSend,
+        currency: currencyToSend.value,
       },
       options: {},
     }
@@ -323,15 +323,17 @@ const vAutofocus = {
 }
 
 const qrCodeText = computed(() => {
-  const hiveUri = encodeOp([
+  const op = [
     "transfer",
     {
       from: hiveAccFrom.value.value,
       to: hiveAccTo.value.value,
-      amount: hiveAmount.value + " HIVE",
+      amount: amountToSend.value + " " + currencyToSend.value,
       memo: memo.value,
     },
-  ])
+  ]
+  console.log(op)
+  const hiveUri = encodeOp(op)
   console.log("hiveUri", hiveUri)
   return hiveUri
 })
