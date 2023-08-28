@@ -51,7 +51,7 @@
           <q-btn rounded @click="sendTransfer">Send</q-btn>
         </div>
       </div>
-      <div class="row q-pa-sm">
+      <div class="amounts-display row q-pa-sm">
         <div class="col q-pr-sm" v-for="(value, key) in optionsCur" :key="key">
           <q-input
             v-model="allAmounts[key]"
@@ -65,18 +65,29 @@
           />
         </div>
       </div>
-      <div class="row q-pa-sm">
-        <div class="col-8 q-pr-sm">
-          <q-input filled v-model="memo" label="Memo / Boost:" stack-label />
+      <div class="memo-row row q-pa-sm">
+        <div class="col-8">
+          <div class="col q-pr-sm">
+            <q-input filled v-model="memo" label="Memo / Boost:" stack-label />
+          </div>
+          <div class="col-8 q-pr-sm">
+            <q-input
+              filled
+              v-model="podcastMemo"
+              label="Extra Details:"
+              stack-label
+              readonly
+            />
+          </div>
         </div>
-        <div class="col-8 q-pr-sm">
-          <q-input
-            filled
-            v-model="podcastMemo"
-            label="Extra Details:"
-            stack-label
-            readonly
-          />
+        <div class="col-4 q-pl-sm">
+          <div class="row text-center justify-center">
+            <CreateHASQRCode
+              :qrText="qrCodeText"
+              :width="200"
+              :height="200"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -98,7 +109,7 @@
           >
             <q-item-section>
               <q-item-label>{{ valueItem.name }} </q-item-label>
-              <q-item-caption>{{ valueItem.address }}</q-item-caption>
+              <q-item-label>{{ valueItem.address }}</q-item-label>
             </q-item-section>
             <q-item-section>{{ valueItem.split }}</q-item-section>
           </q-item>
@@ -126,6 +137,8 @@
 </template>
 
 <script setup>
+import { encodeOp } from "hive-uri"
+import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue"
 import { defineComponent, ref, watch, onMounted, computed } from "vue"
 import { useQuasar } from "quasar"
 import { KeychainSDK } from "keychain-sdk"
@@ -309,7 +322,32 @@ const vAutofocus = {
   },
 }
 
+const qrCodeText = computed(() => {
+  const hiveUri = encodeOp([
+    "transfer",
+    {
+      from: hiveAccFrom.value.value,
+      to: hiveAccTo.value.value,
+      amount: hiveAmount.value + " HIVE",
+      memo: memo.value,
+    },
+  ])
+  console.log("hiveUri", hiveUri)
+  return hiveUri
+})
+
 onMounted(() => {
+  const hiveUri = encodeOp([
+    "transfer",
+    {
+      from: "brianoflondon",
+      to: "v4vapp.dev",
+      amount: "0.100 HIVE",
+      memo: "Memo here",
+    },
+  ])
+  console.log("hiveUri", hiveUri)
+
   if (storeUser.hiveAccname) {
     hiveAccFrom.value = {
       label: storeUser.hiveAccname,
@@ -389,7 +427,8 @@ const podcastMemo = computed(() => {
       amount.value +
       " | " +
       optionsSelected.value +
-      " | " + memo.value
+      " | " +
+      memo.value
     )
   } else {
     return ""
