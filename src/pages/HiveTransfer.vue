@@ -362,7 +362,7 @@ const searchPodcastIndex = async () => {
 }
 
 async function getValueBlocks(podcastGuid) {
-  const call = `/value/byfeedguid?guid=${podcastGuid}`
+  const call = `/value/bypodcastguid?guid=${podcastGuid}`
   console.log("call", call)
   try {
     const res = await api.get("/pi/", {
