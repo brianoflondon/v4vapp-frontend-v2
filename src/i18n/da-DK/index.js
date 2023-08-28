@@ -18,6 +18,8 @@ export default {
   and: 'and',
   witness: 'My Hive Witness',
   prices_fetched: 'Prices fetched',
+  from: 'from',
+  to: 'to',
   // Dark Mode Selector
   change_light: 'Change to light mode',
   change_dark: 'Change to dark mode',
@@ -132,5 +134,7 @@ export default {
   The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n`,
   // Credit Card
   savings: 'Savings',
-  savings_tooltip: 'Show the amounts stored in Hive\'s savings accounts for HBD and Hive'
+  savings_tooltip: 'Show the amounts stored in Hive\'s savings accounts for HBD and Hive',
+  // Transfer page
+  sending: 'Sending'
 };
