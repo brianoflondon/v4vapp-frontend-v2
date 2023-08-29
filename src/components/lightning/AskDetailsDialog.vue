@@ -250,7 +250,7 @@ function updateAmounts(amount, currency) {
   }
   amounts.value.satsNum = parseFloat(sats.toFixed(0))
   amounts.value.hbdNum = parseFloat(hbd.toFixed(2))
-  amounts.value.sats = tidyNumber(sats.toFixed(0))
+  amounts.value.sats = tidyNumber(sats.toFixed(0),0)
   amounts.value.hive = tidyNumber(hive.toFixed(3))
   amounts.value.hbd = tidyNumber(hbd.toFixed(2))
 }
