@@ -34,8 +34,15 @@
             dense
           />
         </div>
-        {{ amount.txt }} - {{ items }} {{ runningTotal.txt }} -
-        {{ runningTotalAwait }} decimal entry {{ decimalEntry }}
+      </div>
+      <div class="memo-input flex pad-max-width full-width q-px-md q-py-sm">
+        <q-input
+          v-model="memoInput"
+          class="full-width"
+          label="Memo"
+          @focus="handleFocus"
+          @blur="handleBlur"
+        />
       </div>
       <!-- Buttons Area -->
       <div class="pad-and-special row full-width pad-max-width">
@@ -79,6 +86,7 @@
 <script setup>
 import { ref } from "vue"
 import { tidyNumber } from "src/use/useUtils"
+import { is } from "quasar"
 
 const errorState = ref(false)
 const errorMessage = ref("")
@@ -127,8 +135,24 @@ function clearAmount(clearRunning = false) {
   }
 }
 
+const memoInput = ref(null)
+let isFocused = ref(false)
+
+const handleFocus = () => {
+  isFocused.value = true
+  console.log("Input is focused:", isFocused.value)
+}
+
+const handleBlur = () => {
+  isFocused.value = false
+  console.log("Input is focused:", isFocused.value)
+}
+
 function handleKeypress(event) {
   console.log(event)
+  if (isFocused.value) {
+    return
+  }
   if (event.key >= "0" && event.key <= "9") {
     console.log(`Numeric key pressed: ${event.key}`)
     buttonPushed(event.key)
