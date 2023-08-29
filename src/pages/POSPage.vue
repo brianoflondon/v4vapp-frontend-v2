@@ -1,13 +1,14 @@
 <template>
   <q-page>
-    <div
-      class="flex column text-center items-center"
-      @keydown="(event) => handleKeypress(event)"
-    >
+    <div class="flex column text-center items-center">
+      <div class="q-pa-md pad-max-width full-width">
+        <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
+      </div>
       <!-- show numButtons in a numeric pad -->
       <!-- Display Area -->
       <div
-        class="flex row items-center amount-input-area pad-max-width full-width q-pa-md"
+        @keydown="(event) => handleKeypress(event)"
+        class="flex row items-center amount-input-area pad-max-width full-width q-pa-sm"
       >
         <div class="col-9 q-pa-sm">
           <q-input
@@ -20,9 +21,6 @@
             stack-label
             debounce="1000"
             :input-style="{ 'text-align': 'right' }"
-            :error-message="errorMessage"
-            :error="errorState"
-            tabindex="1"
             :readonly="true"
           />
         </div>
@@ -35,6 +33,7 @@
           />
         </div>
       </div>
+      <!-- Memo -->
       <div class="memo-input flex pad-max-width full-width q-px-md q-py-sm">
         <q-input
           v-model="memoInput"
@@ -80,16 +79,25 @@
         </div>
       </div>
     </div>
+    <POSShowQR v-if="POSDialog.show" v-model="POSDialog" />
   </q-page>
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
 import { tidyNumber } from "src/use/useUtils"
-import { is } from "quasar"
+import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
+import POSShowQR from "src/components/hive/POSShowQR.vue"
 
-const errorState = ref(false)
-const errorMessage = ref("")
+import { useStoreUser } from "src/stores/storeUser"
+import { encodeOp } from "hive-uri"
+
+const storeUser = useStoreUser()
+const hiveAccTo = ref({ label: "", value: "", caption: "" })
+
+const POSDialog = ref({ show: false })
+
+const qrCodeText = ref("Let's do this")
 const amount = ref({
   txt: "0.00",
   num: 0,
@@ -103,8 +111,8 @@ const runningTotalAwait = ref(false)
 const decimalEntry = ref(0)
 const items = ref(0)
 
-const currencyOptions = ref(["USD", "HBD", "HIVE"])
-const currency = ref("USD")
+const currencyOptions = ref(["HBD", "HIVE"])
+const currency = ref("HBD")
 
 const specialButtons = ref(["AC", "C", "+", "Pay"])
 
@@ -123,6 +131,16 @@ const numButtons = ref([
   ".00",
 ])
 
+onMounted(() => {
+  if (storeUser.hiveAccname) {
+    hiveAccTo.value = {
+      label: storeUser.hiveAccname,
+      value: storeUser.hiveAccname,
+      caption: storeUser.hiveAccname,
+    }
+  }
+})
+
 function clearAmount(clearRunning = false) {
   decimalEntry.value = 0
   amount.value.txt = "0.00"
@@ -135,7 +153,7 @@ function clearAmount(clearRunning = false) {
   }
 }
 
-const memoInput = ref(null)
+const memoInput = ref("")
 let isFocused = ref(false)
 
 const handleFocus = () => {
@@ -181,12 +199,36 @@ function handleKeypress(event) {
   }
 }
 
+function generatePaymentQR() {
+  console.log("generatePaymentQR")
+  POSDialog.value.amountToSend = parseFloat(
+    runningTotal.value.num / 100
+  ).toFixed(3)
+  POSDialog.value.currencyToSend = currency.value
+  POSDialog.value.hiveAccTo = hiveAccTo.value.value
+  POSDialog.value.memo = memoInput.value
+
+  const op = [
+    "transfer",
+    {
+      from: "anything",
+      to: POSDialog.value.hiveAccTo,
+      amount:
+        POSDialog.value.amountToSend + " " + POSDialog.value.currencyToSend,
+      memo: POSDialog.value.memo,
+    },
+  ]
+  console.log(op)
+  POSDialog.value.show = true
+  POSDialog.value.qrCodeText = encodeOp(op)
+}
+
 function buttonPushed(button) {
-  console.log("buttonPushed", button)
-  if (button === "Pay") {
-    console.log("Pay")
-    return
+  if (navigator.vibrate) {
+    console.log("Vibration is supported")
+    navigator.vibrate(150) // Vibrate for 15ms
   }
+  console.log("buttonPushed", button)
   if (button === "AC") {
     clearAmount(true)
     return
@@ -195,7 +237,7 @@ function buttonPushed(button) {
     clearAmount(false)
     return
   }
-  if (button === "+") {
+  if (button === "+" || button === "Pay") {
     runningTotalAwait.value = true
     items.value += 1
     runningTotal.value.num += amount.value.num
@@ -204,8 +246,12 @@ function buttonPushed(button) {
       2
     )
     amount.value.txt = runningTotal.value.txt
+    if (button === "Pay") {
+      generatePaymentQR()
+    }
     return
   }
+
   if (button === ".") {
     amount.value.num *= 100
     amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2)
@@ -242,12 +288,6 @@ function buttonPushed(button) {
 
   console.log("amount", amount.value)
 }
-
-const vAutofocus = {
-  mounted(el) {
-    el.focus()
-  },
-}
 </script>
 
 <style lang="scss" scoped>
@@ -256,13 +296,11 @@ const vAutofocus = {
 }
 
 .pad-and-special {
-  border: 5px solid blue;
-  background-color: gray;
+  background-color: none;
 }
 
 .pad-max-width {
   max-width: 400px;
-  border: 0.1px solid red;
 }
 
 .full-width {

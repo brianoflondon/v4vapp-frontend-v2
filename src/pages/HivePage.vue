@@ -30,6 +30,7 @@
               :height="300"
               @qr-code="(val) => (qrCode = val)"
             />
+            <!-- TODO: Should implement count down timer on HivePage for lightning invoices -->
             <div v-if="false" class="q-pt-none">
               <q-linear-progress
                 class="invoice-timer"

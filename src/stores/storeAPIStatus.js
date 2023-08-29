@@ -29,7 +29,8 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
     hiveSats: (state) => {
       if (!state.apiStatus) return "💰💰💰"
       return tidyNumber(
-        (state.apiStatus.crypto.hive.btc * 100000000).toFixed(0)
+        (state.apiStatus.crypto.hive.btc * 100000000).toFixed(0),
+        0
       )
     },
     hiveHBDNumber: (state) => {
@@ -72,7 +73,7 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
     },
     lastFetchTime: (state) => {
       if (!state.fetchTimestamp) return null
-      return useDateFormat(state.lastFetch, 'HH:mm:ss')
+      return useDateFormat(state.lastFetch, "HH:mm:ss")
     },
   },
 
@@ -115,7 +116,7 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
 
 function prettyPrices(prices) {
   //
-  const bitcoin = tidyNumber(prices.bitcoin.usd.toFixed(0))
+  const bitcoin = tidyNumber(prices.bitcoin.usd.toFixed(0), 0)
   const hive = tidyNumber(prices.hive.usd.toFixed(2))
   const hbd = tidyNumber(prices.hive_dollar.usd.toFixed(2))
   prices.fmt = {
