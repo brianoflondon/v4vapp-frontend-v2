@@ -141,6 +141,7 @@ export default {
   // Point of Sale POS
   point_of_sale: "Point of Sale",
   charge: "Charge", // as in charge a customer
+  payment: "Payment",
   scan_to_send: "Scan this code to send",
   use: "Use",
   pay_to: "Pay to:",

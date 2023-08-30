@@ -204,7 +204,7 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
         transaction_found?.op[1].memo.endsWith(POSDialog.value.checkCode)
       )
       if (transaction_found?.op[1].memo.endsWith(POSDialog.value.checkCode)) {
-        const memo = `${t("transfer")}: ${transaction_found?.op[1].amount}\n${
+        const memo = `${t("payment")}: ${transaction_found?.op[1].amount}\n${
           transaction_found?.op[1].memo
         }`
 
