@@ -147,5 +147,5 @@ export default {
   point_of_sale: "Point of Sale",
   charge: "Charge", // as in charge a customer
   scan_to_send: "Scan this code to send",
-
+  use: "Use",
 }

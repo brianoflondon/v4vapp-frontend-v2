@@ -56,6 +56,7 @@ const hiveUsername = ref("")
 
 const label = ref(t("hive_account"))
 
+// Watches the storeUser for changes and updates the hiveAccObj
 watch(storeUser, async (val) => {
   hiveAccObj.value = {
     label: val.hiveAccname,

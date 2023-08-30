@@ -1,8 +1,27 @@
 <template>
   <q-page>
     <div class="flex column text-center items-center">
-      <div class="q-pa-md pad-max-width full-width">
-        <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
+      <div class="div flex items-center">
+        <div class="col-8">
+          <div class="q-pa-md pad-max-width full-width">
+            <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
+          </div>
+        </div>
+        <div class="div col-4">
+          <q-btn
+            class="full-width"
+            style="font-size: x-small; white-space: pre-line"
+            color="primary"
+            :label="useStoreUserButtonLabel"
+            @click="useLoggedInUser"
+          >
+            <q-tooltip>
+              Reset payment recipient to<br />
+              {{ storeUser.profileName }}<br />
+              @{{ storeUser.hiveAccname }}</q-tooltip
+            >
+          </q-btn>
+        </div>
       </div>
       <!-- show numButtons in a numeric pad -->
       <!-- Display Area -->
@@ -84,20 +103,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, watch, computed } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import POSShowQR from "src/components/hive/POSShowQR.vue"
-
 import { useStoreUser } from "src/stores/storeUser"
 import { encodeOp } from "hive-uri"
+import { useI18n } from "vue-i18n"
+
+const t = useI18n().t
 
 const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
 
 const POSDialog = ref({ show: false })
 
-const qrCodeText = ref("Let's do this")
 const amount = ref({
   txt: "0.00",
   num: 0,
@@ -132,14 +152,58 @@ const numButtons = ref([
 ])
 
 onMounted(() => {
+  console.log("onMounted")
+  console.log("storeUser.pos", storeUser.pos)
+  console.log("storeUser.hiveAccname", storeUser.hiveAccname)
+  if (storeUser.pos?.hiveAccTo) {
+    hiveAccTo.value = {
+      label: storeUser.pos.hiveAccTo.label,
+      value: storeUser.pos.hiveAccTo.value,
+      caption: storeUser.pos.hiveAccTo.caption,
+    }
+  } else {
+    useLoggedInUser()
+  }
+})
+
+function useLoggedInUser() {
+  console.log("useLoggedInUser")
   if (storeUser.hiveAccname) {
     hiveAccTo.value = {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
-      caption: storeUser.hiveAccname,
+      caption: setCaption(storeUser.profileName),
     }
   }
+}
+
+function setCaption(profileName) {
+  return "Pay to: " + profileName
+}
+
+const useStoreUserButtonLabel = computed(() => {
+  return t("use") + "\n@" + storeUser.hiveAccname
 })
+
+// Watch the hiveAccTo for changes and update the storeUser.pos Object
+watch(hiveAccTo, async (val) => {
+  console.debug("hiveAccTo", val)
+  storeUser.pos.hiveAccTo = {
+    label: val.label,
+    value: val.value,
+    caption: val.caption,
+  }
+  hiveAccTo.value.caption = setCaption(val.caption)
+})
+
+// // Watches the storeUser for changes and updates the hiveAccObj
+// watch(storeUser, async (val) => {
+//   hiveAccTo.value = {
+//     label: val.hiveAccname,
+//     value: val.hiveAccname,
+//     caption: setCaption(val.profileName),
+//   }
+// })
 
 function clearAmount(clearRunning = false) {
   decimalEntry.value = 0
