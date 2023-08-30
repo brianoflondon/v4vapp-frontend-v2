@@ -65,7 +65,7 @@ const props = defineProps({
 const avatarUrl = computed(() => {
   return useHiveAvatarURL({
     hiveAccname: props.hiveAccname,
-    size: "medium",
+    size: "small",
     reason: "qr-code",
   })
 })
@@ -102,6 +102,7 @@ async function newQRCode() {
   if (props.loading) {
     return
   }
+  console.log(avatarUrl.value)
   qrCode.value = new QRCodeStyling({
     width: props.width,
     height: props.height,
