@@ -5,6 +5,22 @@
         <q-toolbar-title>{{ $t("point_of_sale") }}</q-toolbar-title>
         <q-btn flat round dense icon="close" @click="POSDialog.show = false" />
       </q-toolbar>
+      <q-card-section v-if="false">
+        <div class="text-center full-width">
+          <q-btn-toggle
+            class="full-width"
+            spread
+            v-model="hiveOrLightning"
+            push
+            glossy
+            toggle-color="primary"
+            :options="[
+              { label: 'Hive', value: 'Hive' },
+              { label: 'Lightning', value: 'Lightning' },
+            ]"
+          />
+        </div>
+      </q-card-section>
       <q-card-section>
         {{ requesting }}
       </q-card-section>
@@ -29,6 +45,13 @@
           >
           </q-linear-progress>
         </div>
+      </q-card-section>
+      <q-card-section>
+        <pre>
+          Amount: {{ POSDialog.amountToSend }} {{ POSDialog.currencyToSend }}
+          To:     {{ POSDialog.hiveAccTo }}
+          Memo:   {{ POSDialog.memo }}
+        </pre>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -61,6 +84,8 @@ const requesting = computed(() => {
   )
 })
 
+const hiveOrLightning = ref("Hive")
+
 const checkTime = 2 // 5 seconds between each check
 const maxChecks = 40 // 20 checks total
 
@@ -87,6 +112,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   console.log("onBeforeUnmount")
+  console.log(intervalRef.value)
   intervalRef.value.forEach((interval) => clearInterval(interval))
 })
 
@@ -204,6 +230,10 @@ function findObjectBefore(data, target_trx_id) {
 </script>
 
 <style lang="scss" scoped>
+.full-width {
+  width: 100%;
+}
+
 .overlay-container {
   position: relative;
 }
