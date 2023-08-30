@@ -31,8 +31,8 @@
         >
           <CreateQRCode
             :qrText="POSDialog.qrCodeText"
-            :width="350"
-            :height="350"
+            :width="300"
+            :height="300"
             :hiveAccname="POSDialog.hiveAccTo"
           />
         </div>
@@ -245,8 +245,8 @@ function findObjectBefore(data, target_trx_id) {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 350px; /* Adjust as needed */
-  height: 350px; /* Adjust as needed */
+  width: 300px; /* Adjust as needed */
+  height: 300px; /* Adjust as needed */
   background-image: url("/avatars/green-tick.svg"); /* Replace with the path to your green tick image */
   background-size: contain;
   background-repeat: no-repeat;

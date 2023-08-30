@@ -21,7 +21,7 @@
         <span><i class="fa-brands fa-hive" style="color: green" /></span>
         <strong>${{ storeAPIStatus.hbd }}</strong>
       </span>
-      <span class="price-bar-item api-status-indicator q-pl-lg q-pa-xs">
+      <span class="price-bar-item api-status-indicator q-pl-md q-pa-xs">
         <q-btn
           @click="alert = true"
           flat
@@ -41,7 +41,7 @@
         />
         <q-tooltip>{{ $t('prices_fetched') }}: {{ storeAPIStatus.lastFetchTime }}</q-tooltip>
       </span>
-      <span class="price-bar-item keychain-status-indicator q-pa-xs">
+      <span class="price-bar-item keychain-status-indicator q-pa-none">
         <q-btn
           flat
           dense
@@ -60,9 +60,6 @@
             style="height: 15px; max-width: 15px"
           />
         </q-btn>
-      </span>
-      <span class="price-bar-item dark-selector q-pa-xs">
-        <DarkSelector />
       </span>
     </div>
   </q-footer>
