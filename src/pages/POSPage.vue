@@ -8,13 +8,15 @@
             <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
           </div>
         </div>
-        <div class="div col-4 q-px-sm">
+        <!-- Button to use Logged in User -->
+        <div class="div col-4 q-px-sm" v-if="storeUser.hiveAccname">
           <q-btn
             class="full-width"
             style="font-size: x-small; white-space: pre-line"
             color="primary"
             :label="useStoreUserButtonLabel"
             @click="useLoggedInUser"
+            :disable="!storeUser.hiveAccname"
           >
             <q-tooltip>
               Reset payment recipient to<br />
@@ -65,10 +67,10 @@
         />
       </div>
       <!-- Buttons Area -->
-      <div class="pad-max-width full-width q-px-md q-py-sm">
+      <div class="pad-max-width full-width q-px-md q-py-xs">
         <q-btn
           class="full-width"
-          style="font-size: 2rem; white-space: pre-line"
+          style="font-size: 1.2rem; white-space: pre-line"
           color="secondary"
           icon="qr_code_2"
           :label="$t('pay')"

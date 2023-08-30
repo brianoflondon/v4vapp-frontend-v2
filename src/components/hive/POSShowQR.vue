@@ -21,7 +21,7 @@
           />
         </div>
       </q-card-section>
-      <q-card-section>
+      <q-card-section style="width: 280px">
         {{ requesting }}
       </q-card-section>
       <q-card-section>
@@ -31,8 +31,8 @@
         >
           <CreateQRCode
             :qrText="POSDialog.qrCodeText"
-            :width="300"
-            :height="300"
+            :width="280"
+            :height="280"
             :hiveAccname="POSDialog.hiveAccTo"
           />
         </div>
@@ -245,8 +245,8 @@ function findObjectBefore(data, target_trx_id) {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 300px; /* Adjust as needed */
-  height: 300px; /* Adjust as needed */
+  width: 280px; /* Adjust as needed */
+  height: 280px; /* Adjust as needed */
   background-image: url("/avatars/green-tick.svg"); /* Replace with the path to your green tick image */
   background-size: contain;
   background-repeat: no-repeat;
