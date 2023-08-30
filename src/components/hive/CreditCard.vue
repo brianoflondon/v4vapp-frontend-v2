@@ -66,8 +66,10 @@
             >
               <strong>{{ balances["sats"] }}</strong
               ><br />
-              <div style="font-size: 0.7rem; line-height: 0.3rem;">
-                +<q-icon name="savings"></q-icon>&nbsp;{{ balances["totalSats"] }}
+              <div style="font-size: 0.7rem; line-height: 0.3rem">
+                +<q-icon name="savings"></q-icon>&nbsp;{{
+                  balances["totalSats"]
+                }}
               </div>
             </td>
             <td>
@@ -113,11 +115,6 @@ const lightDark = computed(() => {
 })
 
 const balances = computed(() => {
-  console.log(
-    storeUser.satsBalance,
-    storeUser.savingsSatsBalance,
-    storeUser.totalSatsBalance
-  )
   if (savingsToggle.value) {
     return {
       hive: storeUser.savingsHiveBalance,
