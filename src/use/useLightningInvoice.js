@@ -4,6 +4,49 @@ import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 
 const storeAPIStatus = useStoreAPIStatus()
 
+export async function useGetLightingHiveInvoice(
+  hiveAccname,
+  amount,
+  currency,
+  message,
+  expiry = 300
+) {
+  try {
+    if (expiry > 600) {
+      expiry = 600
+    }
+    const callBackResult = await api.get("new_invoice_hive", {
+      params: {
+        hive_accname: hiveAccname,
+        amount: amount,
+        currency: currency,
+        usd_hbd: false,
+        app_name: "v4vapp-pos",
+        expiry: expiry,
+        message: message,
+      },
+    })
+    return callBackResult.data
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+export async function useCheckLightningInvoice(paymentHash) {
+  try {
+    const callBackResult = await api.get("check_invoice", {
+      params: {
+        payment_hash: paymentHash,
+      },
+    })
+    return callBackResult.data
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
 export async function useDecodeLightningInvoice(invoice) {
   // Decode a lightning invoice first using local Bolt11 library
   // then using V4V.app API to decode lnurl and lightning addresses

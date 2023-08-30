@@ -5,7 +5,7 @@
         <q-toolbar-title>{{ $t("point_of_sale") }}</q-toolbar-title>
         <q-btn flat round dense icon="close" @click="POSDialog.show = false" />
       </q-toolbar>
-      <q-card-section v-if="false">
+      <q-card-section v-if="true">
         <div class="text-center full-width">
           <q-btn-toggle
             class="full-width"
@@ -13,6 +13,7 @@
             v-model="hiveOrLightning"
             push
             glossy
+            @update:model-value="generateLightningQRCode()"
             toggle-color="primary"
             :options="[
               { label: 'Hive', value: 'Hive' },
@@ -21,11 +22,12 @@
           />
         </div>
       </q-card-section>
-      <q-card-section style="width: 280px">
+      <q-card-section class="max-width">
         {{ requesting }}
       </q-card-section>
       <q-card-section>
         <div
+          v-show="POSDialog.qrCodeText"
           class="row text-center justify-center overlay-container"
           :class="{ 'show-tick': POSDialog.paid }"
         >
@@ -47,11 +49,12 @@
         </div>
       </q-card-section>
       <q-card-section>
-        <pre>
+        <div class="max-width">
           Amount: {{ POSDialog.amountToSend }} {{ POSDialog.currencyToSend }}
-          To:     {{ POSDialog.hiveAccTo }}
-          Memo:   {{ POSDialog.memo }}
-        </pre>
+          <br />
+          To: {{ POSDialog.hiveAccTo }}<br />
+          Memo: {{ POSDialog.memo }}
+        </div>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -61,11 +64,11 @@
 import { computed, onMounted, onBeforeUnmount, ref } from "vue"
 import { useQuasar } from "quasar"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
-
-const q = useQuasar()
-
+import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
+
+const q = useQuasar()
 
 const t = useI18n().t
 const POSDialog = defineModel(null)
@@ -106,9 +109,31 @@ onMounted(async () => {
   const firstTrxId = transactions[0][1]["trx_id"]
   console.log(firstTrxId)
   POSDialog.value.paid = false
+  POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextHive
   startCountdown()
   checkHiveTransaction(POSDialog.value.hiveAccTo, firstTrxId)
 })
+
+async function generateLightningQRCode() {
+  console.log("generateLightningQRCode")
+  if (hiveOrLightning.value == "Lightning" && POSDialog.value.lndData == null) {
+    POSDialog.value.lndData = await useGetLightingHiveInvoice(
+      POSDialog.value.hiveAccTo,
+      POSDialog.value.amountToSend,
+      POSDialog.value.currencyToSend,
+      POSDialog.value.memo,
+      checkTimeTotal
+    )
+    POSDialog.value.qrCodeTextLightning =
+      "lightning:" + POSDialog.value.lndData["payment_request"]
+  }
+
+  if (hiveOrLightning.value == "Lightning") {
+    POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextLightning
+  } else {
+    POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextHive
+  }
+}
 
 onBeforeUnmount(() => {
   console.log("onBeforeUnmount")
@@ -152,14 +177,6 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
       const transaction_found = findObjectBefore(transactions, trx_id)
 
       if (!transaction_found) {
-        // const message = `${t("waiting_for")} ${count}/20`
-        // q.notify({
-        //   color: "positive",
-        //   avatar: "site-logo/v4vapp-logo.svg",
-        //   timeout: 1000,
-        //   message: message,
-        //   position: "top",
-        // })
         continue // Continue to the next iteration of the loop
       }
       console.log("transaction_found")
@@ -232,6 +249,10 @@ function findObjectBefore(data, target_trx_id) {
 <style lang="scss" scoped>
 .full-width {
   width: 100%;
+}
+
+.max-width {
+  width: 280px;
 }
 
 .overlay-container {

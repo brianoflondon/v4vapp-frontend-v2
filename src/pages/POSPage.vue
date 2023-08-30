@@ -328,7 +328,8 @@ function generatePaymentQR() {
     },
   ]
   console.log(op)
-  POSDialog.value.qrCodeText = encodeOp(op)
+  POSDialog.value.qrCodeTextHive = encodeOp(op)
+  POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextHive
   POSDialog.value.show = true
 }
 
