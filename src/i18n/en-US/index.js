@@ -144,5 +144,6 @@ export default {
   scan_to_send: "Scan this code to send",
   use: "Use",
   pay_to: "Pay to:",
-  no_amount: "No amount entered"
+  no_amount: "No amount entered",
+  no_account: "No Hive account to send to",
 }

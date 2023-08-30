@@ -290,6 +290,15 @@ function generatePaymentQR() {
     })
     return
   }
+  if (hiveAccTo.value.value === "") {
+    q.notify({
+      message: t("no_account"),
+      type: "negative",
+      position: "top",
+      timeout: 2000,
+    })
+    return
+  }
 
   if (runningTotal.value.num === 0) {
     runningTotal.value.num = amount.value.num
