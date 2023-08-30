@@ -27,7 +27,7 @@
       <q-card-section>
         <div
           class="row text-center justify-center overlay-container"
-          :class="{ 'show-tick': paid }"
+          :class="{ 'show-tick': POSDialog.paid }"
         >
           <CreateQRCode
             :qrText="POSDialog.qrCodeText"
@@ -92,7 +92,6 @@ const maxChecks = 40 // 20 checks total
 const checkTimeTotal = checkTime * maxChecks
 let currentTime = 0
 const progress = ref(1)
-const paid = ref(false)
 
 const intervalRef = ref([])
 
@@ -106,6 +105,7 @@ onMounted(async () => {
   console.log(transactions)
   const firstTrxId = transactions[0][1]["trx_id"]
   console.log(firstTrxId)
+  POSDialog.value.paid = false
   startCountdown()
   checkHiveTransaction(POSDialog.value.hiveAccTo, firstTrxId)
 })
@@ -184,7 +184,7 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
           message: memo,
           position: "top",
         })
-        paid.value = true
+        POSDialog.value.paid = true
         // wait 5 seconds before closing the dialog
         await new Promise((resolve) => {
           const watchingInterval = setTimeout(resolve, 1000 * 5)
@@ -247,7 +247,7 @@ function findObjectBefore(data, target_trx_id) {
   transform: translate(-50%, -50%);
   width: 350px; /* Adjust as needed */
   height: 350px; /* Adjust as needed */
-  background-image: url("/extras/green-tick.svg"); /* Replace with the path to your green tick image */
+  background-image: url("avatars/green-tick.svg"); /* Replace with the path to your green tick image */
   background-size: contain;
   background-repeat: no-repeat;
   animation: fadeIn 0.2s ease-in-out forwards;

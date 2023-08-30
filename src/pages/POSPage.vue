@@ -317,9 +317,22 @@ function generatePaymentQR() {
     },
   ]
   console.log(op)
-  POSDialog.value.show = true
   POSDialog.value.qrCodeText = encodeOp(op)
+  POSDialog.value.show = true
 }
+
+watch(
+  () => POSDialog.value?.paid,
+  (paid) => {
+    console.log("watch POSDialog Paid?", paid)
+    if (paid) {
+      console.log("paid")
+      clearAmount(true)
+    } else {
+      console.log("not paid")
+    }
+  }
+)
 
 function buttonPushed(button) {
   if (navigator.vibrate) {
