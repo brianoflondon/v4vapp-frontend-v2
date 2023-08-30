@@ -247,9 +247,10 @@ function findObjectBefore(data, target_trx_id) {
   transform: translate(-50%, -50%);
   width: 350px; /* Adjust as needed */
   height: 350px; /* Adjust as needed */
-  background-image: url("extras/green-tick.svg"); /* Replace with the path to your green tick image */
+  background-image: url("/extras/green-tick.svg"); /* Replace with the path to your green tick image */
   background-size: contain;
   background-repeat: no-repeat;
+  animation: fadeIn 0.2s ease-in-out forwards;
 }
 
 @keyframes fadeIn {
@@ -264,6 +265,5 @@ function findObjectBefore(data, target_trx_id) {
 .overlay-container.show-tick::after {
   display: block;
   opacity: 0.9;
-  animation: fadeIn 0.2s ease-in-out forwards;
 }
 </style>
