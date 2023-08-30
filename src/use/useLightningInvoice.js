@@ -29,6 +29,15 @@ export async function useGetLightingHiveInvoice(
     return callBackResult.data
   } catch (error) {
     console.error(error)
+    // Check if the error response exists and has a status property
+    if (error.response && error.response.status) {
+      // Handle 422 status code separately
+      if (error.response.status === 422) {
+        console.error("Status code 422: Unprocessable Entity")
+        return { error: error.response.data.detail[0].msg }
+        // Add your custom logic here
+      }
+    }
     return null
   }
 }

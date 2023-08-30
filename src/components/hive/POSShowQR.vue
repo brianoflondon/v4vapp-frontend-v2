@@ -124,11 +124,24 @@ async function generateLightningQRCode() {
       POSDialog.value.memo,
       checkTimeTotal
     )
+  }
+  if (POSDialog.value.lndData?.error || POSDialog.value.lndData == null) {
+    const message = POSDialog.value.lndData?.error
+      ? POSDialog.value.lndData?.error
+      : t("lightning_invoice_not_created")
+    q.notify({
+      color: "negative",
+      avatar: "site-logo/v4vapp-logo.svg",
+      timeout: 2000,
+      message: "Error: " + message,
+      position: "top",
+    })
+    hiveOrLightning.value = "Hive"
+    return
+  }
+  if (hiveOrLightning.value == "Lightning") {
     POSDialog.value.qrCodeTextLightning =
       "lightning:" + POSDialog.value.lndData["payment_request"]
-  }
-
-  if (hiveOrLightning.value == "Lightning") {
     POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextLightning
   } else {
     POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextHive
@@ -138,6 +151,7 @@ async function generateLightningQRCode() {
 onBeforeUnmount(() => {
   console.log("onBeforeUnmount")
   console.log(intervalRef.value)
+  POSDialog.value.lndData = null
   intervalRef.value.forEach((interval) => clearInterval(interval))
 })
 
