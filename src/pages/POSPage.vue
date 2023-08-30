@@ -1,13 +1,14 @@
 <template>
   <q-page>
     <div class="flex column text-center items-center">
-      <div class="div flex items-center">
-        <div class="col-8">
-          <div class="q-pa-md pad-max-width full-width">
+      <!-- Pay To bar -->
+      <div class="div flex row pad-max-width full-width items-center q-pa-sm">
+        <div class="col-8 q-px-sm">
+          <div class="pad-max-width full-width">
             <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
           </div>
         </div>
-        <div class="div col-4">
+        <div class="div col-4 q-px-sm">
           <q-btn
             class="full-width"
             style="font-size: x-small; white-space: pre-line"
@@ -56,6 +57,7 @@
       <div class="memo-input flex pad-max-width full-width q-px-md q-py-sm">
         <q-input
           v-model="memoInput"
+          clearable
           class="full-width"
           label="Memo"
           @focus="handleFocus"
@@ -63,6 +65,16 @@
         />
       </div>
       <!-- Buttons Area -->
+      <div class="pad-max-width full-width q-px-md q-py-sm">
+        <q-btn
+          class="full-width"
+          style="font-size: 2rem; white-space: pre-line"
+          color="secondary"
+          icon="qr_code_2"
+          :label="$t('pay')"
+          @click="generatePaymentQR"
+        />
+      </div>
       <div class="pad-and-special row full-width pad-max-width">
         <!-- Number Pad -->
         <div class="class col-10">
@@ -104,13 +116,15 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
-import { tidyNumber } from "src/use/useUtils"
+import { tidyNumber, genRandAlphaNum } from "src/use/useUtils"
+import { useQuasar } from "quasar"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import POSShowQR from "src/components/hive/POSShowQR.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { encodeOp } from "hive-uri"
 import { useI18n } from "vue-i18n"
 
+const q = useQuasar()
 const t = useI18n().t
 
 const storeUser = useStoreUser()
@@ -134,7 +148,7 @@ const items = ref(0)
 const currencyOptions = ref(["HBD", "HIVE"])
 const currency = ref("HBD")
 
-const specialButtons = ref(["AC", "C", "+", "Pay"])
+const specialButtons = ref(["AC", "C", "+", "="])
 
 const numButtons = ref([
   "7",
@@ -178,7 +192,7 @@ function useLoggedInUser() {
 }
 
 function setCaption(profileName) {
-  return "Pay to: " + profileName
+  return t("pay_to") + " " + profileName
 }
 
 const useStoreUserButtonLabel = computed(() => {
@@ -265,20 +279,40 @@ function handleKeypress(event) {
 
 function generatePaymentQR() {
   console.log("generatePaymentQR")
+  // Check if there is a running total, if that is 0 use the amount
+  // on the screen
+  if (runningTotal.value.num === 0 && amount.value.num === 0) {
+    q.notify({
+      message: t("no_amount"),
+      type: "negative",
+      position: "top",
+      timeout: 2000,
+    })
+    return
+  }
+
+  if (runningTotal.value.num === 0) {
+    runningTotal.value.num = amount.value.num
+    runningTotal.value.txt = amount.value.txt
+  }
   POSDialog.value.amountToSend = parseFloat(
     runningTotal.value.num / 100
   ).toFixed(3)
   POSDialog.value.currencyToSend = currency.value
+  POSDialog.value.amountString =
+    POSDialog.value.amountToSend + " " + POSDialog.value.currencyToSend
   POSDialog.value.hiveAccTo = hiveAccTo.value.value
+  // Add a check code onto the memo.
+  POSDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
   POSDialog.value.memo = memoInput.value
-
+    ? memoInput.value + " " + POSDialog.value.checkCode
+    : POSDialog.value.checkCode
   const op = [
     "transfer",
     {
-      from: "anything",
+      from: "",
       to: POSDialog.value.hiveAccTo,
-      amount:
-        POSDialog.value.amountToSend + " " + POSDialog.value.currencyToSend,
+      amount: POSDialog.value.amountString,
       memo: POSDialog.value.memo,
     },
   ]
@@ -301,7 +335,7 @@ function buttonPushed(button) {
     clearAmount(false)
     return
   }
-  if (button === "+" || button === "Pay") {
+  if (button === "+" || button === "=") {
     runningTotalAwait.value = true
     items.value += 1
     runningTotal.value.num += amount.value.num
@@ -310,9 +344,6 @@ function buttonPushed(button) {
       2
     )
     amount.value.txt = runningTotal.value.txt
-    if (button === "Pay") {
-      generatePaymentQR()
-    }
     return
   }
 

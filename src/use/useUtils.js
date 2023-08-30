@@ -9,6 +9,7 @@
  * while preserving any decimal part.
  *
  * @param {number} x - The number to be formatted.
+ * @param {number} decimals - The number of decimals to be displayed. Defaults to 2.
  * @returns {string|null} - The formatted number as a string, or null if the input is falsy.
  */
 // export function tidyNumber(x) {
@@ -20,7 +21,6 @@
 //     return null
 //   }
 // }
-
 export function tidyNumber(x, decimals = 2) {
   if (x !== null && x !== undefined && !isNaN(x)) {
     const parts = x.toString().split(".")
@@ -61,4 +61,24 @@ export function formatTime(timeInSeconds) {
   } else {
     return `${seconds}s`
   }
+}
+
+
+/**
+ * Generates a random alphanumeric string of a given length.
+ *
+ * @param {number} length - The length of the desired random string.
+ * @returns {string} A random alphanumeric string of the specified length.
+ *
+ * @example
+ *   const randomString = genRandAlphaNum(5);
+ *   console.log(randomString);  // Outputs something like: "A3f9Z"
+ */
+export function genRandAlphaNum(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }

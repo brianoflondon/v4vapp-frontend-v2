@@ -143,5 +143,6 @@ export default {
   charge: "Charge", // as in charge a customer
   scan_to_send: "Scan this code to send",
   use: "Use",
+  pay_to: "Pay to:",
+  no_amount: "No amount entered"
 }
-
