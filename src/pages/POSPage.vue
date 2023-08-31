@@ -36,7 +36,7 @@
             class="amount-display"
             v-model="amount.txt"
             @update:model-value="(val) => updateAmounts(val, 'amount')"
-            inputmode="numeric"
+            inputmode="decimal"
             pattern="\d*"
             :label="$t('amount') + ' running total ' + runningTotal.txt"
             stack-label
@@ -222,6 +222,9 @@ function updateAmounts(val) {
     }
     amount.value.num = parseFloat(val) * 100
     buttonPushed("+")
+  }
+  if (val.endsWith(".")) {
+    amount.value.num = parseFloat(val) * 100
   }
   amount.value.num = parseFloat(val) * 100
   if (isMobile.value) {
