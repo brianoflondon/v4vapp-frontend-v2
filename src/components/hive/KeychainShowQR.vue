@@ -2,6 +2,7 @@
   <q-dialog v-model="KeychainDialog.show">
     <q-card>
       <q-toolbar>
+        <!-- Title Bar -->
         <q-toolbar-title>{{ $t("point_of_sale") }}</q-toolbar-title>
         <q-btn
           flat
@@ -11,6 +12,7 @@
           @click="KeychainDialog.show = false"
         />
       </q-toolbar>
+      <!-- Hive or Lightning button toggle -->
       <q-card-section v-if="true">
         <div class="text-center full-width">
           <q-btn-toggle
@@ -28,6 +30,7 @@
           />
         </div>
       </q-card-section>
+      <!-- Text description of request -->
       <q-card-section :style="{ width: maxUseableWidth + 'px' }">
         {{ requesting }}
       </q-card-section>

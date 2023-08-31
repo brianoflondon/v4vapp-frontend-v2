@@ -38,7 +38,7 @@
             @update:model-value="(val) => updateAmounts(val, 'amount')"
             inputmode="decimal"
             pattern="\d*"
-            :label="$t('amount') + ' running total ' + runningTotal.txt"
+            :label="$t('amount')"
             stack-label
             debounce="2000"
             @keyup.enter="enterPressed()"
@@ -148,6 +148,7 @@ const hiveAccTo = ref({ label: "", value: "", caption: "" })
 
 const KeychainDialog = ref({ show: false })
 const isMobile = computed(() => {
+  return true
   return q.platform.is.mobile
 })
 
