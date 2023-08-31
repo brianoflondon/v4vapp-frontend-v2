@@ -28,19 +28,23 @@
           />
         </div>
       </q-card-section>
-      <q-card-section class="max-width">
+      <q-card-section :style="{ width: maxUseableWidth + 'px' }">
         {{ requesting }}
       </q-card-section>
       <q-card-section>
         <div
           v-show="KeychainDialog.qrCodeText"
           class="row text-center justify-center overlay-container"
+          :style="{
+            width: maxUseableWidth + 'px',
+            height: maxUseableWidth + 'px',
+          }"
           :class="{ 'show-tick': KeychainDialog.paid }"
         >
           <CreateQRCode
             :qrText="KeychainDialog.qrCodeText"
-            :width="280"
-            :height="280"
+            :width="maxUseableWidth"
+            :height="maxUseableWidth"
             :hiveAccname="KeychainDialog.hiveAccTo"
           />
         </div>
@@ -55,7 +59,7 @@
         </div>
       </q-card-section>
       <q-card-section>
-        <div class="max-width">
+        <div :style="{ width: maxUseableWidth + 'px' }">
           Amount: {{ KeychainDialog.amountToSend }}
           {{ KeychainDialog.currencyToSend }}
           <br />
@@ -92,6 +96,15 @@ const requesting = computed(() => {
     " " +
     KeychainDialog.value.hiveAccTo
   )
+})
+
+// const maxUseableWidth = ref(400)
+
+const maxUseableWidth = computed(() => {
+  if (q.screen.width < 460) {
+    return q.screen.width - 120
+  }
+  return 350
 })
 
 const hiveOrLightning = ref("Hive")
@@ -282,10 +295,6 @@ function findObjectBefore(data, target_trx_id) {
   width: 100%;
 }
 
-.max-width {
-  width: 280px;
-}
-
 .overlay-container {
   position: relative;
 }
@@ -297,8 +306,6 @@ function findObjectBefore(data, target_trx_id) {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 280px; /* Adjust as needed */
-  height: 280px; /* Adjust as needed */
   background-image: url("/avatars/green-tick.svg"); /* Replace with the path to your green tick image */
   background-size: contain;
   background-repeat: no-repeat;
