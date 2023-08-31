@@ -2,14 +2,13 @@
 //
 // Functions related to Hive
 // ----------------------------------------------------------------------------
-import { apiURL } from "boot/axios"
+import { apiURL, api } from "boot/axios"
 import { Dark } from "quasar"
 
 import "src/assets/hive-tx.min.js"
 
 const useHiveAccountRegex =
   /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
-
 
 export async function useHiveDetails(hiveAccname) {
   // returns Hive Profile and details for a given Hive hiveAccname
@@ -82,6 +81,33 @@ export function useHiveAvatarURL({
   return (
     apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
   )
+}
+
+export async function useHiveAvatarBlob({
+  hiveAccname,
+  size = "medium",
+  reason = "v4vapp-v2-useHiveAvatarURL",
+}) {
+  // Uses the Hive.blog image service to get the avatar for a Hive account
+  // Returns null if the hiveAccname is blank or not a valid name.
+  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    return useBlankProfileURL()
+  }
+  const url = "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
+  try {
+    const response = await api.get(url, { responseType: "blob" })
+    const blob = new Blob([response.data], { type: response.data.type })
+
+    // Check if the image is not 0 bytes
+    if (blob.size > 0) {
+      return URL.createObjectURL(blob)
+    } else {
+      return useBlankProfileURL()
+    }
+  } catch (e) {
+    console.error(e)
+  }
+  return useBlankProfileURL()
 }
 
 // -------- Helper functions --------

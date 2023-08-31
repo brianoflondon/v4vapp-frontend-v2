@@ -21,7 +21,7 @@
 <style lang="scss" scoped></style>
 
 <script setup>
-import { useHiveAvatarURL } from "src/use/useHive"
+import { useHiveAvatarBlob } from "src/use/useHive"
 import { computed, ref, onMounted, onUpdated, watch, nextTick } from "vue"
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
@@ -62,15 +62,22 @@ const props = defineProps({
   },
 })
 
-const avatarUrl = computed(() => {
-  return useHiveAvatarURL({
+const avatarUrl = ref("")
+
+// const avatarUrl = computed(() => {
+//   return await useHiveAvatarBlob({
+//     hiveAccname: props.hiveAccname,
+//     size: "small",
+//     reason: "qr-code",
+//   })
+// })
+
+onMounted(async () => {
+  avatarUrl.value = await useHiveAvatarBlob({
     hiveAccname: props.hiveAccname,
     size: "small",
     reason: "qr-code",
   })
-})
-
-onMounted(async () => {
   qrTextPage.value = props.qrText
   await newQRCode()
 })
@@ -102,7 +109,6 @@ async function newQRCode() {
   if (props.loading) {
     return
   }
-  console.log(avatarUrl.value)
   qrCode.value = new QRCodeStyling({
     width: props.width,
     height: props.height,
@@ -123,7 +129,7 @@ async function newQRCode() {
     backgroundOptions: {
       color: quasar.dark.isActive ? "#03002c" : "#f5f5f5",
     },
-    margin: 5,
+    margin: 1,
     imageOptions: {
       crossOrigin: "anonymous",
       hideBackgroundDots: false,
