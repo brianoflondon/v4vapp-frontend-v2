@@ -37,7 +37,7 @@
             v-model="amount.txt"
             @update:model-value="(val) => updateAmounts(val, 'amount')"
             type="text"
-            inputmode="numeric"
+            inputmode="decimal"
             pattern="\d*"
             :label="$t('amount') + ' running total ' + runningTotal.txt"
             stack-label

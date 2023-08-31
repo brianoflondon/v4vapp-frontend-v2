@@ -98,6 +98,7 @@ function enterFn(input) {}
 
 function escFn(input) {
   // If Esc is pressed, the model is cleared
+  // modelValue.value = null
   modelValue.value = { label: "", value: "", caption: "" }
 }
 

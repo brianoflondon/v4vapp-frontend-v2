@@ -27,7 +27,7 @@
               <q-input
                 v-model="amounts.sats"
                 type="text"
-                inputmode="numeric"
+                inputmode="decimal"
                 pattern="\d*"
                 label="Sats"
                 stack-label
@@ -47,7 +47,7 @@
                 v-model="amounts.hbd"
                 type="text"
                 pattern="\d*"
-                inputmode="numeric"
+                inputmode="decimal"
                 label="HBD"
                 stack-label
                 debounce="1000"
@@ -61,7 +61,7 @@
                 v-model="amounts.hive"
                 type="text"
                 pattern="\d*"
-                inputmode="numeric"
+                inputmode="decimal"
                 label="Hive"
                 stack-label
                 debounce="1000"
@@ -250,7 +250,7 @@ function updateAmounts(amount, currency) {
   }
   amounts.value.satsNum = parseFloat(sats.toFixed(0))
   amounts.value.hbdNum = parseFloat(hbd.toFixed(2))
-  amounts.value.sats = tidyNumber(sats.toFixed(0),0)
+  amounts.value.sats = tidyNumber(sats.toFixed(0), 0)
   amounts.value.hive = tidyNumber(hive.toFixed(3))
   amounts.value.hbd = tidyNumber(hbd.toFixed(2))
 }
