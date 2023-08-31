@@ -49,6 +49,7 @@
             :width="maxUseableWidth"
             :height="maxUseableWidth"
             :hiveAccname="KeychainDialog.hiveAccTo"
+            :color="dotColor"
           />
         </div>
         <div v-if="true" class="q-pt-none">
@@ -111,6 +112,9 @@ const maxUseableWidth = computed(() => {
 })
 
 const hiveOrLightning = ref("Hive")
+const dotColor = computed(() => {
+  return hiveOrLightning.value == "Hive" ? "#1976D2" : "#4E4D64"
+})
 
 const checkTime = 2 // 5 seconds between each check
 const maxChecks = 40 // 20 checks total
@@ -138,6 +142,7 @@ onMounted(async () => {
 
 async function generateLightningQRCode() {
   console.log("generateLightningQRCode")
+
   if (
     hiveOrLightning.value == "Lightning" &&
     KeychainDialog.value.lndData == null

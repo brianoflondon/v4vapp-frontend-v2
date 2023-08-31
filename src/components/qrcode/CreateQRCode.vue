@@ -60,6 +60,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  color: {
+    type: String,
+    default: "#1976D2",
+  },
 })
 
 const avatarUrl = ref("")
@@ -109,6 +113,7 @@ async function newQRCode() {
   if (props.loading) {
     return
   }
+  console.log('color is ', props.color)
   qrCode.value = new QRCodeStyling({
     width: props.width,
     height: props.height,
@@ -123,7 +128,7 @@ async function newQRCode() {
       margin: 0,
     },
     dotsOptions: {
-      color: "#1976D2",
+      color: props.color,
       type: "square",
     },
     backgroundOptions: {
