@@ -13,7 +13,8 @@
       style="position: absolute; top: 0; left: 0; border-radius: 15px"
     />
     <q-card-section
-      class="absolute-bottom q-py-xs text-subtitle2 text-left"
+      v-if="storeUser.currentUser"
+      class="credit-card-strip absolute-bottom q-py-xs text-subtitle2 text-left"
       :style="creditCardStripStyle"
     >
       <div class="row">

@@ -1,9 +1,15 @@
 <template>
-  <q-dialog v-model="POSDialog.show">
+  <q-dialog v-model="KeychainDialog.show">
     <q-card>
       <q-toolbar>
         <q-toolbar-title>{{ $t("point_of_sale") }}</q-toolbar-title>
-        <q-btn flat round dense icon="close" @click="POSDialog.show = false" />
+        <q-btn
+          flat
+          round
+          dense
+          icon="close"
+          @click="KeychainDialog.show = false"
+        />
       </q-toolbar>
       <q-card-section v-if="true">
         <div class="text-center full-width">
@@ -27,15 +33,15 @@
       </q-card-section>
       <q-card-section>
         <div
-          v-show="POSDialog.qrCodeText"
+          v-show="KeychainDialog.qrCodeText"
           class="row text-center justify-center overlay-container"
-          :class="{ 'show-tick': POSDialog.paid }"
+          :class="{ 'show-tick': KeychainDialog.paid }"
         >
           <CreateQRCode
-            :qrText="POSDialog.qrCodeText"
+            :qrText="KeychainDialog.qrCodeText"
             :width="280"
             :height="280"
-            :hiveAccname="POSDialog.hiveAccTo"
+            :hiveAccname="KeychainDialog.hiveAccTo"
           />
         </div>
         <div v-if="true" class="q-pt-none">
@@ -50,10 +56,11 @@
       </q-card-section>
       <q-card-section>
         <div class="max-width">
-          Amount: {{ POSDialog.amountToSend }} {{ POSDialog.currencyToSend }}
+          Amount: {{ KeychainDialog.amountToSend }}
+          {{ KeychainDialog.currencyToSend }}
           <br />
-          To: {{ POSDialog.hiveAccTo }}<br />
-          Memo: {{ POSDialog.memo }}
+          To: {{ KeychainDialog.hiveAccTo }}<br />
+          Memo: {{ KeychainDialog.memo }}
         </div>
       </q-card-section>
     </q-card>
@@ -71,19 +78,19 @@ import { useI18n } from "vue-i18n"
 const q = useQuasar()
 
 const t = useI18n().t
-const POSDialog = defineModel(null)
+const KeychainDialog = defineModel(null)
 
 const requesting = computed(() => {
   return (
     t("scan_to_send") +
     " " +
-    POSDialog.value.amountToSend +
+    KeychainDialog.value.amountToSend +
     " " +
-    POSDialog.value.currencyToSend +
+    KeychainDialog.value.currencyToSend +
     " " +
     t("to") +
     " " +
-    POSDialog.value.hiveAccTo
+    KeychainDialog.value.hiveAccTo
   )
 })
 
@@ -99,35 +106,40 @@ const progress = ref(1)
 const intervalRef = ref([])
 
 onMounted(async () => {
-  // write some code to run something every second
   const transactions = await useGetHiveTransactionHistory(
-    POSDialog.value.hiveAccTo,
+    KeychainDialog.value.hiveAccTo,
     2
   )
   console.log("transactions")
   console.log(transactions)
   const firstTrxId = transactions[0][1]["trx_id"]
   console.log(firstTrxId)
-  POSDialog.value.paid = false
-  POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextHive
+  KeychainDialog.value.paid = false
+  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   startCountdown()
-  checkHiveTransaction(POSDialog.value.hiveAccTo, firstTrxId)
+  checkHiveTransaction(KeychainDialog.value.hiveAccTo, firstTrxId)
 })
 
 async function generateLightningQRCode() {
   console.log("generateLightningQRCode")
-  if (hiveOrLightning.value == "Lightning" && POSDialog.value.lndData == null) {
-    POSDialog.value.lndData = await useGetLightingHiveInvoice(
-      POSDialog.value.hiveAccTo,
-      POSDialog.value.amountToSend,
-      POSDialog.value.currencyToSend,
-      POSDialog.value.memo,
+  if (
+    hiveOrLightning.value == "Lightning" &&
+    KeychainDialog.value.lndData == null
+  ) {
+    KeychainDialog.value.lndData = await useGetLightingHiveInvoice(
+      KeychainDialog.value.hiveAccTo,
+      KeychainDialog.value.amountToSend,
+      KeychainDialog.value.currencyToSend,
+      KeychainDialog.value.memo,
       checkTimeTotal
     )
   }
-  if (POSDialog.value.lndData?.error || POSDialog.value.lndData == null) {
-    const message = POSDialog.value.lndData?.error
-      ? POSDialog.value.lndData?.error
+  if (
+    KeychainDialog.value.lndData?.error ||
+    KeychainDialog.value.lndData == null
+  ) {
+    const message = KeychainDialog.value.lndData?.error
+      ? KeychainDialog.value.lndData?.error
       : t("lightning_invoice_not_created")
     q.notify({
       color: "negative",
@@ -140,18 +152,18 @@ async function generateLightningQRCode() {
     return
   }
   if (hiveOrLightning.value == "Lightning") {
-    POSDialog.value.qrCodeTextLightning =
-      "lightning:" + POSDialog.value.lndData["payment_request"]
-    POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextLightning
+    KeychainDialog.value.qrCodeTextLightning =
+      "lightning:" + KeychainDialog.value.lndData["payment_request"]
+    KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextLightning
   } else {
-    POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextHive
+    KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   }
 }
 
 onBeforeUnmount(() => {
   console.log("onBeforeUnmount")
   console.log(intervalRef.value)
-  POSDialog.value.lndData = null
+  KeychainDialog.value.lndData = null
   intervalRef.value.forEach((interval) => clearInterval(interval))
 })
 
@@ -198,12 +210,17 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
       trx_id = transaction_found?.trx_id
       console.log("trx_id updated", trx_id)
       console.log(transaction_found?.op[1].memo)
-      console.log("posDialog.value.checkCode", POSDialog.value.checkCode)
+      console.log(
+        "KeychainDialog.value.checkCode",
+        KeychainDialog.value.checkCode
+      )
       console.log(
         "check: ",
-        transaction_found?.op[1].memo.endsWith(POSDialog.value.checkCode)
+        transaction_found?.op[1].memo.endsWith(KeychainDialog.value.checkCode)
       )
-      if (transaction_found?.op[1].memo.endsWith(POSDialog.value.checkCode)) {
+      if (
+        transaction_found?.op[1].memo.endsWith(KeychainDialog.value.checkCode)
+      ) {
         const memo = `${t("payment")}: ${transaction_found?.op[1].amount}\n${
           transaction_found?.op[1].memo
         }`
@@ -215,13 +232,13 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
           message: memo,
           position: "top",
         })
-        POSDialog.value.paid = true
+        KeychainDialog.value.paid = true
         // wait 5 seconds before closing the dialog
         await new Promise((resolve) => {
           const watchingInterval = setTimeout(resolve, 1000 * 5)
           intervalRef.value.push(watchingInterval)
         })
-        POSDialog.value.show = false
+        KeychainDialog.value.show = false
         return // Exit the function if the transaction is found
       }
       continue // Continue to the next iteration of the loop
@@ -234,7 +251,7 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
       message: memo,
       position: "top",
     })
-    POSDialog.value.show = false
+    KeychainDialog.value.show = false
     return // Exit the function if the transaction is not found after maxChecks
   } catch (error) {
     console.error("Error:", error.message)

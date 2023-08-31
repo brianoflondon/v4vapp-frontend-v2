@@ -112,7 +112,7 @@
         </div>
       </div>
     </div>
-    <POSShowQR v-if="POSDialog.show" v-model="POSDialog" />
+    <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
   </q-page>
 </template>
 
@@ -121,7 +121,7 @@ import { ref, onMounted, watch, computed } from "vue"
 import { tidyNumber, genRandAlphaNum } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
-import POSShowQR from "src/components/hive/POSShowQR.vue"
+import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { encodeOp } from "hive-uri"
 import { useI18n } from "vue-i18n"
@@ -132,7 +132,7 @@ const t = useI18n().t
 const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
 
-const POSDialog = ref({ show: false })
+const KeychainDialog = ref({ show: false })
 
 const amount = ref({
   txt: "0.00",
@@ -306,37 +306,39 @@ function generatePaymentQR() {
     runningTotal.value.num = amount.value.num
     runningTotal.value.txt = amount.value.txt
   }
-  POSDialog.value.amountToSend = parseFloat(
+  KeychainDialog.value.amountToSend = parseFloat(
     runningTotal.value.num / 100
   ).toFixed(3)
-  POSDialog.value.currencyToSend = currency.value
-  POSDialog.value.amountString =
-    POSDialog.value.amountToSend + " " + POSDialog.value.currencyToSend
-  POSDialog.value.hiveAccTo = hiveAccTo.value.value
+  KeychainDialog.value.currencyToSend = currency.value
+  KeychainDialog.value.amountString =
+    KeychainDialog.value.amountToSend +
+    " " +
+    KeychainDialog.value.currencyToSend
+  KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
   // Add a check code onto the memo.
-  POSDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
-  POSDialog.value.memo = memoInput.value
-    ? memoInput.value + " " + POSDialog.value.checkCode
-    : POSDialog.value.checkCode
+  KeychainDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
+  KeychainDialog.value.memo = memoInput.value
+    ? memoInput.value + " " + KeychainDialog.value.checkCode
+    : KeychainDialog.value.checkCode
   const op = [
     "transfer",
     {
       from: "",
-      to: POSDialog.value.hiveAccTo,
-      amount: POSDialog.value.amountString,
-      memo: POSDialog.value.memo,
+      to: KeychainDialog.value.hiveAccTo,
+      amount: KeychainDialog.value.amountString,
+      memo: KeychainDialog.value.memo,
     },
   ]
   console.log(op)
-  POSDialog.value.qrCodeTextHive = encodeOp(op)
-  POSDialog.value.qrCodeText = POSDialog.value.qrCodeTextHive
-  POSDialog.value.show = true
+  KeychainDialog.value.qrCodeTextHive = encodeOp(op)
+  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+  KeychainDialog.value.show = true
 }
 
 watch(
-  () => POSDialog.value?.paid,
+  () => KeychainDialog.value?.paid,
   (paid) => {
-    console.log("watch POSDialog Paid?", paid)
+    console.log("watch KeychainDialog Paid?", paid)
     if (paid) {
       console.log("paid")
       clearAmount(true)
@@ -359,6 +361,9 @@ function buttonPushed(button) {
   if (button === "C") {
     clearAmount(false)
     return
+  }
+  if (button === "+") {
+    console.log("need to deal with + slightly differently")
   }
   if (button === "+" || button === "=") {
     runningTotalAwait.value = true
