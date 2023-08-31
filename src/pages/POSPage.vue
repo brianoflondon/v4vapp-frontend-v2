@@ -40,7 +40,7 @@
             pattern="\d*"
             :label="$t('amount') + ' running total ' + runningTotal.txt"
             stack-label
-            debounce="500"
+            debounce="2000"
             @keyup.enter="enterPressed()"
             @keyup.esc="clearAmount(false)"
             :input-style="{ 'text-align': 'right' }"

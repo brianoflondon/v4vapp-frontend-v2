@@ -43,7 +43,7 @@
     <template v-if="modelValue" v-slot:append>
       <q-icon
         name="cancel"
-        @click.stop.prevent="escFn"
+        @click="escFn"
         class="cursor-pointer"
       />
     </template>
