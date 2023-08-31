@@ -66,7 +66,7 @@
           @blur="handleBlur"
         />
       </div>
-      <!-- Buttons Area -->
+      <!-- Pay button -->
       <div class="pad-max-width full-width q-px-md q-py-xs">
         <q-btn
           class="full-width"
@@ -77,8 +77,8 @@
           @click="generatePaymentQR"
         />
       </div>
+      <!-- Number Pad -->
       <div class="pad-and-special row full-width pad-max-width">
-        <!-- Number Pad -->
         <div class="class col-10">
           <div class="pad-max-width q-gutter-none row justify-center q-pa-none">
             <div
