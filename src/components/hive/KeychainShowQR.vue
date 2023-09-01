@@ -3,7 +3,7 @@
     <q-card>
       <q-toolbar>
         <!-- Title Bar -->
-        <q-toolbar-title>{{ $t("point_of_sale") }}</q-toolbar-title>
+        <q-toolbar-title>{{ titleBar }}</q-toolbar-title>
         <q-btn
           flat
           round
@@ -13,7 +13,7 @@
         />
       </q-toolbar>
       <!-- Hive or Lightning button toggle -->
-      <q-card-section v-if="true">
+      <q-card-section v-if="!KeychainDialog?.hiveOnly">
         <div class="text-center full-width">
           <q-btn-toggle
             class="full-width"
@@ -32,7 +32,7 @@
       </q-card-section>
       <!-- Text description of request -->
       <q-card-section :style="{ width: maxUseableWidth + 'px' }">
-        {{ requesting }} with memo {{ KeychainDialog.memo }}
+        <strong>{{ requesting }}</strong> with memo <strong>{{ truncatedMemo }}</strong>
       </q-card-section>
       <q-card-section>
         <!-- Green tick -->
@@ -100,6 +100,7 @@ import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
+import { encodeOp } from "hive-uri"
 
 const q = useQuasar()
 
@@ -110,6 +111,23 @@ const expanded = ref(false)
 
 // Use this when we are waiting for an LND invoice to be created
 let waitingForLnd = ref(true)
+
+const titleBar = computed(() => {
+  if (KeychainDialog.value?.hiveOnly) {
+    return t("sign_with_keychain")
+  }
+  return t("point_of_sale")
+})
+
+const truncatedMemo = computed(() => {
+  if (
+    KeychainDialog.value.memo.startsWith("lnbc") &&
+    KeychainDialog.value.memo.length > 20
+  ) {
+    return KeychainDialog.value.memo.substring(0, 20) + "..."
+  }
+  return KeychainDialog.value.memo
+})
 
 const fees = computed(() => {
   if (hiveOrLightning.value == "Hive") {
@@ -145,16 +163,16 @@ const maxUseableWidth = computed(() => {
 
 const hiveOrLightning = ref("Hive")
 const dotColor = computed(() => {
-  if (q.dark.isActive) {
+  if (!q.dark.isActive) {
     if (hiveOrLightning.value == "Hive" || waitingForLnd.value) {
-      return "#1976D2"
+      return "#0B355F"
     }
-    return "#18D231"
+    return "#005C35"
   } else {
     if (hiveOrLightning.value == "Hive" || waitingForLnd.value) {
       return "#1976D2"
     }
-    return "#18D231"
+    return "#0E7B1C"
   }
 })
 
@@ -169,6 +187,7 @@ const intervalRef = ref([])
 
 onMounted(async () => {
   KeychainDialog.paid = true
+  generateKeychainQRCode()
   const transactions = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     2
@@ -193,6 +212,21 @@ function calcFees() {
     rawSats * apiStatus.config.conv_fee_percent + apiStatus.config.conv_fee_sats
 
   return fee / exchangeRate
+}
+
+function generateKeychainQRCode() {
+  const op = [
+    "transfer",
+    {
+      from: "",
+      to: KeychainDialog.value.hiveAccTo,
+      amount: KeychainDialog.value.amountString,
+      memo: KeychainDialog.value.memo,
+    },
+  ]
+  console.log(op)
+  KeychainDialog.value.qrCodeTextHive = encodeOp(op)
+  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
 }
 
 async function generateLightningQRCode() {

@@ -216,6 +216,7 @@ import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
+import { serverHiveAccount } from "boot/axios"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -568,11 +569,18 @@ async function payInvoice(currency, method) {
   switch (method) {
     case "HiveKeychainQR":
       q.notify({
-        color: "negative",
+        color: "positive",
         timeout: 2000,
-        message: t("keychain_missing"),
+        message: "Using QR code",
         position: "top",
       })
+      KeychainDialog.value.amountToSend = amount
+      KeychainDialog.value.currencyToSend = currency
+      KeychainDialog.value.amountString = amount + " " + currency
+      KeychainDialog.value.hiveAccTo = serverHiveAccount
+      KeychainDialog.value.memo = memo
+      KeychainDialog.value.hiveOnly = true
+      KeychainDialog.value.show = true
       return
 
     case "HiveKeychain":
