@@ -7,6 +7,17 @@
     {
       "type": "chrome",
       "request": "launch",
+      "name": "PWA: chrome",
+      "url": "http://localhost:9200",
+      "webRoot": "${workspaceFolder}/src",
+      // "breakOnLoad": true,
+      "sourceMapPathOverrides": {
+        "webpack://quasar-project/./src/*": "${webRoot}/*"
+      }
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
       "name": "Quasar App: chrome",
       "url": "http://localhost:9000",
       "webRoot": "${workspaceFolder}/src",

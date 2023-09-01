@@ -39,7 +39,7 @@ RUN npx quasar build --mode pwa
 FROM nginx:stable
 
 # Copy the built project from the previous stage
-COPY --from=build /app/dist/spa /app/dist/spa
+COPY --from=build /app/dist/pwa /app/dist/pwa
 
 # Copy the Nginx configuration file
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
