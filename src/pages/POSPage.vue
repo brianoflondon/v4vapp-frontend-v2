@@ -114,6 +114,7 @@ import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { encodeOp } from "hive-uri"
 import { useI18n } from "vue-i18n"
+import { parse } from "vue/compiler-sfc"
 
 const q = useQuasar()
 const t = useI18n().t
@@ -145,9 +146,6 @@ const currencyOptions = ref(["HBD", "HIVE"])
 const currency = ref("HBD")
 
 onMounted(() => {
-  console.log("onMounted")
-  console.log("storeUser.pos", storeUser.pos)
-  console.log("storeUser.hiveAccname", storeUser.hiveAccname)
   if (storeUser.pos?.hiveAccTo) {
     hiveAccTo.value = {
       label: storeUser.pos.hiveAccTo.label,
@@ -160,7 +158,6 @@ onMounted(() => {
 })
 
 function useLoggedInUser() {
-  console.log("useLoggedInUser")
   if (storeUser.hiveAccname) {
     hiveAccTo.value = {
       label: storeUser.hiveAccname,
@@ -180,13 +177,9 @@ function updateAmounts(val) {
     amount.value.num = parseFloat(val) * 100
   }
   amount.value.num = parseFloat(val) * 100
-
-  console.log(val)
-  console.log(amount.value.num)
 }
 
 function enterPressed() {
-  console.log("enterPressed")
 }
 
 function setCaption(profileName) {

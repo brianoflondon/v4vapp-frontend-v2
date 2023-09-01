@@ -173,10 +173,7 @@ onMounted(async () => {
     KeychainDialog.value.hiveAccTo,
     2
   )
-  console.log("transactions")
-  console.log(transactions)
   const firstTrxId = transactions[0][1]["trx_id"]
-  console.log(firstTrxId)
   KeychainDialog.value.paid = false
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   startCountdown()
@@ -240,8 +237,6 @@ async function generateLightningQRCode() {
 }
 
 onBeforeUnmount(() => {
-  console.log("onBeforeUnmount")
-  console.log(intervalRef.value)
   KeychainDialog.value.lndData = null
   intervalRef.value.forEach((interval) => clearInterval(interval))
 })
@@ -265,7 +260,6 @@ function startCountdown() {
 
 async function checkHiveTransaction(username, trx_id, count = 0) {
   if (trx_id == null) {
-    console.log("checkHiveTransaction trx_id is null")
     return
   }
 
@@ -284,19 +278,8 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
       if (!transaction_found) {
         continue // Continue to the next iteration of the loop
       }
-      console.log("transaction_found")
       // Update the most recent trx_id
       trx_id = transaction_found?.trx_id
-      console.log("trx_id updated", trx_id)
-      console.log(transaction_found?.op[1].memo)
-      console.log(
-        "KeychainDialog.value.checkCode",
-        KeychainDialog.value.checkCode
-      )
-      console.log(
-        "check: ",
-        transaction_found?.op[1].memo.endsWith(KeychainDialog.value.checkCode)
-      )
       if (
         transaction_found?.op[1].memo.endsWith(KeychainDialog.value.checkCode)
       ) {
@@ -347,8 +330,6 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
 function findObjectBefore(data, target_trx_id) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][1].trx_id === target_trx_id) {
-      console.log("found transaction")
-      console.log(data[i - 1][1])
       return data[i - 1][1]
     }
   }

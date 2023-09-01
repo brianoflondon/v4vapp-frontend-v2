@@ -99,7 +99,6 @@ const htmlText =
 watch(
   () => props.loading,
   async (newVal) => {
-    // console.log("loading", newVal)
     if (newVal) {
       qrCodeContainer.value.innerHTML = htmlText
       await nextTick()
@@ -113,7 +112,6 @@ async function newQRCode() {
   if (props.loading) {
     return
   }
-  console.log('color is ', props.color)
   qrCode.value = new QRCodeStyling({
     width: props.width,
     height: props.height,

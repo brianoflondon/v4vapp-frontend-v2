@@ -155,6 +155,6 @@ export default {
   old_page: "Old Hive Page",
   new_page: "New Receive Hive Page",
   no_fees: "No Fees for Hive or HBD",
-  Fee: "Fee",
+  Fees: "Fees",
   list_received_payments: "List of received payments is coming soon",
 }
