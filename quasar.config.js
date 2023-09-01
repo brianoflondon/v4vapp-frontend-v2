@@ -121,7 +121,7 @@ module.exports = configure(function (/* ctx */) {
       plugins: ["Notify", "LocalStorage", "SessionStorage"],
     },
 
-    animations: 'all', // --- includes all animations
+    animations: "all", // --- includes all animations
     // https://v2.quasar.dev/options/animations
     // animations: [],
 
@@ -165,6 +165,10 @@ module.exports = configure(function (/* ctx */) {
       swFilename: "sw.js",
       manifestFilename: "manifest.json",
       useCredentialsForManifestTag: false,
+      manifest: {
+        name: "V4V.app Hive Lightning Bridge",
+        short_name: "V4V.app",
+      },
       // useFilenameHashes: true,
       // extendGenerateSWOptions (cfg) {}
       // extendInjectManifestOptions (cfg) {},
