@@ -82,6 +82,10 @@
           @click="generatePaymentQR"
         />
       </div>
+      <div class="pad-max-width full-width q-px-md q-py-xs">
+        {{ t("list_received_payments") }}
+      </div>
+
       <!-- Explanation what is this page box -->
       <div style="max-width: 200px">
         <ExplanationBox class="q-pt-md"></ExplanationBox>
