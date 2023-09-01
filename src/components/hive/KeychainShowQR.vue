@@ -35,6 +35,7 @@
         {{ requesting }}
       </q-card-section>
       <q-card-section>
+        <!-- Green tick -->
         <div
           v-show="KeychainDialog.qrCodeText"
           class="row text-center justify-center overlay-container"
