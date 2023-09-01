@@ -114,7 +114,6 @@ import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { encodeOp } from "hive-uri"
 import { useI18n } from "vue-i18n"
-import { parse } from "vue/compiler-sfc"
 
 const q = useQuasar()
 const t = useI18n().t
@@ -130,13 +129,7 @@ const amount = ref({
 })
 
 const payButtonLabel = computed(() => {
-  return (
-    t("pay") +
-    " " +
-    tidyNumber(amount.value.num / 100, 3) +
-    " " +
-    currency.value
-  )
+  return t("pay") + " " + tidyNumber(amount.value.num, 3) + " " + currency.value
 })
 
 const decimalEntry = ref(0)
@@ -169,18 +162,14 @@ function useLoggedInUser() {
 
 // When the amount is updated manually deal with that here
 function updateAmounts(val) {
-  if (val.endsWith("+")) {
-    amount.value.txt = amount.value.txt.slice(0, -1)
-    amount.value.num = parseFloat(val) * 100
+  if (val === "") {
+    amount.value.num = 0
+    return
   }
-  if (val.endsWith(".")) {
-    amount.value.num = parseFloat(val) * 100
-  }
-  amount.value.num = parseFloat(val) * 100
+  amount.value.num = parseFloat(val)
 }
 
-function enterPressed() {
-}
+function enterPressed() {}
 
 function setCaption(profileName) {
   return t("pay_to") + " " + profileName
@@ -233,9 +222,7 @@ function generatePaymentQR() {
     return
   }
 
-  KeychainDialog.value.amountToSend = parseFloat(
-    amount.value.num / 100
-  ).toFixed(3)
+  KeychainDialog.value.amountToSend = parseFloat(amount.value.num).toFixed(3)
   KeychainDialog.value.currencyToSend = currency.value
   KeychainDialog.value.amountString =
     KeychainDialog.value.amountToSend +
