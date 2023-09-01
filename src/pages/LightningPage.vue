@@ -581,6 +581,10 @@ async function payInvoice(currency, method) {
       KeychainDialog.value.memo = memo
       KeychainDialog.value.hiveOnly = true
       KeychainDialog.value.show = true
+      KeychainDialog.value.checkCode = KeychainDialog.value.memo.substring(
+        KeychainDialog.value.memo.length - 12
+      )
+      dInvoice.value.progress.push("Check Lightning was received")
       return
 
     case "HiveKeychain":

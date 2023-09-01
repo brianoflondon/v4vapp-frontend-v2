@@ -32,7 +32,8 @@
       </q-card-section>
       <!-- Text description of request -->
       <q-card-section :style="{ width: maxUseableWidth + 'px' }">
-        <strong>{{ requesting }}</strong> with memo <strong>{{ truncatedMemo }}</strong>
+        <strong>{{ requesting }}</strong> with memo
+        <strong>{{ truncatedMemo }}</strong>
       </q-card-section>
       <q-card-section>
         <!-- Green tick -->
@@ -196,6 +197,9 @@ onMounted(async () => {
   KeychainDialog.value.paid = false
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   startCountdown()
+  console.log(KeychainDialog.value)
+  console.log("checking for transaction: " + firstTrxId)
+  console.log("from account: " + KeychainDialog.value.hiveAccTo)
   checkHiveTransaction(KeychainDialog.value.hiveAccTo, firstTrxId)
 })
 
@@ -296,7 +300,6 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
   if (trx_id == null) {
     return
   }
-
   try {
     while (count < maxChecks) {
       count += 1
