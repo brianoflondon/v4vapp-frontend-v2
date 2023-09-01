@@ -2,7 +2,9 @@
   <q-page>
     <div class="flex column text-center items-center">
       <!-- Pay To bar -->
-      <div class="div flex row pad-max-width full-width items-center q-pa-sm">
+      <div
+        class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
+      >
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
             <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
@@ -40,7 +42,7 @@
             pattern="\d*"
             :label="$t('amount')"
             stack-label
-            debounce="2000"
+            debounce="20"
             @keyup.enter="enterPressed()"
             @keyup.esc="clearAmount(false)"
             :input-style="{ 'text-align': 'right' }"
@@ -66,14 +68,7 @@
       </div>
       <!-- Memo -->
       <div class="memo-input flex pad-max-width full-width q-px-md q-py-sm">
-        <q-input
-          clearable
-          v-model="memoInput"
-          class="full-width"
-          label="Memo"
-          @focus="handleFocus"
-          @blur="handleBlur"
-        >
+        <q-input clearable v-model="memoInput" class="full-width" label="Memo">
         </q-input>
       </div>
       <!-- Pay button -->
@@ -87,43 +82,18 @@
           @click="generatePaymentQR"
         />
       </div>
-      <!-- Number Pad -->
-      <div
-        v-if="!isMobile"
-        @keydown="(event) => handleKeypress(event)"
-        class="pad-and-special row full-width pad-max-width"
-      >
-        <div class="class col-10">
-          <div class="pad-max-width q-gutter-none row justify-center q-pa-none">
-            <div
-              v-for="(button, index) in numButtons"
-              :key="index"
-              class="col-4 q-pa-xs"
-            >
-              <q-btn
-                :label="button"
-                color="primary"
-                @click="buttonPushed(button)"
-                class="full-width number-buttons"
-              ></q-btn>
-            </div>
-          </div>
-        </div>
-        <!-- Special Buttons -->
-        <div class="class col-2 special-container">
-          <div
-            class="q-pa-xs special-button-container"
-            v-for="(button, index) in specialButtons"
-            :key="index"
-          >
-            <q-btn
-              :label="button"
-              color="secondary"
-              @click="buttonPushed(button)"
-              class="full-width special-buttons"
-            ></q-btn>
-          </div>
-        </div>
+      <!-- Explanation what is this page box -->
+      <div style="max-width: 200px">
+        <ExplanationBox class="q-pt-md"></ExplanationBox>
+      </div>
+      <!-- Old page links -->
+      <div class="q-pt-lg">
+        <q-btn
+          color="primary"
+          :label="t('old_page')"
+          style="font-size: 0.6rem; white-space: pre-line"
+          @click="$router.push('/hive')"
+        ></q-btn>
       </div>
     </div>
     <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
@@ -136,6 +106,7 @@ import { tidyNumber, genRandAlphaNum } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
+import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { encodeOp } from "hive-uri"
 import { useI18n } from "vue-i18n"
@@ -147,27 +118,17 @@ const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
 
 const KeychainDialog = ref({ show: false })
-const isMobile = computed(() => {
-  return true
-  return q.platform.is.mobile
-})
 
 const amount = ref({
-  txt: "0.00",
+  txt: "",
   num: 0,
 })
 
-const runningTotal = ref({
-  txt: "0.00",
-  num: 0,
-})
-const runningTotalAwait = ref(false)
 const payButtonLabel = computed(() => {
-  console.log("payButtonLabel", runningTotal.value)
   return (
     t("pay") +
     " " +
-    tidyNumber(runningTotal.value.num / 100, 3) +
+    tidyNumber(amount.value.num / 100, 3) +
     " " +
     currency.value
   )
@@ -179,28 +140,8 @@ const items = ref(0)
 const currencyOptions = ref(["HBD", "HIVE"])
 const currency = ref("HBD")
 
-const specialButtons = ref(["AC", "C", "+", "="])
-
-const numButtons = ref([
-  "7",
-  "8",
-  "9",
-  "4",
-  "5",
-  "6",
-  "1",
-  "2",
-  "3",
-  "0",
-  ".",
-  ".00",
-])
-
 onMounted(() => {
   console.log("onMounted")
-  if (isMobile.value) {
-    amount.value.txt = ""
-  }
   console.log("storeUser.pos", storeUser.pos)
   console.log("storeUser.hiveAccname", storeUser.hiveAccname)
   if (storeUser.pos?.hiveAccTo) {
@@ -214,36 +155,6 @@ onMounted(() => {
   }
 })
 
-// When the amount is updated manually deal with that here
-function updateAmounts(val) {
-  if (val.endsWith("+")) {
-    amount.value.txt = amount.value.txt.slice(0, -1)
-    if (amount.value.txt === "") {
-      amount.value.txt = "0.00"
-    }
-    amount.value.num = parseFloat(val) * 100
-    buttonPushed("+")
-  }
-  if (val.endsWith(".")) {
-    amount.value.num = parseFloat(val) * 100
-  }
-  amount.value.num = parseFloat(val) * 100
-  if (isMobile.value) {
-    if (parseFloat(val)) {
-      amount.value.txt = parseFloat(val)
-      runningTotal.value.num = amount.value.num
-      runningTotal.value.txt = amount.value.txt
-    }
-  }
-  console.log(val)
-  console.log(amount.value.num)
-}
-
-function enterPressed() {
-  console.log("enterPressed")
-  buttonPushed("=")
-}
-
 function useLoggedInUser() {
   console.log("useLoggedInUser")
   if (storeUser.hiveAccname) {
@@ -253,6 +164,25 @@ function useLoggedInUser() {
       caption: setCaption(storeUser.profileName),
     }
   }
+}
+
+// When the amount is updated manually deal with that here
+function updateAmounts(val) {
+  if (val.endsWith("+")) {
+    amount.value.txt = amount.value.txt.slice(0, -1)
+    amount.value.num = parseFloat(val) * 100
+  }
+  if (val.endsWith(".")) {
+    amount.value.num = parseFloat(val) * 100
+  }
+  amount.value.num = parseFloat(val) * 100
+
+  console.log(val)
+  console.log(amount.value.num)
+}
+
+function enterPressed() {
+  console.log("enterPressed")
 }
 
 function setCaption(profileName) {
@@ -274,69 +204,20 @@ watch(hiveAccTo, async (val) => {
   hiveAccTo.value.caption = setCaption(val.caption)
 })
 
-function clearAmount(clearRunning = false) {
+function clearAmount() {
   decimalEntry.value = 0
-  amount.value.txt = isMobile.value ? "" : "0.00"
+  amount.value.txt = ""
   amount.value.num = 0
   items.value = 0
-  if (clearRunning) {
-    runningTotalAwait.value = false
-    runningTotal.value.num = 0
-    runningTotal.value.txt = "0.00"
-  }
 }
 
 const memoInput = ref("")
-let isFocused = ref(false)
-
-const handleFocus = () => {
-  isFocused.value = true
-  console.log("Input is focused:", isFocused.value)
-}
-
-const handleBlur = () => {
-  isFocused.value = false
-  console.log("Input is focused:", isFocused.value)
-}
-
-function handleKeypress(event) {
-  console.log(event)
-  if (isFocused.value) {
-    return
-  }
-  if (event.key >= "0" && event.key <= "9") {
-    console.log(`Numeric key pressed: ${event.key}`)
-    buttonPushed(event.key)
-  }
-  if (
-    event.key === "Backspace" ||
-    event.key === "Delete" ||
-    event.key === "a" ||
-    event.key === "A"
-  ) {
-    console.log(`Backspace key pressed: ${event.key}`)
-    clearAmount(true)
-  }
-  if (event.key === "c" || event.key === "C") {
-    console.log(`C key pressed: ${event.key}`)
-    clearAmount(false)
-  }
-  if (event.key === ".") {
-    console.log(`Decimal key pressed: ${event.key}`)
-    decimalEntry.value = true
-    buttonPushed(".")
-  }
-  if (event.key === "Enter") {
-    console.log(`Enter key pressed: ${event.key}`)
-    buttonPushed("Pay")
-  }
-}
 
 function generatePaymentQR() {
   console.log("generatePaymentQR")
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
-  if (runningTotal.value.num === 0 && amount.value.num === 0) {
+  if (amount.value.num === 0) {
     q.notify({
       message: t("no_amount"),
       type: "negative",
@@ -355,12 +236,8 @@ function generatePaymentQR() {
     return
   }
 
-  if (runningTotal.value.num === 0) {
-    runningTotal.value.num = amount.value.num
-    runningTotal.value.txt = amount.value.txt
-  }
   KeychainDialog.value.amountToSend = parseFloat(
-    runningTotal.value.num / 100
+    amount.value.num / 100
   ).toFixed(3)
   KeychainDialog.value.currencyToSend = currency.value
   KeychainDialog.value.amountString =
@@ -400,72 +277,6 @@ watch(
     }
   }
 )
-
-function buttonPushed(button) {
-  // if (navigator.vibrate) {
-  //   console.log("Vibration is supported")
-  //   navigator.vibrate(150) // Vibrate for 15ms
-  // }
-  console.log("buttonPushed", button)
-  if (button === "AC") {
-    clearAmount(true)
-    return
-  }
-  if (button === "C") {
-    clearAmount(false)
-    return
-  }
-  if (button === "+") {
-    console.log("need to deal with + slightly differently")
-  }
-  if (button === "+" || button === "=") {
-    runningTotalAwait.value = true
-    items.value += 1
-    runningTotal.value.num += amount.value.num
-    runningTotal.value.txt = tidyNumber(
-      (runningTotal.value.num / 100).toString(),
-      2
-    )
-    amount.value.txt = runningTotal.value.txt
-    return
-  }
-
-  if (button === ".") {
-    amount.value.num *= 100
-    amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2)
-    decimalEntry.value = 2
-    return
-  }
-  if (button === ".00") {
-    amount.value.num = 100 * amount.value.num
-    amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2)
-    console.log("Decimal pushed : amount", amount.value)
-    return
-  }
-  if (amount.value.txt === "0.00" || runningTotalAwait.value) {
-    amount.value.txt = "0.0" + button
-    amount.value.num = parseInt(button)
-    runningTotalAwait.value = false
-    return
-  }
-  if (decimalEntry.value > 0) {
-    console.log("decimalEntry.value", decimalEntry.value)
-    console.log("button", button)
-    console.log("amount.value.num", amount.value.num)
-    amount.value.num =
-      amount.value.num + parseInt(button) * 10 ** (decimalEntry.value - 1)
-    decimalEntry.value -= 1
-    console.log(amount.value.num)
-    amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2)
-
-    return
-  }
-  amount.value.num = 10 * amount.value.num
-  amount.value.num += parseInt(button)
-  amount.value.txt = tidyNumber((amount.value.num / 100).toString())
-
-  console.log("amount", amount.value)
-}
 </script>
 
 <style lang="scss" scoped>

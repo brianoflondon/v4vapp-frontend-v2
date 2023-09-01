@@ -28,7 +28,7 @@ const hiveAccObj = ref()
 const t = useI18n().t
 const linkList = ref([
   {
-    title: t("point_of_sale"),
+    title: t("receive"),
     caption: t("point_of_sale"),
     icon: "fa-solid fa-cash-register",
     link: "/pos",

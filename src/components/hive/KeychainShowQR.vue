@@ -62,6 +62,8 @@
           >
           </q-linear-progress>
         </div>
+        <!-- Fees -->
+        <div class="text-center q-pt-sm">{{ fees }}</div>
       </q-card-section>
       <q-card-section>
         <div :style="{ width: maxUseableWidth + 'px' }">
@@ -78,16 +80,31 @@
 
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref } from "vue"
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useQuasar } from "quasar"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
+import { tidyNumber } from "src/use/useUtils"
 
 const q = useQuasar()
 
 const t = useI18n().t
 const KeychainDialog = defineModel(null)
+const storeApiStatus = useStoreAPIStatus()
+
+// Use this when we are waiting for an LND invoice to be created
+let waitingForLnd = ref(true)
+
+const fees = computed(() => {
+  if (hiveOrLightning.value == "Hive") {
+    return t("no_fees")
+  }
+  return `${t("Fees")}: ${tidyNumber(calcFees(), 3)} ${
+    KeychainDialog.value.currencyToSend
+  }`
+})
 
 const requesting = computed(() => {
   return (
@@ -114,7 +131,17 @@ const maxUseableWidth = computed(() => {
 
 const hiveOrLightning = ref("Hive")
 const dotColor = computed(() => {
-  return hiveOrLightning.value == "Hive" ? "#1976D2" : "#4E4D64"
+  if (q.dark.isActive) {
+    if (hiveOrLightning.value == "Hive" || waitingForLnd.value) {
+      return "#1976D2"
+    }
+    return "#18D231"
+  } else {
+    if (hiveOrLightning.value == "Hive" || waitingForLnd.value) {
+      return "#1976D2"
+    }
+    return "#18D231"
+  }
 })
 
 const checkTime = 2 // 5 seconds between each check
@@ -141,13 +168,30 @@ onMounted(async () => {
   checkHiveTransaction(KeychainDialog.value.hiveAccTo, firstTrxId)
 })
 
-async function generateLightningQRCode() {
-  console.log("generateLightningQRCode")
+// Calculates the fees charged in the same currency Hive/HBD as
+// the amount being sent.
+function calcFees() {
+  let exchangeRate = 0
+  if (KeychainDialog.value.currencyToSend == "HBD") {
+    exchangeRate = storeApiStatus.HBDSatsNumber
+  } else {
+    exchangeRate = storeApiStatus.hiveSatsNumber
+  }
+  const rawSats = parseFloat(KeychainDialog.value.amountToSend) * exchangeRate
+  const fee =
+    rawSats * storeApiStatus.apiStatus.config.conv_fee_percent +
+    storeApiStatus.apiStatus.config.conv_fee_sats
 
+  const feeOrigCurrency = fee / exchangeRate
+  return feeOrigCurrency
+}
+
+async function generateLightningQRCode() {
   if (
     hiveOrLightning.value == "Lightning" &&
     KeychainDialog.value.lndData == null
   ) {
+    waitingForLnd.value = true
     KeychainDialog.value.lndData = await useGetLightingHiveInvoice(
       KeychainDialog.value.hiveAccTo,
       KeychainDialog.value.amountToSend,
@@ -155,6 +199,7 @@ async function generateLightningQRCode() {
       KeychainDialog.value.memo,
       checkTimeTotal
     )
+    waitingForLnd.value = false
   }
   if (
     KeychainDialog.value.lndData?.error ||

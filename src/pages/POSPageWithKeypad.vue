@@ -36,15 +36,24 @@
             class="amount-display"
             v-model="amount.txt"
             @update:model-value="(val) => updateAmounts(val, 'amount')"
-            type="text"
             inputmode="decimal"
             pattern="\d*"
-            :label="$t('amount') + ' running total ' + runningTotal.txt"
+            :label="$t('amount')"
             stack-label
             debounce="2000"
+            @keyup.enter="enterPressed()"
+            @keyup.esc="clearAmount(false)"
             :input-style="{ 'text-align': 'right' }"
-            clearable
-          />
+          >
+            <!-- Use my Own code for the clearable button -->
+            <template v-if="amount.txt" v-slot:append>
+              <q-icon
+                name="cancel"
+                @click="clearAmount(true)"
+                class="cursor-pointer"
+              />
+            </template>
+          </q-input>
         </div>
         <div class="col-3 q-pa-sm amount-input-area">
           <q-select
@@ -58,13 +67,14 @@
       <!-- Memo -->
       <div class="memo-input flex pad-max-width full-width q-px-md q-py-sm">
         <q-input
-          v-model="memoInput"
           clearable
+          v-model="memoInput"
           class="full-width"
           label="Memo"
           @focus="handleFocus"
           @blur="handleBlur"
-        />
+        >
+        </q-input>
       </div>
       <!-- Pay button -->
       <div class="pad-max-width full-width q-px-md q-py-xs">
@@ -73,12 +83,13 @@
           style="font-size: 1.2rem; white-space: pre-line"
           color="secondary"
           icon="qr_code_2"
-          :label="$t('pay')"
+          :label="payButtonLabel"
           @click="generatePaymentQR"
         />
       </div>
       <!-- Number Pad -->
       <div
+        v-if="!isMobile"
         @keydown="(event) => handleKeypress(event)"
         class="pad-and-special row full-width pad-max-width"
       >
@@ -136,8 +147,10 @@ const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
 
 const KeychainDialog = ref({ show: false })
-
-const rawAmount = ref("0.00")
+const isMobile = computed(() => {
+  return true
+  return q.platform.is.mobile
+})
 
 const amount = ref({
   txt: "0.00",
@@ -149,6 +162,17 @@ const runningTotal = ref({
   num: 0,
 })
 const runningTotalAwait = ref(false)
+const payButtonLabel = computed(() => {
+  console.log("payButtonLabel", runningTotal.value)
+  return (
+    t("pay") +
+    " " +
+    tidyNumber(runningTotal.value.num / 100, 3) +
+    " " +
+    currency.value
+  )
+})
+
 const decimalEntry = ref(0)
 const items = ref(0)
 
@@ -174,6 +198,9 @@ const numButtons = ref([
 
 onMounted(() => {
   console.log("onMounted")
+  if (isMobile.value) {
+    amount.value.txt = ""
+  }
   console.log("storeUser.pos", storeUser.pos)
   console.log("storeUser.hiveAccname", storeUser.hiveAccname)
   if (storeUser.pos?.hiveAccTo) {
@@ -187,8 +214,34 @@ onMounted(() => {
   }
 })
 
+// When the amount is updated manually deal with that here
 function updateAmounts(val) {
+  if (val.endsWith("+")) {
+    amount.value.txt = amount.value.txt.slice(0, -1)
+    if (amount.value.txt === "") {
+      amount.value.txt = "0.00"
+    }
+    amount.value.num = parseFloat(val) * 100
+    buttonPushed("+")
+  }
+  if (val.endsWith(".")) {
+    amount.value.num = parseFloat(val) * 100
+  }
+  amount.value.num = parseFloat(val) * 100
+  if (isMobile.value) {
+    if (parseFloat(val)) {
+      amount.value.txt = parseFloat(val)
+      runningTotal.value.num = amount.value.num
+      runningTotal.value.txt = amount.value.txt
+    }
+  }
   console.log(val)
+  console.log(amount.value.num)
+}
+
+function enterPressed() {
+  console.log("enterPressed")
+  buttonPushed("=")
 }
 
 function useLoggedInUser() {
@@ -223,7 +276,7 @@ watch(hiveAccTo, async (val) => {
 
 function clearAmount(clearRunning = false) {
   decimalEntry.value = 0
-  amount.value.txt = "0.00"
+  amount.value.txt = isMobile.value ? "" : "0.00"
   amount.value.num = 0
   items.value = 0
   if (clearRunning) {
@@ -349,10 +402,10 @@ watch(
 )
 
 function buttonPushed(button) {
-  if (navigator.vibrate) {
-    console.log("Vibration is supported")
-    navigator.vibrate(150) // Vibrate for 15ms
-  }
+  // if (navigator.vibrate) {
+  //   console.log("Vibration is supported")
+  //   navigator.vibrate(150) // Vibrate for 15ms
+  // }
   console.log("buttonPushed", button)
   if (button === "AC") {
     clearAmount(true)

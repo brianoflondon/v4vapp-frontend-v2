@@ -2,9 +2,18 @@
   <q-page>
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div class="flex column text-center">
+        <!-- Old page links -->
+        <div class="q-pt-lg">
+          <q-btn
+            color="primary"
+            :label="t('new_page')"
+            style="font-size: 0.6rem; white-space: pre-line"
+            @click="$router.push('/pos')"
+          ></q-btn>
+        </div>
         <div class="flex row justify-center items-center">
           <div class="q-pa-sm">
-            <HiveSelectFancyAcc dense v-model="hiveAccObj" fancy-options />
+            <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
           </div>
           <div class="q-pa-sm">
             <q-btn-toggle
@@ -25,7 +34,7 @@
             <CreateQRCode
               :qr-text="qrText"
               :loading="loading"
-              :hive-accname="hiveAccObj.value"
+              :hive-accname="hiveAccTo.value"
               :width="300"
               :height="300"
               @qr-code="(val) => (qrCode = val)"
@@ -138,7 +147,7 @@ const storeUser = useStoreUser()
 const amountButton = ref("")
 const hiveHbd = ref("hbd")
 const loading = ref(false)
-const hiveAccObj = ref({ label: "", value: "", caption: "" })
+const hiveAccTo = ref({ label: "", value: "", caption: "" })
 const t = useI18n().t
 const quasar = useQuasar()
 
@@ -146,18 +155,20 @@ const qrText = ref("")
 const qrCode = ref(null)
 
 onMounted(() => {
-  if (storeUser.currentUser) {
-    hiveAccObj.value = {
-      label: storeUser.hiveAccname,
-      value: storeUser.hiveAccname,
-      caption: storeUser.profileName,
+  if (storeUser.pos?.hiveAccTo) {
+    hiveAccTo.value = {
+      label: storeUser.pos.hiveAccTo.label,
+      value: storeUser.pos.hiveAccTo.value,
+      caption: storeUser.pos.hiveAccTo.caption,
     }
+  } else {
+    useLoggedInUser()
   }
   resetValues()
 })
 
 watch(storeUser, async (val) => {
-  hiveAccObj.value = {
+  hiveAccTo.value = {
     label: val.hiveAccname,
     value: val.hiveAccname,
     caption: val.profileName,
@@ -165,7 +176,7 @@ watch(storeUser, async (val) => {
   resetValues()
 })
 
-watch(hiveAccObj, async (val) => {
+watch(hiveAccTo, async (val) => {
   resetValues()
 })
 
@@ -173,7 +184,7 @@ watch(hiveAccObj, async (val) => {
 watch(hiveHbd, async (newVal, oldVal) => {
   if (amounts.value?.sats) {
     loading.value = true
-    qrText.value = "lightning:" + getHiveHbdAddress(hiveAccObj.value.value)
+    qrText.value = "lightning:" + getHiveHbdAddress(hiveAccTo.value.value)
     if (dInvoice.value.v4vapp.comment) {
       dInvoice.value.v4vapp.comment = dInvoice.value.v4vapp.comment
         .replace(/#HBD/g, "")
@@ -199,10 +210,10 @@ function resetValues() {
 }
 
 function setLightningAddress() {
-  if (!hiveAccObj.value.value) {
+  if (!hiveAccTo.value.value) {
     qrText.value = "lightning:v4vapp@v4v.app"
   }
-  qrText.value = "lightning:" + getHiveHbdAddress(hiveAccObj.value.value)
+  qrText.value = "lightning:" + getHiveHbdAddress(hiveAccTo.value.value)
 }
 
 function setAmountButton() {
@@ -231,11 +242,11 @@ function copyText() {
 }
 
 function downloadQRCode() {
-  qrCode.value.download({ name: hiveAccObj.value.value, extension: "webp" })
+  qrCode.value.download({ name: hiveAccTo.value.value, extension: "webp" })
 }
 
 async function setAmount() {
-  if (!hiveAccObj.value.value) {
+  if (!hiveAccTo.value.value) {
     quasar.notify("Please select an account", {
       color: "negative",
       position: "top",
