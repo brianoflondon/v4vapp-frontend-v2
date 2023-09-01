@@ -28,7 +28,7 @@ RUN npm ci
 COPY . .
 
 # Build the Quasar app for production
-RUN npx quasar build
+RUN npx quasar build --mode pwa
 
 # This was added when npx didn't work.
 # The correct solution was removing @quasar/app-webpac from package.json
