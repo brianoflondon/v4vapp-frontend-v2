@@ -151,8 +151,19 @@ const quasar = useQuasar()
 const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS()
 
 async function loginHAS(username) {
+  let position = "left"
+  if (Platform.is.mobile) {
+    position = "top"
+  }
   try {
     if (!username) {
+      quasar.notify({
+        timeout: 2000,
+        avatar: useHiveAvatarURL({hiveAccname: username}),
+        color: "info",
+        message: t("enter_hive_account"),
+        position: position,
+      })
       return
     }
     await HASLogin(username)
@@ -160,8 +171,6 @@ async function loginHAS(username) {
     console.log("error: ", error)
   }
 }
-
-
 
 watch(qrCodeTextHAS, (newValue) => {
   console.log("qrCodeTextHAS newValue: ", newValue)
@@ -193,6 +202,7 @@ async function loginKeychain(username) {
     storeUser.login(username, props.keyType)
     return
   }
+  const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
   isKeychain.value = await useIsHiveKeychainInstalled()
   let position = "left"
   if (Platform.is.mobile) {
@@ -201,14 +211,25 @@ async function loginKeychain(username) {
   if (!isKeychain.value) {
     quasar.notify({
       timeout: 2000,
+      avatar: avatarUrl,
+      color: "warning",
       message: t("keychain_not_installed"),
+      position: position,
+    })
+    return
+  }
+  if (!username) {
+    quasar.notify({
+      timeout: 2000,
+      avatar: avatarUrl,
+      color: "info",
+      message: t("enter_hive_account"),
       position: position,
     })
     return
   }
   const words = await useBip39(3)
   const signMessage = words.join("-")
-  const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
   try {
     const note = quasar.notify({
       group: false, // required to be updatable

@@ -28,6 +28,12 @@ const hiveAccObj = ref()
 const t = useI18n().t
 const linkList = ref([
   {
+    title: t("receive"),
+    caption: t("point_of_sale"),
+    icon: "fa-solid fa-cash-register",
+    link: "/pos",
+  },
+  {
     title: t("lightning"),
     caption: t("lightning"),
     icon: "fa-sharp fa-solid fa-bolt",
@@ -56,6 +62,7 @@ const hiveUsername = ref("")
 
 const label = ref(t("hive_account"))
 
+// Watches the storeUser for changes and updates the hiveAccObj
 watch(storeUser, async (val) => {
   hiveAccObj.value = {
     label: val.hiveAccname,

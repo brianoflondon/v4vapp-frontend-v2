@@ -28,7 +28,7 @@ RUN npm ci
 COPY . .
 
 # Build the Quasar app for production
-RUN npx quasar build
+RUN npx quasar build --mode pwa
 
 # This was added when npx didn't work.
 # The correct solution was removing @quasar/app-webpac from package.json
@@ -39,7 +39,7 @@ RUN npx quasar build
 FROM nginx:stable
 
 # Copy the built project from the previous stage
-COPY --from=build /app/dist/spa /app/dist/spa
+COPY --from=build /app/dist/pwa /app/dist/pwa
 
 # Copy the Nginx configuration file
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf

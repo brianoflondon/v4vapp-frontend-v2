@@ -79,6 +79,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     currentDetails: useStorage("details", null),
     currentProfile: useStorage("profile", null),
     users: useStorage("users", {}),
+    pos: useStorage("pos", {}),
   }),
 
   getters: {
@@ -285,7 +286,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     strategies: [
       {
         storage: localStorage,
-        paths: ["users", "currentUser"],
+        paths: ["users", "currentUser", "pos"],
       },
     ],
   },
