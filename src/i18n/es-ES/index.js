@@ -69,8 +69,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Keychain no se encuentra',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
@@ -131,10 +131,26 @@ export default {
   explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
   Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
   The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
-  The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n`,
+  The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive.\n
+  The old 'Hive' tab is still available, but it is recommended to use the 'Send' and 'Receive' tabs instead.\n`,
   // Credit Card
   savings: 'Savings',
   savings_tooltip: 'Show the amounts stored in Hive\'s savings accounts for HBD and Hive',
   // Transfer page
-  sending: 'Sending'
+  sending: 'Sending',
+  // Point of Sale POS
+  point_of_sale: 'Point of Sale',
+  charge: 'Charge',
+  // as in charge a customer
+  payment: 'Payment',
+  scan_to_send: 'Scan this code to send',
+  use: 'Use',
+  pay_to: 'Pay to:',
+  no_amount: 'No amount entered',
+  no_account: 'No Hive account to send to',
+  old_page: 'Old Hive Page',
+  new_page: 'New Receive Hive Page',
+  no_fees: 'No Fees for Hive or HBD',
+  Fees: 'Fees',
+  list_received_payments: 'List of received payments is coming soon'
 };
