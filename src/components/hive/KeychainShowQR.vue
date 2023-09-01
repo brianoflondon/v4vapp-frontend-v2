@@ -32,17 +32,13 @@
       </q-card-section>
       <!-- Text description of request -->
       <q-card-section :style="{ width: maxUseableWidth + 'px' }">
-        {{ requesting }}
+        {{ requesting }} with memo {{ KeychainDialog.memo }}
       </q-card-section>
       <q-card-section>
         <!-- Green tick -->
         <div
           v-show="KeychainDialog.qrCodeText"
           class="row text-center justify-center overlay-container"
-          :style="{
-            width: maxUseableWidth + 'px',
-            height: maxUseableWidth + 'px',
-          }"
           :class="{ 'show-tick': KeychainDialog.paid }"
         >
           <CreateQRCode
@@ -53,7 +49,7 @@
             :color="dotColor"
           />
         </div>
-        <div v-if="true" class="q-pt-none">
+        <div class="q-pt-none">
           <q-linear-progress
             class="invoice-timer"
             size="10px"
@@ -65,15 +61,32 @@
         <!-- Fees -->
         <div class="text-center q-pt-sm">{{ fees }}</div>
       </q-card-section>
-      <q-card-section>
-        <div :style="{ width: maxUseableWidth + 'px' }">
-          Amount: {{ KeychainDialog.amountToSend }}
-          {{ KeychainDialog.currencyToSend }}
-          <br />
-          To: {{ KeychainDialog.hiveAccTo }}<br />
-          Memo: {{ KeychainDialog.memo }}
+      <q-card-actions>
+        <q-space />
+        <q-btn
+          color="grey"
+          round
+          flat
+          dense
+          :icon="expanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
+          @click="expanded = !expanded"
+        />
+      </q-card-actions>
+
+      <q-slide-transition>
+        <div v-show="expanded">
+          <q-separator />
+          <q-card-section>
+            <div :style="{ width: maxUseableWidth + 'px' }">
+              Amount: {{ KeychainDialog.amountToSend }}
+              {{ KeychainDialog.currencyToSend }}
+              <br />
+              To: {{ KeychainDialog.hiveAccTo }}<br />
+              Memo: {{ KeychainDialog.memo }}
+            </div>
+          </q-card-section>
         </div>
-      </q-card-section>
+      </q-slide-transition>
     </q-card>
   </q-dialog>
 </template>
@@ -93,6 +106,7 @@ const q = useQuasar()
 const t = useI18n().t
 const KeychainDialog = defineModel(null)
 const storeApiStatus = useStoreAPIStatus()
+const expanded = ref(false)
 
 // Use this when we are waiting for an LND invoice to be created
 let waitingForLnd = ref(true)
@@ -154,6 +168,7 @@ const progress = ref(1)
 const intervalRef = ref([])
 
 onMounted(async () => {
+  KeychainDialog.paid = true
   const transactions = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     2
@@ -171,19 +186,16 @@ onMounted(async () => {
 // Calculates the fees charged in the same currency Hive/HBD as
 // the amount being sent.
 function calcFees() {
-  let exchangeRate = 0
-  if (KeychainDialog.value.currencyToSend == "HBD") {
-    exchangeRate = storeApiStatus.HBDSatsNumber
-  } else {
-    exchangeRate = storeApiStatus.hiveSatsNumber
-  }
-  const rawSats = parseFloat(KeychainDialog.value.amountToSend) * exchangeRate
-  const fee =
-    rawSats * storeApiStatus.apiStatus.config.conv_fee_percent +
-    storeApiStatus.apiStatus.config.conv_fee_sats
+  const { currencyToSend, amountToSend } = KeychainDialog.value
+  const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeApiStatus
 
-  const feeOrigCurrency = fee / exchangeRate
-  return feeOrigCurrency
+  const exchangeRate = currencyToSend === "HBD" ? HBDSatsNumber : hiveSatsNumber
+  const rawSats = parseFloat(amountToSend) * exchangeRate
+
+  const fee =
+    rawSats * apiStatus.config.conv_fee_percent + apiStatus.config.conv_fee_sats
+
+  return fee / exchangeRate
 }
 
 async function generateLightningQRCode() {
@@ -359,6 +371,8 @@ function findObjectBefore(data, target_trx_id) {
   position: absolute;
   top: 50%;
   left: 50%;
+  width: 300px;
+  height: 300px;
   transform: translate(-50%, -50%);
   background-image: url("/avatars/green-tick.svg"); /* Replace with the path to your green tick image */
   background-size: contain;
