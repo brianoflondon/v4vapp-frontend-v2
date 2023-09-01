@@ -3,7 +3,7 @@
     <div class="q-gutter-y-md" style="max-width: 550px">
       <q-tabs dense>
         <q-route-tab name="send" to="/lnd" :label="$t('send')" />
-        <q-route-tab name="receive" to="/hive" :label="$t('receive')" />
+        <q-route-tab name="receive" to="/pos" :label="$t('receive')" />
         <!-- <q-route-tab disabled name="pods" to="/pods" :label="$t('pods')" /> -->
       </q-tabs>
     </div>

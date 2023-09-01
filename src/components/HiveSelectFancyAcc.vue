@@ -43,7 +43,7 @@
     <template v-if="modelValue" v-slot:append>
       <q-icon
         name="cancel"
-        @click.stop.prevent="escFn"
+        @click="escFn"
         class="cursor-pointer"
       />
     </template>
@@ -98,6 +98,7 @@ function enterFn(input) {}
 
 function escFn(input) {
   // If Esc is pressed, the model is cleared
+  // modelValue.value = null
   modelValue.value = { label: "", value: "", caption: "" }
 }
 

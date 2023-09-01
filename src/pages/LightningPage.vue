@@ -163,6 +163,7 @@
           </div>
         </div>
         <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
+        <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
         <!-- Vote Button -->
         <div class="vote-button q-pa-lg text-center">
           <VoteProposal v-model="voteOptions" />
@@ -206,6 +207,7 @@ import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
+import KeychainShowQR from "components/hive/KeychainShowQR.vue"
 import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
 import CountdownBar from "components/utils/CountdownBar.vue"
@@ -236,6 +238,7 @@ const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 
+const KeychainDialog = ref({ show: false })
 const HASDialog = ref({ show: false })
 
 let timeMessage = ref("")
@@ -558,7 +561,20 @@ async function payInvoice(currency, method) {
     username = storeUser.currentUser
   }
   let result = {}
+  if (method === "HiveKeychain" && !storeApiStatus.isKeychainIn) {
+    method = "HiveKeychainQR"
+  }
+
   switch (method) {
+    case "HiveKeychainQR":
+      q.notify({
+        color: "negative",
+        timeout: 2000,
+        message: t("keychain_missing"),
+        position: "top",
+      })
+      return
+
     case "HiveKeychain":
       // Hive Keychain process
       result = await useHiveKeychainTransfer(username, amount, currency, memo)

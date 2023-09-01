@@ -29,7 +29,7 @@ const avatarImg = ref(null)
 const props = defineProps({
   hiveAccname: {
     type: String,
-    required: true,
+    default: "",
   },
   size: {
     type: String,
