@@ -158,3 +158,4 @@ export default {
   Fees: "Fees",
   list_received_payments: "List of received payments is coming soon",
 }
+

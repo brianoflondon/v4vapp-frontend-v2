@@ -17,12 +17,12 @@ export default {
   please: 'Por favor',
   and: 'y',
   witness: 'Mi Testigo en Hive',
-  prices_fetched: 'Prices fetched',
-  from: 'from',
-  to: 'to',
+  prices_fetched: 'Precios obtenidos',
+  from: 'desde',
+  to: 'hasta',
   // Dark Mode Selector
-  change_light: 'Change to light mode',
-  change_dark: 'Change to dark mode',
+  change_light: 'Cambiar a modo claro',
+  change_dark: 'Cambiar a modo oscuro',
   // Keychain
   keychain_installed: 'Keychain está instalado',
   keychain_missing: 'Keychain no se encuentra',
@@ -33,9 +33,9 @@ export default {
   // Lightning Page
   lightning: 'Lightning',
   hive: 'Hive',
-  transfer: 'Transfer',
-  not_found: 'Not found',
-  Progress: 'Progress',
+  transfer: 'Transferencia',
+  not_found: 'No encontrado',
+  Progress: 'Progreso',
   // Login
   keychain_not_installed: 'Keychain no está instalada',
   enter_hive_account: 'Por favor, entre su usuario de Hive',
@@ -69,13 +69,13 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain está instalada',
+  keychain_missing: 'Keychain no se encuentra',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
   expires: 'expira en',
-  Expires: 'Expires',
+  Expires: 'Expira',
   enter_invoice: 'lnbc.... o dirección Lightning',
   valid_invoice: 'Factura descifrada',
   valid_lightning_address: 'Dirección descifrada',
@@ -86,14 +86,14 @@ export default {
   self_payment: 'No se puede enviar a v4v.app',
   invoice_hint: 'Pegue una factura o escaneé el QR',
   waiting_for: 'Esperando que su transacción sea validada',
-  invoice_provider_not_working: 'Lightning Invoice provider is not working right now, try later or check the address',
-  requesting: 'Requesting',
+  invoice_provider_not_working: 'El proveedor de la factura Lightning no está funcionando ahora, intente más tarde o compruebe la dirección',
+  requesting: 'Solicitando',
   // HAS Process
-  logged_in_as: 'Logged in as',
-  open_HAS_auth: 'Please open your HAS app and authorize the transaction.',
-  open_HAS: 'Open your HAS app',
-  which_account: 'Which account do you want to use?',
-  rejected_payment: 'Payment rejected by user on HAS',
+  logged_in_as: 'Conectado como',
+  open_HAS_auth: 'Por favor, abre tu aplicación HAS y autoriza la transacción.',
+  open_HAS: 'Abre tu aplicación HAS',
+  which_account: '¿Qué cuenta quieres usar?',
+  rejected_payment: 'Pago rechazado por el usuario en HAS',
   // Please vote
   voting_as: 'Votar como',
   vote_for_proposal: 'Votar por la propuesta DHF',
@@ -113,11 +113,11 @@ export default {
   amount_to_send: 'Cantidad a enviar',
   too_low: 'La cantidad es muy baja',
   too_high: 'La cantidad es muy alta',
-  comment: 'Comment',
+  comment: 'Comentario',
   comment_length: 'El comentario es muy largo',
   // HAS Details Page
-  resend_transaction: 'Retry HAS transaction',
-  payment_sent: 'HAS Payment Sent',
+  resend_transaction: 'Reintentar transacción HAS',
+  payment_sent: 'HAS pago enviado',
   // Camera
   NotAllowedError: 'Necesitar dar permisos de acceso a tu cámara',
   NotSupportedError: 'No se encuentra una cámara en este dispositivo',
@@ -127,14 +127,30 @@ export default {
   InsecureContextError: 'Se requiere de una conexión segura (HTTPS)',
   OtherError: 'Error desconocido de la cámara',
   // Explanation Box
-  explanation_title: 'What is this site?',
-  explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
-  Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
-  The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
-  The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n`,
+  explanation_title: '¿Qué es este sitio?',
+  explanation_text: `v4v.app actúa como una billetera de Bitcoin Lightning para Hive.\ln
+  Usando el Hive o HiveBacked Dollar (HBD) de tu cuenta, puedes pagar una factura lightning o enviar satochis a cualquier dirección lightning.\ln
+  En 'Enviar' puedes pagar cualquier factura lightning o enviar a una dirección lightning.\ln
+  En 'Recibir' generar una factura lightning (con un código QR) para recibir sats de BTC en HIVE.\ln
+  La sección 'Hive' aún esta disponible, pero se recomienda usar las secciones anteriores.\ln`,
   // Credit Card
-  savings: 'Savings',
-  savings_tooltip: 'Show the amounts stored in Hive\'s savings accounts for HBD and Hive',
+  savings: 'Ahorros',
+  savings_tooltip: 'Muestra las cantidades almacenadas en las cuentas de ahorro de HBD y Hive',
   // Transfer page
-  sending: 'Sending'
+  sending: 'Enviando',
+  // Point of Sale POS
+  point_of_sale: 'Punto de venta',
+  charge: 'Costo',
+  // as in charge a customer
+  payment: 'Pago',
+  scan_to_send: 'Escanea este código para enviar',
+  use: 'Usar',
+  pay_to: 'Pagar a:',
+  no_amount: 'No se ha ingresado la cantidad',
+  no_account: 'No hay cuenta de Hive a la que enviar',
+  old_page: 'Página antigua de Hive',
+  new_page: 'Nueva página de recibir Hive',
+  no_fees: 'Sin tarifas para Hive o HBD',
+  Fees: 'Comisiones',
+  list_received_payments: 'Lista de pagos recibidos próximamente'
 };
