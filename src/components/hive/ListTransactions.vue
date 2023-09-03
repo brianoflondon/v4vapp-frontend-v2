@@ -1,10 +1,11 @@
 <template>
   <div class="q-pa-md">
     <q-table
-      :title="KeychainDialog.hiveAccTo"
+      :title="t('list_received_payments')"
       :rows="filteredData"
       :columns="myColumns"
       row-key="trx_id"
+      :visible-columns="['time', 'from', 'amount', 'strippedMemo']"
     />
     <pre>
         {{ KeychainDialog.transactions }}
@@ -13,7 +14,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, onMounted, computed, watch } from "vue"
+import { ref, onMounted, computed, watch } from "vue"
 import { useGetHiveTransactionHistory } from "src/use/useHive"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
@@ -28,15 +29,9 @@ watch(
 )
 
 async function updateTransactions() {
-  console.log("updateTransactions")
-  console.log("KeychainDialog.value.hiveAccTo", KeychainDialog.value.hiveAccTo)
   KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     20
-  )
-  console.log(
-    "KeychainDialog.value.transactions",
-    KeychainDialog.value.transactions
   )
 }
 
@@ -71,8 +66,10 @@ const filteredData = computed(() => {
 const myColumns = ref([
   {
     name: "date",
-    label: "Date",
+    label: t("date"),
     field: (row) => formatDateTimeLocale(row[1].timestamp).date,
+    align: "left",
+    headerClasses: "bg-grey-7 text-grey-2",
   },
   {
     name: "time",
@@ -87,18 +84,34 @@ const myColumns = ref([
   },
   {
     name: "amount",
-    label: "amount",
+    label: t("amount"),
     field: (row) => row[1].op[1].amount,
   },
   {
     name: "memo",
-    label: "memo",
+    label: t("memo"),
     field: (row) => row[1].op[1].memo,
+  },
+  {
+    name: "strippedMemo",
+    label: t("memo"),
+    field: (row) => row[1].op[1].memo.replace(/v4v-\w+$/, ""),
+  },
+  {
+    name: "checkCode",
+    label: "checkCode",
+    field: (row) => row[1].op[1].memo.match(/v4v-\w+$/),
   },
   {
     name: "trx_id",
     label: "trx_id",
     field: (row) => row[1].trx_id,
+  },
+  {
+    name: "timestampUnix",
+    label: "Timestamp Unix",
+    field: (row) => row[1].timestampUnix,
+    sortable: true,
   },
 ])
 

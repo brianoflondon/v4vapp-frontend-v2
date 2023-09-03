@@ -84,13 +84,11 @@
       </div>
       <!-- List of received transactions -->
       <div class="pad-max-width q-px-md q-py-xs">
-        {{ t("list_received_payments") }}
-        {{ hiveAccTo.value }}
         <ListTransactions v-model="KeychainDialog"></ListTransactions>
       </div>
 
       <!-- Explanation what is this page box -->
-      <div style="max-width: 200px">
+      <div class="pad-max-width">
         <ExplanationBox class="q-pt-md"></ExplanationBox>
       </div>
       <!-- Old page links -->
