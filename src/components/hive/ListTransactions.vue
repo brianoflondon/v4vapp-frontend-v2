@@ -4,14 +4,17 @@
       :rows="filteredData"
       :columns="myColumns"
       row-key="trx_id"
-      :sort-method="customSort"
-      :visible-columns="[
-        'prettyTime',
-        'from',
-        'amount',
-        'strippedMemo',
-      ]"
-    />
+      :visible-columns="['prettyTime', 'from', 'amount', 'strippedMemo']"
+    >
+      <!-- <template #body="props">
+        <q-tr :props="props">
+          <q-td key="prettyTime">
+            {{ props.row.prettyTime }}
+            {{ props }}
+          </q-td>
+        </q-tr>
+      </template> -->
+    </q-table>
   </div>
 </template>
 
@@ -36,6 +39,13 @@ async function updateTransactions() {
     KeychainDialog.value.hiveAccTo,
     20
   )
+  console.log("-----------------")
+  console.log(KeychainDialog.value.transactions)
+  console.log("-----------------")
+  const transformedData = KeychainDialog.value.transactions.map(
+    (item) => item[1]
+  )
+  console.log(transformedData)
 }
 
 onMounted(async () => {
@@ -48,11 +58,7 @@ const filteredData = computed(() => {
 
   KeychainDialog.value.transactions.forEach((transaction) => {
     const newDate = new Date(transaction[1].timestamp + "Z")
-    console.log("newDate", newDate)
     transaction[1].timestampUnix = Math.floor(newDate.getTime())
-    transaction[1].timeSinceTransaction = formatTimeDifference(
-      Date.now() - transaction[1].timestampUnix
-    )
   })
   return KeychainDialog.value.transactions.filter((transaction) => {
     const memo = transaction[1].op[1].memo
