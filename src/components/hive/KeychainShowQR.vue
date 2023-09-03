@@ -47,6 +47,7 @@
             :height="maxUseableWidth"
             :hiveAccname="KeychainDialog.hiveAccTo"
             :color="dotColor"
+            :loading="KeychainDialog.loading"
           />
         </div>
         <div class="q-pt-none">
@@ -100,6 +101,7 @@ import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
+import { encodeOp } from "hive-uri"
 
 const q = useQuasar()
 
@@ -107,9 +109,6 @@ const t = useI18n().t
 const KeychainDialog = defineModel(null)
 const storeApiStatus = useStoreAPIStatus()
 const expanded = ref(false)
-
-// Use this when we are waiting for an LND invoice to be created
-let waitingForLnd = ref(true)
 
 const fees = computed(() => {
   if (hiveOrLightning.value == "Hive") {
@@ -146,12 +145,12 @@ const maxUseableWidth = computed(() => {
 const hiveOrLightning = ref("Hive")
 const dotColor = computed(() => {
   if (q.dark.isActive) {
-    if (hiveOrLightning.value == "Hive" || waitingForLnd.value) {
+    if (hiveOrLightning.value == "Hive" || KeychainDialog.value.loading) {
       return "#1976D2"
     }
     return "#18D231"
   } else {
-    if (hiveOrLightning.value == "Hive" || waitingForLnd.value) {
+    if (hiveOrLightning.value == "Hive" || KeychainDialog.value.loading) {
       return "#1976D2"
     }
     return "#18D231"
@@ -168,7 +167,8 @@ const progress = ref(1)
 const intervalRef = ref([])
 
 onMounted(async () => {
-  KeychainDialog.paid = true
+  KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
+  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   const transactions = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     2
@@ -200,7 +200,7 @@ async function generateLightningQRCode() {
     hiveOrLightning.value == "Lightning" &&
     KeychainDialog.value.lndData == null
   ) {
-    waitingForLnd.value = true
+    KeychainDialog.value.loading = true
     KeychainDialog.value.lndData = await useGetLightingHiveInvoice(
       KeychainDialog.value.hiveAccTo,
       KeychainDialog.value.amountToSend,
@@ -208,7 +208,7 @@ async function generateLightningQRCode() {
       KeychainDialog.value.memo,
       checkTimeTotal
     )
-    waitingForLnd.value = false
+    KeychainDialog.value.loading = false
   }
   if (
     KeychainDialog.value.lndData?.error ||

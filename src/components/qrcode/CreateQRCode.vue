@@ -68,14 +68,6 @@ const props = defineProps({
 
 const avatarUrl = ref("")
 
-// const avatarUrl = computed(() => {
-//   return await useHiveAvatarBlob({
-//     hiveAccname: props.hiveAccname,
-//     size: "small",
-//     reason: "qr-code",
-//   })
-// })
-
 onMounted(async () => {
   avatarUrl.value = await useHiveAvatarBlob({
     hiveAccname: props.hiveAccname,

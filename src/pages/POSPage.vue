@@ -82,8 +82,10 @@
           @click="generatePaymentQR"
         />
       </div>
-      <div class="pad-max-width full-width q-px-md q-py-xs">
+      <div class="pad-max-width q-px-md q-py-xs">
         {{ t("list_received_payments") }}
+        {{ hiveAccTo.value }}
+        <ListTransactions :hive-accname="hiveAccTo.value"></ListTransactions>
       </div>
 
       <!-- Explanation what is this page box -->
@@ -110,9 +112,9 @@ import { tidyNumber, genRandAlphaNum } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
+import ListTransactions from "src/components/hive/ListTransactions.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
-import { encodeOp } from "hive-uri"
 import { useI18n } from "vue-i18n"
 
 const q = useQuasar()
@@ -121,7 +123,7 @@ const t = useI18n().t
 const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
 
-const KeychainDialog = ref({ show: false })
+const KeychainDialog = ref({ show: false, reCalc: true })
 
 const amount = ref({
   txt: "",
@@ -188,6 +190,9 @@ watch(hiveAccTo, async (val) => {
     caption: val.caption,
   }
   hiveAccTo.value.caption = setCaption(val.caption)
+  if (KeychainDialog.value.reCalc) {
+    console.log("---------------------> recalc")
+  }
 })
 
 function clearAmount() {
@@ -234,7 +239,7 @@ function generatePaymentQR() {
   KeychainDialog.value.memo = memoInput.value
     ? memoInput.value + " " + KeychainDialog.value.checkCode
     : KeychainDialog.value.checkCode
-  const op = [
+   KeychainDialog.value.op = [
     "transfer",
     {
       from: "",
@@ -243,9 +248,6 @@ function generatePaymentQR() {
       memo: KeychainDialog.value.memo,
     },
   ]
-  console.log(op)
-  KeychainDialog.value.qrCodeTextHive = encodeOp(op)
-  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   KeychainDialog.value.show = true
 }
 
