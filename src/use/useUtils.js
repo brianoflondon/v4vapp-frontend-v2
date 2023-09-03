@@ -4,6 +4,8 @@
 //
 // ----------------------------------------------------------------------------
 
+import { useI18n } from "vue-i18n"
+
 /**
  * Formats a number by inserting commas as thousands separators in its integer part,
  * while preserving any decimal part.
@@ -105,19 +107,56 @@ export function formatDateTimeLocale(isoString) {
  * @param {string} isoString - The UTC ISO string to convert.
  * @returns {Date} The converted local time in the user's time zone.
  */
-function convertUtcToUserLocalTime(isoString) {
+export function convertUtcToUserLocalTime(isoString) {
   // Parse the given UTC ISO string into a Date object
   const date = new Date(isoString)
-
   // Get the time zone offset in minutes for the user's local time zone
   const timezoneOffset = date.getTimezoneOffset()
 
   // Apply the time zone offset to the date to convert it to the local time
   const userLocalTime = new Date(date.getTime() - timezoneOffset * 60 * 1000)
 
-  return userLocalTime
+  const timeFormat = userLocalTime.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  })
+
+  // Format date with day and month
+  const dateFormat = userLocalTime.toLocaleDateString([], {
+    day: "2-digit",
+    month: "2-digit",
+  })
+  return {
+    time: timeFormat,
+    date: dateFormat,
+  }
 }
 
+/**
+ * Formats a time difference in milliseconds into a human-readable string representation
+ * indicating minutes, hours, or days as appropriate.
+ *
+ * @param {number} timeDifferenceMillis - The time difference in milliseconds to format.
+ * @returns {string} The formatted time difference string in the appropriate format.
+ */
+export function formatTimeDifference(timeDifferenceMillis) {
+  const seconds = Math.floor(timeDifferenceMillis / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+
+  if (days >= 1) {
+    return `${days} day${days > 1 ? "s" : ""}`
+  } else if (hours >= 1) {
+    return `${hours} hour${hours > 1 ? "s" : ""}`
+  } else if (minutes >= 1) {
+    return `${minutes} minute${minutes > 1 ? "s" : ""}`
+  } else {
+    return `${seconds} s${seconds !== 1 ? "s" : ""}`
+  }
+}
 
 /**
  * Generates a random alphanumeric string of a given length.

@@ -1,21 +1,27 @@
 <template>
   <div class="q-pa-md">
     <q-table
-      :title="t('list_received_payments')"
       :rows="filteredData"
       :columns="myColumns"
       row-key="trx_id"
-      :visible-columns="['time', 'from', 'amount', 'strippedMemo']"
+      :visible-columns="[
+        'prettyTime',
+        'timestampUnix',
+        'localtime',
+        'timestamp',
+        'date',
+        'from',
+        'amount',
+        'strippedMemo',
+      ]"
     />
-    <pre>
-        {{ KeychainDialog.transactions }}
-    </pre>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch } from "vue"
 import { useGetHiveTransactionHistory } from "src/use/useHive"
+import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
 
@@ -37,23 +43,18 @@ async function updateTransactions() {
 
 onMounted(async () => {
   KeychainDialog.value.transactions = []
-  console.log("KeychainDialog.value.hiveAccTo", KeychainDialog.value.hiveAccTo)
-  console.log(
-    "KeychainDialog.value.transactions",
-    KeychainDialog.value.transactions
-  )
   await updateTransactions()
-  console.log(
-    "KeychainDialog.value.transactions",
-    KeychainDialog.value.transactions
-  )
 })
 
 const filteredData = computed(() => {
   if (!KeychainDialog.value.transactions) return []
+
   KeychainDialog.value.transactions.forEach((transaction) => {
-    transaction[1].timestampUnix = Math.floor(
-      new Date(transaction[1].timestamp)
+    const newDate = new Date(transaction[1].timestamp + "Z")
+    console.log("newDate", newDate)
+    transaction[1].timestampUnix = Math.floor(newDate.getTime())
+    transaction[1].timeSinceTransaction = formatTimeDifference(
+      Date.now() - transaction[1].timestampUnix
     )
   })
   return KeychainDialog.value.transactions.filter((transaction) => {
@@ -62,14 +63,20 @@ const filteredData = computed(() => {
   })
 })
 
+function prettyTime(unixTimestamp) {
+  const timeDiff = Date.now() - unixTimestamp
+  console.log("timeDiff", timeDiff)
+  return formatTimeDifference(timeDiff)
+}
+
 // useDateFormat(row[1].timestampUnix, "HH:mm DD-MM-YYYY"),
 const myColumns = ref([
   {
-    name: "date",
-    label: t("date"),
-    field: (row) => formatDateTimeLocale(row[1].timestamp).date,
-    align: "left",
-    headerClasses: "bg-grey-7 text-grey-2",
+    name: "prettyTime",
+    label: "Time",
+    field: (row) => prettyTime(row[1].timestampUnix),
+    align: "center",
+    sortable: true,
   },
   {
     name: "time",
@@ -81,6 +88,7 @@ const myColumns = ref([
     label: t("from"),
     field: (row) => row[1].op[1].from,
     align: "left",
+    sortable: true,
   },
   {
     name: "amount",
@@ -107,52 +115,7 @@ const myColumns = ref([
     label: "trx_id",
     field: (row) => row[1].trx_id,
   },
-  {
-    name: "timestampUnix",
-    label: "Timestamp Unix",
-    field: (row) => row[1].timestampUnix,
-    sortable: true,
-  },
 ])
-
-function formatDateTime(isoString) {
-  const date = new Date(isoString)
-
-  const hours = date.getHours().toString().padStart(2, "0")
-  const minutes = date.getMinutes().toString().padStart(2, "0")
-  const seconds = date.getSeconds().toString().padStart(2, "0")
-  const day = date.getDate().toString().padStart(2, "0")
-  const month = (date.getMonth() + 1).toString().padStart(2, "0") // Months are 0-indexed
-
-  const timeFormat = `${hours}:${minutes}:${seconds}`
-  const dateFormat = `${day}/${month}`
-
-  return {
-    time: timeFormat,
-    date: dateFormat,
-  }
-}
-
-function formatDateTimeLocale(isoString) {
-  const { locale } = useI18n({ useScope: "global" })
-  console.log(locale.value)
-  const date = new Date(isoString)
-
-  const timeFormat = date.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  })
-  const dateFormat = date.toLocaleDateString([], {
-    day: "2-digit",
-    month: "2-digit",
-  })
-
-  return {
-    time: timeFormat,
-    date: dateFormat,
-  }
-}
 
 const columns = ref([
   {

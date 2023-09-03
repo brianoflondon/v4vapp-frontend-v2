@@ -83,7 +83,7 @@
         />
       </div>
       <!-- List of received transactions -->
-      <div class="pad-max-width q-px-md q-py-xs">
+      <div class="q-px-md q-py-xs">
         <ListTransactions v-model="KeychainDialog"></ListTransactions>
       </div>
 
