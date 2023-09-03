@@ -84,7 +84,13 @@
       </div>
       <!-- List of received transactions -->
       <div class="q-px-md q-py-xs">
-        <ListTransactions v-model="KeychainDialog"></ListTransactions>
+        <q-expansion-item
+          class="full-width"
+          expand-separator
+          :label="t('transactions')"
+        >
+          <ListTransactions v-model="KeychainDialog"></ListTransactions>
+        </q-expansion-item>
       </div>
 
       <!-- Explanation what is this page box -->

@@ -4,12 +4,9 @@
       :rows="filteredData"
       :columns="myColumns"
       row-key="trx_id"
+      :sort-method="customSort"
       :visible-columns="[
         'prettyTime',
-        'timestampUnix',
-        'localtime',
-        'timestamp',
-        'date',
         'from',
         'amount',
         'strippedMemo',
@@ -76,7 +73,6 @@ const myColumns = ref([
     label: "Time",
     field: (row) => prettyTime(row[1].timestampUnix),
     align: "center",
-    sortable: true,
   },
   {
     name: "time",
