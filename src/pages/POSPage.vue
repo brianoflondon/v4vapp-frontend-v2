@@ -82,10 +82,11 @@
           @click="generatePaymentQR"
         />
       </div>
+      <!-- List of received transactions -->
       <div class="pad-max-width q-px-md q-py-xs">
         {{ t("list_received_payments") }}
         {{ hiveAccTo.value }}
-        <ListTransactions :hive-accname="hiveAccTo.value"></ListTransactions>
+        <ListTransactions v-model="KeychainDialog"></ListTransactions>
       </div>
 
       <!-- Explanation what is this page box -->
@@ -102,6 +103,7 @@
         ></q-btn>
       </div>
     </div>
+    <!-- Show the QR dialog -->
     <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
   </q-page>
 </template>
@@ -123,7 +125,7 @@ const t = useI18n().t
 const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
 
-const KeychainDialog = ref({ show: false, reCalc: true })
+const KeychainDialog = ref({ show: false })
 
 const amount = ref({
   txt: "",
@@ -184,15 +186,13 @@ const useStoreUserButtonLabel = computed(() => {
 // Watch the hiveAccTo for changes and update the storeUser.pos Object
 watch(hiveAccTo, async (val) => {
   console.debug("hiveAccTo", val)
+  KeychainDialog.value.hiveAccTo = val.value
   storeUser.pos.hiveAccTo = {
     label: val.label,
     value: val.value,
     caption: val.caption,
   }
   hiveAccTo.value.caption = setCaption(val.caption)
-  if (KeychainDialog.value.reCalc) {
-    console.log("---------------------> recalc")
-  }
 })
 
 function clearAmount() {
@@ -239,7 +239,7 @@ function generatePaymentQR() {
   KeychainDialog.value.memo = memoInput.value
     ? memoInput.value + " " + KeychainDialog.value.checkCode
     : KeychainDialog.value.checkCode
-   KeychainDialog.value.op = [
+  KeychainDialog.value.op = [
     "transfer",
     {
       from: "",

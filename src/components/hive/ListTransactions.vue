@@ -1,13 +1,13 @@
 <template>
   <div class="q-pa-md">
     <q-table
-      :title="hiveAccname.value"
+      :title="KeychainDialog.hiveAccTo"
       :rows="filteredData"
       :columns="myColumns"
       row-key="trx_id"
     />
     <pre>
-        {{ transactions }}
+        {{ KeychainDialog.transactions }}
     </pre>
   </div>
 </template>
@@ -18,35 +18,54 @@ import { useGetHiveTransactionHistory } from "src/use/useHive"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
 
-const props = defineProps({
-  hiveAccname: {
-    type: String,
-    default: "",
-  },
+const KeychainDialog = defineModel(null)
+
+watch(
+  () => KeychainDialog.value.hiveAccTo,
+  async () => {
+    await updateTransactions()
+  }
+)
+
+async function updateTransactions() {
+  console.log("updateTransactions")
+  console.log("KeychainDialog.value.hiveAccTo", KeychainDialog.value.hiveAccTo)
+  KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
+    KeychainDialog.value.hiveAccTo,
+    20
+  )
+  console.log(
+    "KeychainDialog.value.transactions",
+    KeychainDialog.value.transactions
+  )
+}
+
+onMounted(async () => {
+  KeychainDialog.value.transactions = []
+  console.log("KeychainDialog.value.hiveAccTo", KeychainDialog.value.hiveAccTo)
+  console.log(
+    "KeychainDialog.value.transactions",
+    KeychainDialog.value.transactions
+  )
+  await updateTransactions()
+  console.log(
+    "KeychainDialog.value.transactions",
+    KeychainDialog.value.transactions
+  )
 })
 
-const transactions = ref([])
-
 const filteredData = computed(() => {
-  transactions.value.forEach((transaction) => {
+  if (!KeychainDialog.value.transactions) return []
+  KeychainDialog.value.transactions.forEach((transaction) => {
     transaction[1].timestampUnix = Math.floor(
       new Date(transaction[1].timestamp)
     )
   })
-  console.log("filteredData", transactions.value)
-  return transactions.value.filter((transaction) => {
+  return KeychainDialog.value.transactions.filter((transaction) => {
     const memo = transaction[1].op[1].memo
     return memo && memo.match(/v4v-\w+$/)
   })
 })
-
-watch(
-  () => props.hiveAccname,
-  async (newVal, oldVal) => {
-    console.log("props.hiveAccname", newVal)
-    transactions.value = await useGetHiveTransactionHistory(newVal, 25)
-  }
-)
 
 // useDateFormat(row[1].timestampUnix, "HH:mm DD-MM-YYYY"),
 const myColumns = ref([

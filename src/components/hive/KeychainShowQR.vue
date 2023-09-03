@@ -169,11 +169,11 @@ const intervalRef = ref([])
 onMounted(async () => {
   KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
-  const transactions = await useGetHiveTransactionHistory(
+  KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     2
   )
-  const firstTrxId = transactions[0][1]["trx_id"]
+  const firstTrxId = KeychainDialog.value.transactions[0][1]["trx_id"]
   KeychainDialog.value.paid = false
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   startCountdown()
@@ -272,8 +272,13 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
         intervalRef.value.push(watchingInterval)
       })
 
-      const transactions = await useGetHiveTransactionHistory(username)
-      const transaction_found = findObjectBefore(transactions, trx_id)
+      KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
+        username
+      )
+      const transaction_found = findObjectBefore(
+        KeychainDialog.value.transactions,
+        trx_id
+      )
 
       if (!transaction_found) {
         continue // Continue to the next iteration of the loop
