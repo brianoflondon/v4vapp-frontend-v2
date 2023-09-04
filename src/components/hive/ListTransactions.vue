@@ -51,6 +51,13 @@ watch(
   }
 )
 
+watch(
+  () => KeychainDialog.value.paid,
+  async () => {
+    await updateTransactions()
+  }
+)
+
 async function updateTransactions() {
   const trans = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
@@ -69,6 +76,10 @@ async function updateTransactions() {
     })
     posTrans.forEach((transaction) => {
       transaction.strippedMemo = transaction.op[1].memo.replace(/v4v-\w+$/, "")
+      if (transaction.strippedMemo.length > 30) {
+        transaction.strippedMemo =
+          transaction.strippedMemo.substring(0, 30) + "..."
+      }
     })
     posTrans.forEach((transaction) => {
       transaction.checkCode = transaction.op[1].memo.match(/v4v-\w+$/)[0]
@@ -89,9 +100,17 @@ const filteredData = computed(() => {
     const newDate = new Date(transaction.timestamp + "Z")
     transaction.timestampUnix = Math.floor(newDate.getTime())
   })
+  console.log("filter")
   return KeychainDialog.value.transactions.filter((transaction) => {
     const memo = transaction.op[1].memo
-    return memo && memo.match(/v4v-\w+$/)
+    const to = transaction.op[1].to
+    console.log("transaction: ", transaction.op[1])
+    console.log("to: ", to)
+    console.log("match: ", to === KeychainDialog.value.hiveAccTo)
+    console.log("memo: ", memo)
+    return (
+      to === KeychainDialog.value.hiveAccTo && memo && memo.match(/v4v-\w+$/)
+    )
   })
 })
 

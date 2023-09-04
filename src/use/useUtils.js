@@ -150,7 +150,7 @@ export function formatTimeDifference(timeDifferenceMillis) {
   } else if (minutes >= 1) {
     return `${minutes} minute${minutes > 1 ? "s" : ""}`
   } else {
-    return `${seconds} s${seconds !== 1 ? "s" : ""}`
+    return `${seconds} sec${seconds !== 1 ? "s" : ""}`
   }
 }
 
