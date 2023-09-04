@@ -171,7 +171,7 @@ onMounted(async () => {
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
-    2
+    20
   )
   const firstTrxId = KeychainDialog.value.transactions[0].trx_id
   KeychainDialog.value.paid = false

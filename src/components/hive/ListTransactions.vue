@@ -25,7 +25,9 @@
           </q-td>
           <q-td colspan="2" class="text-left">
             {{ props.row.strippedMemo }}
-            <span class="text-right" style="font-size: x-small;">{{ props.row.checkCode[0] }}</span>
+            <span class="text-right" style="font-size: x-small">{{
+              props.row.checkCode
+            }}</span>
           </q-td>
         </q-tr>
       </template>
@@ -37,7 +39,6 @@
 import { ref, onMounted, computed, watch } from "vue"
 import { useGetHiveTransactionHistory } from "src/use/useHive"
 import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
-import { useTimeAgo, useDateFormat } from "@vueuse/core"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
 
@@ -55,24 +56,25 @@ async function updateTransactions() {
     KeychainDialog.value.hiveAccTo,
     20
   )
-  // Filter out the transactions that are not from the POS
-  let posTrans = trans.filter((transaction) => {
-    const memo = transaction.op[1].memo
-    return memo && memo.match(/v4v-\w+$/)
-  })
-  // Add extra fields to the transactions
-  posTrans.forEach((transaction) => {
-    const newDate = new Date(transaction.timestamp + "Z")
-    transaction.timestampUnix = Math.floor(newDate.getTime())
-  })
-  posTrans.forEach((transaction) => {
-    transaction.strippedMemo = transaction.op[1].memo.replace(/v4v-\w+$/, "")
-  })
-  posTrans.forEach((transaction) => {
-    transaction.checkCode = transaction.op[1].memo.match(/v4v-\w+$/)
-  })
-
-  KeychainDialog.value.transactions = posTrans
+  if (trans) {
+    // Filter out the transactions that are not from the POS
+    let posTrans = trans.filter((transaction) => {
+      const memo = transaction.op[1].memo
+      return memo && memo.match(/v4v-\w+$/)
+    })
+    // Add extra fields to the transactions
+    posTrans.forEach((transaction) => {
+      const newDate = new Date(transaction.timestamp + "Z")
+      transaction.timestampUnix = Math.floor(newDate.getTime())
+    })
+    posTrans.forEach((transaction) => {
+      transaction.strippedMemo = transaction.op[1].memo.replace(/v4v-\w+$/, "")
+    })
+    posTrans.forEach((transaction) => {
+      transaction.checkCode = transaction.op[1].memo.match(/v4v-\w+$/)[0]
+    })
+    KeychainDialog.value.transactions = posTrans
+  }
 }
 
 onMounted(async () => {
@@ -95,7 +97,6 @@ const filteredData = computed(() => {
 
 function prettyTime(timestampUnix) {
   const timeDiff = Date.now() - timestampUnix
-  console.log("timeDiff", timeDiff)
   return formatTimeDifference(timeDiff)
 }
 

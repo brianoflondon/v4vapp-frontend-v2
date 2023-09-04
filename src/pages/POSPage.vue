@@ -87,7 +87,7 @@
         <q-expansion-item
           class="full-width"
           expand-separator
-          :label="t('transactions')"
+          :label="t('list_received_payments')"
         >
           <ListTransactions v-model="KeychainDialog"></ListTransactions>
         </q-expansion-item>
