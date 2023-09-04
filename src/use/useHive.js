@@ -291,9 +291,9 @@ export async function useGetHiveTransactionHistory(
       opFilterLow,
       opFilterHigh,
     ])
-    return history.result.reverse()
-    // const transfers = history.result.filter((item) => item[1].op[0] === "transfer")
-    // return transfers.reverse()
+    // This removes the un-necessary double list structure
+    return history.result.reverse().map((item) => item[1])
+
   } catch (error) {
     console.error({ error })
     return null

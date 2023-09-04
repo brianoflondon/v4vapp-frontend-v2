@@ -173,7 +173,7 @@ onMounted(async () => {
     KeychainDialog.value.hiveAccTo,
     2
   )
-  const firstTrxId = KeychainDialog.value.transactions[0][1]["trx_id"]
+  const firstTrxId = KeychainDialog.value.transactions[0].trx_id
   KeychainDialog.value.paid = false
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   startCountdown()
@@ -273,7 +273,8 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
       })
 
       KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
-        username
+        username,
+        20
       )
       const transaction_found = findObjectBefore(
         KeychainDialog.value.transactions,
@@ -334,8 +335,8 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
  */
 function findObjectBefore(data, target_trx_id) {
   for (let i = 1; i < data.length; i++) {
-    if (data[i][1].trx_id === target_trx_id) {
-      return data[i - 1][1]
+    if (data[i].trx_id === target_trx_id) {
+      return data[i - 1]
     }
   }
   return null

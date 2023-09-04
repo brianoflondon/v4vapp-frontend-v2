@@ -722,8 +722,8 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
  */
 function findObjectBefore(data, target_trx_id) {
   for (let i = 1; i < data.length; i++) {
-    if (data[i][1].trx_id === target_trx_id) {
-      return data[i - 1][1]
+    if (data[i].trx_id === target_trx_id) {
+      return data[i - 1]
     }
   }
   return null

@@ -3,17 +3,32 @@
     <q-table
       :rows="filteredData"
       :columns="myColumns"
+      dense
       row-key="trx_id"
-      :visible-columns="['prettyTime', 'from', 'amount', 'strippedMemo']"
+      :visible-columns="['age', 'from', 'amount']"
     >
-      <!-- <template #body="props">
+      <template #body="props">
         <q-tr :props="props">
-          <q-td key="prettyTime">
-            {{ props.row.prettyTime }}
-            {{ props }}
+          <q-td class="no-border">
+            {{ prettyTime(props.row.timestampUnix) }}
+          </q-td>
+          <q-td class="no-border text-left">
+            {{ props.row.op[1].from }}
+          </q-td>
+          <q-td class="no-border">
+            {{ props.row.op[1].amount }}
           </q-td>
         </q-tr>
-      </template> -->
+        <q-tr>
+          <q-td>
+            {{ formatDateTimeLocale(props.row.timestampUnix).date }}
+          </q-td>
+          <q-td colspan="2" class="text-left">
+            {{ props.row.strippedMemo }}
+            <span class="text-right" style="font-size: x-small;">{{ props.row.checkCode[0] }}</span>
+          </q-td>
+        </q-tr>
+      </template>
     </q-table>
   </div>
 </template>
@@ -22,6 +37,7 @@
 import { ref, onMounted, computed, watch } from "vue"
 import { useGetHiveTransactionHistory } from "src/use/useHive"
 import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
+import { useTimeAgo, useDateFormat } from "@vueuse/core"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
 
@@ -35,17 +51,28 @@ watch(
 )
 
 async function updateTransactions() {
-  KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
+  const trans = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     20
   )
-  console.log("-----------------")
-  console.log(KeychainDialog.value.transactions)
-  console.log("-----------------")
-  const transformedData = KeychainDialog.value.transactions.map(
-    (item) => item[1]
-  )
-  console.log(transformedData)
+  // Filter out the transactions that are not from the POS
+  let posTrans = trans.filter((transaction) => {
+    const memo = transaction.op[1].memo
+    return memo && memo.match(/v4v-\w+$/)
+  })
+  // Add extra fields to the transactions
+  posTrans.forEach((transaction) => {
+    const newDate = new Date(transaction.timestamp + "Z")
+    transaction.timestampUnix = Math.floor(newDate.getTime())
+  })
+  posTrans.forEach((transaction) => {
+    transaction.strippedMemo = transaction.op[1].memo.replace(/v4v-\w+$/, "")
+  })
+  posTrans.forEach((transaction) => {
+    transaction.checkCode = transaction.op[1].memo.match(/v4v-\w+$/)
+  })
+
+  KeychainDialog.value.transactions = posTrans
 }
 
 onMounted(async () => {
@@ -57,102 +84,71 @@ const filteredData = computed(() => {
   if (!KeychainDialog.value.transactions) return []
 
   KeychainDialog.value.transactions.forEach((transaction) => {
-    const newDate = new Date(transaction[1].timestamp + "Z")
-    transaction[1].timestampUnix = Math.floor(newDate.getTime())
+    const newDate = new Date(transaction.timestamp + "Z")
+    transaction.timestampUnix = Math.floor(newDate.getTime())
   })
   return KeychainDialog.value.transactions.filter((transaction) => {
-    const memo = transaction[1].op[1].memo
+    const memo = transaction.op[1].memo
     return memo && memo.match(/v4v-\w+$/)
   })
 })
 
-function prettyTime(unixTimestamp) {
-  const timeDiff = Date.now() - unixTimestamp
+function prettyTime(timestampUnix) {
+  const timeDiff = Date.now() - timestampUnix
   console.log("timeDiff", timeDiff)
   return formatTimeDifference(timeDiff)
 }
 
-// useDateFormat(row[1].timestampUnix, "HH:mm DD-MM-YYYY"),
+// useDateFormat(row.timestampUnix, "HH:mm DD-MM-YYYY"),
 const myColumns = ref([
   {
-    name: "prettyTime",
-    label: "Time",
-    field: (row) => prettyTime(row[1].timestampUnix),
+    name: "age",
+    label: "Age",
+    field: (row) => prettyTime(row.timestampUnix),
     align: "center",
   },
   {
     name: "time",
     label: "Time",
-    field: (row) => formatDateTimeLocale(row[1].timestamp).time,
+    field: (row) => formatDateTimeLocale(row.timestamp).time,
   },
   {
     name: "from",
     label: t("from"),
-    field: (row) => row[1].op[1].from,
+    field: (row) => row.op[1].from,
     align: "left",
     sortable: true,
   },
   {
     name: "amount",
     label: t("amount"),
-    field: (row) => row[1].op[1].amount,
+    field: (row) => row.op[1].amount,
   },
   {
     name: "memo",
     label: t("memo"),
-    field: (row) => row[1].op[1].memo,
+    field: (row) => row.op[1].memo,
   },
   {
     name: "strippedMemo",
     label: t("memo"),
-    field: (row) => row[1].op[1].memo.replace(/v4v-\w+$/, ""),
+    field: (row) => row.op[1].memo.replace(/v4v-\w+$/, ""),
   },
   {
     name: "checkCode",
     label: "checkCode",
-    field: (row) => row[1].op[1].memo.match(/v4v-\w+$/),
+    field: (row) => row.op[1].memo.match(/v4v-\w+$/),
   },
   {
     name: "trx_id",
     label: "trx_id",
-    field: (row) => row[1].trx_id,
-  },
-])
-
-const columns = ref([
-  {
-    name: "name",
-    required: true,
-    label: "Dessert (100g serving)",
-    align: "left",
-    field: (row) => row.name,
-    format: (val) => `${val}`,
-    sortable: true,
-  },
-  {
-    name: "calories",
-    align: "center",
-    label: "Calories",
-    field: "calories",
-    sortable: true,
-  },
-  { name: "fat", label: "Fat (g)", field: "fat", sortable: true },
-  { name: "carbs", label: "Carbs (g)", field: "carbs" },
-  { name: "protein", label: "Protein (g)", field: "protein" },
-  { name: "sodium", label: "Sodium (mg)", field: "sodium" },
-  {
-    name: "calcium",
-    label: "Calcium (%)",
-    field: "calcium",
-    sortable: true,
-    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
-  },
-  {
-    name: "iron",
-    label: "Iron (%)",
-    field: "iron",
-    sortable: true,
-    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
+    field: (row) => row.trx_id,
   },
 ])
 </script>
+
+<style lang="scss" scoped>
+.no-border {
+  border-bottom: none;
+}
+</style>
