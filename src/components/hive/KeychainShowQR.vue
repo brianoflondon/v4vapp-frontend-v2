@@ -47,6 +47,7 @@
             :height="maxUseableWidth"
             :hiveAccname="KeychainDialog.hiveAccTo"
             :color="dotColor"
+            :loading="KeychainDialog.loading"
           />
         </div>
         <div class="q-pt-none">
@@ -100,6 +101,7 @@ import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
+import { encodeOp } from "hive-uri"
 
 const q = useQuasar()
 
@@ -107,9 +109,6 @@ const t = useI18n().t
 const KeychainDialog = defineModel(null)
 const storeApiStatus = useStoreAPIStatus()
 const expanded = ref(false)
-
-// Use this when we are waiting for an LND invoice to be created
-let waitingForLnd = ref(true)
 
 const fees = computed(() => {
   if (hiveOrLightning.value == "Hive") {
@@ -146,12 +145,12 @@ const maxUseableWidth = computed(() => {
 const hiveOrLightning = ref("Hive")
 const dotColor = computed(() => {
   if (q.dark.isActive) {
-    if (hiveOrLightning.value == "Hive" || waitingForLnd.value) {
+    if (hiveOrLightning.value == "Hive" || KeychainDialog.value.loading) {
       return "#1976D2"
     }
     return "#18D231"
   } else {
-    if (hiveOrLightning.value == "Hive" || waitingForLnd.value) {
+    if (hiveOrLightning.value == "Hive" || KeychainDialog.value.loading) {
       return "#1976D2"
     }
     return "#18D231"
@@ -168,12 +167,13 @@ const progress = ref(1)
 const intervalRef = ref([])
 
 onMounted(async () => {
-  KeychainDialog.paid = true
-  const transactions = await useGetHiveTransactionHistory(
+  KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
+  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+  KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
-    2
+    20
   )
-  const firstTrxId = transactions[0][1]["trx_id"]
+  const firstTrxId = KeychainDialog.value.transactions[0].trx_id
   KeychainDialog.value.paid = false
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   startCountdown()
@@ -200,7 +200,7 @@ async function generateLightningQRCode() {
     hiveOrLightning.value == "Lightning" &&
     KeychainDialog.value.lndData == null
   ) {
-    waitingForLnd.value = true
+    KeychainDialog.value.loading = true
     KeychainDialog.value.lndData = await useGetLightingHiveInvoice(
       KeychainDialog.value.hiveAccTo,
       KeychainDialog.value.amountToSend,
@@ -208,7 +208,7 @@ async function generateLightningQRCode() {
       KeychainDialog.value.memo,
       checkTimeTotal
     )
-    waitingForLnd.value = false
+    KeychainDialog.value.loading = false
   }
   if (
     KeychainDialog.value.lndData?.error ||
@@ -272,8 +272,14 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
         intervalRef.value.push(watchingInterval)
       })
 
-      const transactions = await useGetHiveTransactionHistory(username)
-      const transaction_found = findObjectBefore(transactions, trx_id)
+      KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
+        username,
+        20
+      )
+      const transaction_found = findObjectBefore(
+        KeychainDialog.value.transactions,
+        trx_id
+      )
 
       if (!transaction_found) {
         continue // Continue to the next iteration of the loop
@@ -329,8 +335,8 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
  */
 function findObjectBefore(data, target_trx_id) {
   for (let i = 1; i < data.length; i++) {
-    if (data[i][1].trx_id === target_trx_id) {
-      return data[i - 1][1]
+    if (data[i].trx_id === target_trx_id) {
+      return data[i - 1]
     }
   }
   return null

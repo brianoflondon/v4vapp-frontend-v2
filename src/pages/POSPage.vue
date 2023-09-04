@@ -82,12 +82,19 @@
           @click="generatePaymentQR"
         />
       </div>
-      <div class="pad-max-width full-width q-px-md q-py-xs">
-        {{ t("list_received_payments") }}
+      <!-- List of received transactions -->
+      <div class="q-px-md q-py-xs">
+        <q-expansion-item
+          class="full-width"
+          expand-separator
+          :label="t('list_received_payments')"
+        >
+          <ListTransactions v-model="KeychainDialog"></ListTransactions>
+        </q-expansion-item>
       </div>
 
       <!-- Explanation what is this page box -->
-      <div style="max-width: 200px">
+      <div class="pad-max-width">
         <ExplanationBox class="q-pt-md"></ExplanationBox>
       </div>
       <!-- Old page links -->
@@ -100,6 +107,7 @@
         ></q-btn>
       </div>
     </div>
+    <!-- Show the QR dialog -->
     <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
   </q-page>
 </template>
@@ -110,9 +118,9 @@ import { tidyNumber, genRandAlphaNum } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
+import ListTransactions from "src/components/hive/ListTransactions.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
-import { encodeOp } from "hive-uri"
 import { useI18n } from "vue-i18n"
 
 const q = useQuasar()
@@ -182,6 +190,7 @@ const useStoreUserButtonLabel = computed(() => {
 // Watch the hiveAccTo for changes and update the storeUser.pos Object
 watch(hiveAccTo, async (val) => {
   console.debug("hiveAccTo", val)
+  KeychainDialog.value.hiveAccTo = val.value
   storeUser.pos.hiveAccTo = {
     label: val.label,
     value: val.value,
@@ -234,7 +243,7 @@ function generatePaymentQR() {
   KeychainDialog.value.memo = memoInput.value
     ? memoInput.value + " " + KeychainDialog.value.checkCode
     : KeychainDialog.value.checkCode
-  const op = [
+  KeychainDialog.value.op = [
     "transfer",
     {
       from: "",
@@ -243,9 +252,6 @@ function generatePaymentQR() {
       memo: KeychainDialog.value.memo,
     },
   ]
-  console.log(op)
-  KeychainDialog.value.qrCodeTextHive = encodeOp(op)
-  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   KeychainDialog.value.show = true
 }
 

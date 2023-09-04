@@ -152,5 +152,6 @@ export default {
   new_page: 'New Receive Hive Page',
   no_fees: 'No Fees for Hive or HBD',
   Fees: 'Fees',
-  list_received_payments: 'List of received payments is coming soon'
+  list_received_payments: 'Received Payments',
+  memo: 'Memo',
 };
