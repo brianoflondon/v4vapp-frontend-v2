@@ -81,6 +81,9 @@
           :label="payButtonLabel"
           @click="generatePaymentQR"
         />
+        <div class="pad-max-width full-width q-px-md">
+          <AlternateCurrency :amount="amount.num" :currency="currency" />
+        </div>
       </div>
       <!-- List of received transactions -->
       <div class="q-px-md q-py-xs">
@@ -122,6 +125,7 @@ import ListTransactions from "src/components/hive/ListTransactions.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 
 const q = useQuasar()
 const t = useI18n().t

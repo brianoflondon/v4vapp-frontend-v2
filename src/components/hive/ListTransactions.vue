@@ -100,14 +100,9 @@ const filteredData = computed(() => {
     const newDate = new Date(transaction.timestamp + "Z")
     transaction.timestampUnix = Math.floor(newDate.getTime())
   })
-  console.log("filter")
   return KeychainDialog.value.transactions.filter((transaction) => {
     const memo = transaction.op[1].memo
     const to = transaction.op[1].to
-    console.log("transaction: ", transaction.op[1])
-    console.log("to: ", to)
-    console.log("match: ", to === KeychainDialog.value.hiveAccTo)
-    console.log("memo: ", memo)
     return (
       to === KeychainDialog.value.hiveAccTo && memo && memo.match(/v4v-\w+$/)
     )
