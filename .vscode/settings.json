@@ -18,6 +18,7 @@
     "titleBar.activeForeground": "#F6FBFE"
   },
   "cSpell.words": [
+    "axios",
     "pinia"
   ],
   "githubPullRequests.ignoredPullRequestBranches": [

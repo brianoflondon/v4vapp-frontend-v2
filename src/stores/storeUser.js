@@ -64,6 +64,7 @@ export class HiveUser {
       hiveAccname: this.hiveAccname,
       profileName: this.profileName,
       keySelected: this.keySelected,
+      localCurrency: this.localCurrency,
       authKey: this.authKey,
       expire: this.expire,
       token: this.token,
@@ -78,6 +79,10 @@ export const useStoreUser = defineStore("useStoreUser", {
     currentUser: useStorage("currentUser", null),
     currentDetails: useStorage("details", null),
     currentProfile: useStorage("profile", null),
+    localCurrency: useStorage("localCurrency", {
+      label: "US Dollar",
+      value: "usd",
+    }),
     users: useStorage("users", {}),
     pos: useStorage("pos", {}),
   }),
@@ -164,7 +169,9 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     savingsHbdBalance() {
       if (!this.currentDetails) return "💰💰💰"
-      const balNum = parseFloat(this.currentDetails.savings_hbd_balance).toFixed(3)
+      const balNum = parseFloat(
+        this.currentDetails.savings_hbd_balance
+      ).toFixed(3)
       return tidyNumber(balNum)
     },
     satsBalance() {
@@ -194,11 +201,14 @@ export const useStoreUser = defineStore("useStoreUser", {
     savingsSatsBalance() {
       if (this.satsBalance === "💰💰💰") return "💰💰💰"
       const savingsHiveBalance = parseFloat(this.currentDetails.savings_balance)
-      const savingsHbdBalance = parseFloat(this.currentDetails.savings_hbd_balance)
+      const savingsHbdBalance = parseFloat(
+        this.currentDetails.savings_hbd_balance
+      )
       if (isNaN(savingsHiveBalance) || isNaN(savingsHbdBalance)) {
         return "Invalid balance"
       }
-      const savingsHiveTotal = savingsHiveBalance + savingsHbdBalance / storeAPIStatus.hiveHBDNumber
+      const savingsHiveTotal =
+        savingsHiveBalance + savingsHbdBalance / storeAPIStatus.hiveHBDNumber
       const savingsSatsTotal = Math.round(
         savingsHiveTotal * storeAPIStatus.hiveSatsNumber
       ).toLocaleString()
@@ -212,7 +222,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         parseInt(this.savingsSatsBalance.replace(/,/g, ""), 10)
       ).toLocaleString()
       return totalSatsBalance
-    }
+    },
   },
 
   actions: {
@@ -286,7 +296,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     strategies: [
       {
         storage: localStorage,
-        paths: ["users", "currentUser", "pos"],
+        paths: ["users", "currentUser", "pos", "localCurrency"],
       },
     ],
   },
