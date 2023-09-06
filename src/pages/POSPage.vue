@@ -113,7 +113,9 @@
           <ListTransactions v-model="KeychainDialog"></ListTransactions>
         </q-expansion-item>
       </div>
-      <LocalCurrency />
+      <div class="pad-max-width" style="width: 80%;">
+        <LocalCurrency />
+      </div>
       <!-- Explanation what is this page box -->
       <div class="pad-max-width">
         <ExplanationBox class="q-pt-md"></ExplanationBox>
