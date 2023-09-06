@@ -154,5 +154,6 @@ export default {
   no_fees: 'No Fees for Hive or HBD',
   Fees: 'Fees',
   list_received_payments: 'Received Payments',
-  memo: 'Memo'
+  memo: 'Memo',
+  calculating_fees: 'Calculating fees'
 };
