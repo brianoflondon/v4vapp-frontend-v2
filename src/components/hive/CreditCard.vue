@@ -55,9 +55,7 @@
               {{ balances["hbd"] }}
             </td>
             <td class="q-pl-sm">
-              <q-icon name="img:/avatars/hbd_logo.svg">
-                <q-tooltip>HBD - Hive Blockchain Dollar</q-tooltip>
-              </q-icon>
+              <HbdLogoIcon />
             </td>
           </tr>
           <tr>
@@ -90,6 +88,7 @@ import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { computed, ref } from "vue"
 const storeUser = useStoreUser()
 import { useQuasar } from "quasar"
+import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 
 const q = useQuasar()
 const savingsToggle = ref(false)

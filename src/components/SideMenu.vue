@@ -7,6 +7,9 @@
     <q-list>
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
     </q-list>
+    <div class="q-pa-md">
+      <LocalCurrency />
+    </div>
   </div>
 </template>
 
@@ -16,12 +19,12 @@ import { ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
 import UserList from "components/hive/UserList.vue"
-import { useHiveDetails } from "src/use/useHive.js"
 import HiveLogin from "components/HiveLogin.vue"
 import { useStoreUser } from "src/stores/storeUser"
+import LocalCurrency from "components/utils/LocalCurrency.vue"
 
 const storeUser = useStoreUser()
-const rightDrawerOpen = defineModel(false)
+// const rightDrawerOpen = defineModel(false)
 
 const hiveAccObj = ref()
 

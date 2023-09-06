@@ -57,11 +57,13 @@
             </template>
           </q-input>
         </div>
+        <!-- Currency Selector -->
         <div class="col-3 q-pa-sm amount-input-area">
           <q-select
             v-model="currency"
             :options="currencyOptions"
             label="Currency"
+            @update:model-value="(val) => updateCurrency(val)"
             dense
           />
         </div>
@@ -71,16 +73,35 @@
         <q-input clearable v-model="memoInput" class="full-width" label="Memo">
         </q-input>
       </div>
-      <!-- Pay button -->
-      <div class="pad-max-width full-width q-px-md q-py-xs">
-        <q-btn
-          class="full-width"
-          style="font-size: 1.2rem; white-space: pre-line"
-          color="secondary"
-          icon="qr_code_2"
-          :label="payButtonLabel"
-          @click="generatePaymentQR"
-        />
+      <!-- Pay buttons -->
+      <div class="pad-max-width full-width q-px-md q-py-xs q-gutter-sm">
+        <!-- HBD Button -->
+        <q-btn color="secondary" @click="generatePaymentQR('HBD')">
+          <div class="column items-center q-pa-none" style="font-size: 1.2rem">
+            <div><HbdLogoIcon /></div>
+            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+              HBD
+            </div>
+          </div>
+          <div class="q-px-md" style="font-size: 1.2rem">
+            {{ tidyNumber(CurrencyCalc.hbd, 2) }}
+          </div>
+        </q-btn>
+        <!-- Hive Button -->
+        <q-btn color="primary" @click="generatePaymentQR('HIVE')">
+          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
+            <div><i class="fa-brands fa-hive" /></div>
+            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+              Hive
+            </div>
+          </div>
+          <div class="q-px-md" style="font-size: 1.2rem">
+            {{ tidyNumber(CurrencyCalc.hive, 2) }}
+          </div>
+        </q-btn>
+        <div class="pad-max-width full-width q-px-md">
+          <AlternateCurrency v-model="CurrencyCalc" />
+        </div>
       </div>
       <!-- List of received transactions -->
       <div class="q-px-md q-py-xs">
@@ -92,7 +113,9 @@
           <ListTransactions v-model="KeychainDialog"></ListTransactions>
         </q-expansion-item>
       </div>
-
+      <div class="pad-max-width" style="width: 80%;">
+        <LocalCurrency />
+      </div>
       <!-- Explanation what is this page box -->
       <div class="pad-max-width">
         <ExplanationBox class="q-pt-md"></ExplanationBox>
@@ -122,6 +145,9 @@ import ListTransactions from "src/components/hive/ListTransactions.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
+import LocalCurrency from "src/components/utils/LocalCurrency.vue"
 
 const q = useQuasar()
 const t = useI18n().t
@@ -130,20 +156,44 @@ const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
 
 const KeychainDialog = ref({ show: false })
+const CurrencyCalc = ref({
+  amount: 0,
+  currency: "HBD",
+  sats: 0,
+  hive: 0,
+  hbd: 0,
+  local: 0,
+})
 
 const amount = ref({
   txt: "",
   num: 0,
 })
 
-const payButtonLabel = computed(() => {
-  return t("pay") + " " + tidyNumber(amount.value.num, 3) + " " + currency.value
+const decimalEntry = ref(0)
+
+// const currencyOptions = ref(["HBD", "HIVE"])
+const currencyOptions = computed(() => {
+  const ans = [
+    { label: "HBD", value: "HBD" },
+    { label: "HIVE", value: "HIVE" },
+    { label: "SATS", value: "SATS" },
+  ]
+  if (storeUser.localCurrency) {
+    ans.push(storeUser.localCurrency)
+  }
+  return ans
 })
 
-const decimalEntry = ref(0)
-const items = ref(0)
+watch(
+  () => storeUser.localCurrency,
+  () => {
+    if (currency.value != storeUser.localCurrency.value) {
+      currency.value = storeUser.localCurrency.value
+    }
+  }
+)
 
-const currencyOptions = ref(["HBD", "HIVE"])
 const currency = ref("HBD")
 
 onMounted(() => {
@@ -156,6 +206,7 @@ onMounted(() => {
   } else {
     useLoggedInUser()
   }
+  currencyOptions.value.push(storeUser.localCurrency.label)
 })
 
 function useLoggedInUser() {
@@ -175,6 +226,12 @@ function updateAmounts(val) {
     return
   }
   amount.value.num = parseFloat(val)
+  CurrencyCalc.value.amount = parseFloat(val)
+}
+
+function updateCurrency(val) {
+  currency.value = val.value
+  CurrencyCalc.value.currency = val.value
 }
 
 function enterPressed() {}
@@ -203,13 +260,12 @@ function clearAmount() {
   decimalEntry.value = 0
   amount.value.txt = ""
   amount.value.num = 0
-  items.value = 0
+  CurrencyCalc.value.amount = 0
 }
 
 const memoInput = ref("")
 
-function generatePaymentQR() {
-  console.log("generatePaymentQR")
+function generatePaymentQR(payWith) {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
   if (amount.value.num === 0) {
@@ -230,9 +286,19 @@ function generatePaymentQR() {
     })
     return
   }
+  switch (payWith) {
+    case "HBD":
+      KeychainDialog.value.amountToSend = CurrencyCalc.value.hbd.toFixed(3)
+      KeychainDialog.value.currencyToSend = "HBD"
+      break
+    case "HIVE":
+      KeychainDialog.value.amountToSend = CurrencyCalc.value.hive.toFixed(3)
+      KeychainDialog.value.currencyToSend = "HIVE"
+      break
+    default:
+      break
+  }
 
-  KeychainDialog.value.amountToSend = parseFloat(amount.value.num).toFixed(3)
-  KeychainDialog.value.currencyToSend = currency.value
   KeychainDialog.value.amountString =
     KeychainDialog.value.amountToSend +
     " " +
@@ -258,12 +324,9 @@ function generatePaymentQR() {
 watch(
   () => KeychainDialog.value?.paid,
   (paid) => {
-    console.log("watch KeychainDialog Paid?", paid)
     if (paid) {
-      console.log("paid")
       clearAmount(true)
     } else {
-      console.log("not paid")
     }
   }
 )
