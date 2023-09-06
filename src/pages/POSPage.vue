@@ -76,27 +76,28 @@
       <!-- Pay buttons -->
       <div class="pad-max-width full-width q-px-md q-py-xs q-gutter-sm">
         <!-- HBD Button -->
-        <q-btn
-          style="font-size: 1.2rem; white-space: pre-line"
-          color="secondary"
-          icon="qr_code_2"
-          @click="generatePaymentQR('HBD')"
-        >
-          <div><HbdLogoIcon />$ {{ tidyNumber(CurrencyCalc.hbd, 2) }}</div>
-          <div style="font-size: 0.5rem">HBD</div>
+        <q-btn color="secondary" @click="generatePaymentQR('HBD')">
+          <div class="column items-center q-pa-none" style="font-size: 1.2rem">
+            <div><HbdLogoIcon /></div>
+            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+              HBD
+            </div>
+          </div>
+          <div class="q-px-md" style="font-size: 1.2rem">
+            {{ tidyNumber(CurrencyCalc.hbd, 2) }}
+          </div>
         </q-btn>
         <!-- Hive Button -->
-        <q-btn
-          style="font-size: 1.2rem; white-space: pre-line"
-          color="primary"
-          icon="qr_code_2"
-          @click="generatePaymentQR('HIVE')"
-        >
-          <div>
-            <i class="fa-brands fa-hive" />
+        <q-btn color="primary" @click="generatePaymentQR('HIVE')">
+          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
+            <div><i class="fa-brands fa-hive" /></div>
+            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+              Hive
+            </div>
+          </div>
+          <div class="q-px-md" style="font-size: 1.2rem">
             {{ tidyNumber(CurrencyCalc.hive, 2) }}
           </div>
-          <div style="font-size: 0.5rem">Hive</div>
         </q-btn>
         <div class="pad-max-width full-width q-px-md">
           <AlternateCurrency v-model="CurrencyCalc" />
@@ -112,7 +113,7 @@
           <ListTransactions v-model="KeychainDialog"></ListTransactions>
         </q-expansion-item>
       </div>
-
+      <LocalCurrency />
       <!-- Explanation what is this page box -->
       <div class="pad-max-width">
         <ExplanationBox class="q-pt-md"></ExplanationBox>
@@ -144,6 +145,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
+import LocalCurrency from "src/components/utils/LocalCurrency.vue"
 
 const q = useQuasar()
 const t = useI18n().t
@@ -288,7 +290,6 @@ function generatePaymentQR(payWith) {
       KeychainDialog.value.currencyToSend = "HIVE"
       break
     default:
-      console.log("generatePaymentQR payWith", payWith)
       break
   }
 
