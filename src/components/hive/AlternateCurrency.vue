@@ -43,14 +43,16 @@ let localRates = {}
 
 watch(
   () => CurrencyCalc.value.amount,
-  () => {
+  (val) => {
+    CurrencyCalc.value.amount = val
     calcAllAmounts()
   }
 )
 
 watch(
   () => CurrencyCalc.value.currency,
-  async () => {
+  async (val) => {
+    CurrencyCalc.value.currency = val
     localRates = await getCoingeckoRate(storeUser.localCurrency.value)
     calcAllAmounts()
   }
@@ -58,7 +60,8 @@ watch(
 
 watch(
   () => storeUser.localCurrency,
-  async () => {
+  async (val) => {
+    storeUser.localCurrency = val
     localRates = await getCoingeckoRate(storeUser.localCurrency.value)
     calcAllAmounts()
   }

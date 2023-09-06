@@ -46,14 +46,16 @@ const KeychainDialog = defineModel(null)
 
 watch(
   () => KeychainDialog.value.hiveAccTo,
-  async () => {
+  async (val) => {
+    KeychainDialog.value.transactions = val
     await updateTransactions()
   }
 )
 
 watch(
   () => KeychainDialog.value.paid,
-  async () => {
+  async (val) => {
+    KeychainDialog.value.paid = val
     await updateTransactions()
   }
 )
