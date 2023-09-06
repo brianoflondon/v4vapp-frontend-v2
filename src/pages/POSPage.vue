@@ -172,19 +172,28 @@ const decimalEntry = ref(0)
 
 // const currencyOptions = ref(["HBD", "HIVE"])
 const currencyOptions = computed(() => {
+  const ans = [
+    { label: "HBD", value: "HBD" },
+    { label: "HIVE", value: "HIVE" },
+    { label: "SATS", value: "SATS" },
+  ]
   if (storeUser.localCurrency) {
-    return [
-      { label: "HBD", value: "HBD" },
-      { label: "HIVE", value: "HIVE" },
-      { label: "SATS", value: "SATS" },
-      {
-        label: storeUser.localCurrency.label,
-        value: storeUser.localCurrency.value,
-      },
-    ]
+    ans.push(storeUser.localCurrency)
   }
-  return ["HBD", "HIVE"]
+  console.log("currencyOptions", ans)
+  return ans
 })
+
+watch(
+  () => storeUser.localCurrency,
+  () => {
+    console.log("watch storeUser.localCurrency", storeUser.localCurrency)
+    console.log("watch currency.value", currency.value)
+    if (currency.value != storeUser.localCurrency.value) {
+      currency.value = storeUser.localCurrency.value
+    }
+  }
+)
 
 const currency = ref("HBD")
 

@@ -27,6 +27,14 @@ watch(
   }
 )
 
+watch(
+  () => storeUser.localCurrency,
+  () => {
+    currency.value = storeUser.localCurrency
+  }
+)
+
+
 onMounted(async () => {
   if (storeUser.localCurrency) {
     currency.value = storeUser.localCurrency

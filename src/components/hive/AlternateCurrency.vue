@@ -44,7 +44,6 @@ let localRates = {}
 watch(
   () => CurrencyCalc.value.amount,
   () => {
-    console.log("CurrencyCalc", CurrencyCalc.value)
     calcAllAmounts()
   }
 )
@@ -52,10 +51,15 @@ watch(
 watch(
   () => CurrencyCalc.value.currency,
   async () => {
-    console.log("CurrencyCalc", CurrencyCalc.value)
-    console.log("getting rates -----------------------")
     localRates = await getCoingeckoRate(storeUser.localCurrency.value)
-    console.log("localRates", localRates)
+    calcAllAmounts()
+  }
+)
+
+watch(
+  () => storeUser.localCurrency,
+  async () => {
+    localRates = await getCoingeckoRate(storeUser.localCurrency.value)
     calcAllAmounts()
   }
 )
@@ -97,8 +101,7 @@ async function calcAllAmounts() {
         (CurrencyCalc.value.amount * storeAPIStatus.hiveSatsNumber) /
         storeAPIStatus.HBDSatsNumber
       CurrencyCalc.value.local =
-        CurrencyCalc.value.hive *
-        localRates.hive[storeUser.localCurrency.value]
+        CurrencyCalc.value.hive * localRates.hive[storeUser.localCurrency.value]
       break
     case "SATS":
       CurrencyCalc.value.sats = CurrencyCalc.value.amount
@@ -106,7 +109,8 @@ async function calcAllAmounts() {
         CurrencyCalc.value.amount / storeAPIStatus.hiveSatsNumber
       CurrencyCalc.value.hbd =
         CurrencyCalc.value.amount / storeAPIStatus.HBDSatsNumber
-      CurrencyCalc.value.local = CurrencyCalc.value.hive * localRates.hive[storeUser.localCurrency.value]
+      CurrencyCalc.value.local =
+        CurrencyCalc.value.hive * localRates.hive[storeUser.localCurrency.value]
       break
     default:
       console.log("inside switch rates -----------------------")
