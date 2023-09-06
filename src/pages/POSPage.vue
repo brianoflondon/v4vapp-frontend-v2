@@ -180,15 +180,12 @@ const currencyOptions = computed(() => {
   if (storeUser.localCurrency) {
     ans.push(storeUser.localCurrency)
   }
-  console.log("currencyOptions", ans)
   return ans
 })
 
 watch(
   () => storeUser.localCurrency,
   () => {
-    console.log("watch storeUser.localCurrency", storeUser.localCurrency)
-    console.log("watch currency.value", currency.value)
     if (currency.value != storeUser.localCurrency.value) {
       currency.value = storeUser.localCurrency.value
     }
@@ -233,7 +230,6 @@ function updateAmounts(val) {
 function updateCurrency(val) {
   currency.value = val.value
   CurrencyCalc.value.currency = val.value
-  console.log("updateCurrency", CurrencyCalc.value)
 }
 
 function enterPressed() {}
@@ -268,7 +264,6 @@ function clearAmount() {
 const memoInput = ref("")
 
 function generatePaymentQR(payWith) {
-  console.log("generatePaymentQR")
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
   if (amount.value.num === 0) {
@@ -327,12 +322,9 @@ function generatePaymentQR(payWith) {
 watch(
   () => KeychainDialog.value?.paid,
   (paid) => {
-    console.log("watch KeychainDialog Paid?", paid)
     if (paid) {
-      console.log("paid")
       clearAmount(true)
     } else {
-      console.log("not paid")
     }
   }
 )

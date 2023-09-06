@@ -72,7 +72,6 @@ function setAllZero() {
 }
 
 async function calcAllAmounts() {
-  console.log("CurrencyCalc", CurrencyCalc.value)
   if (CurrencyCalc.value.amount === 0) {
     setAllZero()
     return
@@ -88,7 +87,6 @@ async function calcAllAmounts() {
         (CurrencyCalc.value.amount * storeAPIStatus.HBDSatsNumber) /
         storeAPIStatus.hiveSatsNumber
       CurrencyCalc.value.hbd = CurrencyCalc.value.amount
-      console.log("localRates", localRates)
       CurrencyCalc.value.local =
         CurrencyCalc.value.hbd *
         localRates.hive_dollar[storeUser.localCurrency.value]
@@ -113,14 +111,7 @@ async function calcAllAmounts() {
         CurrencyCalc.value.hive * localRates.hive[storeUser.localCurrency.value]
       break
     default:
-      console.log("inside switch rates -----------------------")
-      console.log("localRates", localRates)
-      console.log("CurrencyCalc.value.currency", CurrencyCalc.value.currency)
-      console.log("localRates.hive", localRates.hive)
-      console.log(
-        "localRates.hive[CurrencyCalc.value.currency]",
-        localRates.hive[CurrencyCalc.value.currency]
-      )
+
       CurrencyCalc.value.hive =
         CurrencyCalc.value.amount /
         localRates.hive[storeUser.localCurrency.value]
