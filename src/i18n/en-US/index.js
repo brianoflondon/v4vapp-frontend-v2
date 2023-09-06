@@ -20,6 +20,7 @@ export default {
   prices_fetched: 'Prices fetched',
   from: 'from',
   to: 'to',
+  local_currency: 'Local Currency',
   // Dark Mode Selector
   change_light: 'Change to light mode',
   change_dark: 'Change to dark mode',

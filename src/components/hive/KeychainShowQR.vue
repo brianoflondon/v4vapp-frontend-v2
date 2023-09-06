@@ -157,7 +157,7 @@ const dotColor = computed(() => {
   }
 })
 
-const checkTime = 2 // 5 seconds between each check
+const checkTime = 5 // 5 seconds between each check
 const maxChecks = 40 // 20 checks total
 
 const checkTimeTotal = checkTime * maxChecks
@@ -167,7 +167,7 @@ const progress = ref(1)
 const intervalRef = ref([])
 
 onMounted(async () => {
-  KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
+  generateHiveQRCode()
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
@@ -193,6 +193,18 @@ function calcFees() {
     rawSats * apiStatus.config.conv_fee_percent + apiStatus.config.conv_fee_sats
 
   return fee / exchangeRate
+}
+
+function generateHiveQRCode() {
+  // This section with params doesn't seem to work yet.
+  const myParameters = {
+    // signer: "v4vapp.dev"
+    callback: "https://webhook.site/5b73fc0c-8d1e-43ea-89fc-cc170aeafcc0",
+  }
+  KeychainDialog.value.qrCodeTextHive = encodeOp(
+    KeychainDialog.value.op,
+    myParameters
+  )
 }
 
 async function generateLightningQRCode() {

@@ -9,10 +9,10 @@
 </template>
 
 <script setup>
-import { axios } from "boot/axios"
 import { ref, onMounted, watch } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
+import { getCoingeckoRates } from "src/use/useCoinGecko"
 const t = useI18n().t
 const storeUser = useStoreUser()
 
@@ -27,34 +27,11 @@ watch(
   }
 )
 
-async function getCoingeckoRates() {
-  try {
-    const res = await axios.get(
-      "https://api.coingecko.com/api/v3/exchange_rates"
-    )
-    if (res.status == 200) {
-      coingeckoRates.value = res.data.rates
-
-      // Iterating through the data to create the desired list
-      for (const rateKey in coingeckoRates.value) {
-        if (coingeckoRates.value.hasOwnProperty(rateKey)) {
-          currencyOptions.value.push({
-            label: coingeckoRates.value[rateKey].name,
-            value: rateKey,
-          })
-        }
-      }
-    }
-  } catch (err) {
-    console.log(err)
-  }
-}
-
-onMounted(() => {
+onMounted(async () => {
   if (storeUser.localCurrency) {
     currency.value = storeUser.localCurrency
   }
-  getCoingeckoRates()
+  [ coingeckoRates.value, currencyOptions.value ] = await getCoingeckoRates()
 })
 </script>
 
