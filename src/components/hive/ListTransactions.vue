@@ -81,68 +81,81 @@ async function updateTransactions() {
   const trans = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     20
-  );
+  )
 
   if (trans) {
     // Filter out the transactions that are not from the POS
     let posTrans = trans.filter((transaction) => {
-      const memo = transaction.op[1].memo;
-      return memo && memo.match(/v4v-\w+$/);
-    });
+      const memo = transaction.op[1].memo
+      return memo && memo.match(/v4v-\w+$/)
+    })
 
     // If posTrans is empty, exit early
     if (posTrans.length === 0) {
-      return;
+      return
     }
 
     // Add extra fields to the transactions
     posTrans.forEach((transaction) => {
-      const memo = transaction.op[1].memo;
+      const memo = transaction.op[1].memo
 
       // Convert timestamp to Unix
-      const newDate = new Date(transaction.timestamp + "Z");
-      transaction.timestampUnix = Math.floor(newDate.getTime());
+      const newDate = new Date(transaction.timestamp + "Z")
+      transaction.timestampUnix = Math.floor(newDate.getTime())
 
       // Strip the memo and limit its length
-      transaction.strippedMemo = memo.replace(/v4v-\w+$/, "");
+      transaction.strippedMemo = memo.replace(/v4v-\w+$/, "")
       if (transaction.strippedMemo.length > 30) {
-        transaction.strippedMemo = transaction.strippedMemo.substring(0, 30) + "...";
+        transaction.strippedMemo =
+          transaction.strippedMemo.substring(0, 30) + "..."
       }
 
       // Extract the checkCode
-      transaction.checkCode = memo.match(/v4v-\w+$/)[0];
-    });
+      transaction.checkCode = memo.match(/v4v-\w+$/)[0]
+    })
 
-    KeychainDialog.value.transactions = posTrans;
+    KeychainDialog.value.transactions = posTrans
   }
 }
 
-
-onMounted(async () => {
+onMounted(() => {
   KeychainDialog.value.transactions = []
-  await updateTransactions()
+  updateTransactions()
 })
 
+/**
+ * Computes a list of filtered transactions based on specific criteria.
+ *
+ * 1. Ensures the transactions are present and are an array.
+ * 2. Processes each transaction to:
+ *    - Convert its timestamp to a Unix format.
+ * 3. Filters the transactions to:
+ *    - Match a specific recipient (`KeychainDialog.value.hiveAccTo`).
+ *    - Have a memo that matches a certain pattern (`/v4v-\w+$/`).
+ *
+ * @computed
+ * @returns {Array} An array of filtered transactions that meet the criteria.
+ * If no transactions exist or they don't match the criteria, an empty array is returned.
+ */
 const filteredData = computed(() => {
-  const transactions = KeychainDialog.value.transactions;
+  const transactions = KeychainDialog.value.transactions
 
-  if (!Array.isArray(transactions)) return [];
+  if (!Array.isArray(transactions)) return []
 
   // If the transactions exist and is an array, then process them
   transactions.forEach((transaction) => {
-    const newDate = new Date(transaction.timestamp + "Z");
-    transaction.timestampUnix = Math.floor(newDate.getTime());
-  });
+    const newDate = new Date(transaction.timestamp + "Z")
+    transaction.timestampUnix = Math.floor(newDate.getTime())
+  })
 
   return transactions.filter((transaction) => {
-    const memo = transaction.op[1].memo;
-    const to = transaction.op[1].to;
+    const memo = transaction.op[1].memo
+    const to = transaction.op[1].to
     return (
       to === KeychainDialog.value.hiveAccTo && memo && memo.match(/v4v-\w+$/)
-    );
-  });
-});
-
+    )
+  })
+})
 
 function prettyTime(timestampUnix) {
   const timeDiff = Date.now() - timestampUnix
