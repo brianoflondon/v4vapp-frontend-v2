@@ -20,6 +20,7 @@ export default {
   prices_fetched: 'Precios obtenidos',
   from: 'desde',
   to: 'hasta',
+  local_currency: 'Local Currency',
   // Dark Mode Selector
   change_light: 'Cambiar a modo claro',
   change_dark: 'Cambiar a modo oscuro',
@@ -69,8 +70,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain está instalado',
+  keychain_missing: 'Keychain no se encuentra',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
@@ -153,5 +154,6 @@ export default {
   no_fees: 'Sin tarifas para Hive o HBD',
   Fees: 'Comisiones',
   list_received_payments: 'Received Payments',
-  memo: 'Memo'
+  memo: 'Memo',
+  calculating_fees: 'Calculating fees'
 };
