@@ -114,7 +114,6 @@ async function calcAllAmounts() {
         CurrencyCalc.value.hive * localRates.hive[storeUser.localCurrency.value]
       break
     default:
-
       CurrencyCalc.value.hive =
         CurrencyCalc.value.amount /
         localRates.hive[storeUser.localCurrency.value]

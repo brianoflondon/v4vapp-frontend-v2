@@ -101,7 +101,7 @@ import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
-import { encodeOp } from "hive-uri"
+import { decode, encodeOp } from "hive-uri"
 
 const q = useQuasar()
 
@@ -119,7 +119,10 @@ const fees = computed(() => {
   }
   return `sats: ${tidyNumber(KeychainDialog.value?.lndData?.amount, 0)} - ${t(
     "Fees"
-  )}: ${tidyNumber(calcFees().sats, 0)} (${tidyNumber(calcFees().currency, 3)} ${KeychainDialog.value.currencyToSend})`
+  )}: ${tidyNumber(calcFees().sats, 0)} (${tidyNumber(
+    calcFees().currency,
+    3
+  )} ${KeychainDialog.value.currencyToSend})`
 })
 
 const requesting = computed(() => {
@@ -204,7 +207,12 @@ function generateHiveQRCode() {
   //   // signer: "v4vapp.dev"
   //   callback: "https://webhook.site/5b73fc0c-8d1e-43ea-89fc-cc170aeafcc0",
   // }
+
+  // console.log("KeychainDialog.value.op", KeychainDialog.value.op)
   KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
+
+  // const checkEncoding = decode(KeychainDialog.value.qrCodeTextHive)
+  // console.log("checkEncoding", checkEncoding)
 }
 
 async function generateLightningQRCode() {
