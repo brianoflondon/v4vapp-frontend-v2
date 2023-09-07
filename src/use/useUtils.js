@@ -19,6 +19,11 @@ export function tidyNumber(x, decimals = 2) {
     const parts = x.toString().split(".")
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
+    // Drop decimals if x > 10,000
+    if (x >= 10000) {
+      return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    }
+
     // Handle the decimal part based on the decimals value
     if (decimals > 0) {
       if (parts[1]) {
