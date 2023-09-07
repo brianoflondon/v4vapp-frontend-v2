@@ -114,9 +114,12 @@ const fees = computed(() => {
   if (hiveOrLightning.value == "Hive") {
     return t("no_fees")
   }
-  return `${t("Fees")}: ${tidyNumber(calcFees(), 3)} ${
-    KeychainDialog.value.currencyToSend
-  }`
+  if (KeychainDialog.value.lndData == null) {
+    return t("calculating_fees")
+  }
+  return `sats: ${tidyNumber(KeychainDialog.value?.lndData?.amount, 0)} - ${t(
+    "Fees"
+  )}: ${tidyNumber(calcFees().sats, 0)} (${tidyNumber(calcFees().currency, 3)} ${KeychainDialog.value.currencyToSend})`
 })
 
 const requesting = computed(() => {
@@ -192,7 +195,7 @@ function calcFees() {
   const fee =
     rawSats * apiStatus.config.conv_fee_percent + apiStatus.config.conv_fee_sats
 
-  return fee / exchangeRate
+  return { currency: fee / exchangeRate, sats: fee }
 }
 
 function generateHiveQRCode() {
@@ -219,6 +222,7 @@ async function generateLightningQRCode() {
     )
     KeychainDialog.value.loading = false
   }
+  console.log("lndData", KeychainDialog.value.lndData)
   if (
     KeychainDialog.value.lndData?.error ||
     KeychainDialog.value.lndData == null
