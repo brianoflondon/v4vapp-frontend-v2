@@ -8,7 +8,7 @@
       :visible-columns="['age', 'from', 'amount']"
     >
       <template #body="props">
-        <q-tr :props="props">
+        <q-tr :props="props" @click="handleRowClick(props.row)">
           <q-td class="no-border">
             {{ prettyTime(props.row.timestampUnix) }}
           </q-td>
@@ -19,7 +19,7 @@
             {{ props.row.op[1].amount }}
           </q-td>
         </q-tr>
-        <q-tr>
+        <q-tr :props="props" @click="handleRowClick(props.row)">
           <q-td>
             {{ formatDateTimeLocale(props.row.timestampUnix).date }}
           </q-td>
@@ -43,6 +43,8 @@ import { useI18n } from "vue-i18n"
 const t = useI18n().t
 
 const KeychainDialog = defineModel(null)
+const selectedTransaction = ref(null)
+const showDetails = ref(false)
 
 watch(
   () => KeychainDialog.value.hiveAccTo,
@@ -59,6 +61,12 @@ watch(
     await updateTransactions()
   }
 )
+
+function handleRowClick(row) {
+  console.log("row", row)
+  selectedTransaction.value = row
+  showDetails.value = true
+}
 
 /**
  * Updates transactions by fetching the latest transaction history for the Hive account,

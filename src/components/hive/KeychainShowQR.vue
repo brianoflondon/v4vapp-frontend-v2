@@ -208,6 +208,8 @@ function generateHiveQRCode() {
   //   callback: "https://webhook.site/5b73fc0c-8d1e-43ea-89fc-cc170aeafcc0",
   // }
 
+  // // console.log("KeychainDialog.value.op", KeychainDialog.value.op)
+  // KeychainDialog.value.op[1].from = "brianoflondon"
   // console.log("KeychainDialog.value.op", KeychainDialog.value.op)
   KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
 

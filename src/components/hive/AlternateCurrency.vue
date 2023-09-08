@@ -32,7 +32,6 @@ import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { getCoingeckoRate } from "src/use/useCoinGecko"
-import { store } from "quasar/wrappers"
 
 const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()

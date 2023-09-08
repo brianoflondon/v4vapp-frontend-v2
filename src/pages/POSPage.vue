@@ -113,7 +113,7 @@
           <ListTransactions v-model="KeychainDialog"></ListTransactions>
         </q-expansion-item>
       </div>
-      <div class="pad-max-width" style="width: 80%;">
+      <div class="pad-max-width" style="width: 80%">
         <LocalCurrency />
       </div>
       <!-- Explanation what is this page box -->
@@ -221,12 +221,42 @@ function useLoggedInUser() {
 
 // When the amount is updated manually deal with that here
 function updateAmounts(val) {
+  console.log(q.lang.getLocale())
   if (val === "" || val === null) {
     amount.value.num = 0
     return
   }
-  amount.value.num = parseFloat(val)
-  CurrencyCalc.value.amount = parseFloat(val)
+  amount.value.num = parseLocalizedFloat(val)
+  CurrencyCalc.value.amount = amount.value.num
+}
+
+function parseLocalizedFloat(val) {
+  const commaLocales = [
+    "de-DE",
+    "fr-FR",
+    "it-IT",
+    "es-ES",
+    "nl-NL",
+    "pt-PT",
+    "ru-RU",
+    "tr-TR",
+    "pl-PL",
+    "sv-SE",
+    "da-DK",
+    "fi-FI",
+    "el-GR",
+    // Add or remove locales as required
+  ]
+
+  const currentLocale = q.lang.getLocale()
+
+  // Check if the current locale is in the list of comma locales
+  if (commaLocales.includes(currentLocale)) {
+    val = val.replace(".", "").replace(",", ".")
+  }
+
+  // Handle other locale-specific formats as necessary
+  return parseFloat(val)
 }
 
 function updateCurrency(val) {
