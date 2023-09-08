@@ -209,9 +209,17 @@ function generateHiveQRCode() {
   // }
 
   // // console.log("KeychainDialog.value.op", KeychainDialog.value.op)
-  // KeychainDialog.value.op[1].from = "brianoflondon"
-  // console.log("KeychainDialog.value.op", KeychainDialog.value.op)
+
+  // After talking with good-karma, it seems that adding __signer is helpful
+  if (KeychainDialog.value.op[1].from === "") {
+    KeychainDialog.value.op[1].from = "__signer"
+  }
+  console.log("KeychainDialog.value.op", KeychainDialog.value.op)
   KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
+  console.log(
+    "KeychainDialog.value.qrCodeTextHive",
+    KeychainDialog.value.qrCodeTextHive
+  )
 
   // const checkEncoding = decode(KeychainDialog.value.qrCodeTextHive)
   // console.log("checkEncoding", checkEncoding)

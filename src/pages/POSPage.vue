@@ -221,7 +221,6 @@ function useLoggedInUser() {
 
 // When the amount is updated manually deal with that here
 function updateAmounts(val) {
-  console.log(q.lang.getLocale())
   if (val === "" || val === null) {
     amount.value.num = 0
     return
