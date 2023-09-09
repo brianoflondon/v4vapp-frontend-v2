@@ -68,12 +68,25 @@ const props = defineProps({
 
 const avatarUrl = ref("")
 
+watch(
+  () => props.hiveAccname,
+  async (newVal) => {
+    avatarUrl.value = await useHiveAvatarBlob({
+      hiveAccname: newVal,
+      size: "small",
+      reason: "qr-code",
+    })
+  }
+)
+
 onMounted(async () => {
   avatarUrl.value = await useHiveAvatarBlob({
     hiveAccname: props.hiveAccname,
     size: "small",
     reason: "qr-code",
   })
+
+  console.log("avatarUrl", avatarUrl.value)
   qrTextPage.value = props.qrText
   await newQRCode()
 })
