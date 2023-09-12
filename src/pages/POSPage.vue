@@ -76,7 +76,19 @@
       <!-- Pay buttons -->
       <div class="pad-max-width full-width q-px-md q-py-xs q-gutter-sm">
         <!-- HBD Button -->
-        <q-btn color="secondary" @click="generatePaymentQR('HBD')">
+        <q-btn
+          color="secondary"
+          @click="
+            useGeneratePaymentQR(
+              'HBD',
+              KeychainDialog,
+              amount,
+              hiveAccTo,
+              memoInput,
+              CurrencyCalc,
+            )
+          "
+        >
           <div class="column items-center q-pa-none" style="font-size: 1.2rem">
             <div><HbdLogoIcon /></div>
             <div class="text-center" style="font-size: 0.5rem; margin: -8px">
@@ -88,7 +100,19 @@
           </div>
         </q-btn>
         <!-- Hive Button -->
-        <q-btn color="primary" @click="generatePaymentQR('HIVE')">
+        <q-btn
+          color="primary"
+          @click="
+            useGeneratePaymentQR(
+              'HIVE',
+              KeychainDialog,
+              amount,
+              hiveAccTo,
+              memoInput,
+              CurrencyCalc,
+            )
+          "
+        >
           <div class="column items-center q-pa-none" style="font-size: 2.05rem">
             <div><i class="fa-brands fa-hive" /></div>
             <div class="text-center" style="font-size: 0.5rem; margin: -8px">
@@ -137,7 +161,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
-import { tidyNumber, genRandAlphaNum } from "src/use/useUtils"
+import { tidyNumber } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
@@ -148,6 +172,7 @@ import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
+import { useGeneratePaymentQR } from "src/use/useHive.js"
 
 const q = useQuasar()
 const t = useI18n().t
@@ -294,61 +319,61 @@ function clearAmount() {
 
 const memoInput = ref("")
 
-function generatePaymentQR(payWith) {
-  // Check if there is a running total, if that is 0 use the amount
-  // on the screen
-  if (amount.value.num === 0) {
-    q.notify({
-      message: t("no_amount"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
-    return
-  }
-  if (hiveAccTo.value.value === "") {
-    q.notify({
-      message: t("no_account"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
-    return
-  }
-  switch (payWith) {
-    case "HBD":
-      KeychainDialog.value.amountToSend = CurrencyCalc.value.hbd.toFixed(3)
-      KeychainDialog.value.currencyToSend = "HBD"
-      break
-    case "HIVE":
-      KeychainDialog.value.amountToSend = CurrencyCalc.value.hive.toFixed(3)
-      KeychainDialog.value.currencyToSend = "HIVE"
-      break
-    default:
-      break
-  }
+// function useGeneratePaymentQR(payWith) {
+//   // Check if there is a running total, if that is 0 use the amount
+//   // on the screen
+//   if (amount.value.num === 0) {
+//     q.notify({
+//       message: t("no_amount"),
+//       type: "negative",
+//       position: "top",
+//       timeout: 2000,
+//     })
+//     return
+//   }
+//   if (hiveAccTo.value.value === "") {
+//     q.notify({
+//       message: t("no_account"),
+//       type: "negative",
+//       position: "top",
+//       timeout: 2000,
+//     })
+//     return
+//   }
+//   switch (payWith) {
+//     case "HBD":
+//       KeychainDialog.value.amountToSend = CurrencyCalc.value.hbd.toFixed(3)
+//       KeychainDialog.value.currencyToSend = "HBD"
+//       break
+//     case "HIVE":
+//       KeychainDialog.value.amountToSend = CurrencyCalc.value.hive.toFixed(3)
+//       KeychainDialog.value.currencyToSend = "HIVE"
+//       break
+//     default:
+//       break
+//   }
 
-  KeychainDialog.value.amountString =
-    KeychainDialog.value.amountToSend +
-    " " +
-    KeychainDialog.value.currencyToSend
-  KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
-  // Add a check code onto the memo.
-  KeychainDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
-  KeychainDialog.value.memo = memoInput.value
-    ? memoInput.value + " " + KeychainDialog.value.checkCode
-    : KeychainDialog.value.checkCode
-  KeychainDialog.value.op = [
-    "transfer",
-    {
-      from: "",
-      to: KeychainDialog.value.hiveAccTo,
-      amount: KeychainDialog.value.amountString,
-      memo: KeychainDialog.value.memo,
-    },
-  ]
-  KeychainDialog.value.show = true
-}
+//   KeychainDialog.value.amountString =
+//     KeychainDialog.value.amountToSend +
+//     " " +
+//     KeychainDialog.value.currencyToSend
+//   KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
+//   // Add a check code onto the memo.
+//   KeychainDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
+//   KeychainDialog.value.memo = memoInput.value
+//     ? memoInput.value + " " + KeychainDialog.value.checkCode
+//     : KeychainDialog.value.checkCode
+//   KeychainDialog.value.op = [
+//     "transfer",
+//     {
+//       from: "",
+//       to: KeychainDialog.value.hiveAccTo,
+//       amount: KeychainDialog.value.amountString,
+//       memo: KeychainDialog.value.memo,
+//     },
+//   ]
+//   KeychainDialog.value.show = true
+// }
 
 watch(
   () => KeychainDialog.value?.paid,

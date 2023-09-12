@@ -48,6 +48,7 @@
             :hiveAccname="KeychainDialog.hiveAccTo"
             :color="dotColor"
             :loading="KeychainDialog.loading"
+            @qr-code="(val) => (qrCode = val)"
           />
         </div>
         <div class="q-pt-none">
@@ -61,6 +62,21 @@
         </div>
         <!-- Fees -->
         <div class="text-center q-pt-sm">{{ fees }}</div>
+      </q-card-section>
+      <q-card-section>
+        <div class="flex q-gutter-sm items-center">
+          <q-btn
+            icon="content_copy"
+            round
+            @click="copyToClipboard(KeychainDialog.qrCodeText)"
+          >
+            <q-tooltip>{{ t("copy_qrcode") }}</q-tooltip>
+          </q-btn>
+
+          <q-btn icon="download" round @click="downloadQR('png')">
+            <q-tooltip>{{ t("download_tooltip") }}</q-tooltip>
+          </q-btn>
+        </div>
       </q-card-section>
       <q-card-actions>
         <q-space />
@@ -95,7 +111,8 @@
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useQuasar } from "quasar"
+import { useQuasar, copyToClipboard } from "quasar"
+
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
@@ -109,6 +126,7 @@ const t = useI18n().t
 const KeychainDialog = defineModel(null)
 const storeApiStatus = useStoreAPIStatus()
 const expanded = ref(false)
+const qrCode = ref(null)
 
 const fees = computed(() => {
   if (hiveOrLightning.value == "Hive") {
@@ -271,6 +289,16 @@ onBeforeUnmount(() => {
   KeychainDialog.value.lndData = null
   intervalRef.value.forEach((interval) => clearInterval(interval))
 })
+
+function downloadQR(filetype) {
+  let fileName = KeychainDialog.value.hiveAccTo
+  if (KeychainDialog.value.hiveOrLightning == "Hive") {
+    fileName += "_hive_v4vapp_address"
+  } else {
+    fileName += "_ln_v4vapp_address"
+  }
+  qrCode.value.download({ name: fileName, extension: filetype })
+}
 
 function startCountdown() {
   // Start the countdown
