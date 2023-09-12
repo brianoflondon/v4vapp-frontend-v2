@@ -205,7 +205,7 @@ import { QrcodeStream } from "qrcode-reader-vue3"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import {
   useGetHiveTransactionHistory,
-  useGeneratePaymentQR,
+  useGenerateHiveTransferOp,
 } from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
@@ -557,7 +557,7 @@ async function payInvoice(currency, method) {
     amountNum = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(Hive.value)
   }
   let amount = amountNum.toFixed(3)
-  const memo = `${dInvoice.value.paymentRequest} v4v.app`
+  const memo = `${dInvoice.value.paymentRequest}`
   dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
   let username = null
@@ -578,16 +578,19 @@ async function payInvoice(currency, method) {
         message: t("keychain_missing"),
         position: "top",
       })
-      await useGeneratePaymentQR(
-        currency,
-        KeychainDialog,
-        amountNum,
+
+      KeychainDialog.value = useGenerateHiveTransferOp(
+        "",
         serverHiveAccount,
-        memo
+        amountNum,
+        currency,
+        memo + " v4v.app",
+        true
       )
-      KeychainDialog.value.hiveAccTo = serverHiveAccount
+
       console.log("KeychainDialog", KeychainDialog)
       console.log("Showing QR code for Hive Keychain")
+      KeychainDialog.value.show = true
       break
 
     case "HiveKeychain":
