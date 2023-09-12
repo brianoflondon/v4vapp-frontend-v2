@@ -568,7 +568,6 @@ async function payInvoice(currency, method) {
   if (method === "HiveKeychain" && !storeApiStatus.isKeychainIn) {
     method = "HiveKeychainQR"
   }
-  method = "HiveKeychainQR"
   switch (method) {
     case "HiveKeychainQR":
       // This is where we can show the Hive QR code
