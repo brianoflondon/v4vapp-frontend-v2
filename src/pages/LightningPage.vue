@@ -219,6 +219,7 @@ import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
+import { serverHiveAccount } from "src/boot/axios"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -549,13 +550,13 @@ async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
   // Add 6 Hive to the amount to cover the fee or 2 HBD
   console.log("payInvoice currency ", currency, "method ", method)
-  let amount = 0
+  let amountNum = 0
   if (currency == "HIVE") {
-    amount = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
-    amount = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(Hive.value)
   }
-  amount = amount.toFixed(3)
+  let amount = amountNum.toFixed(3)
   const memo = `${dInvoice.value.paymentRequest} v4v.app`
   dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
@@ -567,18 +568,27 @@ async function payInvoice(currency, method) {
   if (method === "HiveKeychain" && !storeApiStatus.isKeychainIn) {
     method = "HiveKeychainQR"
   }
-
+  method = "HiveKeychainQR"
   switch (method) {
     case "HiveKeychainQR":
       // This is where we can show the Hive QR code
-
       q.notify({
-        color: "negative",
+        color: "positive",
         timeout: 2000,
         message: t("keychain_missing"),
         position: "top",
       })
-      return
+      await useGeneratePaymentQR(
+        currency,
+        KeychainDialog,
+        amountNum,
+        serverHiveAccount,
+        memo
+      )
+      KeychainDialog.value.hiveAccTo = serverHiveAccount
+      console.log("KeychainDialog", KeychainDialog)
+      console.log("Showing QR code for Hive Keychain")
+      break
 
     case "HiveKeychain":
       // Hive Keychain process

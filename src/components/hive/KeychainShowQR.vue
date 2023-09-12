@@ -109,7 +109,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from "vue"
+import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useQuasar, copyToClipboard } from "quasar"
 
@@ -190,18 +190,31 @@ const progress = ref(1)
 
 const intervalRef = ref([])
 
-onMounted(async () => {
-  generateHiveQRCode()
-  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
-  KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
-    KeychainDialog.value.hiveAccTo,
-    20
+onBeforeMount(() => {
+  KeychainDialog.value.loading = true
+  console.log("KeychainDialog.value", KeychainDialog.value)
+  console.log(
+    "KeychainDialog.value.qrCodeText",
+    KeychainDialog.value.qrCodeText
   )
-  const firstTrxId = KeychainDialog.value.transactions[0].trx_id
-  KeychainDialog.value.paid = false
+})
+
+onMounted(async () => {
+  console.log("--------> KeychainDialog.value", KeychainDialog.value)
+  // generateHiveQRCode()
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
-  startCountdown()
-  checkHiveTransaction(KeychainDialog.value.hiveAccTo, firstTrxId)
+  useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
+    (val) => {
+      console.log("after waiting for useGetHiveTransactionHistory", val)
+      KeychainDialog.value.transactions = val
+      KeychainDialog.value.paid = false
+      KeychainDialog.value.loading = false
+      const firstTrxId = KeychainDialog.value.transactions[0].trx_id
+      checkHiveTransaction(KeychainDialog.value.hiveAccTo, firstTrxId)
+      KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+      startCountdown()
+    }
+  )
 })
 
 // Calculates the fees charged in the same currency Hive/HBD as
@@ -318,12 +331,10 @@ function startCountdown() {
 }
 
 async function checkHiveTransaction(username, trx_id, count = 0) {
-  if (trx_id == null) {
-    return
-  }
-
   try {
     while (count < maxChecks) {
+      console.log("count", count)
+      console.log("keychainDialog", KeychainDialog.value)
       count += 1
 
       await new Promise((resolve) => {

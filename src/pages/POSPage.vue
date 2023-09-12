@@ -82,10 +82,10 @@
             useGeneratePaymentQR(
               'HBD',
               KeychainDialog,
-              amount,
+              amount.num,
               hiveAccTo,
               memoInput,
-              CurrencyCalc,
+              CurrencyCalc
             )
           "
         >
@@ -106,10 +106,10 @@
             useGeneratePaymentQR(
               'HIVE',
               KeychainDialog,
-              amount,
+              amount.num,
               hiveAccTo,
               memoInput,
-              CurrencyCalc,
+              CurrencyCalc
             )
           "
         >
@@ -172,7 +172,7 @@ import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
-import { useGeneratePaymentQR } from "src/use/useHive.js"
+import { useGenerateHiveTransferOp } from "src/use/useHive.js"
 
 const q = useQuasar()
 const t = useI18n().t
@@ -319,61 +319,73 @@ function clearAmount() {
 
 const memoInput = ref("")
 
-// function useGeneratePaymentQR(payWith) {
-//   // Check if there is a running total, if that is 0 use the amount
-//   // on the screen
-//   if (amount.value.num === 0) {
-//     q.notify({
-//       message: t("no_amount"),
-//       type: "negative",
-//       position: "top",
-//       timeout: 2000,
-//     })
-//     return
-//   }
-//   if (hiveAccTo.value.value === "") {
-//     q.notify({
-//       message: t("no_account"),
-//       type: "negative",
-//       position: "top",
-//       timeout: 2000,
-//     })
-//     return
-//   }
-//   switch (payWith) {
-//     case "HBD":
-//       KeychainDialog.value.amountToSend = CurrencyCalc.value.hbd.toFixed(3)
-//       KeychainDialog.value.currencyToSend = "HBD"
-//       break
-//     case "HIVE":
-//       KeychainDialog.value.amountToSend = CurrencyCalc.value.hive.toFixed(3)
-//       KeychainDialog.value.currencyToSend = "HIVE"
-//       break
-//     default:
-//       break
-//   }
+function useGeneratePaymentQR(payWith) {
+  // Check if there is a running total, if that is 0 use the amount
+  // on the screen
+  if (amount.value.num === 0) {
+    q.notify({
+      message: t("no_amount"),
+      type: "negative",
+      position: "top",
+      timeout: 2000,
+    })
+    return
+  }
+  if (hiveAccTo.value.value === "") {
+    q.notify({
+      message: t("no_account"),
+      type: "negative",
+      position: "top",
+      timeout: 2000,
+    })
+    return
+  }
+  let amountToSend = 0
+  let currencyToSend = ""
+  switch (payWith) {
+    case "HBD":
+      amountToSend = CurrencyCalc.value.hbd
+      currencyToSend = "HBD"
+      break
+    case "HIVE":
+      amountToSend = CurrencyCalc.value.hive
+      currencyToSend = "HIVE"
+      break
+    default:
+      break
+  }
+  console.log("BEFORE KeychainDialog.value", KeychainDialog.value)
 
-//   KeychainDialog.value.amountString =
-//     KeychainDialog.value.amountToSend +
-//     " " +
-//     KeychainDialog.value.currencyToSend
-//   KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
-//   // Add a check code onto the memo.
-//   KeychainDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
-//   KeychainDialog.value.memo = memoInput.value
-//     ? memoInput.value + " " + KeychainDialog.value.checkCode
-//     : KeychainDialog.value.checkCode
-//   KeychainDialog.value.op = [
-//     "transfer",
-//     {
-//       from: "",
-//       to: KeychainDialog.value.hiveAccTo,
-//       amount: KeychainDialog.value.amountString,
-//       memo: KeychainDialog.value.memo,
-//     },
-//   ]
-//   KeychainDialog.value.show = true
-// }
+  KeychainDialog.value = useGenerateHiveTransferOp(
+    "",
+    hiveAccTo.value.value,
+    amountToSend,
+    currencyToSend,
+    memoInput.value,
+    true
+  )
+  console.log("AFTER  KeychainDialog.value", KeychainDialog.value)
+  // KeychainDialog.value.amountString =
+  //   KeychainDialog.value.amountToSend +
+  //   " " +
+  //   KeychainDialog.value.currencyToSend
+  // KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
+  // // Add a check code onto the memo.
+  // KeychainDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
+  // KeychainDialog.value.memo = memoInput.value
+  //   ? memoInput.value + " " + KeychainDialog.value.checkCode
+  //   : KeychainDialog.value.checkCode
+  // KeychainDialog.value.op = [
+  //   "transfer",
+  //   {
+  //     from: "",
+  //     to: KeychainDialog.value.hiveAccTo,
+  //     amount: KeychainDialog.value.amountString,
+  //     memo: KeychainDialog.value.memo,
+  //   },
+  // ]
+  KeychainDialog.value.show = true
+}
 
 watch(
   () => KeychainDialog.value?.paid,
