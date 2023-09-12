@@ -4,6 +4,7 @@
 // ----------------------------------------------------------------------------
 import { apiURL, api } from "boot/axios"
 import { Dark } from "quasar"
+import { genRandAlphaNum } from "src/use/useUtils"
 
 import "src/assets/hive-tx.min.js"
 
@@ -293,9 +294,83 @@ export async function useGetHiveTransactionHistory(
     ])
     // This removes the un-necessary double list structure
     return history.result.reverse().map((item) => item[1])
-
   } catch (error) {
     console.error({ error })
     return null
   }
+}
+
+export function useGeneratePaymentQR(
+  payWith,
+  KeychainDialog,
+  amount,
+  hiveAccTo,
+  memoInput,
+  CurrencyCalc = null
+) {
+  // Check if there is a running total, if that is 0 use the amount
+  // on the screen
+  console.log("useGeneratePaymentQR")
+  console.log("payWith", payWith)
+  console.log("amount", amount)
+  console.log("hiveAccTo", hiveAccTo)
+  console.log("KeychainDialog", KeychainDialog)
+  console.log("CurrencyCalc", CurrencyCalc)
+  if (amount.num === 0) {
+    q.notify({
+      message: t("no_amount"),
+      type: "negative",
+      position: "top",
+      timeout: 2000,
+    })
+    return
+  }
+  if (hiveAccTo.value === "") {
+    q.notify({
+      message: t("no_account"),
+      type: "negative",
+      position: "top",
+      timeout: 2000,
+    })
+    return
+  }
+  console.log("useGeneratePaymentQR amount.num", amount.num)
+  switch (payWith) {
+    // If CurencyCalc is null then use the raw amount (HBD or HIVE)
+    // If CurrencyCalc is not null then use the calculated amount
+    case "HBD":
+      KeychainDialog.amountToSend = CurrencyCalc
+        ? CurrencyCalc.hbd.toFixed(3)
+        : amount.num.toFixed(3)
+
+      KeychainDialog.currencyToSend = "HBD"
+      break
+    case "HIVE":
+      KeychainDialog.amountToSend = CurrencyCalc
+        ? CurrencyCalc.hive.toFixed(3)
+        : amount.num.toFixed(3)
+      KeychainDialog.currencyToSend = "HIVE"
+      break
+    default:
+      break
+  }
+
+  KeychainDialog.amountString =
+    KeychainDialog.amountToSend + " " + KeychainDialog.currencyToSend
+  KeychainDialog.hiveAccTo = hiveAccTo.value
+  // Add a check code onto the memo.
+  KeychainDialog.checkCode = "v4v-" + genRandAlphaNum(5)
+  KeychainDialog.memo = memoInput
+    ? memoInput + " " + KeychainDialog.checkCode
+    : KeychainDialog.checkCode
+  KeychainDialog.op = [
+    "transfer",
+    {
+      from: "",
+      to: KeychainDialog.hiveAccTo,
+      amount: KeychainDialog.amountString,
+      memo: KeychainDialog.memo,
+    },
+  ]
+  KeychainDialog.show = true
 }
