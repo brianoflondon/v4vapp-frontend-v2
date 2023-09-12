@@ -203,7 +203,10 @@ import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { QrcodeStream } from "qrcode-reader-vue3"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
-import { useGetHiveTransactionHistory } from "src/use/useHive.js"
+import {
+  useGetHiveTransactionHistory,
+  useGeneratePaymentQR,
+} from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
@@ -567,6 +570,8 @@ async function payInvoice(currency, method) {
 
   switch (method) {
     case "HiveKeychainQR":
+      // This is where we can show the Hive QR code
+
       q.notify({
         color: "negative",
         timeout: 2000,
