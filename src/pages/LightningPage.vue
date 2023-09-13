@@ -5,7 +5,12 @@
         <CreditCard />
       </div>
       <div v-if="cameraShow">
-        <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
+        <!-- <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream> -->
+        <qrcode-stream
+          @detect="onDecode"
+          @camera-on="onReady"
+          @error="onError"
+        ></qrcode-stream>
       </div>
       <div class="progress-screen">
         <ShowProgress v-model="dInvoice" />
@@ -201,11 +206,12 @@
 import { computed, ref, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { QrcodeStream } from "qrcode-reader-vue3"
+// import { QrcodeStream } from "qrcode-reader-vue3"
+import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import {
   useGetHiveTransactionHistory,
-  useGeneratePaymentQR,
+  useGenerateHiveTransferOp,
 } from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
@@ -219,6 +225,7 @@ import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
+import { serverHiveAccount } from "src/boot/axios"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -287,7 +294,7 @@ const HBD = computed(() => {
   if (dInvoice.value?.millisatoshis) {
     const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
     const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(3)
-    return tidyNumber(HBD)
+    return tidyNumber(HBD) + " HBD"
   }
   return "---"
 })
@@ -296,7 +303,7 @@ const Hive = computed(() => {
   if (dInvoice.value?.millisatoshis) {
     const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
     const hive = (sats / storeApiStatus.hiveSatsNumber).toFixed(3)
-    return tidyNumber(hive)
+    return tidyNumber(hive) + " Hive"
   }
   return "---"
 })
@@ -341,8 +348,8 @@ const invoiceColor = computed(() => {
 const buttonColors = {
   // dark mode is true, light mode is false
   true: {
-    buttonColor: "grey-9",
-    textColor: "grey-6",
+    buttonColor: "grey-10",
+    textColor: "white-4",
   },
   false: {
     buttonColor: "grey-6",
@@ -432,9 +439,20 @@ function clearReset() {
   HASDialog.value = { show: false }
 }
 
-function onDecode(content) {
-  invoiceText.value = content
-  decodeInvoice()
+async function onDecode(content) {
+  // Switch to better QR Code library, handle multiple QR codes
+  // scan through them until a valid Lightning invoice is found.
+  console.log("onDecode", content)
+  let i = 0
+  while (i < content.length && !invoiceValid.value) {
+    const rawValue = content[i].rawValue
+
+    invoiceText.value = rawValue
+    await decodeInvoice()
+    console.log("invoice valid", invoiceValid.value)
+
+    i++
+  }
 }
 
 async function decodeInvoice() {
@@ -510,53 +528,57 @@ const cameraErrors = [
   "InsecureContextError",
 ]
 
-const onInitCamera = async (promise) => {
-  try {
-    invoiceChecking.value = true
-    await promise
-  } catch (errorEvent) {
-    if (cameraErrors.includes(errorEvent.name)) {
-      cameraError.value = `${t("error")}: ${t(errorEvent.name)}`
-    } else {
-      cameraError.value = `${t("error")}: ${t("OtherError")}`
-    }
-    invoiceChecking.value = false
-    q.notify({
-      color: "negative",
-      timeout: 2000,
-      message: cameraError.value,
-      position: "top",
-    })
-    setTimeout(() => {
-      cameraError.value = ""
-      cameraOn.value = false
-      cameraShow.value = false
-    }, 500)
+function onReady(capabilities) {
+  console.log("onReady", capabilities)
+  invoiceChecking.value = true
+
+  cameraOn.value = true
+  cameraShow.value = true
+}
+
+function onError(error) {
+  console.log("onError", error.name)
+  if (cameraErrors.includes(error.name)) {
+    cameraError.value = `${t("error")}: ${t(error.name)}`
+  } else {
+    cameraError.value = `${t("error")}: ${t("OtherError")} ${
+      error.name
+    } ${error}`
+  }
+  invoiceChecking.value = false
+  q.notify({
+    color: "negative",
+    timeout: 4000,
+    message: cameraError.value,
+    position: "top",
+  })
+  setTimeout(() => {
+    cameraError.value = ""
     cameraOn.value = false
     cameraShow.value = false
-    invoiceChecking.value = false
-  }
+  }, 500)
+  cameraOn.value = false
+  cameraShow.value = false
+  invoiceChecking.value = false
 }
 
 function toggleCamera() {
   invoiceChecking.value = !invoiceChecking.value
-  setTimeout(() => {
-    cameraShow.value = cameraOn.value
-  }, 500)
+  cameraShow.value = cameraOn.value
 }
 
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
   // Add 6 Hive to the amount to cover the fee or 2 HBD
   console.log("payInvoice currency ", currency, "method ", method)
-  let amount = 0
+  let amountNum = 0
   if (currency == "HIVE") {
-    amount = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
-    amount = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(Hive.value)
   }
-  amount = amount.toFixed(3)
-  const memo = `${dInvoice.value.paymentRequest} v4v.app`
+  let amount = amountNum.toFixed(3)
+  const memo = `${dInvoice.value.paymentRequest}`
   dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
   let username = null
@@ -567,18 +589,30 @@ async function payInvoice(currency, method) {
   if (method === "HiveKeychain" && !storeApiStatus.isKeychainIn) {
     method = "HiveKeychainQR"
   }
-
   switch (method) {
     case "HiveKeychainQR":
       // This is where we can show the Hive QR code
-
       q.notify({
-        color: "negative",
+        color: "positive",
         timeout: 2000,
         message: t("keychain_missing"),
         position: "top",
       })
-      return
+
+      KeychainDialog.value = useGenerateHiveTransferOp(
+        "",
+        serverHiveAccount,
+        amountNum,
+        currency,
+        memo + " v4v.app",
+        true
+      )
+      KeychainDialog.value.display = "hive"
+      console.log("KeychainDialog", KeychainDialog)
+      console.log("Showing QR code for Hive Keychain")
+      KeychainDialog.value.show = true
+      // After this we need to watch for the result from the KeychainDialog
+      break
 
     case "HiveKeychain":
       // Hive Keychain process
@@ -657,6 +691,33 @@ watch(
           value.resolvedHAS.data,
           notif
         )
+      }
+    }
+  },
+  { deep: true }
+)
+
+// Watching for a payment result from the KeychainDialog
+watch(
+  KeychainDialog,
+  async (value) => {
+    if (value) {
+      if (value.paid) {
+        const message = t("payment_sent_hive_keychain")
+        q.notify({
+          avatar: "site-logo/v4vapp-logo.svg",
+          color: "positive",
+          group: false,
+          timeout: 2000,
+          message: message,
+          position: "top",
+        })
+        dInvoice.value.progress.push(message)
+        dInvoice.value.progress.push(`${t("check_lightning")}`)
+        KeychainDialog.value = { show: false }
+      } else {
+        // Ignore the result
+        return
       }
     }
   },
