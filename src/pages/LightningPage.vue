@@ -288,7 +288,7 @@ const HBD = computed(() => {
   if (dInvoice.value?.millisatoshis) {
     const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
     const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(3)
-    return tidyNumber(HBD)
+    return tidyNumber(HBD) +" HBD"
   }
   return "---"
 })
@@ -297,7 +297,7 @@ const Hive = computed(() => {
   if (dInvoice.value?.millisatoshis) {
     const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
     const hive = (sats / storeApiStatus.hiveSatsNumber).toFixed(3)
-    return tidyNumber(hive)
+    return tidyNumber(hive) + " Hive"
   }
   return "---"
 })
@@ -342,8 +342,8 @@ const invoiceColor = computed(() => {
 const buttonColors = {
   // dark mode is true, light mode is false
   true: {
-    buttonColor: "grey-9",
-    textColor: "grey-6",
+    buttonColor: "grey-10",
+    textColor: "white-4",
   },
   false: {
     buttonColor: "grey-6",
