@@ -201,7 +201,7 @@
 import { computed, ref, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { QrcodeStream } from "vue-qrcode-reader"
+import { QrcodeStream } from "qrcode-reader-vue3"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import {
   useGetHiveTransactionHistory,
@@ -434,6 +434,7 @@ function clearReset() {
 }
 
 function onDecode(content) {
+  console.log("onDecode", content)
   invoiceText.value = content
   decodeInvoice()
 }
