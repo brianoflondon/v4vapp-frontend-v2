@@ -27,7 +27,7 @@ export default {
   // Keychain
   keychain_installed: "Keychain is Installed",
   keychain_missing: "Keychain is Missing",
-  scan_for_keychain: "Scan to send with Hive Keychain",
+  scan_for_keychain: "Keychain/Ecency",
   // IndexPage
   index_page_message: "For more information about this project, please visit",
   // Selector

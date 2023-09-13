@@ -67,7 +67,12 @@
           </q-linear-progress>
         </div>
         <!-- Fees -->
-        <div class="text-center q-pt-sm">{{ fees }}</div>
+        <div
+          v-if="titleOptions[KeychainDialog.display].showHiveLightning"
+          class="text-center q-pt-sm"
+        >
+          {{ fees }}
+        </div>
       </q-card-section>
       <q-card-section>
         <div class="flex q-gutter-sm items-center">
