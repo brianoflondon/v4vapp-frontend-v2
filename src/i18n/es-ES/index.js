@@ -20,13 +20,14 @@ export default {
   prices_fetched: 'Precios obtenidos',
   from: 'desde',
   to: 'hasta',
-  local_currency: 'Local Currency',
+  local_currency: 'Moneda Local',
   // Dark Mode Selector
   change_light: 'Cambiar a modo claro',
   change_dark: 'Cambiar a modo oscuro',
   // Keychain
   keychain_installed: 'Keychain está instalado',
   keychain_missing: 'Keychain no se encuentra',
+  scan_for_keychain: 'Keychain/Ecency',
   // IndexPage
   index_page_message: 'Para obtener más información sobre este proyecto, visite',
   // Selector
@@ -70,8 +71,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Keychain no se encuentra',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
@@ -87,6 +88,8 @@ export default {
   self_payment: 'No se puede enviar a v4v.app',
   invoice_hint: 'Pegue una factura o escaneé el QR',
   waiting_for: 'Esperando que su transacción sea validada',
+  payment_sent_hive_keychain: 'Payment sent by Hive Keychain',
+  check_lightning: 'Check your Lightning wallet, payment has been sent',
   invoice_provider_not_working: 'El proveedor de la factura Lightning no está funcionando ahora, intente más tarde o compruebe la dirección',
   requesting: 'Solicitando',
   // HAS Process
@@ -153,7 +156,7 @@ export default {
   new_page: 'Nueva página de recibir Hive',
   no_fees: 'Sin tarifas para Hive o HBD',
   Fees: 'Comisiones',
-  list_received_payments: 'Received Payments',
+  list_received_payments: 'Recibir Pagos',
   memo: 'Memo',
-  calculating_fees: 'Calculating fees'
+  calculating_fees: 'Calculando comisión'
 };
