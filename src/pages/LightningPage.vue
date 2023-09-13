@@ -5,7 +5,8 @@
         <CreditCard />
       </div>
       <div v-if="cameraShow">
-        <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream>
+        <!-- <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream> -->
+        <qrcode-stream @detect="onDecode"></qrcode-stream>
       </div>
       <div class="progress-screen">
         <ShowProgress v-model="dInvoice" />
@@ -201,7 +202,8 @@
 import { computed, ref, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { QrcodeStream } from "qrcode-reader-vue3"
+// import { QrcodeStream } from "qrcode-reader-vue3"
+import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import {
   useGetHiveTransactionHistory,
@@ -288,7 +290,7 @@ const HBD = computed(() => {
   if (dInvoice.value?.millisatoshis) {
     const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
     const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(3)
-    return tidyNumber(HBD) +" HBD"
+    return tidyNumber(HBD) + " HBD"
   }
   return "---"
 })
@@ -433,10 +435,20 @@ function clearReset() {
   HASDialog.value = { show: false }
 }
 
-function onDecode(content) {
+async function onDecode(content) {
+  // Switch to better QR Code library, handle multiple QR codes
+  // scan through them until a valid Lightning invoice is found.
   console.log("onDecode", content)
-  invoiceText.value = content
-  decodeInvoice()
+  let i = 0
+  while (i < content.length && !invoiceValid.value) {
+    const rawValue = content[i].rawValue
+
+    invoiceText.value = rawValue
+    await decodeInvoice()
+    console.log("invoice valid", invoiceValid.value)
+
+    i++
+  }
 }
 
 async function decodeInvoice() {
