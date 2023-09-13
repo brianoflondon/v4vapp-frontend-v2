@@ -354,7 +354,6 @@ function useGeneratePaymentQR(payWith) {
     default:
       break
   }
-  console.log("BEFORE KeychainDialog.value", KeychainDialog.value)
 
   KeychainDialog.value = useGenerateHiveTransferOp(
     "",
@@ -364,26 +363,7 @@ function useGeneratePaymentQR(payWith) {
     memoInput.value,
     true
   )
-  console.log("AFTER  KeychainDialog.value", KeychainDialog.value)
-  // KeychainDialog.value.amountString =
-  //   KeychainDialog.value.amountToSend +
-  //   " " +
-  //   KeychainDialog.value.currencyToSend
-  // KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
-  // // Add a check code onto the memo.
-  // KeychainDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
-  // KeychainDialog.value.memo = memoInput.value
-  //   ? memoInput.value + " " + KeychainDialog.value.checkCode
-  //   : KeychainDialog.value.checkCode
-  // KeychainDialog.value.op = [
-  //   "transfer",
-  //   {
-  //     from: "",
-  //     to: KeychainDialog.value.hiveAccTo,
-  //     amount: KeychainDialog.value.amountString,
-  //     memo: KeychainDialog.value.memo,
-  //   },
-  // ]
+  KeychainDialog.value.display = "pos"
   KeychainDialog.value.show = true
 }
 

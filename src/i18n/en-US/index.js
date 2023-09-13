@@ -27,6 +27,7 @@ export default {
   // Keychain
   keychain_installed: "Keychain is Installed",
   keychain_missing: "Keychain is Missing",
+  scan_for_keychain: "Scan to send with Hive Keychain",
   // IndexPage
   index_page_message: "For more information about this project, please visit",
   // Selector
@@ -89,6 +90,7 @@ export default {
   invoice_hint: "Paste an invoice or scan a QR code",
   waiting_for: "Waiting for reply transaction to appear on Hive blockchain",
   payment_sent_hive_keychain: "Payment sent by Hive Keychain",
+  check_lightning: "Check your Lightning wallet, payment has been sent",
   invoice_provider_not_working:
     "Lightning Invoice provider is not working right now, try later or check the address",
   requesting: "Requesting",

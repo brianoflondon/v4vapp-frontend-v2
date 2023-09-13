@@ -586,7 +586,7 @@ async function payInvoice(currency, method) {
         memo + " v4v.app",
         true
       )
-
+      KeychainDialog.value.display = "hive"
       console.log("KeychainDialog", KeychainDialog)
       console.log("Showing QR code for Hive Keychain")
       KeychainDialog.value.show = true
@@ -676,12 +676,10 @@ watch(
   { deep: true }
 )
 
+// Watching for a payment result from the KeychainDialog
 watch(
   KeychainDialog,
   async (value) => {
-    console.log("KeychainDialog", value)
-
-    console.log("KeychainDialog paid", value.paid)
     if (value) {
       if (value.paid) {
         const message = t("payment_sent_hive_keychain")
@@ -694,6 +692,7 @@ watch(
           position: "top",
         })
         dInvoice.value.progress.push(message)
+        dInvoice.value.progress.push(`${t("check_lightning")}`)
         KeychainDialog.value = { show: false }
       } else {
         // Ignore the result

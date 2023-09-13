@@ -3,7 +3,11 @@
     <q-card>
       <q-toolbar>
         <!-- Title Bar -->
-        <q-toolbar-title>{{ $t("point_of_sale") }}</q-toolbar-title>
+        <q-toolbar-title>
+          <!-- {{ titleOptions }} -->
+          {{ titleOptions[KeychainDialog.display].title }}
+          <!-- {{ $t("point_of_sale") }} -->
+        </q-toolbar-title>
         <q-btn
           flat
           round
@@ -13,7 +17,9 @@
         />
       </q-toolbar>
       <!-- Hive or Lightning button toggle -->
-      <q-card-section v-if="true">
+      <q-card-section
+        v-if="titleOptions[KeychainDialog.display].showHiveLightning"
+      >
         <div class="text-center full-width">
           <q-btn-toggle
             class="full-width"
@@ -32,7 +38,7 @@
       </q-card-section>
       <!-- Text description of request -->
       <q-card-section :style="{ width: maxUseableWidth + 'px' }">
-        {{ requesting }} with memo {{ KeychainDialog.memo }}
+        {{ requesting }} with memo {{ useTruncateLnbc(KeychainDialog.memo) }}
       </q-card-section>
       <q-card-section>
         <!-- Green tick -->
@@ -113,20 +119,36 @@ import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useQuasar, copyToClipboard } from "quasar"
 
+import { useTruncateLnbc } from "src/use/useUtils.js"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
-import { decode, encodeOp } from "hive-uri"
+import { encodeOp } from "hive-uri"
 
 const q = useQuasar()
-
 const t = useI18n().t
-const KeychainDialog = defineModel(null)
+
+const KeychainDialog = defineModel({
+  paid: false,
+  loading: true,
+  display: "pos",
+})
 const storeApiStatus = useStoreAPIStatus()
 const expanded = ref(false)
 const qrCode = ref(null)
+
+const titleOptions = ref({
+  pos: {
+    title: t("point_of_sale"),
+    showHiveLightning: true,
+  },
+  hive: {
+    title: t("scan_for_keychain"),
+    showHiveLightning: false,
+  },
+})
 
 const fees = computed(() => {
   if (hiveOrLightning.value == "Hive") {
@@ -147,9 +169,7 @@ const requesting = computed(() => {
   return (
     t("scan_to_send") +
     " " +
-    KeychainDialog.value.amountToSend +
-    " " +
-    KeychainDialog.value.currencyToSend +
+    KeychainDialog.value.amountString +
     " " +
     t("to") +
     " " +
@@ -192,20 +212,12 @@ const intervalRef = ref([])
 
 onBeforeMount(() => {
   KeychainDialog.value.loading = true
-  console.log("KeychainDialog.value", KeychainDialog.value)
-  console.log(
-    "KeychainDialog.value.qrCodeText",
-    KeychainDialog.value.qrCodeText
-  )
 })
 
 onMounted(async () => {
-  console.log("--------> KeychainDialog.value", KeychainDialog.value)
-  // generateHiveQRCode()
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
-      console.log("after waiting for useGetHiveTransactionHistory", val)
       KeychainDialog.value.transactions = val
       KeychainDialog.value.paid = false
       KeychainDialog.value.loading = false
@@ -359,15 +371,15 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
       if (
         transaction_found?.op[1].memo.endsWith(KeychainDialog.value.checkCode)
       ) {
-        const memo = `${t("payment")}: ${transaction_found?.op[1].amount}\n${
-          transaction_found?.op[1].memo
-        }`
+        const message = `${t("payment")}: ${
+          transaction_found?.op[1].amount
+        }\n${useTruncateLnbc(transaction_found?.op[1].memo)}`
 
         q.notify({
           color: "positive",
           avatar: "site-logo/v4vapp-logo.svg",
           timeout: 10000,
-          message: memo,
+          message: message,
           position: "top",
         })
         KeychainDialog.value.paid = true
