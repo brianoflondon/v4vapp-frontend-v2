@@ -541,12 +541,14 @@ function onError(error) {
   if (cameraErrors.includes(error.name)) {
     cameraError.value = `${t("error")}: ${t(error.name)}`
   } else {
-    cameraError.value = `${t("error")}: ${t("OtherError")}`
+    cameraError.value = `${t("error")}: ${t("OtherError")} ${
+      error.name
+    } ${error}`
   }
   invoiceChecking.value = false
   q.notify({
     color: "negative",
-    timeout: 2000,
+    timeout: 4000,
     message: cameraError.value,
     position: "top",
   })
@@ -563,9 +565,6 @@ function onError(error) {
 function toggleCamera() {
   invoiceChecking.value = !invoiceChecking.value
   cameraShow.value = cameraOn.value
-  // setTimeout(() => {
-  //   cameraShow.value = cameraOn.value
-  // }, 100)
 }
 
 async function payInvoice(currency, method) {
