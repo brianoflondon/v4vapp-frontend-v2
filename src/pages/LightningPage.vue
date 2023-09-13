@@ -590,6 +590,7 @@ async function payInvoice(currency, method) {
       console.log("KeychainDialog", KeychainDialog)
       console.log("Showing QR code for Hive Keychain")
       KeychainDialog.value.show = true
+      // After this we need to watch for the result from the KeychainDialog
       break
 
     case "HiveKeychain":
@@ -669,6 +670,34 @@ watch(
           value.resolvedHAS.data,
           notif
         )
+      }
+    }
+  },
+  { deep: true }
+)
+
+watch(
+  KeychainDialog,
+  async (value) => {
+    console.log("KeychainDialog", value)
+
+    console.log("KeychainDialog paid", value.paid)
+    if (value) {
+      if (value.paid) {
+        const message = t("payment_sent_hive_keychain")
+        q.notify({
+          avatar: "site-logo/v4vapp-logo.svg",
+          color: "positive",
+          group: false,
+          timeout: 2000,
+          message: message,
+          position: "top",
+        })
+        dInvoice.value.progress.push(message)
+        KeychainDialog.value = { show: false }
+      } else {
+        // Ignore the result
+        return
       }
     }
   },
