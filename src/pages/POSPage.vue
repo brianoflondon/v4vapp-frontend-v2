@@ -76,7 +76,19 @@
       <!-- Pay buttons -->
       <div class="pad-max-width full-width q-px-md q-py-xs q-gutter-sm">
         <!-- HBD Button -->
-        <q-btn color="secondary" @click="generatePaymentQR('HBD')">
+        <q-btn
+          color="secondary"
+          @click="
+            useGeneratePaymentQR(
+              'HBD',
+              KeychainDialog,
+              amount.num,
+              hiveAccTo,
+              memoInput,
+              CurrencyCalc
+            )
+          "
+        >
           <div class="column items-center q-pa-none" style="font-size: 1.2rem">
             <div><HbdLogoIcon /></div>
             <div class="text-center" style="font-size: 0.5rem; margin: -8px">
@@ -88,7 +100,19 @@
           </div>
         </q-btn>
         <!-- Hive Button -->
-        <q-btn color="primary" @click="generatePaymentQR('HIVE')">
+        <q-btn
+          color="primary"
+          @click="
+            useGeneratePaymentQR(
+              'HIVE',
+              KeychainDialog,
+              amount.num,
+              hiveAccTo,
+              memoInput,
+              CurrencyCalc
+            )
+          "
+        >
           <div class="column items-center q-pa-none" style="font-size: 2.05rem">
             <div><i class="fa-brands fa-hive" /></div>
             <div class="text-center" style="font-size: 0.5rem; margin: -8px">
@@ -113,7 +137,7 @@
           <ListTransactions v-model="KeychainDialog"></ListTransactions>
         </q-expansion-item>
       </div>
-      <div class="pad-max-width" style="width: 80%;">
+      <div class="pad-max-width" style="width: 80%">
         <LocalCurrency />
       </div>
       <!-- Explanation what is this page box -->
@@ -137,7 +161,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
-import { tidyNumber, genRandAlphaNum } from "src/use/useUtils"
+import { tidyNumber } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
@@ -148,6 +172,7 @@ import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
+import { useGenerateHiveTransferOp } from "src/use/useHive.js"
 
 const q = useQuasar()
 const t = useI18n().t
@@ -225,8 +250,37 @@ function updateAmounts(val) {
     amount.value.num = 0
     return
   }
-  amount.value.num = parseFloat(val)
-  CurrencyCalc.value.amount = parseFloat(val)
+  amount.value.num = parseLocalizedFloat(val)
+  CurrencyCalc.value.amount = amount.value.num
+}
+
+function parseLocalizedFloat(val) {
+  const commaLocales = [
+    "de-DE",
+    "fr-FR",
+    "it-IT",
+    "es-ES",
+    "nl-NL",
+    "pt-PT",
+    "ru-RU",
+    "tr-TR",
+    "pl-PL",
+    "sv-SE",
+    "da-DK",
+    "fi-FI",
+    "el-GR",
+    // Add or remove locales as required
+  ]
+
+  const currentLocale = q.lang.getLocale()
+
+  // Check if the current locale is in the list of comma locales
+  if (commaLocales.includes(currentLocale)) {
+    val = val.replace(".", "").replace(",", ".")
+  }
+
+  // Handle other locale-specific formats as necessary
+  return parseFloat(val)
 }
 
 function updateCurrency(val) {
@@ -265,7 +319,7 @@ function clearAmount() {
 
 const memoInput = ref("")
 
-function generatePaymentQR(payWith) {
+function useGeneratePaymentQR(payWith) {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
   if (amount.value.num === 0) {
@@ -286,38 +340,30 @@ function generatePaymentQR(payWith) {
     })
     return
   }
+  let amountToSend = 0
+  let currencyToSend = ""
   switch (payWith) {
     case "HBD":
-      KeychainDialog.value.amountToSend = CurrencyCalc.value.hbd.toFixed(3)
-      KeychainDialog.value.currencyToSend = "HBD"
+      amountToSend = CurrencyCalc.value.hbd
+      currencyToSend = "HBD"
       break
     case "HIVE":
-      KeychainDialog.value.amountToSend = CurrencyCalc.value.hive.toFixed(3)
-      KeychainDialog.value.currencyToSend = "HIVE"
+      amountToSend = CurrencyCalc.value.hive
+      currencyToSend = "HIVE"
       break
     default:
       break
   }
 
-  KeychainDialog.value.amountString =
-    KeychainDialog.value.amountToSend +
-    " " +
-    KeychainDialog.value.currencyToSend
-  KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
-  // Add a check code onto the memo.
-  KeychainDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
-  KeychainDialog.value.memo = memoInput.value
-    ? memoInput.value + " " + KeychainDialog.value.checkCode
-    : KeychainDialog.value.checkCode
-  KeychainDialog.value.op = [
-    "transfer",
-    {
-      from: "",
-      to: KeychainDialog.value.hiveAccTo,
-      amount: KeychainDialog.value.amountString,
-      memo: KeychainDialog.value.memo,
-    },
-  ]
+  KeychainDialog.value = useGenerateHiveTransferOp(
+    "",
+    hiveAccTo.value.value,
+    amountToSend,
+    currencyToSend,
+    memoInput.value,
+    true
+  )
+  KeychainDialog.value.display = "pos"
   KeychainDialog.value.show = true
 }
 

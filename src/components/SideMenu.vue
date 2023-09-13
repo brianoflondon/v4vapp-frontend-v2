@@ -10,11 +10,11 @@
     <div class="q-pa-md">
       <LocalCurrency />
     </div>
+    <div class="q-pa-md text-caption">{{ appName }} - {{ appVersion }}</div>
   </div>
 </template>
 
 <script setup>
-// TODO: #51 Add translations for this logout and logout all buttons
 import { ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
@@ -22,7 +22,9 @@ import UserList from "components/hive/UserList.vue"
 import HiveLogin from "components/HiveLogin.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
+import { useAppDetails } from "src/use/useAppDetails.js"
 
+const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()
 // const rightDrawerOpen = defineModel(false)
 

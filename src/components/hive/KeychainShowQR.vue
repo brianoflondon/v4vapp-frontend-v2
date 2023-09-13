@@ -3,7 +3,11 @@
     <q-card>
       <q-toolbar>
         <!-- Title Bar -->
-        <q-toolbar-title>{{ $t("point_of_sale") }}</q-toolbar-title>
+        <q-toolbar-title>
+          <!-- {{ titleOptions }} -->
+          {{ titleOptions[KeychainDialog.display].title }}
+          <!-- {{ $t("point_of_sale") }} -->
+        </q-toolbar-title>
         <q-btn
           flat
           round
@@ -13,7 +17,9 @@
         />
       </q-toolbar>
       <!-- Hive or Lightning button toggle -->
-      <q-card-section v-if="true">
+      <q-card-section
+        v-if="titleOptions[KeychainDialog.display].showHiveLightning"
+      >
         <div class="text-center full-width">
           <q-btn-toggle
             class="full-width"
@@ -32,7 +38,7 @@
       </q-card-section>
       <!-- Text description of request -->
       <q-card-section :style="{ width: maxUseableWidth + 'px' }">
-        {{ requesting }} with memo {{ KeychainDialog.memo }}
+        {{ requesting }} with memo {{ useTruncateLnbc(KeychainDialog.memo) }}
       </q-card-section>
       <q-card-section>
         <!-- Green tick -->
@@ -48,6 +54,7 @@
             :hiveAccname="KeychainDialog.hiveAccTo"
             :color="dotColor"
             :loading="KeychainDialog.loading"
+            @qr-code="(val) => (qrCode = val)"
           />
         </div>
         <div class="q-pt-none">
@@ -60,7 +67,27 @@
           </q-linear-progress>
         </div>
         <!-- Fees -->
-        <div class="text-center q-pt-sm">{{ fees }}</div>
+        <div
+          v-if="titleOptions[KeychainDialog.display].showHiveLightning"
+          class="text-center q-pt-sm"
+        >
+          {{ fees }}
+        </div>
+      </q-card-section>
+      <q-card-section>
+        <div class="flex q-gutter-sm items-center">
+          <q-btn
+            icon="content_copy"
+            round
+            @click="copyToClipboard(KeychainDialog.qrCodeText)"
+          >
+            <q-tooltip>{{ t("copy_qrcode") }}</q-tooltip>
+          </q-btn>
+
+          <q-btn icon="download" round @click="downloadQR('png')">
+            <q-tooltip>{{ t("download_tooltip") }}</q-tooltip>
+          </q-btn>
+        </div>
       </q-card-section>
       <q-card-actions>
         <q-space />
@@ -93,9 +120,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from "vue"
+import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useQuasar } from "quasar"
+import { useQuasar, copyToClipboard } from "quasar"
+
+import { useTruncateLnbc } from "src/use/useUtils.js"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
@@ -104,11 +133,27 @@ import { tidyNumber } from "src/use/useUtils"
 import { encodeOp } from "hive-uri"
 
 const q = useQuasar()
-
 const t = useI18n().t
-const KeychainDialog = defineModel(null)
+
+const KeychainDialog = defineModel({
+  paid: false,
+  loading: true,
+  display: "pos",
+})
 const storeApiStatus = useStoreAPIStatus()
 const expanded = ref(false)
+const qrCode = ref(null)
+
+const titleOptions = ref({
+  pos: {
+    title: t("point_of_sale"),
+    showHiveLightning: true,
+  },
+  hive: {
+    title: t("scan_for_keychain"),
+    showHiveLightning: false,
+  },
+})
 
 const fees = computed(() => {
   if (hiveOrLightning.value == "Hive") {
@@ -119,16 +164,17 @@ const fees = computed(() => {
   }
   return `sats: ${tidyNumber(KeychainDialog.value?.lndData?.amount, 0)} - ${t(
     "Fees"
-  )}: ${tidyNumber(calcFees().sats, 0)} (${tidyNumber(calcFees().currency, 3)} ${KeychainDialog.value.currencyToSend})`
+  )}: ${tidyNumber(calcFees().sats, 0)} (${tidyNumber(
+    calcFees().currency,
+    3
+  )} ${KeychainDialog.value.currencyToSend})`
 })
 
 const requesting = computed(() => {
   return (
     t("scan_to_send") +
     " " +
-    KeychainDialog.value.amountToSend +
-    " " +
-    KeychainDialog.value.currencyToSend +
+    KeychainDialog.value.amountString +
     " " +
     t("to") +
     " " +
@@ -169,18 +215,23 @@ const progress = ref(1)
 
 const intervalRef = ref([])
 
+onBeforeMount(() => {
+  KeychainDialog.value.loading = true
+})
+
 onMounted(async () => {
-  generateHiveQRCode()
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
-  KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
-    KeychainDialog.value.hiveAccTo,
-    20
+  useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
+    (val) => {
+      KeychainDialog.value.transactions = val
+      KeychainDialog.value.paid = false
+      KeychainDialog.value.loading = false
+      const firstTrxId = KeychainDialog.value.transactions[0].trx_id
+      checkHiveTransaction(KeychainDialog.value.hiveAccTo, firstTrxId)
+      KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+      startCountdown()
+    }
   )
-  const firstTrxId = KeychainDialog.value.transactions[0].trx_id
-  KeychainDialog.value.paid = false
-  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
-  startCountdown()
-  checkHiveTransaction(KeychainDialog.value.hiveAccTo, firstTrxId)
 })
 
 // Calculates the fees charged in the same currency Hive/HBD as
@@ -204,7 +255,22 @@ function generateHiveQRCode() {
   //   // signer: "v4vapp.dev"
   //   callback: "https://webhook.site/5b73fc0c-8d1e-43ea-89fc-cc170aeafcc0",
   // }
+
+  // // console.log("KeychainDialog.value.op", KeychainDialog.value.op)
+
+  // After talking with good-karma, it seems that adding __signer is helpful
+  if (KeychainDialog.value.op[1].from === "") {
+    KeychainDialog.value.op[1].from = "__signer"
+  }
+  console.log("KeychainDialog.value.op", KeychainDialog.value.op)
   KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
+  console.log(
+    "KeychainDialog.value.qrCodeTextHive",
+    KeychainDialog.value.qrCodeTextHive
+  )
+
+  // const checkEncoding = decode(KeychainDialog.value.qrCodeTextHive)
+  // console.log("checkEncoding", checkEncoding)
 }
 
 async function generateLightningQRCode() {
@@ -254,6 +320,16 @@ onBeforeUnmount(() => {
   intervalRef.value.forEach((interval) => clearInterval(interval))
 })
 
+function downloadQR(filetype) {
+  let fileName = KeychainDialog.value.hiveAccTo
+  if (KeychainDialog.value.hiveOrLightning == "Hive") {
+    fileName += "_hive_v4vapp_address"
+  } else {
+    fileName += "_ln_v4vapp_address"
+  }
+  qrCode.value.download({ name: fileName, extension: filetype })
+}
+
 function startCountdown() {
   // Start the countdown
   const intervalId = setInterval(() => {
@@ -272,12 +348,10 @@ function startCountdown() {
 }
 
 async function checkHiveTransaction(username, trx_id, count = 0) {
-  if (trx_id == null) {
-    return
-  }
-
   try {
     while (count < maxChecks) {
+      console.log("count", count)
+      console.log("keychainDialog", KeychainDialog.value)
       count += 1
 
       await new Promise((resolve) => {
@@ -302,15 +376,15 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
       if (
         transaction_found?.op[1].memo.endsWith(KeychainDialog.value.checkCode)
       ) {
-        const memo = `${t("payment")}: ${transaction_found?.op[1].amount}\n${
-          transaction_found?.op[1].memo
-        }`
+        const message = `${t("payment")}: ${
+          transaction_found?.op[1].amount
+        }\n${useTruncateLnbc(transaction_found?.op[1].memo)}`
 
         q.notify({
           color: "positive",
           avatar: "site-logo/v4vapp-logo.svg",
           timeout: 10000,
-          message: memo,
+          message: message,
           position: "top",
         })
         KeychainDialog.value.paid = true

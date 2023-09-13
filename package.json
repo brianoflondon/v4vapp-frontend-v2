@@ -1,6 +1,6 @@
 {
   "name": "v4vapp-frontend-v2",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "Frontend for the V4V.app Website and WebApp",
   "productName": "V4V.app",
   "author": "Brian of London (Dot) <brian@v4v.app>",
@@ -27,6 +27,7 @@
     "uuid": "^9.0.0",
     "vue": "^3.3.4",
     "vue-i18n": "^9.0.0",
+    "vue-qrcode-reader": "^5.3.4",
     "vue-router": "^4.0.0"
   },
   "devDependencies": {

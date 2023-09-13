@@ -19,6 +19,11 @@ export function tidyNumber(x, decimals = 2) {
     const parts = x.toString().split(".")
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
+    // Drop decimals if x > 10,000
+    if (x >= 10000) {
+      return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    }
+
     // Handle the decimal part based on the decimals value
     if (decimals > 0) {
       if (parts[1]) {
@@ -171,4 +176,34 @@ export function genRandAlphaNum(length) {
     result += chars.charAt(Math.floor(Math.random() * chars.length))
   }
   return result
+}
+
+
+/**
+ * Truncate the section of a string that starts with "lnbc" if it exceeds a certain length.
+ *
+ * @param {string} inputString - The input string to be processed.
+ * @param {number} [maxLength=9] - The maximum allowed length for the "lnbc" section.
+ * @returns {string} - Returns the input string with the "lnbc" section possibly truncated.
+ *
+ * @example
+ * const testString = "lnbc5u1pjsz4yrpp5...";
+ * console.log(truncateLnbc(testString)); // Outputs "lnbc5u1pjs..."
+ */
+export function useTruncateLnbc(inputString, maxLength = 9) {
+    // Check if the string contains "lnbc"
+    if (inputString.includes("lnbc")) {
+        // Use a regular expression to match the "lnbc" pattern and grab everything after it
+        const match = inputString.match(/(lnbc[^\s]+)/);
+
+        if (match && match[1].length > maxLength) {
+            // If the matched string exceeds the maxLength, truncate it and append '...'
+            const truncated = match[1].substr(0, maxLength) + '...';
+            // Replace the original matched string with the truncated one in the inputString
+            return inputString.replace(match[1], truncated);
+        }
+    }
+
+    // If "lnbc" wasn't found or if the matched string didn't exceed maxLength, return the inputString as is
+    return inputString;
 }
