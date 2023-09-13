@@ -339,17 +339,6 @@ const qrCodeText = computed(() => {
 })
 
 onMounted(() => {
-  const hiveUri = encodeOp([
-    "transfer",
-    {
-      from: "brianoflondon",
-      to: "v4vapp.dev",
-      amount: "0.100 HIVE",
-      memo: "Memo here",
-    },
-  ])
-  console.log("hiveUri", hiveUri)
-
   if (storeUser.hiveAccname) {
     hiveAccFrom.value = {
       label: storeUser.hiveAccname,
@@ -358,11 +347,11 @@ onMounted(() => {
     }
     if (storeUser.hiveAccname === "v4vapp.tre") {
       hiveAccTo.value = {
-        label: "deepcrypto8",
-        value: "deepcrypto8",
-        caption: "deepcrypto8",
+        label: "bdhivesteem",
+        value: "bdhivesteem",
+        caption: "bdhivesteem",
       }
-      memo.value = "100082561"
+      memo.value = "100116033"
     }
     if (storeUser.hiveAccname === "v4vapp.dev") {
       hiveAccTo.value = {
