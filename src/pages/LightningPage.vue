@@ -6,7 +6,11 @@
       </div>
       <div v-if="cameraShow">
         <!-- <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream> -->
-        <qrcode-stream @detect="onDecode"></qrcode-stream>
+        <qrcode-stream
+          @detect="onDecode"
+          @camera-on="onReady"
+          @error="onError"
+        ></qrcode-stream>
       </div>
       <div class="progress-screen">
         <ShowProgress v-model="dInvoice" />
@@ -524,39 +528,44 @@ const cameraErrors = [
   "InsecureContextError",
 ]
 
-const onInitCamera = async (promise) => {
-  try {
-    invoiceChecking.value = true
-    await promise
-  } catch (errorEvent) {
-    if (cameraErrors.includes(errorEvent.name)) {
-      cameraError.value = `${t("error")}: ${t(errorEvent.name)}`
-    } else {
-      cameraError.value = `${t("error")}: ${t("OtherError")}`
-    }
-    invoiceChecking.value = false
-    q.notify({
-      color: "negative",
-      timeout: 2000,
-      message: cameraError.value,
-      position: "top",
-    })
-    setTimeout(() => {
-      cameraError.value = ""
-      cameraOn.value = false
-      cameraShow.value = false
-    }, 500)
+function onReady(capabilities) {
+  console.log("onReady", capabilities)
+  invoiceChecking.value = true
+
+  cameraOn.value = true
+  cameraShow.value = true
+}
+
+function onError(error) {
+  console.log("onError", error.name)
+  if (cameraErrors.includes(error.name)) {
+    cameraError.value = `${t("error")}: ${t(error.name)}`
+  } else {
+    cameraError.value = `${t("error")}: ${t("OtherError")}`
+  }
+  invoiceChecking.value = false
+  q.notify({
+    color: "negative",
+    timeout: 2000,
+    message: cameraError.value,
+    position: "top",
+  })
+  setTimeout(() => {
+    cameraError.value = ""
     cameraOn.value = false
     cameraShow.value = false
-    invoiceChecking.value = false
-  }
+  }, 500)
+  cameraOn.value = false
+  cameraShow.value = false
+  invoiceChecking.value = false
 }
 
 function toggleCamera() {
   invoiceChecking.value = !invoiceChecking.value
-  setTimeout(() => {
-    cameraShow.value = cameraOn.value
-  }, 500)
+  cameraShow.value = cameraOn.value
+  // setTimeout(() => {
+  //   cameraShow.value = cameraOn.value
+  // }, 100)
 }
 
 async function payInvoice(currency, method) {
