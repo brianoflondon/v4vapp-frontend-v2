@@ -302,13 +302,31 @@ export async function useGetHiveTransactionHistory(
   }
 }
 
+export function useGetHiveAmountString(amount, currency) {
+  // Returns a string with the amount and currency
+  // convert currency to uppercase
+  currency = currency.toUpperCase()
+  if (!["HIVE", "HBD"].includes(currency)) {
+    return null
+  }
+  if (amount <= 0) {
+    return null
+  }
+  return amount.toFixed(3) + " " + currency
+}
+
+export function useGetCheckCode() {
+  // Returns a string with the amount and currency
+  return "v4v-" + genRandAlphaNum(5)
+}
+
 export function useGenerateHiveTransferOp(
   from,
   to,
   amountToSend,
   currencyToSend,
   memo,
-  addCode = false
+  checkCode = null
 ) {
   // Returns a Hive transfer operation
   if (!from) {
@@ -317,17 +335,10 @@ export function useGenerateHiveTransferOp(
   if (!to) {
     return null
   }
-  if (amountToSend <= 0) {
-    return null
-  }
-  if (!["HIVE", "HBD"].includes(currencyToSend)) {
-    return null
-  }
-  const checkCode = "v4v-" + genRandAlphaNum(5)
-  if (addCode) {
+  const amountString = useGetHiveAmountString(amountToSend, currencyToSend)
+  if (checkCode) {
     memo = memo ? memo + " " + checkCode : checkCode
   }
-  const amountString = amountToSend.toFixed(3) + " " + currencyToSend
   const op = [
     "transfer",
     {
@@ -337,96 +348,87 @@ export function useGenerateHiveTransferOp(
       memo: memo,
     },
   ]
-  return {
-    amountToSend: amountToSend,
-    currencyToSend: currencyToSend,
-    amountString: amountString,
-    checkCode: checkCode,
-    hiveAccTo: to,
-    op: op,
-    qrCodeTextHive: encodeOp(op),
-    memo: memo,
-  }
+  return op
 }
 
-export async function useGeneratePaymentQR(
-  payWith,
-  KeychainDialog,
-  amount,
-  hiveAccTo,
-  memoInput,
-  CurrencyCalc = null
-) {
-  // Check if there is a running total, if that is 0 use the amount
-  // on the screen
-  console.log("useGeneratePaymentQR")
-  console.log("payWith", payWith)
-  console.log("amount", amount)
-  console.log("hiveAccTo", hiveAccTo)
-  console.log("KeychainDialog", KeychainDialog)
-  console.log("CurrencyCalc", CurrencyCalc)
-  if (amount === 0) {
-    q.notify({
-      message: t("no_amount"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
-    return
-  }
-  if (hiveAccTo.value === "") {
-    q.notify({
-      message: t("no_account"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
-    return
-  }
-  console.log("useGeneratePaymentQR amount", amount)
-  switch (payWith) {
-    // If CurencyCalc is null then use the raw amount (HBD or HIVE)
-    // If CurrencyCalc is not null then use the calculated amount
-    case "HBD":
-      KeychainDialog.amountToSend = CurrencyCalc
-        ? CurrencyCalc.hbd.toFixed(3)
-        : amount.toFixed(3)
+// export async function useGeneratePaymentQR(
+//   payWith,
+//   KeychainDialog,
+//   amount,
+//   hiveAccTo,
+//   memoInput,
+//   CurrencyCalc = null
+// ) {
+//   // Check if there is a running total, if that is 0 use the amount
+//   // on the screen
+//   console.log("useGeneratePaymentQR")
+//   console.log("payWith", payWith)
+//   console.log("amount", amount)
+//   console.log("hiveAccTo", hiveAccTo)
+//   console.log("KeychainDialog", KeychainDialog)
+//   console.log("CurrencyCalc", CurrencyCalc)
+//   if (amount === 0) {
+//     q.notify({
+//       message: t("no_amount"),
+//       type: "negative",
+//       position: "top",
+//       timeout: 2000,
+//     })
+//     return
+//   }
+//   if (hiveAccTo.value === "") {
+//     q.notify({
+//       message: t("no_account"),
+//       type: "negative",
+//       position: "top",
+//       timeout: 2000,
+//     })
+//     return
+//   }
+//   console.log("useGeneratePaymentQR amount", amount)
+//   switch (payWith) {
+//     // If CurencyCalc is null then use the raw amount (HBD or HIVE)
+//     // If CurrencyCalc is not null then use the calculated amount
+//     case "HBD":
+//       KeychainDialog.amountToSend = CurrencyCalc
+//         ? CurrencyCalc.hbd.toFixed(3)
+//         : amount.toFixed(3)
 
-      KeychainDialog.currencyToSend = "HBD"
-      break
-    case "HIVE":
-      KeychainDialog.amountToSend = CurrencyCalc
-        ? CurrencyCalc.hive.toFixed(3)
-        : amount.toFixed(3)
-      KeychainDialog.currencyToSend = "HIVE"
-      break
-    default:
-      break
-  }
+//       KeychainDialog.currencyToSend = "HBD"
+//       break
+//     case "HIVE":
+//       KeychainDialog.amountToSend = CurrencyCalc
+//         ? CurrencyCalc.hive.toFixed(3)
+//         : amount.toFixed(3)
+//       KeychainDialog.currencyToSend = "HIVE"
+//       break
+//     default:
+//       break
+//   }
 
-  KeychainDialog.amountString =
-    KeychainDialog.amountToSend + " " + KeychainDialog.currencyToSend
-  KeychainDialog.hiveAccTo = hiveAccTo.value
-  // Add a check code onto the memo.
-  KeychainDialog.checkCode = "v4v-" + genRandAlphaNum(5)
-  KeychainDialog.memo = memoInput
-    ? memoInput + " " + KeychainDialog.checkCode
-    : KeychainDialog.checkCode
-  KeychainDialog.op = [
-    "transfer",
-    {
-      from: "__signer",
-      to: KeychainDialog.hiveAccTo,
-      amount: KeychainDialog.amountString,
-      memo: KeychainDialog.memo,
-    },
-  ]
-  KeychainDialog.show = true
+//   KeychainDialog.amountString =
+//     KeychainDialog.amountToSend + " " + KeychainDialog.currencyToSend
+//   KeychainDialog.hiveAccTo = hiveAccTo.value
+//   // Add a check code onto the memo.
+//   KeychainDialog.checkCode = "v4v-" + genRandAlphaNum(5)
+//   KeychainDialog.memo = memoInput
+//     ? memoInput + " " + KeychainDialog.checkCode
+//     : KeychainDialog.checkCode
+//   KeychainDialog.op = [
+//     "transfer",
+//     {
+//       from: "__signer",
+//       to: KeychainDialog.hiveAccTo,
+//       amount: KeychainDialog.amountString,
+//       memo: KeychainDialog.memo,
+//     },
+//   ]
+//   KeychainDialog.show = true
 
-  KeychainDialog.qrCodeTextHive = encodeOp(KeychainDialog.op)
-  KeychainDialog.transactions = await useGetHiveTransactionHistory(
-    KeychainDialog.hiveAccTo,
-    20
-  )
-  console.log("KeychainDialog", KeychainDialog)
-}
+//   KeychainDialog.qrCodeTextHive = encodeOp(KeychainDialog.op)
+//   KeychainDialog.transactions = await useGetHiveTransactionHistory(
+//     KeychainDialog.hiveAccTo,
+//     20
+//   )
+//   console.log("KeychainDialog", KeychainDialog)
+// }

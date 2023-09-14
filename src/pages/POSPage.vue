@@ -79,8 +79,8 @@
         <q-btn
           color="secondary"
           @click="
-            useGeneratePaymentQR(
-              'HBD',
+            showPaymentQR(
+              'hbd',
               KeychainDialog,
               amount.num,
               hiveAccTo,
@@ -103,8 +103,8 @@
         <q-btn
           color="primary"
           @click="
-            useGeneratePaymentQR(
-              'HIVE',
+            showPaymentQR(
+              'hive',
               KeychainDialog,
               amount.num,
               hiveAccTo,
@@ -172,7 +172,10 @@ import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
-import { useGenerateHiveTransferOp } from "src/use/useHive.js"
+import {
+  useGenerateHiveTransferOp,
+  useGetHiveAmountString,
+} from "src/use/useHive.js"
 
 const q = useQuasar()
 const t = useI18n().t
@@ -183,7 +186,7 @@ const hiveAccTo = ref({ label: "", value: "", caption: "" })
 const KeychainDialog = ref({ show: false })
 const CurrencyCalc = ref({
   amount: 0,
-  currency: "HBD",
+  currency: "hbd",
   sats: 0,
   hive: 0,
   hbd: 0,
@@ -200,9 +203,9 @@ const decimalEntry = ref(0)
 // const currencyOptions = ref(["HBD", "HIVE"])
 const currencyOptions = computed(() => {
   const ans = [
-    { label: "HBD", value: "HBD" },
-    { label: "HIVE", value: "HIVE" },
-    { label: "SATS", value: "SATS" },
+    { label: "HBD", value: "hbd" },
+    { label: "HIVE", value: "hive" },
+    { label: "SATS", value: "sats" },
   ]
   if (storeUser.localCurrency) {
     ans.push(storeUser.localCurrency)
@@ -219,7 +222,7 @@ watch(
   }
 )
 
-const currency = ref("HBD")
+const currency = ref("hbd")
 
 onMounted(() => {
   if (storeUser.pos?.hiveAccTo) {
@@ -319,7 +322,7 @@ function clearAmount() {
 
 const memoInput = ref("")
 
-function useGeneratePaymentQR(payWith) {
+function showPaymentQR(payWith) {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
   if (amount.value.num === 0) {
@@ -340,29 +343,10 @@ function useGeneratePaymentQR(payWith) {
     })
     return
   }
-  let amountToSend = 0
-  let currencyToSend = ""
-  switch (payWith) {
-    case "HBD":
-      amountToSend = CurrencyCalc.value.hbd
-      currencyToSend = "HBD"
-      break
-    case "HIVE":
-      amountToSend = CurrencyCalc.value.hive
-      currencyToSend = "HIVE"
-      break
-    default:
-      break
-  }
-
-  KeychainDialog.value = useGenerateHiveTransferOp(
-    "",
-    hiveAccTo.value.value,
-    amountToSend,
-    currencyToSend,
-    memoInput.value,
-    true
-  )
+  KeychainDialog.value.memo = memoInput.value
+  KeychainDialog.value.currencyToSend = payWith
+  KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
+  KeychainDialog.value.currencyCalc = CurrencyCalc.value
   KeychainDialog.value.display = "pos"
   KeychainDialog.value.show = true
 }
