@@ -85,8 +85,6 @@ onMounted(async () => {
     size: "small",
     reason: "qr-code",
   })
-
-  console.log("avatarUrl", avatarUrl.value)
   qrTextPage.value = props.qrText
   await newQRCode()
 })

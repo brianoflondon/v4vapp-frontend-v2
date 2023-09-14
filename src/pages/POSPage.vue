@@ -76,19 +76,7 @@
       <!-- Pay buttons -->
       <div class="pad-max-width full-width q-px-md q-py-xs q-gutter-sm">
         <!-- HBD Button -->
-        <q-btn
-          color="secondary"
-          @click="
-            showPaymentQR(
-              'hbd',
-              KeychainDialog,
-              amount.num,
-              hiveAccTo,
-              memoInput,
-              CurrencyCalc
-            )
-          "
-        >
+        <q-btn color="secondary" @click="showPaymentQR('hbd')">
           <div class="column items-center q-pa-none" style="font-size: 1.2rem">
             <div><HbdLogoIcon /></div>
             <div class="text-center" style="font-size: 0.5rem; margin: -8px">
@@ -100,19 +88,7 @@
           </div>
         </q-btn>
         <!-- Hive Button -->
-        <q-btn
-          color="primary"
-          @click="
-            showPaymentQR(
-              'hive',
-              KeychainDialog,
-              amount.num,
-              hiveAccTo,
-              memoInput,
-              CurrencyCalc
-            )
-          "
-        >
+        <q-btn color="primary" @click="showPaymentQR('hive')">
           <div class="column items-center q-pa-none" style="font-size: 2.05rem">
             <div><i class="fa-brands fa-hive" /></div>
             <div class="text-center" style="font-size: 0.5rem; margin: -8px">
@@ -172,10 +148,6 @@ import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
-import {
-  useGenerateHiveTransferOp,
-  useGetHiveAmountString,
-} from "src/use/useHive.js"
 
 const q = useQuasar()
 const t = useI18n().t

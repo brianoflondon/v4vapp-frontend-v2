@@ -386,8 +386,6 @@ function startCountdown() {
 async function checkHiveTransaction(username, trx_id, count = 0) {
   try {
     while (count < maxChecks) {
-      console.log("count", count)
-      console.log("keychainDialog", KeychainDialog.value)
       count += 1
 
       await new Promise((resolve) => {

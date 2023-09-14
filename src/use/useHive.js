@@ -281,7 +281,6 @@ export async function useGetHiveTransactionHistory(
   opFilterHigh = 4
 ) {
   // Returns the account history for the given account.
-  console.log("useGetHiveTransactionHistory", hiveAccname)
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     return null
   }
@@ -294,7 +293,6 @@ export async function useGetHiveTransactionHistory(
       opFilterHigh,
     ])
     // This removes the un-necessary double list structure
-    console.log("history", history)
     return history.result.reverse().map((item) => item[1])
   } catch (error) {
     console.error({ error })
