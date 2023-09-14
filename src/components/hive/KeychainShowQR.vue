@@ -82,7 +82,7 @@
       </q-card-section>
       <!-- Text description of request -->
       <q-card-section :style="{ width: maxUseableWidth + 'px' }">
-        {{ requesting }} with memo {{ useTruncateLnbc(KeychainDialog.memo) }}
+        {{ requesting }} {{ useTruncateLnbc(KeychainDialog.memo) }}
       </q-card-section>
       <q-card-section>
         <!-- Green tick -->
@@ -158,7 +158,6 @@
               Memo: {{ KeychainDialog.memo }}
             </div>
           </q-card-section>
-          <pre>{{ KeychainDialog }}</pre>
         </div>
       </q-slide-transition>
     </q-card>
