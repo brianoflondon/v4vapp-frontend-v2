@@ -115,19 +115,6 @@
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
           <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
             <q-btn
-              class="payment-button-hive"
-              @click="payInvoice('HIVE', 'HiveKeychain')"
-              :loading="storeApiStatus.payInvoice"
-              :disable="storeApiStatus.payInvoice"
-              icon="img:keychain/hive-keychain-round.svg"
-              icon-right="img:avatars/hive_logo_dark.svg"
-              :label="Hive"
-              :color="buttonColor.buttonColor"
-              :text-color="buttonColor.textColor"
-              size="md"
-              rounded
-            />
-            <q-btn
               class="payment-button-hbd"
               @click="payInvoice('HBD', 'HiveKeychain')"
               :loading="storeApiStatus.payInvoice"
@@ -140,14 +127,12 @@
               size="md"
               rounded
             />
-          </div>
-          <div class="has-buttons row flex-center q-gutter-lg">
             <q-btn
               class="payment-button-hive"
-              @click="payInvoice('HIVE', 'HAS')"
+              @click="payInvoice('HIVE', 'HiveKeychain')"
               :loading="storeApiStatus.payInvoice"
               :disable="storeApiStatus.payInvoice"
-              icon="img:/has/hive-auth-logo.svg"
+              icon="img:keychain/hive-keychain-round.svg"
               icon-right="img:avatars/hive_logo_dark.svg"
               :label="Hive"
               :color="buttonColor.buttonColor"
@@ -155,6 +140,8 @@
               size="md"
               rounded
             />
+          </div>
+          <div class="has-buttons row flex-center q-gutter-lg">
             <q-btn
               class="payment-button-hbd"
               @click="payInvoice('HBD', 'HAS')"
@@ -163,6 +150,19 @@
               icon="img:/has/hive-auth-logo.svg"
               icon-right="img:/avatars/hbd_logo.svg"
               :label="HBD"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+            <q-btn
+              class="payment-button-hive"
+              @click="payInvoice('HIVE', 'HAS')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:/has/hive-auth-logo.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              :label="Hive"
               :color="buttonColor.buttonColor"
               :text-color="buttonColor.textColor"
               size="md"
@@ -582,6 +582,8 @@ async function payInvoice(currency, method) {
   } else if (currency == "HBD") {
     amountNum = parseFloat(HBD.value) + 1 + 0.002 * parseFloat(Hive.value)
   }
+  CurrencyCalc.value.amount = amountNum
+  CurrencyCalc.value.currency = currency.toLowerCase()
   let amount = amountNum.toFixed(3)
   const memo = `${dInvoice.value.paymentRequest}`
   dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
