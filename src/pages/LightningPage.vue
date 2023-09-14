@@ -3,6 +3,9 @@
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
+        <div v-show="CurrencyCalc.amount" class="pad-max-width full-width q-px-md">
+          <AlternateCurrency v-model="CurrencyCalc" />
+        </div>
       </div>
       <div v-if="cameraShow">
         <!-- <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream> -->
@@ -209,10 +212,7 @@ import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 // import { QrcodeStream } from "qrcode-reader-vue3"
 import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
-import {
-  useGetHiveTransactionHistory,
-  useGenerateHiveTransferOp,
-} from "src/use/useHive.js"
+import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
@@ -226,6 +226,7 @@ import CreditCard from "components/hive/CreditCard.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
 import { serverHiveAccount } from "src/boot/axios"
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -250,6 +251,7 @@ const storeUser = useStoreUser()
 
 const KeychainDialog = ref({ show: false })
 const HASDialog = ref({ show: false })
+const CurrencyCalc = ref({})
 
 let timeMessage = ref("")
 // Invoice hint shows expiry time and sats costs and fee
@@ -436,6 +438,7 @@ function clearReset() {
   dInvoice.value = {}
   cameraOn.value = false
   cameraShow.value = false
+  CurrencyCalc.value.amount = 0
   HASDialog.value = { show: false }
 }
 
@@ -476,6 +479,8 @@ async function decodeInvoice() {
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
     if (dInvoice.value) {
       console.log("dInvoice.value", dInvoice.value)
+      CurrencyCalc.value.amount = dInvoice.value?.satoshis
+      CurrencyCalc.value.currency = "sats"
       dInvoice.value.progress = []
       invoiceValid.value = true
       invoiceChecking.value = false
@@ -575,7 +580,7 @@ async function payInvoice(currency, method) {
   if (currency == "HIVE") {
     amountNum = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
-    amountNum = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(HBD.value) + 1 + 0.002 * parseFloat(Hive.value)
   }
   let amount = amountNum.toFixed(3)
   const memo = `${dInvoice.value.paymentRequest}`
@@ -598,18 +603,11 @@ async function payInvoice(currency, method) {
         message: t("keychain_missing"),
         position: "top",
       })
-
-      KeychainDialog.value = useGenerateHiveTransferOp(
-        "",
-        serverHiveAccount,
-        amountNum,
-        currency,
-        memo + " v4v.app",
-        true
-      )
+      KeychainDialog.value.memo = memo
+      KeychainDialog.value.currencyToSend = currency.toLowerCase()
+      KeychainDialog.value.hiveAccTo = serverHiveAccount
       KeychainDialog.value.display = "hive"
-      console.log("KeychainDialog", KeychainDialog)
-      console.log("Showing QR code for Hive Keychain")
+      KeychainDialog.value.currencyCalc = CurrencyCalc.value
       KeychainDialog.value.show = true
       // After this we need to watch for the result from the KeychainDialog
       break
