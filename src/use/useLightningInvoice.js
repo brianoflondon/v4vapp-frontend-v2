@@ -8,13 +8,20 @@ export async function useGetLightingHiveInvoice(
   hiveAccname,
   amount,
   currency,
-  message,
+  memo,
+  checkCode = "",
   expiry = 300
 ) {
   try {
     if (expiry > 600) {
       expiry = 600
     }
+    let message = memo
+    if (checkCode) {
+      message = memo ? memo + " " + checkCode : checkCode
+    }
+
+    currency = currency.toUpperCase()
     const callBackResult = await api.get("new_invoice_hive", {
       params: {
         hive_accname: hiveAccname,

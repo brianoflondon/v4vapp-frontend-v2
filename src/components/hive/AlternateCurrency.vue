@@ -81,8 +81,9 @@ async function calcAllAmounts() {
   if (!localRates.hive) {
     localRates = await getCoingeckoRate(storeUser.localCurrency.value)
   }
+  console.log(CurrencyCalc.value.currency)
   switch (CurrencyCalc.value.currency) {
-    case "HBD":
+    case "hbd":
       CurrencyCalc.value.sats =
         CurrencyCalc.value.amount * storeAPIStatus.HBDSatsNumber
       CurrencyCalc.value.hive =
@@ -93,7 +94,7 @@ async function calcAllAmounts() {
         CurrencyCalc.value.hbd *
         localRates.hive_dollar[storeUser.localCurrency.value]
       break
-    case "HIVE":
+    case "hive":
       CurrencyCalc.value.sats =
         CurrencyCalc.value.amount * storeAPIStatus.hiveSatsNumber
       CurrencyCalc.value.hive = CurrencyCalc.value.amount
@@ -103,7 +104,7 @@ async function calcAllAmounts() {
       CurrencyCalc.value.local =
         CurrencyCalc.value.hive * localRates.hive[storeUser.localCurrency.value]
       break
-    case "SATS":
+    case "sats":
       CurrencyCalc.value.sats = CurrencyCalc.value.amount
       CurrencyCalc.value.hive =
         CurrencyCalc.value.amount / storeAPIStatus.hiveSatsNumber
