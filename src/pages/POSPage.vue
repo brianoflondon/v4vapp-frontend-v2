@@ -63,6 +63,7 @@
             v-model="currency"
             :options="currencyOptions"
             label="Currency"
+            map-options
             @update:model-value="(val) => updateCurrency(val)"
             dense
           />
@@ -191,6 +192,7 @@ watch(
     if (currency.value != storeUser.localCurrency.value) {
       currency.value = storeUser.localCurrency.value
     }
+    updateAmounts(amount.value.txt)
   }
 )
 
