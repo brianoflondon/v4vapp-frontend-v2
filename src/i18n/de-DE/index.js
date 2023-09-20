@@ -2,13 +2,13 @@
 // so you can safely delete all default props below
 export default {
   // General
-  loading: 'Loading ...',
-  error: 'Error',
-  paste: 'Paste',
-  required: 'Required',
+  loading: 'Lade...',
+  error: 'Fehler',
+  paste: 'Einfügen',
+  required: 'Notwendig',
   ok: 'OK',
-  cancel: 'Cancel',
-  characters: 'characters',
+  cancel: 'Abbrechen',
+  characters: 'Zeichen',
   hours: 'hours',
   minutes: 'minutes',
   seconds: 'seconds',
