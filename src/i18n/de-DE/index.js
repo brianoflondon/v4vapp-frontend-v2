@@ -49,7 +49,7 @@ export default {
   login_in_progress: 'Anmeldung wird ausgeführt',
   login_failed: 'Anmeldung fehlgeschlagen',
   login_success: 'Anmeldung erfolgreich',
-  sign_this: 'Bitte Signiere das',
+  sign_this: 'Transaktion bestätigen',
   matches: ' stimmt überein',
   // Get Hive
   amount: 'Betrag',
@@ -66,7 +66,7 @@ export default {
   home: 'Startseite',
   status: 'Status',
   // Status Page
-  status_page_message: 'Statusseite befindet sich im Aufbau. In der Zwischenzeit besuchen Sie Hive.',
+  status_page_message: 'Statusseite befindet sich im Aufbau. In der Zwischenzeit besuchen Sie bitte Hive.',
   // Pricebar
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
@@ -99,12 +99,12 @@ export default {
   which_account: 'Welchen Account möchten Sie verwenden?',
   rejected_payment: 'Zahlung vom Nutzer auf HAS abgelehnt',
   // Please vote
-  voting_as: 'Abstimmen über',
-  vote_for_proposal: 'Vote auf DHF für den Vorschlag',
+  voting_as: 'Abstimmen als',
+  vote_for_proposal: 'Stimmen Sie auf DHF für den Vorschlag',
   please_vote: 'Wenn Sie V4V.app verwenden und es für nützlich erachten, sollten Sie sowohl für meinen Proposal zur laufenden Wartung als auch für meinen Witness stimmen. Das hilft mir wirklich, den Service in Betrieb zu halten. Vielen Dank!',
   thank_you_for_voting: 'Danke für Ihre Stimme!',
-  vote_witness: 'Vote für meinen Hive-Witness',
-  vote_proposal: 'Stimme für meinen DHF-Vorschlag',
+  vote_witness: 'Stimmen Sie für meinen Hive-Witness',
+  vote_proposal: 'Stimmen Sie für meinen DHF-Vorschlag',
   thank_you: 'Vielen Dank, dass Sie bereits abgestimmt haben!',
   // Tab Bar
   send: 'Versenden',
@@ -144,7 +144,7 @@ export default {
   sending: 'Senden',
   // Point of Sale POS
   point_of_sale: 'Kasse (POS)',
-  charge: 'Gebühren',
+  charge: 'Tarif',
   // as in charge a customer
   payment: 'Zahlung',
   scan_to_send: 'Scannen Sie diesen Code um zu senden',
