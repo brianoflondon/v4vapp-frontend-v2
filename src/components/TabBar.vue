@@ -1,6 +1,6 @@
 <template>
   <div class="tab-bar-selector">
-    <div class="q-gutter-y-md" style="max-width: 550px">
+    <div class="q-gutter-y-md" style="max-width: 400px">
       <q-tabs dense>
         <q-route-tab name="send" to="/lnd" :label="$t('send')" />
         <q-route-tab name="receive" to="/pos" :label="$t('receive')" />
