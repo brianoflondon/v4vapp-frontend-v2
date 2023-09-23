@@ -1,11 +1,12 @@
-import enUS from './en-US'
-import esES from './es-ES'
+import enUS from "./en-US"
+import esES from "./es-ES"
+import daDE from "./de-DE"
 
 export default {
-  'en-US': enUS,
-  'es-ES': esES,
+  "en-US": enUS,
+  "es-ES": esES,
+  "de-DE": daDE,
 }
-
 
 // whats the spanish code
 
