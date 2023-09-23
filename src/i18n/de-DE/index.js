@@ -31,7 +31,7 @@ export default {
   // IndexPage
   index_page_message: 'Für weitere Informationen über dieses Projekt, besuchen Sie bitte',
   // Selector
-  hive_account: 'Hive-Account',
+  hive_account: 'Hive Account',
   // Lightning Page
   lightning: 'Lightning',
   hive: 'Hive',
