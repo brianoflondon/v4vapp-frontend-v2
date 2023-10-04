@@ -275,7 +275,7 @@ export async function useGetHiveWitnessVotes(hiveAccname, witness) {
 // -------- Hive check for transactions --------
 export async function useGetHiveTransactionHistory(
   hiveAccname,
-  limit = 10,
+  limit = 100,
   start = -1,
   opFilterLow = 4,
   opFilterHigh = 4

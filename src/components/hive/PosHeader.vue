@@ -24,7 +24,7 @@ const storeUser = useStoreUser()
 const hiveProfileMetadata = ref({ profile: { name: "" } })
 
 const displayName = computed(() => {
-  return hiveProfileMetadata.value.profile?.name
+  return hiveProfileMetadata.value?.profile?.name
     ? hiveProfileMetadata.value.profile.name
     : storeUser.pos.hiveAccTo.value
 })
