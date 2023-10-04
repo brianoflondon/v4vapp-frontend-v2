@@ -372,7 +372,7 @@ async function generateLightningQRCode() {
       : t("lightning_invoice_not_created")
     q.notify({
       color: "negative",
-      avatar: "site-logo/v4vapp-logo.svg",
+      avatar: "/site-logo/v4vapp-logo.svg",
       timeout: 2000,
       message: "Error: " + message,
       position: "top",
@@ -454,7 +454,7 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
 
         q.notify({
           color: "positive",
-          avatar: "site-logo/v4vapp-logo.svg",
+          avatar: "/site-logo/v4vapp-logo.svg",
           timeout: 10000,
           message: message,
           position: "top",
@@ -473,7 +473,7 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
     const memo = `${t("transfer")}: ${t("not_found")}:`
     q.notify({
       color: "negative",
-      avatar: "site-logo/v4vapp-logo.svg",
+      avatar: "/site-logo/v4vapp-logo.svg",
       timeout: 5000,
       message: memo,
       position: "top",

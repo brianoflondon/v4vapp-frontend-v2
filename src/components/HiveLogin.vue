@@ -28,7 +28,7 @@
             align="left"
             rounded
             :label="t('hive_keychain')"
-            icon="img:keychain/hive-keychain-round.svg"
+            icon="img:/keychain/hive-keychain-round.svg"
             @click="loginKeychain(hiveAccObj?.value)"
           />
           <q-tooltip v-if="!hiveAccObj && isKeychain">{{
