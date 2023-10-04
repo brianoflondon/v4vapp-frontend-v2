@@ -14,6 +14,7 @@
         :label="`${usdToCurrency}`"
         v-model="formattedFixedRate"
         debounce="1000"
+        clearable
       ></q-input>
     </div>
   </div>
@@ -25,7 +26,6 @@ import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
 import { getCoingeckoRates } from "src/use/useCoinGecko"
 import { tidyNumber } from "src/use/useUtils"
-import { store } from "quasar/wrappers"
 const t = useI18n().t
 const storeUser = useStoreUser()
 
@@ -43,8 +43,14 @@ const formattedFixedRate = computed({
   },
   set: (value) => {
     // Convert string input back to a number
-    fixedRate.value = parseFloat(value)
-    storeUser.pos.fixedRate = fixedRate.value
+    console.log("setting formattedFixedRate.value", value)
+    if (value) {
+      fixedRate.value = parseFloat(value)
+      storeUser.pos.fixedRate = fixedRate.value
+    } else {
+      fixedRate.value = exchangeRate()
+      storeUser.pos.fixedRate = null
+    }
     console.log("setting storeUser.pos.fixedRate", storeUser.pos.fixedRate)
   },
 })

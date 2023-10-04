@@ -7,7 +7,7 @@
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
         v-if="fixedUser"
       >
-        <div class="text-center">Fixed User: {{ hiveAccTo.caption }}</div>
+        <PosHeader />
       </div>
       <!-- Select a user -->
       <div
@@ -159,7 +159,7 @@ import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
 import { useRoute } from "vue-router"
-import { store } from "quasar/wrappers"
+import PosHeader from "src/components/hive/PosHeader.vue"
 
 const route = useRoute()
 const q = useQuasar()
@@ -233,6 +233,7 @@ onMounted(() => {
   }
   if (storeUser.pos.currencySelected) {
     currencySelected.value = storeUser.pos.currencySelected
+    CurrencyCalc.value.currency = currencySelected.value
   }
   currencyOptions.value.push(storeUser.localCurrency.label)
 })
