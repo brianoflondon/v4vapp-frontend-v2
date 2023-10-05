@@ -7,7 +7,7 @@
             href="https://peakd.com/hive-110369/@v4vapp/hive-to-lightning-gateway-fees"
             target="_blank"
           >
-            <q-img src="site-logo/v4vapp-logo-shadows.svg" :ratio="16 / 11" />
+            <q-img src="/site-logo/v4vapp-logo-shadows.svg" :ratio="16 / 11" />
           </a>
           <q-card-section>
             <div class="text-overline text-orange-9">V4V.app</div>
@@ -19,7 +19,9 @@
               >
                 {{ $t("status_page_message") }}
               </a>
-              <p class="text-right text-caption">{{ appName }} v{{ appVersion }}</p>
+              <p class="text-right text-caption">
+                {{ appName }} v{{ appVersion }}
+              </p>
             </div>
           </q-card-section>
           <q-card-section>

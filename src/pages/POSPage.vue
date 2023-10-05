@@ -2,8 +2,17 @@
   <q-page>
     <div class="flex column text-center items-center">
       <!-- Pay To bar -->
+      <!-- Pre-selected user name from path -->
       <div
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
+        v-if="fixedUser"
+      >
+        <PosHeader />
+      </div>
+      <!-- Select a user -->
+      <div
+        class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
+        v-if="!fixedUser"
       >
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
@@ -60,11 +69,11 @@
         <!-- Currency Selector -->
         <div class="col-3 q-pa-sm amount-input-area">
           <q-select
-            v-model="currency"
+            v-model="currencySelected"
             :options="currencyOptions"
             label="Currency"
             map-options
-            @update:model-value="(val) => updateCurrency(val)"
+            @update:model-value="(val) => updateCurrencySelected(val)"
             dense
           />
         </div>
@@ -149,12 +158,16 @@ import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
+import { useRoute } from "vue-router"
+import PosHeader from "src/components/hive/PosHeader.vue"
 
+const route = useRoute()
 const q = useQuasar()
 const t = useI18n().t
 
 const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
+const fixedUser = ref(false)
 
 const KeychainDialog = ref({ show: false })
 const CurrencyCalc = ref({
@@ -189,17 +202,27 @@ const currencyOptions = computed(() => {
 watch(
   () => storeUser.localCurrency,
   () => {
-    if (currency.value != storeUser.localCurrency.value) {
-      currency.value = storeUser.localCurrency.value
+    if (currencySelected.value != storeUser.localCurrency.value) {
+      currencySelected.value = storeUser.localCurrency.value
     }
     updateAmounts(amount.value.txt)
   }
 )
 
-const currency = ref("hbd")
+const currencySelected = ref("hbd")
 
 onMounted(() => {
-  if (storeUser.pos?.hiveAccTo) {
+  console.log("storeUser.pos")
+  // print out route params
+  console.log("route params", route.params)
+  if (route.params.hiveAccTo) {
+    hiveAccTo.value = {
+      label: route.params.hiveAccTo,
+      value: route.params.hiveAccTo,
+      caption: setCaption(route.params.hiveAccTo),
+    }
+    fixedUser.value = true
+  } else if (storeUser.pos?.hiveAccTo) {
     hiveAccTo.value = {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
@@ -207,6 +230,10 @@ onMounted(() => {
     }
   } else {
     useLoggedInUser()
+  }
+  if (storeUser.pos.currencySelected) {
+    currencySelected.value = storeUser.pos.currencySelected
+    CurrencyCalc.value.currency = currencySelected.value
   }
   currencyOptions.value.push(storeUser.localCurrency.label)
 })
@@ -260,15 +287,23 @@ function parseLocalizedFloat(val) {
   return parseFloat(val)
 }
 
-function updateCurrency(val) {
-  currency.value = val.value
+function updateCurrencySelected(val) {
+  currencySelected.value = val.value
   CurrencyCalc.value.currency = val.value
+  storeUser.pos.currencySelected = val.value
 }
 
 function enterPressed() {}
 
 function setCaption(profileName) {
-  return t("pay_to") + " " + profileName
+  const prefix = t("pay_to")
+
+  // Check if profileName already starts with the prefix
+  if (profileName.startsWith(prefix)) {
+    return profileName
+  }
+
+  return prefix + " " + profileName
 }
 
 const useStoreUserButtonLabel = computed(() => {

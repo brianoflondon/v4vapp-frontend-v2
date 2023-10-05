@@ -3,7 +3,10 @@
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
-        <div v-show="CurrencyCalc.amount" class="pad-max-width full-width q-px-md">
+        <div
+          v-show="CurrencyCalc.amount"
+          class="pad-max-width full-width q-px-md"
+        >
           <AlternateCurrency v-model="CurrencyCalc" />
         </div>
       </div>
@@ -119,7 +122,7 @@
               @click="payInvoice('HBD', 'HiveKeychain')"
               :loading="storeApiStatus.payInvoice"
               :disable="storeApiStatus.payInvoice"
-              icon="img:keychain/hive-keychain-round.svg"
+              icon="img:/keychain/hive-keychain-round.svg"
               icon-right="img:/avatars/hbd_logo.svg"
               :label="HBD"
               :color="buttonColor.buttonColor"
@@ -132,7 +135,7 @@
               @click="payInvoice('HIVE', 'HiveKeychain')"
               :loading="storeApiStatus.payInvoice"
               :disable="storeApiStatus.payInvoice"
-              icon="img:keychain/hive-keychain-round.svg"
+              icon="img:/keychain/hive-keychain-round.svg"
               icon-right="img:avatars/hive_logo_dark.svg"
               :label="Hive"
               :color="buttonColor.buttonColor"
@@ -620,7 +623,7 @@ async function payInvoice(currency, method) {
       console.log("pay result", result)
       if (result.success) {
         const notif = q.notify({
-          avatar: "site-logo/v4vapp-logo.svg",
+          avatar: "/site-logo/v4vapp-logo.svg",
           color: "positive",
           group: false,
           timeout: 0,
@@ -635,7 +638,7 @@ async function payInvoice(currency, method) {
         dInvoice.value.progress.push(result.message)
         q.notify({
           color: "negative",
-          avatar: "site-logo/v4vapp-logo.svg",
+          avatar: "/site-logo/v4vapp-logo.svg",
           timeout: 2000,
           message: result.message,
           position: "top",
@@ -669,7 +672,7 @@ watch(
         dInvoice.value.progress.push(message)
         q.notify({
           color: "negative",
-          avatar: "site-logo/v4vapp-logo.svg",
+          avatar: "/site-logo/v4vapp-logo.svg",
           timeout: 5000,
           message: message,
           position: "top",
@@ -679,7 +682,7 @@ watch(
         const message = `${t("payment_sent")}`
         dInvoice.value.progress.push(message)
         const notif = q.notify({
-          avatar: "site-logo/v4vapp-logo.svg",
+          avatar: "/site-logo/v4vapp-logo.svg",
           color: "positive",
           group: false,
           timeout: 0,
@@ -705,7 +708,7 @@ watch(
       if (value.paid) {
         const message = t("payment_sent_hive_keychain")
         q.notify({
-          avatar: "site-logo/v4vapp-logo.svg",
+          avatar: "/site-logo/v4vapp-logo.svg",
           color: "positive",
           group: false,
           timeout: 2000,
@@ -747,7 +750,7 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
       }
       notif({
         color: "positive",
-        avatar: "site-logo/v4vapp-logo.svg",
+        avatar: "/site-logo/v4vapp-logo.svg",
         timeout: 0,
         message: message,
         position: "top",
@@ -758,7 +761,7 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
     memo = `${t("transfer")}: ${t("not_found")}:`
     notif({
       color: "negative",
-      avatar: "site-logo/v4vapp-logo.svg",
+      avatar: "/site-logo/v4vapp-logo.svg",
       timeout: 10000,
       message: memo,
       position: "top",
@@ -771,7 +774,7 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
   dInvoice.value.progress.push(memo)
   notif({
     color: "positive",
-    avatar: "site-logo/v4vapp-logo.svg",
+    avatar: "/site-logo/v4vapp-logo.svg",
     timeout: 10000,
     message: memo,
     position: "top",

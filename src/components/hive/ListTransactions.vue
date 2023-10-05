@@ -88,7 +88,7 @@ function handleRowClick(row) {
 async function updateTransactions() {
   const trans = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
-    20
+    200
   )
 
   if (trans) {
