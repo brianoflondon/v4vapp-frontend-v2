@@ -131,9 +131,9 @@ export default {
   InsecureContextError: 'Eine sichere Verbindung ist zwingend erforderlich (HTTPS)',
   OtherError: 'Unbekannter Kamerafehler',
   // Explanation Box
-  explanation_title: 'Was ist das für ein Ort?',
-  explanation_text: `v4v.app wirkt wie ein Bitcoin-Lightning-Wallet für Hive.\n
-  Verwenden Sie die Hive-oder Hive-Backed Dollars (HBD) die Sie in Ihrem Hive-Account haben. Damit können Sie jede Lightning Rechnung bezahlen oder BTC Sats an jede Lightning Adresse senden.\n
+  explanation_title: 'Was ist die V4V.app?',
+  explanation_text: `Die v4v.app wirkt wie ein Bitcoin-Lightning-Wallet für Hive.\n
+  Verwenden Sie Ihre Hive-oder Hive-Backed Dollars (HBD) die Sie in Ihrem Hive-Account haben. Damit können Sie jede Lightning Rechnung bezahlen oder BTC Sats an jede Lightning Adresse senden.\n
   Auf der Registerkarte 'Senden' können Sie jede Lightning Rechnung oder Lightning Adresse bezahlen.\n
   Auf der Registerkarte 'Empfangen' können Sie eine Hive-Zahlung (als QR-Code für den Zahler) oder eine BTC-Rechnung als Hive anfordern.\n
   Die alte Registerkarte 'Hive' ist immer noch verfügbar, aber es wird empfohlen, stattdessen die Registerkarten 'Senden' und 'Empfangen' zu verwenden.\n`,
