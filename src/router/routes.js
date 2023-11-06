@@ -14,6 +14,7 @@ const routes = [
       { path: "/index", component: () => import("pages/IndexPage.vue") },
       { path: "/vote", component: () => import("pages/VoteNow.vue") },
       { path: "/status", component: () => import("pages/StatusPage.vue") },
+      { path: "/silentlink", component: () => import("pages/SilentLink.vue") },
       { path: "/transfer", component: () => import("pages/HiveTransfer.vue") },
       {
         path: "/selectdemo",
