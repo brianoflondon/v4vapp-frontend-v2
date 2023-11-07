@@ -772,14 +772,53 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
     transaction_found?.op[1].memo
   }`
   dInvoice.value.progress.push(memo)
-  notif({
-    color: "positive",
-    avatar: "/site-logo/v4vapp-logo.svg",
-    timeout: 10000,
-    message: memo,
-    position: "top",
-  })
-  voteOptions.value.showDialog = true
+
+  // check if the transaction contains the string "Your Lightning Invoice of 1234 sats has been paid"
+  const regex = /Your Lightning Invoice of (\d+) sats has been paid/
+  const match = transaction_found?.op[1].memo.match(regex)
+  if (match) {
+    const satsPaid = match[1]
+    memo = `${t("transfer")}: ${t("paid")}: ${satsPaid} sats`
+    dInvoice.value.progress.push(memo)
+    notif({
+      color: "positive",
+      avatar: "/site-logo/v4vapp-logo.svg",
+      timeout: 10000,
+      message: memo,
+      position: "top",
+    })
+  } else {
+    // extract the text after the : ""Something went wrong with paying the Lightning Invoice: invoice is already paid, returning all Hive funds"
+    const regex = /Something went wrong with paying the Lightning Invoice: (.*)/
+    const match = transaction_found?.op[1].memo.match(regex)
+    let memo // declare memo outside the if-else to use it in both blocks
+    if (match && match[1]) {
+      // if match exists and match[1] has a value, include it in the message
+      memo = `${t("transfer")}: ${t("lightning_failed")}: ${match[1]}`
+    } else {
+      // if match[1] does not have a value, exclude it from the message
+      memo = `${t("transfer")}: ${t("lightning_failed")}`
+    }
+    notif({
+      color: "negative",
+      avatar: "/site-logo/v4vapp-logo.svg",
+      timeout: 0,
+      message: memo,
+      position: "top",
+      actions: [
+        {
+          label: t("ok"),
+          color: "yellow",
+          handler: () => {
+            /* ... */
+          },
+        },
+      ],
+    })
+  }
+  voteOptions.value.showButton = true
+  voteOptions.value.showDialog = false
+  return
 }
 
 /**
