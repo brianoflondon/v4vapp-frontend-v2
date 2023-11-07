@@ -64,9 +64,9 @@ export function useHiveAvatarRef({
 export function useBlankProfileURL() {
   // Returns the blank profile image
   if (Dark.isActive) {
-    return "avatars/hive_logo_dark.svg"
+    return "/avatars/hive_logo_dark.svg"
   } else {
-    return "avatars/hive_logo_light.svg"
+    return "/avatars/hive_logo_light.svg"
   }
 }
 
@@ -275,7 +275,7 @@ export async function useGetHiveWitnessVotes(hiveAccname, witness) {
 // -------- Hive check for transactions --------
 export async function useGetHiveTransactionHistory(
   hiveAccname,
-  limit = 10,
+  limit = 100,
   start = -1,
   opFilterLow = 4,
   opFilterHigh = 4

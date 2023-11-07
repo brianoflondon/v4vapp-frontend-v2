@@ -26,7 +26,7 @@
 </style>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue"
+import { onMounted, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
@@ -39,6 +39,14 @@ const storeAPIStatus = useStoreAPIStatus()
 const CurrencyCalc = defineModel(null)
 
 let localRates = {}
+
+onMounted(async () => {
+  console.log(
+    "inside AlternateCurrency with CurrencyCalc.value",
+    CurrencyCalc.value
+  )
+  calcAllAmounts()
+})
 
 watch(
   () => CurrencyCalc.value.amount,
@@ -62,6 +70,14 @@ watch(
   async (val) => {
     storeUser.localCurrency = val
     localRates = await getCoingeckoRate(storeUser.localCurrency.value)
+    calcAllAmounts()
+  }
+)
+
+watch(
+  () => storeUser.pos.fixedRate,
+  () => {
+    console.log("watching storeUser.pos.fixedRate", storeUser.pos.fixedRate)
     calcAllAmounts()
   }
 )
@@ -113,14 +129,30 @@ async function calcAllAmounts() {
         CurrencyCalc.value.hive * localRates.hive[storeUser.localCurrency.value]
       break
     default:
+      var adustRate = 1
+      console.log("default case")
+      console.log("localRates", localRates)
+      console.log("storeUser.pos.fixedRate", storeUser.pos.fixedRate)
+      if (storeUser.pos.fixedRate) {
+        console.log(
+          "setting storeUser.pos.fixedRate",
+          localRates.hive_dollar.usd
+        )
+        adustRate =
+          storeUser.pos.fixedRate /
+          localRates.hive_dollar[storeUser.localCurrency.value]
+      }
+      console.log("adustRate", adustRate)
       CurrencyCalc.value.hive =
         CurrencyCalc.value.amount /
-        localRates.hive[storeUser.localCurrency.value]
+        localRates.hive[storeUser.localCurrency.value] /
+        adustRate
       CurrencyCalc.value.hbd =
         CurrencyCalc.value.amount /
-        localRates.hive_dollar[storeUser.localCurrency.value]
+        localRates.hive_dollar[storeUser.localCurrency.value] /
+        adustRate
       CurrencyCalc.value.sats =
-        CurrencyCalc.value.hive * storeAPIStatus.hiveSatsNumber
+        (CurrencyCalc.value.hive * storeAPIStatus.hiveSatsNumber) / adustRate
       CurrencyCalc.value.local = CurrencyCalc.value.amount
   }
 }
