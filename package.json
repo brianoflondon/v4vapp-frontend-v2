@@ -1,6 +1,6 @@
 {
   "name": "v4vapp-frontend-v2",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "description": "V4V.app Value 4 Value Hive Lightning Bridge",
   "productName": "V4V.app",
   "author": "Brian of London (Dot) <brian@v4v.app>",
@@ -13,7 +13,7 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@quasar/extras": "^1.16.6",
+    "@quasar/extras": "^1.16.7",
     "@vueuse/core": "^10.1.2",
     "axios": "^1.2.1",
     "hive-auth-wrapper": "^1.0.0",
@@ -23,7 +23,7 @@
     "qr-code-styling": "^1.6.0-rc.1",
     "qrcode": "^1.5.3",
     "qrcode-reader-vue3": "^3.1.2",
-    "quasar": "^2.12.5",
+    "quasar": "^2.13.0",
     "uuid": "^9.0.0",
     "vue": "^3.3.4",
     "vue-i18n": "^9.0.0",
@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "^3.3.1",
-    "@quasar/app-vite": "^1.4.6",
+    "@quasar/app-vite": "^1.6.2",
     "@types/qrcode": "^1.5.1",
     "autoprefixer": "^10.4.2",
     "eslint": "^8.10.0",
