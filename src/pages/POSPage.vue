@@ -11,10 +11,9 @@
       </div>
       <!-- Select a user -->
       <div
-        class="flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
+        v-if="false" class="flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
       >
         <q-banner dense class="full-width bg-primary text-white">
-          Fixed User Link:
           <a :href="`pos/@${hiveAccTo.value}`">
             v4v.app/pos/@{{ hiveAccTo.value }}
           </a>
@@ -23,14 +22,16 @@
           </template>
         </q-banner>
       </div>
-
+      <!-- Fixed User Link -->
       <div
-        class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
+        class="div flex row pad-max-width full-width items-center q-pa-sm q-pb-md"
         v-if="!fixedUser"
       >
-        <div class="col-12 q-px-sm">
-          Fixed User Link:
-          <a :href="`pos/@${hiveAccTo.value}`">
+        <div class="col-12 q-px-sm q-pb-md">
+          <!-- bookmark icon -->
+
+          <a :href="`/pos/@${hiveAccTo.value}/`">
+                      <q-icon name="bookmark" class="cursor-pointer" />
             v4v.app/pos/@{{ hiveAccTo.value }}
           </a>
         </div>
@@ -56,7 +57,7 @@
             >
           </q-btn>
         </div>
-        <div class="div col-4 q-px-sm">
+        <div v-if="false" class="div col-4 q-px-sm">
           <q-btn label="Bk" @click="bookmarkSite"></q-btn>
         </div>
       </div>
