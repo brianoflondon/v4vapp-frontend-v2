@@ -11,9 +11,29 @@
       </div>
       <!-- Select a user -->
       <div
+        class="flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
+      >
+        <q-banner dense class="full-width bg-primary text-white">
+          Fixed User Link:
+          <a :href="`pos/@${hiveAccTo.value}`">
+            v4v.app/pos/@{{ hiveAccTo.value }}
+          </a>
+          <template v-slot:action>
+            <q-btn flat color="white" label="Dismiss" />
+          </template>
+        </q-banner>
+      </div>
+
+      <div
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
         v-if="!fixedUser"
       >
+        <div class="col-12 q-px-sm">
+          Fixed User Link:
+          <a :href="`pos/@${hiveAccTo.value}`">
+            v4v.app/pos/@{{ hiveAccTo.value }}
+          </a>
+        </div>
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
             <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
@@ -35,6 +55,9 @@
               @{{ storeUser.hiveAccname }}</q-tooltip
             >
           </q-btn>
+        </div>
+        <div class="div col-4 q-px-sm">
+          <q-btn label="Bk" @click="bookmarkSite"></q-btn>
         </div>
       </div>
       <!-- show numButtons in a numeric pad -->
@@ -216,10 +239,11 @@ onMounted(() => {
   // print out route params
   console.log("route params", route.params)
   if (route.params.hiveAccTo) {
+    const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
-      label: route.params.hiveAccTo,
-      value: route.params.hiveAccTo,
-      caption: setCaption(route.params.hiveAccTo),
+      label: username,
+      value: username,
+      caption: setCaption(username),
     }
     fixedUser.value = true
   } else if (storeUser.pos?.hiveAccTo) {
@@ -237,6 +261,18 @@ onMounted(() => {
   }
   currencyOptions.value.push(storeUser.localCurrency.label)
 })
+
+function extractUsernameFromRouteParam(routeParam) {
+  // Assuming routeParam is in the format 'v4vapp.dev/bookmark'
+  var slashPosition = routeParam.indexOf("/")
+
+  // Extract the substring before the first /
+  // If there is no /, it extracts the entire string
+  var username =
+    slashPosition !== -1 ? routeParam.substring(0, slashPosition) : routeParam
+
+  return username
+}
 
 function useLoggedInUser() {
   if (storeUser.hiveAccname) {
@@ -256,6 +292,21 @@ function updateAmounts(val) {
   }
   amount.value.num = parseLocalizedFloat(val)
   CurrencyCalc.value.amount = amount.value.num
+}
+
+function bookmarkSite() {
+  // You can put any logic here to handle the bookmarking process.
+  // Since browsers restrict adding bookmarks via script,
+  // inform the user how to bookmark the page manually.
+  // jump to a different url
+  window.location.href = "/pos/@" + hiveAccTo.value.value + "/bookmark"
+  alert(
+    "To bookmark this page, press " +
+      (navigator.userAgent.toLowerCase().indexOf("mac") != -1
+        ? "Command/Cmd"
+        : "CTRL") +
+      " + D on your keyboard."
+  )
 }
 
 function parseLocalizedFloat(val) {
