@@ -54,13 +54,13 @@ const linkList = ref([
     title: t("transfer"),
     caption: t("transfer"),
     icon: "double_arrow",
-    link: "transfer",
+    link: "/transfer",
   },
   {
     title: t("status"),
     caption: t("status"),
     icon: "circle",
-    link: "status",
+    link: "/status",
   },
 ])
 const hiveUsername = ref("")

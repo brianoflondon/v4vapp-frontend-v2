@@ -706,18 +706,26 @@ watch(
   async (value) => {
     if (value) {
       if (value.paid) {
+        // get most recent transactions for v4vapp account
+        const transactions = await useGetHiveTransactionHistory("v4vapp")
+        // get most recent trxId  from transactions
+        const trx_id = transactions[0].trx_id
+        console.log("transactions", transactions)
+        console.log("trx_id", trx_id)
         const message = t("payment_sent_hive_keychain")
-        q.notify({
+        const notif = q.notify({
           avatar: "/site-logo/v4vapp-logo.svg",
           color: "positive",
           group: false,
-          timeout: 2000,
+          timeout: 0,
           message: message,
           position: "top",
         })
         dInvoice.value.progress.push(message)
         dInvoice.value.progress.push(`${t("check_lightning")}`)
         KeychainDialog.value = { show: false }
+        console.log(dInvoice.value)
+        checkHiveTransaction("v4vapp", trx_id, notif)
       } else {
         // Ignore the result
         return
@@ -727,37 +735,46 @@ watch(
   { deep: true }
 )
 
-async function checkHiveTransaction(username, trx_id, notif, count = 0) {
-  // wait 5 seconds then check for a transaction. Looks for the next transaction
-  // after the trx_id. If not found, wait another 5 seconds and check again.
+async function checkHiveTransaction(username, trx_id, notif) {
+  // Return immediately if trx_id is null
   if (trx_id == null) {
     console.log("checkHiveTransaction trx_id is null")
     return
   }
-  count += 1
-  await new Promise((resolve) => setTimeout(resolve, 5000))
-  const transactions = await useGetHiveTransactionHistory(username)
-  const transaction_found = findObjectBefore(transactions, trx_id)
+
+  const maxRetries = 20
+  let count = 0
+  let transaction_found
+
+  while (count < maxRetries) {
+    count++
+    await new Promise((resolve) => setTimeout(resolve, 5000)) // Wait for 5 seconds
+    const transactions = await useGetHiveTransactionHistory(username)
+    transaction_found = findObjectBefore(transactions, trx_id)
+
+    if (transaction_found) {
+      break // Exit the loop if the transaction is found
+    }
+
+    // If transaction is not found, show the waiting message
+    const message = `${t("waiting_for")} ${count}/20`
+    const progressList = dInvoice.value.progress
+    if (count > 1) {
+      progressList[progressList.length - 1] = message // Overwrite the last item
+    } else {
+      progressList.push(message) // Add the message as the first item if the list is empty
+    }
+    notif({
+      color: "positive",
+      avatar: "/site-logo/v4vapp-logo.svg",
+      timeout: 0,
+      message: message,
+      position: "top",
+    })
+  }
   let memo = ""
   if (!transaction_found) {
-    if (count < 20) {
-      const message = `${t("waiting_for")} ${count}/20`
-      const progressList = dInvoice.value.progress
-      if (count > 1) {
-        progressList[progressList.length - 1] = message // Overwrite the last item
-      } else {
-        progressList.push(message) // Add the message as the first item if the list is empty
-      }
-      notif({
-        color: "positive",
-        avatar: "/site-logo/v4vapp-logo.svg",
-        timeout: 0,
-        message: message,
-        position: "top",
-      })
-      await checkHiveTransaction(username, trx_id, notif, count)
-      return
-    }
+    // If the transaction wasn't found after maxRetries
     memo = `${t("transfer")}: ${t("not_found")}:`
     notif({
       color: "negative",
@@ -766,20 +783,65 @@ async function checkHiveTransaction(username, trx_id, notif, count = 0) {
       message: memo,
       position: "top",
     })
+  } else {
+    console.log("transaction_found", transaction_found)
+    memo = `${t("transfer")}: ${transaction_found?.op[1].amount}\n${
+      transaction_found?.op[1].memo
+    }`
+    console.log("memo", memo)
+    dInvoice.value.progress.push(memo)
+
+    // check if the transaction contains the string "Your Lightning Invoice of 1234 sats has been paid"
+    let regex = /Your Lightning Invoice of (\d+) sats has been paid/
+    let match = transaction_found?.op[1].memo.match(regex)
+    if (match) {
+      const satsPaid = match[1]
+      memo = `${t("transfer")}: ${t("paid")}: ${satsPaid} sats`
+      dInvoice.value.progress.push(memo)
+      notif({
+        color: "positive",
+        avatar: "/site-logo/v4vapp-logo.svg",
+        timeout: 10000,
+        message: memo,
+        position: "top",
+      })
+    } else {
+      console.log("match", match)
+      // extract the text after the : ""Something went wrong with paying the Lightning Invoice: invoice is already paid, returning all Hive funds"
+      regex = /Something went wrong with paying the Lightning Invoice: (.*)/
+      match = transaction_found?.op[1].memo.match(regex)
+      console.log("match", match)
+      if (match && match[1]) {
+        // if match exists and match[1] has a value, include it in the message
+        memo = `${t("transfer")}: ${t("lightning_failed")}: ${match[1]}`
+      } else {
+        // if match[1] does not have a value, exclude it from the message
+        memo = `${t("transfer")}: ${t("lightning_failed")}`
+      }
+      notif({
+        color: "negative",
+        avatar: "/site-logo/v4vapp-logo.svg",
+        timeout: 0,
+        message: memo,
+        position: "top",
+        actions: [
+          {
+            label: t("ok"),
+            color: "yellow",
+            handler: () => {
+              /* ... */
+            },
+          },
+        ],
+      })
+    }
+    voteOptions.value.showButton = true
+    voteOptions.value.showDialog = false
     return
   }
-  memo = `${t("transfer")}: ${transaction_found?.op[1].amount}\n${
-    transaction_found?.op[1].memo
-  }`
-  dInvoice.value.progress.push(memo)
-  notif({
-    color: "positive",
-    avatar: "/site-logo/v4vapp-logo.svg",
-    timeout: 10000,
-    message: memo,
-    position: "top",
-  })
-  voteOptions.value.showDialog = true
+
+  // Continue with the rest of your original function logic for when a transaction is found
+  // ...
 }
 
 /**

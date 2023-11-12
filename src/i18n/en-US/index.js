@@ -37,6 +37,7 @@ export default {
   hive: 'Hive',
   transfer: 'Transfer',
   not_found: 'Not found',
+  lightning_failed: 'Lightning payment failed',
   Progress: 'Progress',
   // Login
   keychain_not_installed: 'Keychain is not installed',

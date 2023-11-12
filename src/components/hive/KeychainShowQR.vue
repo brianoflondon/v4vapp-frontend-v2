@@ -424,6 +424,14 @@ function startCountdown() {
 async function checkHiveTransaction(username, trx_id, count = 0) {
   try {
     while (count < maxChecks) {
+      console.log(
+        "Checking for transaction:",
+        trx_id,
+        "Count:",
+        count,
+        "username:",
+        username
+      )
       count += 1
 
       await new Promise((resolve) => {
