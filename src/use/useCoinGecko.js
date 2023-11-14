@@ -3,7 +3,7 @@ const coinGeckoApi = "https://api.coingecko.com/api/v3"
 
 const extraCurrencyOptions = [
   {
-    label: "Guatemalan quetzal",
+    label: "Guatemalan Quetzal",
     value: "GTQ",
     unit: "gtq",
   },
@@ -32,8 +32,6 @@ export async function getCoingeckoRates() {
           })
         }
       }
-      console.log("currencyOptions")
-      console.log(currencyOptions)
       // add extra currencies to currencyOptions
       currencyOptions.push(...extraCurrencyOptions)
       return [coingeckoRates, currencyOptions]
@@ -51,8 +49,6 @@ export async function getCoingeckoRate(currency) {
       vs_currencies: `btc,usd,eur,${currency}`,
     }
     const res = await axios.get(url, { params: params })
-    console.log("getCoingeckoRate")
-    console.log(res.data)
     if (res.status == 200) {
       const coingeckoRates = res.data
       return coingeckoRates

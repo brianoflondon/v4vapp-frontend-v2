@@ -43,7 +43,6 @@ const formattedFixedRate = computed({
   },
   set: (value) => {
     // Convert string input back to a number
-    console.log("setting formattedFixedRate.value", value)
     if (value) {
       fixedRate.value = parseFloat(value)
       storeUser.pos.fixedRate = fixedRate.value
@@ -51,12 +50,10 @@ const formattedFixedRate = computed({
       fixedRate.value = exchangeRate()
       storeUser.pos.fixedRate = null
     }
-    console.log("setting storeUser.pos.fixedRate", storeUser.pos.fixedRate)
   },
 })
 
 function exchangeRate() {
-  console.log("exchangeRate", coingeckoRates.value[currency.value.value]?.value)
   if (!coingeckoRates.value[currency.value.value]?.value) {
     // set the value to 1 USD if the currency is not found
     return 1
@@ -94,13 +91,11 @@ watch(
 )
 
 onMounted(async () => {
-  console.log("storeUser.pos.fixedRate", storeUser.pos.fixedRate)
   if (storeUser.localCurrency) {
     currency.value = storeUser.localCurrency
   }
   ;[coingeckoRates.value, currencyOptions.value] = await getCoingeckoRates(storeUser.localCurrency.value)
   if (storeUser.pos.fixedRate) {
-    console.log("storeUser.pos.fixedRate", storeUser.pos.fixedRate)
     fixedRate.value = parseFloat(storeUser.pos.fixedRate)
   } else {
     fixedRate.value = exchangeRate().toFixed(2)
