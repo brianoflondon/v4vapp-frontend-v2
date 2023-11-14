@@ -237,8 +237,6 @@ watch(
 watch(
   () => storeUser.pos.fixedRate,
   () => {
-    console.log("storeUser.pos.fixedRate changed", storeUser.pos.fixedRate)
-    console.log("Amounts", amount.value.txt, amount.value.num)
     updateAmounts(amount.value.txt)
   }
 )
@@ -246,9 +244,6 @@ watch(
 const currencySelected = ref("hbd")
 
 onMounted(() => {
-  console.log("storeUser.pos")
-  // print out route params
-  console.log("route params", route.params)
   if (route.params.hiveAccTo) {
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
