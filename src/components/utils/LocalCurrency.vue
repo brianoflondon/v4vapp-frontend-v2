@@ -56,6 +56,11 @@ const formattedFixedRate = computed({
 })
 
 function exchangeRate() {
+  console.log("exchangeRate", coingeckoRates.value[currency.value.value]?.value)
+  if (!coingeckoRates.value[currency.value.value]?.value) {
+    // set the value to 1 USD if the currency is not found
+    return 1
+  }
   return (
     coingeckoRates.value[currency.value.value]?.value /
     coingeckoRates.value["usd"]?.value
@@ -63,6 +68,9 @@ function exchangeRate() {
 }
 
 const usdToCurrency = computed(() => {
+  if (!coingeckoRates.value[currency.value.value]?.value) {
+    return currency.value.unit
+  }
   return currency.value.unit + " " + tidyNumber(exchangeRate(), 2)
 })
 
@@ -90,7 +98,7 @@ onMounted(async () => {
   if (storeUser.localCurrency) {
     currency.value = storeUser.localCurrency
   }
-  ;[coingeckoRates.value, currencyOptions.value] = await getCoingeckoRates()
+  ;[coingeckoRates.value, currencyOptions.value] = await getCoingeckoRates(storeUser.localCurrency.value)
   if (storeUser.pos.fixedRate) {
     console.log("storeUser.pos.fixedRate", storeUser.pos.fixedRate)
     fixedRate.value = parseFloat(storeUser.pos.fixedRate)

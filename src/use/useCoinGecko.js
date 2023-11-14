@@ -1,6 +1,19 @@
 import { axios } from "boot/axios"
 const coinGeckoApi = "https://api.coingecko.com/api/v3"
 
+const extraCurrencyOptions = [
+  {
+    label: "Guatemalan quetzal",
+    value: "GTQ",
+    unit: "gtq",
+  },
+  {
+    label: "Cuban Peso",
+    value: "CUP",
+    unit: "cup",
+  },
+]
+
 export async function getCoingeckoRates() {
   try {
     const url = `${coinGeckoApi}/exchange_rates`
@@ -19,6 +32,10 @@ export async function getCoingeckoRates() {
           })
         }
       }
+      console.log("currencyOptions")
+      console.log(currencyOptions)
+      // add extra currencies to currencyOptions
+      currencyOptions.push(...extraCurrencyOptions)
       return [coingeckoRates, currencyOptions]
     }
   } catch (err) {
@@ -34,7 +51,8 @@ export async function getCoingeckoRate(currency) {
       vs_currencies: `btc,usd,eur,${currency}`,
     }
     const res = await axios.get(url, { params: params })
-
+    console.log("getCoingeckoRate")
+    console.log(res.data)
     if (res.status == 200) {
       const coingeckoRates = res.data
       return coingeckoRates

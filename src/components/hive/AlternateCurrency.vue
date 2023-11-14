@@ -82,6 +82,23 @@ watch(
   }
 )
 
+function updateLocalRates() {
+  // check if the localRates structure has the storeUser.localCurrency.value in it
+  if (!localRates.hive[storeUser.localCurrency.value]) {
+    console.log("localRates", localRates)
+    addCurrency(storeUser.localCurrency.value, storeUser.pos.fixedRate)
+    console.log("localRates", localRates)
+    console.log("localRates[storeUser.localCurrency.value] not set")
+  }
+}
+
+function addCurrency(currencySymbol, ratePerUSD) {
+  // Calculate and add the new currency value for hive and hive_dollar
+  localRates.hive[currencySymbol] = localRates.hive.usd * ratePerUSD
+  localRates.hive_dollar[currencySymbol] =
+    localRates.hive_dollar.usd * ratePerUSD
+}
+
 function setAllZero() {
   CurrencyCalc.value.sats = 0
   CurrencyCalc.value.hive = 0
@@ -133,6 +150,8 @@ async function calcAllAmounts() {
       console.log("default case")
       console.log("localRates", localRates)
       console.log("storeUser.pos.fixedRate", storeUser.pos.fixedRate)
+
+      updateLocalRates()
       if (storeUser.pos.fixedRate) {
         console.log(
           "setting storeUser.pos.fixedRate",

@@ -11,7 +11,8 @@
       </div>
       <!-- Select a user -->
       <div
-        v-if="false" class="flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
+        v-if="false"
+        class="flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
       >
         <q-banner dense class="full-width bg-primary text-white">
           <a :href="`pos/@${hiveAccTo.value}`">
@@ -31,7 +32,7 @@
           <!-- bookmark icon -->
 
           <a :href="`/pos/@${hiveAccTo.value}/`">
-                      <q-icon name="bookmark" class="cursor-pointer" />
+            <q-icon name="bookmark" class="cursor-pointer" />
             v4v.app/pos/@{{ hiveAccTo.value }}
           </a>
         </div>
@@ -229,6 +230,15 @@ watch(
     if (currencySelected.value != storeUser.localCurrency.value) {
       currencySelected.value = storeUser.localCurrency.value
     }
+    updateAmounts(amount.value.txt)
+  }
+)
+
+watch(
+  () => storeUser.pos.fixedRate,
+  () => {
+    console.log("storeUser.pos.fixedRate changed", storeUser.pos.fixedRate)
+    console.log("Amounts", amount.value.txt, amount.value.num)
     updateAmounts(amount.value.txt)
   }
 )
