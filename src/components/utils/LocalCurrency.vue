@@ -1,12 +1,15 @@
 <template>
   <div class="fit row wrap justify-start items-start content-start q-gutter-sm">
-    <div class="col-grow">
+    <div class="col-7">
       <q-select
-        filled
+        use-input
+        fill-input
+        hide-selected
         v-model="currency"
-        :options="currencyOptions"
+        @filter="filterFnAutoselect"
+        :options="currencyOptionsFiltered"
         :label="t('local_currency')"
-        map-options
+        clearable
       />
     </div>
     <div class="col-3">
@@ -31,6 +34,7 @@ const storeUser = useStoreUser()
 
 const coingeckoRates = ref([])
 const currencyOptions = ref([])
+const currencyOptionsFiltered = ref([])
 const currency = ref({ label: "US Dollar", value: "usd" })
 
 // This is where the actual numeric value is stored
@@ -48,15 +52,15 @@ const formattedFixedRate = computed({
       storeUser.pos.fixedRate = fixedRate.value
     } else {
       fixedRate.value = exchangeRate()
-      storeUser.pos.fixedRate = null
+      storeUser.pos.fixedRate = 1.0
     }
   },
 })
 
 function exchangeRate() {
-  if (!coingeckoRates.value[currency.value.value]?.value) {
+  if (!coingeckoRates.value[currency.value?.value]?.value) {
     // set the value to 1 USD if the currency is not found
-    return 1
+    return 1.0
   }
   return (
     coingeckoRates.value[currency.value.value]?.value /
@@ -73,7 +77,14 @@ const usdToCurrency = computed(() => {
 
 watch(
   () => currency.value,
-  () => {
+  (val) => {
+    if (val === "" || val === null || val === undefined) {
+      currency.value = {
+        label: "US Dollar",
+        value: "usd",
+        unit: "$",
+      }
+    }
     storeUser.localCurrency = currency.value
     // reset stored fixedRate to null when currency changes
     fixedRate.value = exchangeRate()
@@ -90,16 +101,40 @@ watch(
   }
 )
 
+async function filterFnAutoselect(val, update, abort) {
+  update(() => {
+    if (val === "" || val === null || val === undefined) {
+      currencyOptionsFiltered.value = []
+    } else {
+      currencyOptionsFiltered.value = currencyOptions.value.filter((item) => {
+        const searchLabels = item.label
+          .toLowerCase()
+          .includes(val.toLowerCase())
+        if (searchLabels) {
+          return searchLabels
+        }
+        const searchValues = item.value
+          .toLowerCase()
+          .includes(val.toLowerCase())
+        return searchValues
+      })
+    }
+  })
+}
+
 onMounted(async () => {
   if (storeUser.localCurrency) {
     currency.value = storeUser.localCurrency
   }
-  ;[coingeckoRates.value, currencyOptions.value] = await getCoingeckoRates(storeUser.localCurrency.value)
+  ;[coingeckoRates.value, currencyOptions.value] = await getCoingeckoRates(
+    storeUser.localCurrency.value
+  )
   if (storeUser.pos.fixedRate) {
     fixedRate.value = parseFloat(storeUser.pos.fixedRate)
   } else {
     fixedRate.value = exchangeRate().toFixed(2)
   }
+  console.log("fixedRate.value", fixedRate.value)
 })
 </script>
 

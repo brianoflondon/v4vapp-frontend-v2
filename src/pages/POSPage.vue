@@ -23,18 +23,22 @@
           </template>
         </q-banner>
       </div>
-      <!-- Fixed User Link -->
+      <!-- Fixed User Bookmark Link -->
       <div
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pb-md"
         v-if="!fixedUser"
       >
-        <div class="col-12 q-px-sm q-pb-md">
+        <div class="col-8 q-px-sm q-pb-md">
           <!-- bookmark icon -->
-
-          <a :href="`/pos/@${hiveAccTo.value}/`">
+          <div v-if="hiveAccTo.value === ''">
             <q-icon name="bookmark" class="cursor-pointer" />
-            v4v.app/pos/@{{ hiveAccTo.value }}
-          </a>
+          </div>
+          <div v-else>
+            <a :href="`/pos/@${hiveAccTo.value}/`">
+              <q-icon name="bookmark" class="cursor-pointer" />
+              v4v.app/pos/@{{ hiveAccTo.value }}
+            </a>
+          </div>
         </div>
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
@@ -221,6 +225,7 @@ const currencyOptions = computed(() => {
   if (storeUser.localCurrency) {
     ans.push(storeUser.localCurrency)
   }
+  console.log("currencyOptions", ans)
   return ans
 })
 

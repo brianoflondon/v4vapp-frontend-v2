@@ -1,7 +1,9 @@
 import { axios } from "boot/axios"
 const coinGeckoApi = "https://api.coingecko.com/api/v3"
 
-const extraCurrencyOptions = [
+// use axios to fetch extraCurrencyOptions from github link
+
+let extraCurrencyOptions = [
   {
     label: "Guatemalan Quetzal",
     value: "GTQ",
