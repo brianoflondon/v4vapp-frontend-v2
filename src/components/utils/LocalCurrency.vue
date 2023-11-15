@@ -1,6 +1,6 @@
 <template>
-  <div class="fit row wrap justify-start items-start content-start q-gutter-sm">
-    <div class="col-7">
+  <div class="fit row wrap justify-start items-start content-start q-gutter-xs">
+    <div class="col-6">
       <q-select
         use-input
         fill-input
@@ -12,13 +12,18 @@
         clearable
       />
     </div>
-    <div class="col-3">
+    <div class="col-5">
       <q-input
         :label="`${usdToCurrency}`"
         v-model="formattedFixedRate"
         debounce="1000"
         clearable
-      ></q-input>
+      >
+        <template v-slot:prepend>
+          <!-- small -->
+          {{ currency.unit }}
+        </template>
+      </q-input>
     </div>
   </div>
 </template>
@@ -70,9 +75,9 @@ function exchangeRate() {
 
 const usdToCurrency = computed(() => {
   if (!coingeckoRates.value[currency.value.value]?.value) {
-    return currency.value.unit
+    return "$1USD = " + currency.value.unit
   }
-  return currency.value.unit + " " + tidyNumber(exchangeRate(), 2)
+  return "$1USD = " + currency.value.unit + " " + tidyNumber(exchangeRate(), 2)
 })
 
 watch(
@@ -134,7 +139,6 @@ onMounted(async () => {
   } else {
     fixedRate.value = exchangeRate().toFixed(2)
   }
-  console.log("fixedRate.value", fixedRate.value)
 })
 </script>
 
