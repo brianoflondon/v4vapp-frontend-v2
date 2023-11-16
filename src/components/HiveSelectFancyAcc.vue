@@ -41,11 +41,7 @@
     </template>
     <!-- Use my Own code for the clearable button -->
     <template v-if="modelValue" v-slot:append>
-      <q-icon
-        name="cancel"
-        @click="escFn"
-        class="cursor-pointer"
-      />
+      <q-icon name="cancel" @click="escFn" class="cursor-pointer" />
     </template>
   </q-select>
 </template>

@@ -43,13 +43,7 @@
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
             <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
-            <q-input
-              v-model="simpleInput"
-              label="Hive Account"
-              map-options
-              @update:model-value="(val) => updateHiveAccTo(val)"
-              dense
-            />
+            <HiveInputAcc v-model="hiveAccTo" />
           </div>
         </div>
         <!-- Button to use Logged in User -->
@@ -196,23 +190,15 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
 import { useRoute } from "vue-router"
 import PosHeader from "src/components/hive/PosHeader.vue"
+import HiveInputAcc from "src/components/HiveInputAcc.vue"
 
 const route = useRoute()
 const q = useQuasar()
 const t = useI18n().t
+const fixedUser = ref(false)
 
 const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
-const fixedUser = ref(false)
-const simpleInput = ref("")
-
-function updateHiveAccTo(val) {
-  if(val === null || val === "") {
-    return
-  }
-  hiveAccTo.value = { label: val.toLowerCase(), value: val.toLowerCase(), caption: val.toLowerCase() }
-  fixedUser.value = false
-}
 
 const KeychainDialog = ref({ show: false })
 const CurrencyCalc = ref({
