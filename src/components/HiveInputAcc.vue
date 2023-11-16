@@ -49,30 +49,53 @@
  * accounts, such as social media platforms, content management systems, or blockchain explorers.
  */
 
-
-import { ref } from "vue"
+import { onMounted, ref, watch } from "vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useI18n } from "vue-i18n"
 import { useHiveProfile } from "src/use/useHive"
-
-const modelValue = defineModel({
-  label: "",
-  value: "",
-  caption: "Hive Account",
-})
-const simpleInput = ref("")
-const avatarName = ref("")
 
 const props = defineProps({
   label: {
     type: String,
     default: "Hive Account",
   },
+  prefix: {
+    type: String,
+    default: "",
+  },
+})
+
+const modelValue = defineModel({
+  label: "",
+  value: "",
+  caption: "",
+  valid: false,
+})
+const simpleInput = ref("")
+const avatarName = ref("")
+
+watch(modelValue, (val) => {
+  console.log("modelValue changed", val)
+  if (modelValue.value.value != simpleInput.value) {
+    simpleInput.value = modelValue.value.value
+  }
+})
+
+onMounted(() => {
+  console.log("mounted")
+  console.log("modelValue", modelValue.value)
+  console.log("props", props)
 })
 
 async function updateHiveAccTo(val) {
   console.log("updateHiveAccTo", val)
-  if (val === null || val === "") {
+  if (!val) {
+    console.log("cleared updateHiveAccTo", val)
+    ;(modelValue.label = ""),
+      (modelValue.value = ""),
+      (modelValue.caption = props.label),
+      (modelValue.valid = false)
+    avatarName.value = ""
     return
   }
   modelValue.value = {
@@ -83,10 +106,27 @@ async function updateHiveAccTo(val) {
   avatarName.value = val.toLowerCase()
   const result = await useHiveProfile(val.toLowerCase())
   if (result) {
-    modelValue.value.caption = result?.metadata?.profile?.name
+    if (result?.metadata?.profile?.name) {
+      modelValue.value.caption = setCaption(result?.metadata?.profile?.name)
+    } else {
+      modelValue.value.caption = setCaption(val.toLowerCase())
+    }
+    modelValue.value.valid = true
   }
   console.log("result", result)
   console.log("modelValue", modelValue.value)
+}
+
+function setCaption(profileName) {
+  if (props.prefix === "") {
+    return profileName
+  }
+  // Check if profileName already starts with the prefix
+  if (profileName.startsWith(props.prefix)) {
+    return profileName
+  }
+
+  return props.prefix + " " + profileName
 }
 </script>
 

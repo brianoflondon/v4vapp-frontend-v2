@@ -30,7 +30,7 @@
       >
         <div class="col-8 q-px-sm q-pb-md">
           <!-- bookmark icon -->
-          <div v-if="hiveAccTo.value === ''">
+          <div v-if="!hiveAccTo.value">
             <q-icon name="bookmark" class="cursor-pointer" />
           </div>
           <div v-else>
@@ -42,8 +42,8 @@
         </div>
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
-            <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
-            <HiveInputAcc v-model="hiveAccTo" />
+            <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
+            <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')" />
           </div>
         </div>
         <!-- Button to use Logged in User -->
@@ -260,7 +260,7 @@ onMounted(() => {
     hiveAccTo.value = {
       label: username,
       value: username,
-      caption: setCaption(username),
+      caption: username,
     }
     fixedUser.value = true
   } else if (storeUser.pos?.hiveAccTo) {
@@ -269,6 +269,7 @@ onMounted(() => {
       value: storeUser.pos.hiveAccTo.value,
       caption: storeUser.pos.hiveAccTo.caption,
     }
+    console.log("hiveAccTo.value", hiveAccTo.value)
   } else {
     useLoggedInUser()
   }
@@ -296,7 +297,7 @@ function useLoggedInUser() {
     hiveAccTo.value = {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
-      caption: setCaption(storeUser.profileName),
+      caption: storeUser.profileName,
     }
   }
 }
@@ -387,7 +388,6 @@ watch(hiveAccTo, async (val) => {
     value: val.value,
     caption: val.caption,
   }
-  hiveAccTo.value.caption = setCaption(val.caption)
 })
 
 function clearAmount() {
@@ -402,6 +402,7 @@ const memoInput = ref("")
 function showPaymentQR(payWith) {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
+  console.log("hiveAccTo.value", hiveAccTo.value)
   if (amount.value.num === 0) {
     q.notify({
       message: t("no_amount"),
@@ -411,7 +412,7 @@ function showPaymentQR(payWith) {
     })
     return
   }
-  if (hiveAccTo.value.value === "") {
+  if (!hiveAccTo.value.value) {
     q.notify({
       message: t("no_account"),
       type: "negative",
