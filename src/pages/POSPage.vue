@@ -207,7 +207,10 @@ const fixedUser = ref(false)
 const simpleInput = ref("")
 
 function updateHiveAccTo(val) {
-  hiveAccTo.value = { label: val, value: val, caption: val }
+  if(val === null || val === "") {
+    return
+  }
+  hiveAccTo.value = { label: val.toLowerCase(), value: val.toLowerCase(), caption: val.toLowerCase() }
   fixedUser.value = false
 }
 
