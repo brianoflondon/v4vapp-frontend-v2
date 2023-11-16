@@ -11,7 +11,8 @@
       </div>
       <!-- Select a user -->
       <div
-        v-if="false" class="flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
+        v-if="false"
+        class="flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
       >
         <q-banner dense class="full-width bg-primary text-white">
           <a :href="`pos/@${hiveAccTo.value}`">
@@ -22,18 +23,22 @@
           </template>
         </q-banner>
       </div>
-      <!-- Fixed User Link -->
+      <!-- Fixed User Bookmark Link -->
       <div
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pb-md"
         v-if="!fixedUser"
       >
-        <div class="col-12 q-px-sm q-pb-md">
+        <div class="col-8 q-px-sm q-pb-md">
           <!-- bookmark icon -->
-
-          <a :href="`/pos/@${hiveAccTo.value}/`">
-                      <q-icon name="bookmark" class="cursor-pointer" />
-            v4v.app/pos/@{{ hiveAccTo.value }}
-          </a>
+          <div v-if="hiveAccTo.value === ''">
+            <q-icon name="bookmark" class="cursor-pointer" />
+          </div>
+          <div v-else>
+            <a :href="`/pos/@${hiveAccTo.value}/`">
+              <q-icon name="bookmark" class="cursor-pointer" />
+              v4v.app/pos/@{{ hiveAccTo.value }}
+            </a>
+          </div>
         </div>
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
@@ -218,8 +223,13 @@ const currencyOptions = computed(() => {
     { label: "SATS", value: "sats" },
   ]
   if (storeUser.localCurrency) {
-    ans.push(storeUser.localCurrency)
+    const localCurrency = {
+      label: storeUser.localCurrency.unit.toUpperCase(),
+      value: storeUser.localCurrency.value,
+    }
+    ans.push(localCurrency)
   }
+  console.log("currencyOptions", ans)
   return ans
 })
 
@@ -233,12 +243,16 @@ watch(
   }
 )
 
+watch(
+  () => storeUser.pos.fixedRate,
+  () => {
+    updateAmounts(amount.value.txt)
+  }
+)
+
 const currencySelected = ref("hbd")
 
 onMounted(() => {
-  console.log("storeUser.pos")
-  // print out route params
-  console.log("route params", route.params)
   if (route.params.hiveAccTo) {
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {

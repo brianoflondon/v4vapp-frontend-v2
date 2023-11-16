@@ -1,21 +1,29 @@
 <template>
-  <div class="fit row wrap justify-start items-start content-start q-gutter-sm">
-    <div class="col-grow">
+  <div class="fit row wrap justify-start items-start content-start q-gutter-xs">
+    <div class="col-6">
       <q-select
-        filled
+        use-input
+        fill-input
+        hide-selected
         v-model="currency"
-        :options="currencyOptions"
+        @filter="filterFnAutoselect"
+        :options="currencyOptionsFiltered"
         :label="t('local_currency')"
-        map-options
+        clearable
       />
     </div>
-    <div class="col-3">
+    <div class="col-5">
       <q-input
         :label="`${usdToCurrency}`"
         v-model="formattedFixedRate"
         debounce="1000"
         clearable
-      ></q-input>
+      >
+        <template v-slot:prepend>
+          <!-- small -->
+          {{ currency.unit?.toUpperCase() }}
+        </template>
+      </q-input>
     </div>
   </div>
 </template>
@@ -31,6 +39,7 @@ const storeUser = useStoreUser()
 
 const coingeckoRates = ref([])
 const currencyOptions = ref([])
+const currencyOptionsFiltered = ref([])
 const currency = ref({ label: "US Dollar", value: "usd" })
 
 // This is where the actual numeric value is stored
@@ -43,19 +52,21 @@ const formattedFixedRate = computed({
   },
   set: (value) => {
     // Convert string input back to a number
-    console.log("setting formattedFixedRate.value", value)
     if (value) {
       fixedRate.value = parseFloat(value)
       storeUser.pos.fixedRate = fixedRate.value
     } else {
       fixedRate.value = exchangeRate()
-      storeUser.pos.fixedRate = null
+      storeUser.pos.fixedRate = 1.0
     }
-    console.log("setting storeUser.pos.fixedRate", storeUser.pos.fixedRate)
   },
 })
 
 function exchangeRate() {
+  if (!coingeckoRates.value[currency.value?.value]?.value) {
+    // set the value to 1 USD if the currency is not found
+    return 1.0
+  }
   return (
     coingeckoRates.value[currency.value.value]?.value /
     coingeckoRates.value["usd"]?.value
@@ -63,12 +74,22 @@ function exchangeRate() {
 }
 
 const usdToCurrency = computed(() => {
-  return currency.value.unit + " " + tidyNumber(exchangeRate(), 2)
+  if (!coingeckoRates.value[currency.value.value]?.value) {
+    return "$1USD = " + currency.value.unit
+  }
+  return "$1USD = " + currency.value.unit + " " + tidyNumber(exchangeRate(), 2)
 })
 
 watch(
   () => currency.value,
-  () => {
+  (val) => {
+    if (val === "" || val === null || val === undefined) {
+      currency.value = {
+        label: "US Dollar",
+        value: "usd",
+        unit: "$",
+      }
+    }
     storeUser.localCurrency = currency.value
     // reset stored fixedRate to null when currency changes
     fixedRate.value = exchangeRate()
@@ -85,14 +106,45 @@ watch(
   }
 )
 
+async function filterFnAutoselect(val, update, abort) {
+  update(() => {
+    if (val === "" || val === null || val === undefined) {
+      currencyOptionsFiltered.value = []
+    } else {
+      currencyOptionsFiltered.value = currencyOptions.value.filter((item) => {
+        const searchLabels = item.label
+          .toLowerCase()
+          .includes(val.toLowerCase())
+        if (searchLabels) {
+          return searchLabels
+        }
+        const searchValues = item.value
+          .toLowerCase()
+          .includes(val.toLowerCase())
+        return searchValues
+      })
+      if (currencyOptionsFiltered.value.length === 1) {
+        currency.value = currencyOptionsFiltered.value[0]
+      }
+      if (currencyOptionsFiltered.value.length === 0) {
+        currency.value = {
+          label: val,
+          value: val.substring(0, 3),
+          unit: val.substring(0, 3),
+        }
+      }
+    }
+  })
+}
+
 onMounted(async () => {
-  console.log("storeUser.pos.fixedRate", storeUser.pos.fixedRate)
   if (storeUser.localCurrency) {
     currency.value = storeUser.localCurrency
   }
-  ;[coingeckoRates.value, currencyOptions.value] = await getCoingeckoRates()
+  ;[coingeckoRates.value, currencyOptions.value] = await getCoingeckoRates(
+    storeUser.localCurrency.value
+  )
   if (storeUser.pos.fixedRate) {
-    console.log("storeUser.pos.fixedRate", storeUser.pos.fixedRate)
     fixedRate.value = parseFloat(storeUser.pos.fixedRate)
   } else {
     fixedRate.value = exchangeRate().toFixed(2)

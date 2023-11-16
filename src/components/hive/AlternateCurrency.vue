@@ -41,10 +41,6 @@ const CurrencyCalc = defineModel(null)
 let localRates = {}
 
 onMounted(async () => {
-  console.log(
-    "inside AlternateCurrency with CurrencyCalc.value",
-    CurrencyCalc.value
-  )
   calcAllAmounts()
 })
 
@@ -77,10 +73,23 @@ watch(
 watch(
   () => storeUser.pos.fixedRate,
   () => {
-    console.log("watching storeUser.pos.fixedRate", storeUser.pos.fixedRate)
     calcAllAmounts()
   }
 )
+
+function updateLocalRates() {
+  // check if the localRates structure has the storeUser.localCurrency.value in it
+  if (!localRates.hive[storeUser.localCurrency.value]) {
+    addCurrency(storeUser.localCurrency.value, storeUser.pos.fixedRate)
+  }
+}
+
+function addCurrency(currencySymbol, ratePerUSD) {
+  // Calculate and add the new currency value for hive and hive_dollar
+  localRates.hive[currencySymbol] = localRates.hive.usd * ratePerUSD
+  localRates.hive_dollar[currencySymbol] =
+    localRates.hive_dollar.usd * ratePerUSD
+}
 
 function setAllZero() {
   CurrencyCalc.value.sats = 0
@@ -130,19 +139,13 @@ async function calcAllAmounts() {
       break
     default:
       var adustRate = 1
-      console.log("default case")
-      console.log("localRates", localRates)
-      console.log("storeUser.pos.fixedRate", storeUser.pos.fixedRate)
+      updateLocalRates()
       if (storeUser.pos.fixedRate) {
-        console.log(
-          "setting storeUser.pos.fixedRate",
-          localRates.hive_dollar.usd
-        )
+
         adustRate =
           storeUser.pos.fixedRate /
           localRates.hive_dollar[storeUser.localCurrency.value]
       }
-      console.log("adustRate", adustRate)
       CurrencyCalc.value.hive =
         CurrencyCalc.value.amount /
         localRates.hive[storeUser.localCurrency.value] /

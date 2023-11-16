@@ -37,6 +37,7 @@ export default {
   hive: 'Hive',
   transfer: 'Transferencia',
   not_found: 'No encontrado',
+  lightning_failed: 'Lightning payment failed',
   Progress: 'Progreso',
   // Login
   keychain_not_installed: 'Keychain no está instalada',
@@ -71,8 +72,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain está instalado',
+  keychain_missing: 'Keychain no se encuentra',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
