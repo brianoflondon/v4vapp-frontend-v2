@@ -30,7 +30,7 @@
       >
         <div class="col-8 q-px-sm q-pb-md">
           <!-- bookmark icon -->
-          <div v-if="!hiveAccTo.value">
+          <div v-if="!hiveAccTo.valid">
             <q-icon name="bookmark" class="cursor-pointer" />
           </div>
           <div v-else>
@@ -412,7 +412,7 @@ function showPaymentQR(payWith) {
     })
     return
   }
-  if (!hiveAccTo.value.value) {
+  if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
     q.notify({
       message: t("no_account"),
       type: "negative",
