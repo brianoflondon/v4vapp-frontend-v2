@@ -21,7 +21,7 @@
       >
         <template v-slot:prepend>
           <!-- small -->
-          {{ currency.unit }}
+          {{ currency.unit?.toUpperCase() }}
         </template>
       </q-input>
     </div>
@@ -123,6 +123,16 @@ async function filterFnAutoselect(val, update, abort) {
           .includes(val.toLowerCase())
         return searchValues
       })
+      if (currencyOptionsFiltered.value.length === 1) {
+        currency.value = currencyOptionsFiltered.value[0]
+      }
+      if (currencyOptionsFiltered.value.length === 0) {
+        currency.value = {
+          label: val,
+          value: val.substring(0, 3),
+          unit: val.substring(0, 3),
+        }
+      }
     }
   })
 }

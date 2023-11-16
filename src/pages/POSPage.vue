@@ -223,7 +223,11 @@ const currencyOptions = computed(() => {
     { label: "SATS", value: "sats" },
   ]
   if (storeUser.localCurrency) {
-    ans.push(storeUser.localCurrency)
+    const localCurrency = {
+      label: storeUser.localCurrency.unit.toUpperCase(),
+      value: storeUser.localCurrency.value,
+    }
+    ans.push(localCurrency)
   }
   console.log("currencyOptions", ans)
   return ans

@@ -14,6 +14,11 @@ let extraCurrencyOptions = [
     value: "CUP",
     unit: "cup",
   },
+  {
+    label: "Other",
+    value: "OTH",
+    unit: "$",
+  }
 ]
 
 export async function getCoingeckoRates() {
