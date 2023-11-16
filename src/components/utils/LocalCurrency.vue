@@ -57,7 +57,7 @@ const formattedFixedRate = computed({
       storeUser.pos.fixedRate = fixedRate.value
     } else {
       fixedRate.value = exchangeRate()
-      storeUser.pos.fixedRate = 1.0
+      storeUser.pos.fixedRate = fixedRate.value
     }
   },
 })
