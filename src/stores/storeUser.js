@@ -82,6 +82,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     localCurrency: useStorage("localCurrency", {
       label: "US Dollar",
       value: "usd",
+      unit: "$"
     }),
     users: useStorage("users", {}),
     pos: useStorage("pos", {}),

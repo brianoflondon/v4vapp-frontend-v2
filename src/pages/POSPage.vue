@@ -43,6 +43,13 @@
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
             <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
+            <q-input
+              v-model="simpleInput"
+              label="Hive Account"
+              map-options
+              @update:model-value="(val) => updateHiveAccTo(val)"
+              dense
+            />
           </div>
         </div>
         <!-- Button to use Logged in User -->
@@ -197,6 +204,12 @@ const t = useI18n().t
 const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
 const fixedUser = ref(false)
+const simpleInput = ref("")
+
+function updateHiveAccTo(val) {
+  hiveAccTo.value = { label: val, value: val, caption: val }
+  fixedUser.value = false
+}
 
 const KeychainDialog = ref({ show: false })
 const CurrencyCalc = ref({
