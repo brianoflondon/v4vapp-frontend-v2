@@ -46,9 +46,9 @@
             <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')" />
           </div>
         </div>
-        <!-- Button to use Logged in User -->
+        <!-- Button to Show Currency settings -->
 
-        <div class="div col-4 q-px-sm" v-if="storeUser.hiveAccname">
+        <div class="div col-4 q-px-sm">
           <q-btn
             icon="settings"
             label="Currency"
@@ -56,6 +56,7 @@
             @click="KeychainDialog.settings = !KeychainDialog.settings"
           />
           <q-btn
+            v-if="storeUser.hiveAccname"
             class="full-width"
             style="font-size: x-small; white-space: pre-line"
             color="primary"
@@ -180,7 +181,10 @@
     <!-- Show the QR dialog -->
     <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
     <!-- Show the settings dialog -->
-    <POSSettingsDialog v-if="KeychainDialog.settings" v-model="KeychainDialog" />
+    <POSSettingsDialog
+      v-if="KeychainDialog.settings"
+      v-model="KeychainDialog"
+    />
   </q-page>
 </template>
 
