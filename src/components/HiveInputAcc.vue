@@ -7,6 +7,7 @@
       @update:model-value="(val) => updateHiveAccTo(val)"
       dense
       clearable
+      @keydown.esc="clearInput"
       debounce="500"
     >
       <template v-slot:prepend>
@@ -78,6 +79,7 @@ watch(modelValue, (val) => {
   console.log("modelValue changed", val)
   if (modelValue.value.value != simpleInput.value) {
     simpleInput.value = modelValue.value.value
+    updateHiveAccTo(simpleInput.value)
   }
 })
 
@@ -87,29 +89,33 @@ onMounted(() => {
   console.log("props", props)
 })
 
+function clearInput() {
+  ;(modelValue.label = ""),
+    (modelValue.value = ""),
+    (modelValue.caption = props.label),
+    (modelValue.valid = false)
+  simpleInput.value = ""
+  avatarName.value = ""
+}
+
 async function updateHiveAccTo(val) {
-  console.log("updateHiveAccTo", val)
   if (!val) {
-    console.log("cleared updateHiveAccTo", val)
-    ;(modelValue.label = ""),
-      (modelValue.value = ""),
-      (modelValue.caption = props.label),
-      (modelValue.valid = false)
-    avatarName.value = ""
+    clearInput()
     return
   }
+  val = val.toLowerCase().trim()
   modelValue.value = {
-    label: val.toLowerCase(),
-    value: val.toLowerCase(),
-    caption: val.toLowerCase(),
+    label: val,
+    value: val,
+    caption: val,
   }
-  avatarName.value = val.toLowerCase()
-  const result = await useHiveProfile(val.toLowerCase())
+  avatarName.value = val
+  const result = await useHiveProfile(val)
   if (result) {
     if (result?.metadata?.profile?.name) {
       modelValue.value.caption = setCaption(result?.metadata?.profile?.name)
     } else {
-      modelValue.value.caption = setCaption(val.toLowerCase())
+      modelValue.value.caption = setCaption(val)
     }
     modelValue.value.valid = true
   }
