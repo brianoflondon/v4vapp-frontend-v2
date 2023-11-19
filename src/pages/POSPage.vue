@@ -50,8 +50,7 @@
 
         <div class="div col-4 q-px-sm">
           <q-btn
-            icon="settings"
-            label="Currency"
+            :label="t('local_currency')"
             class="full-width"
             @click="KeychainDialog.settings = !KeychainDialog.settings"
           />

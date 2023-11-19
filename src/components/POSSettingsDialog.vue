@@ -3,14 +3,15 @@
     <q-card>
       <q-toolbar>
         <!-- Title Bar -->
-        <q-toolbar-title> POS Settings </q-toolbar-title>
+        <q-toolbar-title>{{ t("local_currency") }}</q-toolbar-title>
         <q-btn
           flat
           round
           dense
           icon="close"
-          @click="KeychainDialog.settings = false"
-        />
+          v-close-popup
+          />
+          <!-- @click="KeychainDialog.settings = false" -->
       </q-toolbar>
       <q-card-section>
         <!-- Settings area -->
@@ -34,6 +35,9 @@
           </q-expansion-item>
         </div>
       </q-card-section>
+      <q-card-actions align="right">
+        <q-btn flat :label="t('ok')" color="primary" v-close-popup />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
