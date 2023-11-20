@@ -32,10 +32,12 @@
 import { ref, onMounted, watch, computed } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
-import { getCoingeckoRates } from "src/use/useCoinGecko"
+// import { getCoingeckoRates } from "src/use/useCoinGecko"
+import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber } from "src/use/useUtils"
 const t = useI18n().t
 const storeUser = useStoreUser()
+const storeCoingecko = useCoingeckoStore()
 
 const coingeckoRates = ref([])
 const currencyOptions = ref([])
@@ -141,9 +143,8 @@ onMounted(async () => {
   if (storeUser.localCurrency) {
     currency.value = storeUser.localCurrency
   }
-  ;[coingeckoRates.value, currencyOptions.value] = await getCoingeckoRates(
-    storeUser.localCurrency.value
-  )
+  ;[coingeckoRates.value, currencyOptions.value] =
+    await storeCoingecko.fetchCoingeckoRates()
   if (storeUser.pos.fixedRate) {
     fixedRate.value = parseFloat(storeUser.pos.fixedRate)
   } else {

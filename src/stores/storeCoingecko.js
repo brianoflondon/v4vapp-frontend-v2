@@ -8,14 +8,13 @@ export const useCoingeckoStore = defineStore("coingecko", {
   state: () => ({
     exchangeRates: null,
     currencyOptions: null,
-    ratesCache: {},
-    lastFetched: null,
+    ratesCache: {}, // Initialize as an empty object
+    lastFetched: {}, // Initialize as an empty object
   }),
 
   actions: {
     async fetchCoingeckoRates() {
-      // Check if cache is valid
-      if (this.isCacheValid()) {
+      if (this.isCacheValid("exchangeRates")) {
         return [this.exchangeRates, this.currencyOptions]
       }
 
@@ -27,28 +26,23 @@ export const useCoingeckoStore = defineStore("coingecko", {
           const coingeckoRates = res.data.rates
           const currencyOptions = this.buildCurrencyOptions(coingeckoRates)
 
-          // Cache the data in the store
-          this.cacheData(coingeckoRates, currencyOptions)
-
+          this.cacheData("exchangeRates", coingeckoRates, currencyOptions)
           return [coingeckoRates, currencyOptions]
         }
       } catch (err) {
+        console.error(err)
         if (this.exchangeRates && this.currencyOptions) {
           return [this.exchangeRates, this.currencyOptions]
         }
-        console.error(err)
+        throw err
       }
     },
 
     async getCoingeckoRate(currency) {
       const cacheKey = `rates-${currency}`
 
-      // Check if cache is valid
       if (this.isCacheValidRates(cacheKey)) {
-        console.log(
-          "coingecko cache is valid getCoingeckoRate: ",
-          this.ratesCache[cacheKey]
-        )
+        console.log("cache is valid for rate", cacheKey)
         return this.ratesCache[cacheKey]
       }
 
@@ -58,7 +52,8 @@ export const useCoingeckoStore = defineStore("coingecko", {
           ids: "hive,hive_dollar,btc",
           vs_currencies: `btc,usd,eur,${currency}`,
         }
-        const res = await axios.get(url, { params: params })
+        const res = await axios.get(url, { params })
+
         if (res.status === 200) {
           this.cacheDataRates(cacheKey, res.data)
           return res.data
@@ -89,36 +84,26 @@ export const useCoingeckoStore = defineStore("coingecko", {
         })
       )
 
-      // Add extra currencies here if necessary
       currencyOptions.push(...this.getExtraCurrencyOptions())
-
       return currencyOptions
     },
 
     getExtraCurrencyOptions() {
-      // Define extra currency options here
       return [
-        // Example extra currencies
         { label: "Guatemalan Quetzal", value: "GTQ", unit: "gtq" },
         { label: "Cuban Peso", value: "CUP", unit: "cup" },
         { label: "Other", value: "OTH", unit: "$" },
       ]
     },
 
-    cacheData(exchangeRates, currencyOptions) {
-      this.exchangeRates = exchangeRates
+    cacheData(key, exchangeRates, currencyOptions) {
+      this[key] = exchangeRates
       this.currencyOptions = currencyOptions
-      this.lastFetched = Date.now()
+      this.lastFetched[key] = Date.now()
     },
 
-    isCacheValid() {
-      // Check if data is available and not outdated
-      const isValid =
-        this.exchangeRates &&
-        this.currencyOptions &&
-        Date.now() - this.lastFetched < maxCacheAge
-      console.log("checking coingecko cache isValid: ", isValid)
-      return isValid
+    isCacheValid(key) {
+      return this[key] && Date.now() - this.lastFetched[key] < maxCacheAge
     },
   },
 })
