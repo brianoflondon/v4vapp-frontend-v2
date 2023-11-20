@@ -119,8 +119,6 @@ async function updateHiveAccTo(val) {
     }
     modelValue.value.valid = true
   }
-  console.log("result", result)
-  console.log("modelValue", modelValue.value)
 }
 
 function setCaption(profileName) {

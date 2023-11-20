@@ -200,7 +200,6 @@
 import { ref, onMounted, watch, computed } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useQuasar } from "quasar"
-import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 import POSSettingsDialog from "src/components/POSSettingsDialog.vue"
 import ListTransactions from "src/components/hive/ListTransactions.vue"
@@ -256,6 +255,28 @@ function resetCurrencyOptions(localCurrency) {
   }
 }
 
+watch(route, (to, from) => {
+  // Code to execute on route change
+  console.log("route changed", to, from)
+  console.log("to path", to.path)
+  console.log("storeUser.pos", storeUser.pos)
+  if (to.path === "/pos") {
+    // first unset hiveAccTo to trigger a refresh
+    // wait half a second then run the code
+    // wait for a tick
+    setTimeout(() => {
+      if (storeUser.pos?.hiveAccTo) {
+        hiveAccTo.value = {
+          label: storeUser.pos.hiveAccTo.label,
+          value: storeUser.pos.hiveAccTo.value,
+          caption: storeUser.pos.hiveAccTo.caption,
+        }
+      }
+    }, 100)
+    fixedUser.value = false
+  }
+})
+
 watch(
   () => storeUser.localCurrency,
   () => {
@@ -289,7 +310,9 @@ watch(
 const currencySelected = ref("hbd")
 
 onMounted(() => {
+  console.log("onMounted POSPage.vue")
   if (route.params.hiveAccTo) {
+    console.log("route.params.hiveAccTo", route.params.hiveAccTo)
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
       label: username,
@@ -298,13 +321,17 @@ onMounted(() => {
     }
     fixedUser.value = true
   } else if (storeUser.pos?.hiveAccTo) {
+    console.log(
+      "no route params, but storeUser.pos.hiveAccTo",
+      storeUser.pos.hiveAccTo
+    )
     hiveAccTo.value = {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
       caption: storeUser.pos.hiveAccTo.caption,
     }
-    console.log("hiveAccTo.value", hiveAccTo.value)
   } else {
+    console.log("no route params, no storeUser.pos.hiveAccTo")
     useLoggedInUser()
   }
   // Is there a local currency set? Add it to

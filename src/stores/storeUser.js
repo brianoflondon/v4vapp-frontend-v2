@@ -82,10 +82,11 @@ export const useStoreUser = defineStore("useStoreUser", {
     localCurrency: useStorage("localCurrency", {
       label: "US Dollar",
       value: "usd",
-      unit: "$"
+      unit: "$",
     }),
     users: useStorage("users", {}),
     pos: useStorage("pos", {}),
+    coingecko: useStorage("coingecko", {}),
   }),
 
   getters: {
@@ -297,7 +298,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     strategies: [
       {
         storage: localStorage,
-        paths: ["users", "currentUser", "pos", "localCurrency"],
+        paths: ["users", "currentUser", "pos", "coingecko", "localCurrency"],
       },
     ],
   },
