@@ -4,14 +4,8 @@
       <q-toolbar>
         <!-- Title Bar -->
         <q-toolbar-title>{{ t("local_currency") }}</q-toolbar-title>
-        <q-btn
-          flat
-          round
-          dense
-          icon="close"
-          v-close-popup
-          />
-          <!-- @click="KeychainDialog.settings = false" -->
+        <q-btn flat round dense icon="close" v-close-popup />
+        <!-- @click="KeychainDialog.settings = false" -->
       </q-toolbar>
       <q-card-section>
         <!-- Settings area -->
@@ -51,7 +45,6 @@ import { useI18n } from "vue-i18n"
 const t = useI18n().t
 
 const KeychainDialog = defineModel({})
-console.log("KeychainDialog", KeychainDialog)
 </script>
 
 <style lang="scss" scoped></style>

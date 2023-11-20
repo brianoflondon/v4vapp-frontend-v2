@@ -7,7 +7,17 @@
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
         v-if="fixedUser"
       >
-        <PosHeader />
+        <div class="col-8">
+          <PosHeader />
+        </div>
+        <!-- Button to Show Currency settings -->
+        <div class="div col-4 q-px-sm">
+          <q-btn
+            :label="t('local_currency')"
+            class="full-width"
+            @click="KeychainDialog.settings = !KeychainDialog.settings"
+          />
+        </div>
       </div>
       <!-- Select a user -->
       <div
@@ -47,7 +57,6 @@
           </div>
         </div>
         <!-- Button to Show Currency settings -->
-
         <div class="div col-4 q-px-sm">
           <q-btn
             :label="t('local_currency')"
@@ -230,29 +239,41 @@ const amount = ref({
 
 const decimalEntry = ref(0)
 
-// const currencyOptions = ref(["HBD", "HIVE"])
-const currencyOptions = computed(() => {
-  const ans = [
+const currencyOptions = ref()
+
+function resetCurrencyOptions(localCurrency) {
+  currencyOptions.value = [
     { label: "HBD", value: "hbd" },
     { label: "HIVE", value: "hive" },
     { label: "SATS", value: "sats" },
   ]
-  if (storeUser.localCurrency) {
-    const localCurrency = {
-      label: storeUser.localCurrency.unit.toUpperCase(),
-      value: storeUser.localCurrency.value,
+  if (localCurrency) {
+    const localCurrencyOpt = {
+      label: localCurrency.unit.toUpperCase(),
+      value: localCurrency.value,
     }
-    ans.push(localCurrency)
+    currencyOptions.value.push(localCurrencyOpt)
   }
-  console.log("currencyOptions", ans)
-  return ans
-})
+}
 
 watch(
   () => storeUser.localCurrency,
   () => {
-    if (currencySelected.value != storeUser.localCurrency.value) {
+    const baseCurrencies = ["hbd", "hive", "sats"]
+    if (!currencyOptions.value.includes(storeUser.localCurrency.value)) {
+      resetCurrencyOptions(storeUser.localCurrency)
+    }
+    // If the local currency is one of the base currencies do nothing
+    if (baseCurrencies.includes(currencySelected.value)) {
+      updateAmounts(amount.value.txt)
+      return
+    }
+    // if the selected currency is no longer in the options, switch to the
+    // newly selected local currency
+    if (!currencyOptions.value.includes(currencySelected.value)) {
       currencySelected.value = storeUser.localCurrency.value
+      CurrencyCalc.value.currency = currencySelected.value
+      storeUser.pos.currencySelected = currencySelected.value
     }
     updateAmounts(amount.value.txt)
   }
@@ -286,13 +307,17 @@ onMounted(() => {
   } else {
     useLoggedInUser()
   }
+  // Is there a local currency set? Add it to
+  if (storeUser.localCurrency) {
+    resetCurrencyOptions(storeUser.localCurrency)
+  }
+
   if (storeUser.pos.currencySelected) {
     currencySelected.value = storeUser.pos.currencySelected
     CurrencyCalc.value.currency = currencySelected.value
   } else {
     console.log("No local currency selected show the dialog")
   }
-  currencyOptions.value.push(storeUser.localCurrency.label)
 })
 
 function extractUsernameFromRouteParam(routeParam) {
