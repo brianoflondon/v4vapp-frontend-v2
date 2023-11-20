@@ -55,26 +55,15 @@ watch(
 )
 
 watch(
-  () => CurrencyCalc.value.currency,
-  async (val) => {
-    CurrencyCalc.value.currency = val
-    console.log('checking rates')
-    localRates = await storeCoingecko.getCoingeckoRate(
-      storeUser.localCurrency.value
-    )
-    calcAllAmounts()
-  }
-)
-
-watch(
-  () => storeUser.localCurrency,
-  async (val) => {
-    storeUser.localCurrency = val
-    console.log('checking rates')
-    localRates = await storeCoingecko.getCoingeckoRate(
-      storeUser.localCurrency.value
-    )
-    calcAllAmounts()
+  [() => CurrencyCalc.value.currency, () => storeUser.localCurrency],
+  async ([newCurrency, newLocalCurrency], [oldCurrency, oldLocalCurrency]) => {
+    if (newCurrency !== oldCurrency || newLocalCurrency !== oldLocalCurrency) {
+      console.log("checking rates")
+      localRates = await storeCoingecko.getCoingeckoRate(
+        storeUser.localCurrency.value
+      )
+      calcAllAmounts()
+    }
   }
 )
 
@@ -112,7 +101,7 @@ async function calcAllAmounts() {
     return
   }
   if (!localRates.hive) {
-    console.log('checking rates')
+    console.log("checking rates")
     localRates = await storeCoingecko.getCoingeckoRate(
       storeUser.localCurrency.value
     )
