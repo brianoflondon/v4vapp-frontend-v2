@@ -1,7 +1,5 @@
 import { axios } from "boot/axios"
-import { useStoreUser } from "src/stores/storeUser"
 
-const storeUser = useStoreUser()
 const coinGeckoApi = "https://api.coingecko.com/api/v3"
 
 // use axios to fetch extraCurrencyOptions from github link
