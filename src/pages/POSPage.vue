@@ -318,6 +318,7 @@ onMounted(() => {
       label: username,
       value: username,
       caption: username,
+      valid: true,
     }
     fixedUser.value = true
   } else if (storeUser.pos?.hiveAccTo) {
