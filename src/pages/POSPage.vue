@@ -100,6 +100,7 @@
             @keyup.enter="enterPressed()"
             @keyup.esc="clearAmount(false)"
             :input-style="{ 'text-align': 'right' }"
+            :rules="[(val) => !!val || t('no_amount')]"
           >
             <!-- Use my Own code for the clearable button -->
             <template v-if="amount.txt" v-slot:append>
@@ -305,12 +306,6 @@ const isPaymentValid = computed(() => {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
   if (amount.value.num === 0 || isNaN(amount.value.num)) {
-    q.notify({
-      message: t("no_amount"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
     return false
   }
   if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
