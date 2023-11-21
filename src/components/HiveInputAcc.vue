@@ -10,7 +10,7 @@
       clearable
       @keydown.esc="clearInput"
       debounce="500"
-      :rules="[() => isValidAccount || t('no_account')]"
+      :rules="[(val) => val === '' || isValidAccount || t('no_account')]"
     >
       <template v-slot:prepend>
         <q-avatar rounded size="md">
