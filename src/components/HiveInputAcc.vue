@@ -76,17 +76,10 @@ const simpleInput = ref("")
 const avatarName = ref("")
 
 watch(modelValue, (val) => {
-  console.log("modelValue changed", val)
   if (modelValue.value.value != simpleInput.value) {
     simpleInput.value = modelValue.value.value
     updateHiveAccTo(simpleInput.value)
   }
-})
-
-onMounted(() => {
-  console.log("mounted")
-  console.log("modelValue", modelValue.value)
-  console.log("props", props)
 })
 
 function clearInput() {
