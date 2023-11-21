@@ -309,12 +309,6 @@ const isPaymentValid = computed(() => {
     return false
   }
   if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
-    q.notify({
-      message: t("no_account"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
     return false
   }
   return true

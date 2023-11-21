@@ -1,6 +1,7 @@
 <template>
   <div>
     <q-input
+      ref="simpleHiveInput"
       v-model="simpleInput"
       :label="modelValue?.caption ? modelValue.caption : label"
       map-options
@@ -9,6 +10,7 @@
       clearable
       @keydown.esc="clearInput"
       debounce="500"
+      :rules="[() => isValidAccount || t('no_account')]"
     >
       <template v-slot:prepend>
         <q-avatar rounded size="md">
@@ -73,7 +75,11 @@ const modelValue = defineModel({
   valid: false,
 })
 const simpleInput = ref("")
+const isValidAccount = ref(false)
 const avatarName = ref("")
+const simpleHiveInput = ref(null)
+
+const { t } = useI18n()
 
 watch(modelValue, (val) => {
   if (modelValue.value.value != simpleInput.value) {
@@ -88,6 +94,8 @@ function clearInput() {
     (modelValue.caption = props.label),
     (modelValue.valid = false)
   simpleInput.value = ""
+  isValidAccount.value = false
+  simpleHiveInput.value.validate()
   avatarName.value = ""
 }
 
@@ -102,7 +110,10 @@ async function updateHiveAccTo(val) {
     value: val,
     caption: val,
   }
+  isValidAccount.value = false
   avatarName.value = val
+  simpleHiveInput.value.validate()
+
   const result = await useHiveProfile(val)
   if (result) {
     if (result?.metadata?.profile?.name) {
@@ -111,6 +122,8 @@ async function updateHiveAccTo(val) {
       modelValue.value.caption = setCaption(val)
     }
     modelValue.value.valid = true
+    isValidAccount.value = true
+    simpleHiveInput.value.validate()
   }
 }
 
