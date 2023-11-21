@@ -83,9 +83,9 @@
           <q-btn label="Bk" @click="bookmarkSite"></q-btn>
         </div>
       </div>
-      <!-- Display Area -->
+      <!-- Amount Input -->
       <div
-        class="flex row items-center amount-input-area pad-max-width full-width q-pa-sm"
+        class="flex row items-baseline amount-input-area pad-max-width full-width q-pa-sm"
       >
         <div class="col-9 q-pa-sm">
           <q-input
