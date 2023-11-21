@@ -16,6 +16,8 @@
       <q-input
         :label="`${usdToCurrency}`"
         v-model="formattedFixedRate"
+        inputmode="decimal"
+        pattern="\d*"
         debounce="1000"
         clearable
       >
