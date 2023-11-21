@@ -58,7 +58,6 @@ watch(
   [() => CurrencyCalc.value.currency, () => storeUser.localCurrency],
   async ([newCurrency, newLocalCurrency], [oldCurrency, oldLocalCurrency]) => {
     if (newCurrency !== oldCurrency || newLocalCurrency !== oldLocalCurrency) {
-      console.log("checking rates")
       localRates = await storeCoingecko.getCoingeckoRate(
         storeUser.localCurrency.value
       )
@@ -101,7 +100,6 @@ async function calcAllAmounts() {
     return
   }
   if (!localRates.hive) {
-    console.log("checking rates")
     localRates = await storeCoingecko.getCoingeckoRate(
       storeUser.localCurrency.value
     )

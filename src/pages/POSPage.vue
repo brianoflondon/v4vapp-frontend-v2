@@ -83,7 +83,6 @@
           <q-btn label="Bk" @click="bookmarkSite"></q-btn>
         </div>
       </div>
-      <!-- show numButtons in a numeric pad -->
       <!-- Display Area -->
       <div
         class="flex row items-center amount-input-area pad-max-width full-width q-pa-sm"
@@ -125,12 +124,12 @@
         </div>
       </div>
       <!-- Memo -->
-      <div class="memo-input flex pad-max-width full-width q-px-md q-py-sm">
+      <div class="memo-input flex pad-max-width full-width q-px-md q-py-xs">
         <q-input clearable v-model="memoInput" class="full-width" label="Memo">
         </q-input>
       </div>
       <!-- Pay buttons -->
-      <div class="pad-max-width full-width q-px-md q-py-xs q-gutter-sm">
+      <div class="pad-max-width full-width q-px-md q-py-md q-gutter-sm">
         <!-- HBD Button -->
         <q-btn color="secondary" @click="showPaymentQR('hbd')">
           <div class="column items-center q-pa-none" style="font-size: 1.2rem">
@@ -166,20 +165,7 @@
         </div>
       </div>
       <!-- Settings area -->
-      <div v-if="false">
-        <!-- List of received transactions -->
-        <div class="q-px-md q-py-xs">
-          <q-expansion-item
-            class="full-width"
-            expand-separator
-            :label="t('list_received_payments')"
-          >
-            <ListTransactions v-model="KeychainDialog"></ListTransactions>
-          </q-expansion-item>
-        </div>
-        <div class="pad-max-width" style="width: 80%">
-          <LocalCurrency />
-        </div>
+      <div class="full-width pad-max-width q-py-lg">
         <!-- Explanation what is this page box -->
         <div class="pad-max-width">
           <ExplanationBox class="q-pt-md"></ExplanationBox>
@@ -257,9 +243,6 @@ function resetCurrencyOptions(localCurrency) {
 
 watch(route, (to, from) => {
   // Code to execute on route change
-  console.log("route changed", to, from)
-  console.log("to path", to.path)
-  console.log("storeUser.pos", storeUser.pos)
   if (to.path === "/pos") {
     // first unset hiveAccTo to trigger a refresh
     // wait half a second then run the code
@@ -310,9 +293,7 @@ watch(
 const currencySelected = ref("hbd")
 
 onMounted(() => {
-  console.log("onMounted POSPage.vue")
   if (route.params.hiveAccTo) {
-    console.log("route.params.hiveAccTo", route.params.hiveAccTo)
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
       label: username,
@@ -470,7 +451,6 @@ const memoInput = ref("")
 function showPaymentQR(payWith) {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
-  console.log("hiveAccTo.value", hiveAccTo.value)
   if (amount.value.num === 0 || isNaN(amount.value.num)) {
     q.notify({
       message: t("no_amount"),
