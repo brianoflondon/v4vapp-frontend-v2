@@ -131,7 +131,11 @@
       <!-- Pay buttons -->
       <div class="pad-max-width full-width q-px-md q-py-md q-gutter-sm">
         <!-- HBD Button -->
-        <q-btn color="secondary" @click="showPaymentQR('hbd')">
+        <q-btn
+          color="secondary"
+          @click="showPaymentQR('hbd')"
+          :disable="!isPaymentValid"
+        >
           <div class="column items-center q-pa-none" style="font-size: 1.2rem">
             <div><HbdLogoIcon /></div>
             <div class="text-center" style="font-size: 0.5rem; margin: -8px">
@@ -146,7 +150,11 @@
           </div>
         </q-btn>
         <!-- Hive Button -->
-        <q-btn color="primary" @click="showPaymentQR('hive')">
+        <q-btn
+          color="primary"
+          @click="showPaymentQR('hive')"
+          :disable="!isPaymentValid"
+        >
           <div class="column items-center q-pa-none" style="font-size: 2.05rem">
             <div><i class="fa-brands fa-hive" /></div>
             <div class="text-center" style="font-size: 0.5rem; margin: -8px">
@@ -160,7 +168,8 @@
             <q-icon name="qr_code_2"></q-icon>
           </div>
         </q-btn>
-        <div class="pad-max-width full-width q-px-md">
+        <!-- Alternate currencies  -->
+        <div class="pad-max-width full-width q-px-md" v-if="isPaymentValid">
           <AlternateCurrency v-model="CurrencyCalc" />
         </div>
       </div>
@@ -203,6 +212,7 @@ const route = useRoute()
 const q = useQuasar()
 const t = useI18n().t
 const fixedUser = ref(false)
+const currencySelected = ref("hbd")
 
 const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
@@ -290,7 +300,30 @@ watch(
   }
 )
 
-const currencySelected = ref("hbd")
+const isPaymentValid = computed(() => {
+  // Returns True if this payment screen can produce a QR code
+  // Check if there is a running total, if that is 0 use the amount
+  // on the screen
+  if (amount.value.num === 0 || isNaN(amount.value.num)) {
+    q.notify({
+      message: t("no_amount"),
+      type: "negative",
+      position: "top",
+      timeout: 2000,
+    })
+    return false
+  }
+  if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
+    q.notify({
+      message: t("no_account"),
+      type: "negative",
+      position: "top",
+      timeout: 2000,
+    })
+    return false
+  }
+  return true
+})
 
 onMounted(() => {
   if (route.params.hiveAccTo) {
@@ -449,24 +482,7 @@ function clearAmount() {
 const memoInput = ref("")
 
 function showPaymentQR(payWith) {
-  // Check if there is a running total, if that is 0 use the amount
-  // on the screen
-  if (amount.value.num === 0 || isNaN(amount.value.num)) {
-    q.notify({
-      message: t("no_amount"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
-    return
-  }
-  if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
-    q.notify({
-      message: t("no_account"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
+  if (!isPaymentValid.value) {
     return
   }
   KeychainDialog.value.memo = memoInput.value
