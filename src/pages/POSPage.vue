@@ -7,7 +7,17 @@
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
         v-if="fixedUser"
       >
-        <PosHeader />
+        <div class="col-8">
+          <PosHeader />
+        </div>
+        <!-- Button to Show Currency settings -->
+        <div class="div col-4 q-px-sm">
+          <q-btn
+            :label="t('local_currency')"
+            class="full-width"
+            @click="KeychainDialog.settings = !KeychainDialog.settings"
+          />
+        </div>
       </div>
       <!-- Select a user -->
       <div
@@ -30,7 +40,7 @@
       >
         <div class="col-8 q-px-sm q-pb-md">
           <!-- bookmark icon -->
-          <div v-if="hiveAccTo.value === ''">
+          <div v-if="!hiveAccTo.valid">
             <q-icon name="bookmark" class="cursor-pointer" />
           </div>
           <div v-else>
@@ -42,12 +52,19 @@
         </div>
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
-            <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
+            <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
+            <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')" />
           </div>
         </div>
-        <!-- Button to use Logged in User -->
-        <div class="div col-4 q-px-sm" v-if="storeUser.hiveAccname">
+        <!-- Button to Show Currency settings -->
+        <div class="div col-4 q-px-sm">
           <q-btn
+            :label="t('local_currency')"
+            class="full-width"
+            @click="KeychainDialog.settings = !KeychainDialog.settings"
+          />
+          <q-btn
+            v-if="storeUser.hiveAccname"
             class="full-width"
             style="font-size: x-small; white-space: pre-line"
             color="primary"
@@ -66,7 +83,6 @@
           <q-btn label="Bk" @click="bookmarkSite"></q-btn>
         </div>
       </div>
-      <!-- show numButtons in a numeric pad -->
       <!-- Display Area -->
       <div
         class="flex row items-center amount-input-area pad-max-width full-width q-pa-sm"
@@ -108,12 +124,12 @@
         </div>
       </div>
       <!-- Memo -->
-      <div class="memo-input flex pad-max-width full-width q-px-md q-py-sm">
+      <div class="memo-input flex pad-max-width full-width q-px-md q-py-xs">
         <q-input clearable v-model="memoInput" class="full-width" label="Memo">
         </q-input>
       </div>
       <!-- Pay buttons -->
-      <div class="pad-max-width full-width q-px-md q-py-xs q-gutter-sm">
+      <div class="pad-max-width full-width q-px-md q-py-md q-gutter-sm">
         <!-- HBD Button -->
         <q-btn color="secondary" @click="showPaymentQR('hbd')">
           <div class="column items-center q-pa-none" style="font-size: 1.2rem">
@@ -124,6 +140,9 @@
           </div>
           <div class="q-px-md" style="font-size: 1.2rem">
             {{ tidyNumber(CurrencyCalc.hbd, 2) }}
+          </div>
+          <div class="q-px-none">
+            <q-icon name="qr_code_2"></q-icon>
           </div>
         </q-btn>
         <!-- Hive Button -->
@@ -137,40 +156,29 @@
           <div class="q-px-md" style="font-size: 1.2rem">
             {{ tidyNumber(CurrencyCalc.hive, 2) }}
           </div>
+          <div class="q-px-none">
+            <q-icon name="qr_code_2"></q-icon>
+          </div>
         </q-btn>
         <div class="pad-max-width full-width q-px-md">
           <AlternateCurrency v-model="CurrencyCalc" />
         </div>
       </div>
-      <!-- List of received transactions -->
-      <div class="q-px-md q-py-xs">
-        <q-expansion-item
-          class="full-width"
-          expand-separator
-          :label="t('list_received_payments')"
-        >
-          <ListTransactions v-model="KeychainDialog"></ListTransactions>
-        </q-expansion-item>
-      </div>
-      <div class="pad-max-width" style="width: 80%">
-        <LocalCurrency />
-      </div>
-      <!-- Explanation what is this page box -->
-      <div class="pad-max-width">
-        <ExplanationBox class="q-pt-md"></ExplanationBox>
-      </div>
-      <!-- Old page links -->
-      <div class="q-pt-lg">
-        <q-btn
-          color="primary"
-          :label="t('old_page')"
-          style="font-size: 0.6rem; white-space: pre-line"
-          @click="$router.push('/hive')"
-        ></q-btn>
+      <!-- Settings area -->
+      <div class="full-width pad-max-width q-py-lg">
+        <!-- Explanation what is this page box -->
+        <div class="pad-max-width">
+          <ExplanationBox class="q-pt-md"></ExplanationBox>
+        </div>
       </div>
     </div>
     <!-- Show the QR dialog -->
     <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
+    <!-- Show the settings dialog -->
+    <POSSettingsDialog
+      v-if="KeychainDialog.settings"
+      v-model="KeychainDialog"
+    />
   </q-page>
 </template>
 
@@ -178,8 +186,8 @@
 import { ref, onMounted, watch, computed } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useQuasar } from "quasar"
-import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
+import POSSettingsDialog from "src/components/POSSettingsDialog.vue"
 import ListTransactions from "src/components/hive/ListTransactions.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
@@ -189,16 +197,17 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
 import { useRoute } from "vue-router"
 import PosHeader from "src/components/hive/PosHeader.vue"
+import HiveInputAcc from "src/components/HiveInputAcc.vue"
 
 const route = useRoute()
 const q = useQuasar()
 const t = useI18n().t
+const fixedUser = ref(false)
 
 const storeUser = useStoreUser()
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
-const fixedUser = ref(false)
 
-const KeychainDialog = ref({ show: false })
+const KeychainDialog = ref({ show: false, settings: false })
 const CurrencyCalc = ref({
   amount: 0,
   currency: "hbd",
@@ -215,29 +224,60 @@ const amount = ref({
 
 const decimalEntry = ref(0)
 
-// const currencyOptions = ref(["HBD", "HIVE"])
-const currencyOptions = computed(() => {
-  const ans = [
+const currencyOptions = ref()
+
+function resetCurrencyOptions(localCurrency) {
+  currencyOptions.value = [
     { label: "HBD", value: "hbd" },
     { label: "HIVE", value: "hive" },
     { label: "SATS", value: "sats" },
   ]
-  if (storeUser.localCurrency) {
-    const localCurrency = {
-      label: storeUser.localCurrency.unit.toUpperCase(),
-      value: storeUser.localCurrency.value,
+  if (localCurrency) {
+    const localCurrencyOpt = {
+      label: localCurrency.unit.toUpperCase(),
+      value: localCurrency.value,
     }
-    ans.push(localCurrency)
+    currencyOptions.value.push(localCurrencyOpt)
   }
-  console.log("currencyOptions", ans)
-  return ans
+}
+
+watch(route, (to, from) => {
+  // Code to execute on route change
+  if (to.path === "/pos") {
+    // first unset hiveAccTo to trigger a refresh
+    // wait half a second then run the code
+    // wait for a tick
+    setTimeout(() => {
+      if (storeUser.pos?.hiveAccTo) {
+        hiveAccTo.value = {
+          label: storeUser.pos.hiveAccTo.label,
+          value: storeUser.pos.hiveAccTo.value,
+          caption: storeUser.pos.hiveAccTo.caption,
+        }
+      }
+    }, 100)
+    fixedUser.value = false
+  }
 })
 
 watch(
   () => storeUser.localCurrency,
   () => {
-    if (currencySelected.value != storeUser.localCurrency.value) {
+    const baseCurrencies = ["hbd", "hive", "sats"]
+    if (!currencyOptions.value.includes(storeUser.localCurrency.value)) {
+      resetCurrencyOptions(storeUser.localCurrency)
+    }
+    // If the local currency is one of the base currencies do nothing
+    if (baseCurrencies.includes(currencySelected.value)) {
+      updateAmounts(amount.value.txt)
+      return
+    }
+    // if the selected currency is no longer in the options, switch to the
+    // newly selected local currency
+    if (!currencyOptions.value.includes(currencySelected.value)) {
       currencySelected.value = storeUser.localCurrency.value
+      CurrencyCalc.value.currency = currencySelected.value
+      storeUser.pos.currencySelected = currencySelected.value
     }
     updateAmounts(amount.value.txt)
   }
@@ -258,23 +298,35 @@ onMounted(() => {
     hiveAccTo.value = {
       label: username,
       value: username,
-      caption: setCaption(username),
+      caption: username,
+      valid: true,
     }
     fixedUser.value = true
   } else if (storeUser.pos?.hiveAccTo) {
+    console.log(
+      "no route params, but storeUser.pos.hiveAccTo",
+      storeUser.pos.hiveAccTo
+    )
     hiveAccTo.value = {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
       caption: storeUser.pos.hiveAccTo.caption,
     }
   } else {
+    console.log("no route params, no storeUser.pos.hiveAccTo")
     useLoggedInUser()
   }
+  // Is there a local currency set? Add it to
+  if (storeUser.localCurrency) {
+    resetCurrencyOptions(storeUser.localCurrency)
+  }
+
   if (storeUser.pos.currencySelected) {
     currencySelected.value = storeUser.pos.currencySelected
     CurrencyCalc.value.currency = currencySelected.value
+  } else {
+    console.log("No local currency selected show the dialog")
   }
-  currencyOptions.value.push(storeUser.localCurrency.label)
 })
 
 function extractUsernameFromRouteParam(routeParam) {
@@ -294,7 +346,7 @@ function useLoggedInUser() {
     hiveAccTo.value = {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
-      caption: setCaption(storeUser.profileName),
+      caption: storeUser.profileName,
     }
   }
 }
@@ -385,7 +437,6 @@ watch(hiveAccTo, async (val) => {
     value: val.value,
     caption: val.caption,
   }
-  hiveAccTo.value.caption = setCaption(val.caption)
 })
 
 function clearAmount() {
@@ -400,7 +451,7 @@ const memoInput = ref("")
 function showPaymentQR(payWith) {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
-  if (amount.value.num === 0) {
+  if (amount.value.num === 0 || isNaN(amount.value.num)) {
     q.notify({
       message: t("no_amount"),
       type: "negative",
@@ -409,7 +460,7 @@ function showPaymentQR(payWith) {
     })
     return
   }
-  if (hiveAccTo.value.value === "") {
+  if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
     q.notify({
       message: t("no_account"),
       type: "negative",

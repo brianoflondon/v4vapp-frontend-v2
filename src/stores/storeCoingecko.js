@@ -1,0 +1,109 @@
+import { defineStore } from "pinia"
+import axios from "axios"
+
+const coinGeckoApi = "https://api.coingecko.com/api/v3"
+const maxCacheAge = 600000 // 10 minutes in milliseconds
+
+export const useCoingeckoStore = defineStore("coingecko", {
+  state: () => ({
+    exchangeRates: null,
+    currencyOptions: null,
+    ratesCache: {}, // Initialize as an empty object
+    lastFetched: {}, // Initialize as an empty object
+  }),
+
+  actions: {
+    async fetchCoingeckoRates() {
+      if (this.isCacheValid("exchangeRates")) {
+        return [this.exchangeRates, this.currencyOptions]
+      }
+
+      try {
+        const url = `${coinGeckoApi}/exchange_rates`
+        const res = await axios.get(url)
+
+        if (res.status === 200) {
+          const coingeckoRates = res.data.rates
+          const currencyOptions = this.buildCurrencyOptions(coingeckoRates)
+
+          this.cacheData("exchangeRates", coingeckoRates, currencyOptions)
+          return [coingeckoRates, currencyOptions]
+        }
+      } catch (err) {
+        console.error(err)
+        if (this.exchangeRates && this.currencyOptions) {
+          return [this.exchangeRates, this.currencyOptions]
+        }
+        throw err
+      }
+    },
+
+    async getCoingeckoRate(currency) {
+      const cacheKey = `rates-${currency}`
+
+      if (this.isCacheValidRates(cacheKey)) {
+        console.log("cache is valid for rate", cacheKey)
+        return this.ratesCache[cacheKey]
+      }
+
+      try {
+        const url = `${coinGeckoApi}/simple/price`
+        const params = {
+          ids: "hive,hive_dollar,btc",
+          vs_currencies: `btc,usd,eur,${currency}`,
+        }
+        const res = await axios.get(url, { params })
+
+        if (res.status === 200) {
+          this.cacheDataRates(cacheKey, res.data)
+          return res.data
+        }
+      } catch (err) {
+        console.error(err)
+        throw err
+      }
+    },
+
+    cacheDataRates(key, data) {
+      this.ratesCache[key] = data
+      this.lastFetched[key] = Date.now()
+    },
+
+    isCacheValidRates(key) {
+      return (
+        this.ratesCache[key] && Date.now() - this.lastFetched[key] < maxCacheAge
+      )
+    },
+
+    buildCurrencyOptions(coingeckoRates) {
+      const currencyOptions = Object.entries(coingeckoRates).map(
+        ([key, rate]) => ({
+          label: rate.name,
+          value: key,
+          unit: rate.unit,
+        })
+      )
+
+      currencyOptions.push(...this.getExtraCurrencyOptions())
+      return currencyOptions
+    },
+
+    getExtraCurrencyOptions() {
+      return [
+        { label: "Guatemalan Quetzal", value: "GTQ", unit: "gtq" },
+        { label: "Cuban Peso", value: "CUP", unit: "cup" },
+        { label: "Other", value: "OTH", unit: "$" },
+      ]
+    },
+
+    cacheData(key, exchangeRates, currencyOptions) {
+      this[key] = exchangeRates
+      this.currencyOptions = currencyOptions
+      this.lastFetched[key] = Date.now()
+    },
+
+    isCacheValid(key) {
+      return this[key] && Date.now() - this.lastFetched[key] < maxCacheAge
+    },
+  },
+})

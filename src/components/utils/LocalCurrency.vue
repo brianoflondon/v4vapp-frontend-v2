@@ -1,6 +1,6 @@
 <template>
   <div class="fit row wrap justify-start items-start content-start q-gutter-xs">
-    <div class="col-6">
+    <div class="col-12">
       <q-select
         use-input
         fill-input
@@ -12,16 +12,18 @@
         clearable
       />
     </div>
-    <div class="col-5">
+    <div class="col-12">
       <q-input
         :label="`${usdToCurrency}`"
         v-model="formattedFixedRate"
         debounce="1000"
         clearable
       >
-        <template v-slot:prepend>
+        <template v-slot:append>
           <!-- small -->
-          {{ currency.unit?.toUpperCase() }}
+          <div class="text-caption">
+            {{ currency.unit?.toUpperCase() }}
+          </div>
         </template>
       </q-input>
     </div>
@@ -32,10 +34,12 @@
 import { ref, onMounted, watch, computed } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
-import { getCoingeckoRates } from "src/use/useCoinGecko"
+// import { getCoingeckoRates } from "src/use/useCoinGecko"
+import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber } from "src/use/useUtils"
 const t = useI18n().t
 const storeUser = useStoreUser()
+const storeCoingecko = useCoingeckoStore()
 
 const coingeckoRates = ref([])
 const currencyOptions = ref([])
@@ -75,9 +79,15 @@ function exchangeRate() {
 
 const usdToCurrency = computed(() => {
   if (!coingeckoRates.value[currency.value.value]?.value) {
-    return "$1USD = " + currency.value.unit
+    return t("set_rate") + ": $1USD = " + currency.value.unit
   }
-  return "$1USD = " + currency.value.unit + " " + tidyNumber(exchangeRate(), 2)
+  return (
+    t("set_rate") +
+    ": $1USD = " +
+    currency.value.unit +
+    " " +
+    tidyNumber(exchangeRate(), 2)
+  )
 })
 
 watch(
@@ -141,9 +151,8 @@ onMounted(async () => {
   if (storeUser.localCurrency) {
     currency.value = storeUser.localCurrency
   }
-  ;[coingeckoRates.value, currencyOptions.value] = await getCoingeckoRates(
-    storeUser.localCurrency.value
-  )
+  ;[coingeckoRates.value, currencyOptions.value] =
+    await storeCoingecko.fetchCoingeckoRates()
   if (storeUser.pos.fixedRate) {
     fixedRate.value = parseFloat(storeUser.pos.fixedRate)
   } else {

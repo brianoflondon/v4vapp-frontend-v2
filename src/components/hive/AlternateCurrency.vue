@@ -31,10 +31,12 @@ import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
-import { getCoingeckoRate } from "src/use/useCoinGecko"
+// import { getCoingeckoRate } from "src/use/useCoinGecko"
+import { useCoingeckoStore } from "src/stores/storeCoingecko"
 
 const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
+const storeCoingecko = useCoingeckoStore()
 
 const CurrencyCalc = defineModel(null)
 
@@ -53,20 +55,14 @@ watch(
 )
 
 watch(
-  () => CurrencyCalc.value.currency,
-  async (val) => {
-    CurrencyCalc.value.currency = val
-    localRates = await getCoingeckoRate(storeUser.localCurrency.value)
-    calcAllAmounts()
-  }
-)
-
-watch(
-  () => storeUser.localCurrency,
-  async (val) => {
-    storeUser.localCurrency = val
-    localRates = await getCoingeckoRate(storeUser.localCurrency.value)
-    calcAllAmounts()
+  [() => CurrencyCalc.value.currency, () => storeUser.localCurrency],
+  async ([newCurrency, newLocalCurrency], [oldCurrency, oldLocalCurrency]) => {
+    if (newCurrency !== oldCurrency || newLocalCurrency !== oldLocalCurrency) {
+      localRates = await storeCoingecko.getCoingeckoRate(
+        storeUser.localCurrency.value
+      )
+      calcAllAmounts()
+    }
   }
 )
 
@@ -104,7 +100,9 @@ async function calcAllAmounts() {
     return
   }
   if (!localRates.hive) {
-    localRates = await getCoingeckoRate(storeUser.localCurrency.value)
+    localRates = await storeCoingecko.getCoingeckoRate(
+      storeUser.localCurrency.value
+    )
   }
   switch (CurrencyCalc.value.currency) {
     case "hbd":
@@ -141,7 +139,6 @@ async function calcAllAmounts() {
       var adustRate = 1
       updateLocalRates()
       if (storeUser.pos.fixedRate) {
-
         adustRate =
           storeUser.pos.fixedRate /
           localRates.hive_dollar[storeUser.localCurrency.value]
