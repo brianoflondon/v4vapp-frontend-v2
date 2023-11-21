@@ -1,6 +1,6 @@
 <template>
   <div class="fit row wrap justify-start items-start content-start q-gutter-xs">
-    <div class="col-6">
+    <div class="col-12">
       <q-select
         use-input
         fill-input
@@ -12,7 +12,7 @@
         clearable
       />
     </div>
-    <div class="col-5">
+    <div class="col-12">
       <q-input
         :label="`${usdToCurrency}`"
         v-model="formattedFixedRate"
@@ -21,7 +21,9 @@
       >
         <template v-slot:prepend>
           <!-- small -->
-          {{ currency.unit?.toUpperCase() }}
+          <div class="text-caption">
+            {{ currency.unit?.toUpperCase() }}
+          </div>
         </template>
       </q-input>
     </div>
