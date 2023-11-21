@@ -19,7 +19,7 @@
         debounce="1000"
         clearable
       >
-        <template v-slot:prepend>
+        <template v-slot:append>
           <!-- small -->
           <div class="text-caption">
             {{ currency.unit?.toUpperCase() }}
@@ -79,9 +79,15 @@ function exchangeRate() {
 
 const usdToCurrency = computed(() => {
   if (!coingeckoRates.value[currency.value.value]?.value) {
-    return "$1USD = " + currency.value.unit
+    return t("set_rate") + ": $1USD = " + currency.value.unit
   }
-  return "$1USD = " + currency.value.unit + " " + tidyNumber(exchangeRate(), 2)
+  return (
+    t("set_rate") +
+    ": $1USD = " +
+    currency.value.unit +
+    " " +
+    tidyNumber(exchangeRate(), 2)
+  )
 })
 
 watch(
