@@ -72,8 +72,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Keychain no se encuentra',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
@@ -146,6 +146,7 @@ export default {
   // Point of Sale POS
   point_of_sale: 'Punto de venta',
   charge: 'Costo',
+  set_rate: 'Set Rate',
   // as in charge a customer
   payment: 'Pago',
   scan_to_send: 'Escanea este código para enviar',
