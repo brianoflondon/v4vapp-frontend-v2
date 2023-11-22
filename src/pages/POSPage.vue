@@ -249,7 +249,7 @@ function resetCurrencyOptions(localCurrency) {
       label: localCurrency.unit.toUpperCase(),
       value: localCurrency.value,
     }
-    currencyOptions.value.push(localCurrencyOpt)
+    currencyOptions.value.unshift(localCurrencyOpt) // Add to the beginning
   }
 }
 
