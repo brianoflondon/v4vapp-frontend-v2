@@ -24,6 +24,7 @@
           :disable="false"
           flat
           round
+          dense
           :icon="modelValue?.fixedUser ? 'lock' : 'lock_open'"
           @click="toggleLock"
         />

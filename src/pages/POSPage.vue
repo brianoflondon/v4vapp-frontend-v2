@@ -1,19 +1,17 @@
 <template>
   <q-page>
-    <pre>
-      {{ hiveAccTo }}
-    </pre>
     <div class="flex column text-center items-center">
       <!-- Pay To bar -->
       <!-- Pre-selected user name from path -->
       <div
+        v-if="route.params.hiveAccTo"
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
       >
-        <div class="col-8">
+        <div class="col-9">
           <PosHeader />
         </div>
         <!-- Button to Show Currency settings -->
-        <div class="div col-4 q-px-sm" v-if="true">
+        <div class="div col-3 q-px-sm" v-if="true">
           <q-btn
             round
             @click="KeychainDialog.settings = !KeychainDialog.settings"
@@ -21,38 +19,25 @@
             ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
           </q-btn>
         </div>
-        <div class="col-8 q-px-sm q-pb-md" v-else>
+        <div class="col-12 q-px-sm q-pb-md" v-else>
           <!-- bookmark icon -->
           <div v-if="!hiveAccTo.valid">
             <q-icon name="bookmark" class="cursor-pointer" />
           </div>
           <div v-else>
             <a :href="`/pos/@${hiveAccTo.value}/`">
-              <q-icon name="bookmark" class="cursor-pointer" />
-              v4v.app/pos/@{{ hiveAccTo.value }}
+              <q-icon name="bookmark" class="cursor-pointer" />{{
+                `v4v.app/pos/@${hiveAccTo.value}`
+              }}
             </a>
           </div>
         </div>
       </div>
       <!-- Select a user and Local Currency Settings -->
-      <!--  -->
-      <!-- Fixed User Bookmark Link -->
       <div
-        class="div flex row pad-max-width full-width items-center q-pa-sm q-pb-md"
-        v-if="true"
+        class="div flex row pad-max-width full-width items-start q-pa-sm q-pt-lg q-pb-md"
+        v-else
       >
-        <div class="col-8 q-px-sm q-pb-md">
-          <!-- bookmark icon -->
-          <div v-if="!hiveAccTo.valid">
-            <q-icon name="bookmark" class="cursor-pointer" />
-          </div>
-          <div v-else>
-            <a :href="`/pos/@${hiveAccTo.value}/`">
-              <q-icon name="bookmark" class="cursor-pointer" />
-              v4v.app/pos/@{{ hiveAccTo.value }}
-            </a>
-          </div>
-        </div>
         <div class="col-9 q-px-sm">
           <div class="pad-max-width full-width">
             <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
@@ -61,31 +46,26 @@
           </div>
         </div>
         <!-- Button to Show Currency settings -->
-        <div class="div col-3 q-px-sm">
-          <q-btn
-            round
-            @click="KeychainDialog.settings = !KeychainDialog.settings"
-            icon="settings"
-            ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
-          </q-btn>
-          <q-btn
-            v-if="storeUser.hiveAccname"
-            class="full-width"
-            style="font-size: x-small; white-space: pre-line"
-            color="primary"
-            :label="useStoreUserButtonLabel"
-            @click="useLoggedInUser"
-            :disable="!storeUser.hiveAccname"
-          >
-            <q-tooltip>
-              Reset payment recipient to<br />
-              {{ storeUser.profileName }}<br />
-              @{{ storeUser.hiveAccname }}</q-tooltip
-            >
-          </q-btn>
-        </div>
-        <div v-if="true" class="div col-4 q-px-sm">
-          <q-btn label="Bk" @click="bookmarkSite"></q-btn>
+        <div class="div col-3 q-px-none row justify-start items-center">
+          <div class="q-px-xs">
+            <q-btn
+              round
+              dense
+              @click="KeychainDialog.settings = !KeychainDialog.settings"
+              icon="settings"
+              ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
+            </q-btn>
+          </div>
+          <div class="q-px-xs">
+            <q-btn dense round icon="bookmark" @click="bookmarkSite">
+              <q-tooltip>
+                <a :href="`/pos/@${hiveAccTo.value}/`">
+                  <q-icon name="bookmark" class="cursor-pointer" />
+                  v4v.app/pos/@{{ hiveAccTo.value }}
+                </a>
+              </q-tooltip>
+            </q-btn>
+          </div>
         </div>
       </div>
       <!-- Amount Input -->
@@ -180,6 +160,20 @@
         </div>
       </div>
       <!-- Settings area -->
+          <div class="flex row full-width pad-max-width">
+      <!-- Fixed User Bookmark Link -->
+      <div class="col-12 q-px-sm q-py-lg">
+        <!-- bookmark icon -->
+        <div v-if="!hiveAccTo.valid">
+        </div>
+        <div v-else>
+          <a :href="`/pos/@${hiveAccTo.value}/`">
+            <q-icon name="bookmark" class="cursor-pointer" />
+            v4v.app/pos/@{{ hiveAccTo.value }}
+          </a>
+        </div>
+      </div>
+    </div>
       <div class="full-width pad-max-width q-py-lg">
         <!-- Explanation what is this page box -->
         <div class="pad-max-width">
@@ -402,14 +396,18 @@ function bookmarkSite() {
   // Since browsers restrict adding bookmarks via script,
   // inform the user how to bookmark the page manually.
   // jump to a different url
-  window.location.href = "/pos/@" + hiveAccTo.value.value + "/bookmark"
-  alert(
-    "To bookmark this page, press " +
-      (navigator.userAgent.toLowerCase().indexOf("mac") != -1
-        ? "Command/Cmd"
-        : "CTRL") +
-      " + D on your keyboard."
-  )
+  window.location.href = "/pos/@" + hiveAccTo.value.value
+  // wait for the page to load
+  setTimeout(() => {
+    // scroll to the bottom of the page
+    alert(
+      "To bookmark this page, press " +
+        (navigator.userAgent.toLowerCase().indexOf("mac") != -1
+          ? "Command/Cmd"
+          : "CTRL") +
+        " + D on your keyboard."
+    )
+  }, 1000)
 }
 
 function parseLocalizedFloat(val) {
@@ -448,10 +446,6 @@ function updateCurrencySelected(val) {
 }
 
 function enterPressed() {}
-
-const useStoreUserButtonLabel = computed(() => {
-  return t("use") + "\n@" + storeUser.hiveAccname
-})
 
 // Watch the hiveAccTo for changes and update the storeUser.pos Object
 watch(hiveAccTo, async (val) => {
