@@ -1,6 +1,7 @@
 <template>
   <div>
     <q-input
+      :disable="modelValue?.fixedUser"
       ref="simpleHiveInput"
       v-model="simpleInput"
       :label="modelValue?.caption ? modelValue.caption : label"
@@ -16,6 +17,16 @@
         <q-avatar rounded size="md">
           <HiveAvatar :hiveAccname="avatarName" />
         </q-avatar>
+      </template>
+      <template v-slot:append>
+        <q-btn
+          class="no-disable"
+          :disable="false"
+          flat
+          round
+          :icon="modelValue?.fixedUser ? 'lock' : 'lock_open'"
+          @click="toggleLock"
+        />
       </template>
     </q-input>
   </div>
@@ -52,7 +63,7 @@
  * accounts, such as social media platforms, content management systems, or blockchain explorers.
  */
 
-import { onMounted, ref, watch } from "vue"
+import { ref, watch } from "vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useI18n } from "vue-i18n"
 import { useHiveProfile } from "src/use/useHive"
@@ -92,11 +103,22 @@ function clearInput() {
   ;(modelValue.label = ""),
     (modelValue.value = ""),
     (modelValue.caption = props.label),
-    (modelValue.valid = false)
+    (modelValue.valid = false),
+    (modelValue.fixedUser = false)
   simpleInput.value = ""
   isValidAccount.value = false
   simpleHiveInput.value.validate()
   avatarName.value = ""
+}
+
+function toggleLock() {
+  console.log("toggleLock")
+  console.log("modelValue", modelValue.value)
+  if (!modelValue.value) {
+    modelValue.value.fixedUser = false
+    return
+  }
+  modelValue.value.fixedUser = !modelValue.value.fixedUser
 }
 
 async function updateHiveAccTo(val) {
@@ -140,4 +162,17 @@ function setCaption(profileName) {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+// Ensure that the lock button is clickable always
+.q-input--disabled,
+.q-input--disabled .q-field__control,
+.q-input--disabled .q-field__prepend,
+.q-input--disabled .q-field__append {
+  opacity: 1 !important; /* Ensures the input doesn't appear dimmed */
+}
+
+.no-disable {
+  opacity: 1; /* Resetting opacity to full */
+  pointer-events: all; /* Ensuring it's clickable */
+}
+</style>

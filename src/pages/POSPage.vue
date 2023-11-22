@@ -1,42 +1,59 @@
 <template>
   <q-page>
     <div class="flex column text-center items-center">
+      <!-- toggle for fixed user or not -->
+      <div class="div flex row pad-max-width full-width items-center q-pa-sm">
+        <div class="col-8 q-px-sm">
+          <q-toggle
+            v-model="fixedUser"
+            label="Fixed User"
+            color="primary"
+            dense
+          />
+          <q-btn
+            flat
+            round
+            :icon="fixedUser ? 'lock' : 'lock_open'"
+            @click="toggleLock"
+          />
+        </div>
+      </div>
       <!-- Pay To bar -->
       <!-- Pre-selected user name from path -->
       <div
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
-        v-if="fixedUser"
       >
         <div class="col-8">
           <PosHeader />
         </div>
         <!-- Button to Show Currency settings -->
-        <div class="div col-4 q-px-sm">
+        <div class="div col-4 q-px-sm" v-if="true">
           <q-btn
-            :label="t('local_currency')"
-            class="full-width"
+            round
             @click="KeychainDialog.settings = !KeychainDialog.settings"
-          />
+            icon="settings"
+            ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
+          </q-btn>
+        </div>
+        <div class="col-8 q-px-sm q-pb-md" v-else>
+          <!-- bookmark icon -->
+          <div v-if="!hiveAccTo.valid">
+            <q-icon name="bookmark" class="cursor-pointer" />
+          </div>
+          <div v-else>
+            <a :href="`/pos/@${hiveAccTo.value}/`">
+              <q-icon name="bookmark" class="cursor-pointer" />
+              v4v.app/pos/@{{ hiveAccTo.value }}
+            </a>
+          </div>
         </div>
       </div>
-      <!-- Select a user -->
-      <div
-        v-if="false"
-        class="flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
-      >
-        <q-banner dense class="full-width bg-primary text-white">
-          <a :href="`pos/@${hiveAccTo.value}`">
-            v4v.app/pos/@{{ hiveAccTo.value }}
-          </a>
-          <template v-slot:action>
-            <q-btn flat color="white" label="Dismiss" />
-          </template>
-        </q-banner>
-      </div>
+      <!-- Select a user and Local Currency Settings -->
+      <!--  -->
       <!-- Fixed User Bookmark Link -->
       <div
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pb-md"
-        v-if="!fixedUser"
+        v-if="true"
       >
         <div class="col-8 q-px-sm q-pb-md">
           <!-- bookmark icon -->
@@ -53,16 +70,18 @@
         <div class="col-8 q-px-sm">
           <div class="pad-max-width full-width">
             <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
-            <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')" />
+            <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')">
+            </HiveInputAcc>
           </div>
         </div>
         <!-- Button to Show Currency settings -->
         <div class="div col-4 q-px-sm">
           <q-btn
-            :label="t('local_currency')"
-            class="full-width"
+            round
             @click="KeychainDialog.settings = !KeychainDialog.settings"
-          />
+            icon="settings"
+            ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
+          </q-btn>
           <q-btn
             v-if="storeUser.hiveAccname"
             class="full-width"
@@ -79,7 +98,7 @@
             >
           </q-btn>
         </div>
-        <div v-if="false" class="div col-4 q-px-sm">
+        <div v-if="true" class="div col-4 q-px-sm">
           <q-btn label="Bk" @click="bookmarkSite"></q-btn>
         </div>
       </div>
@@ -252,6 +271,17 @@ function resetCurrencyOptions(localCurrency) {
   }
 }
 
+function toggleLock() {
+  console.log("toggleLock", fixedUser.value)
+  console.log("hiveAccTo", hiveAccTo.value)
+  if (!hiveAccTo.value) {
+    fixedUser.value = false
+    return
+  }
+  hiveAccTo.value.fixedUser = !hiveAccTo.value.fixedUser
+  fixedUser.value = !fixedUser.value
+}
+
 watch(route, (to, from) => {
   // Code to execute on route change
   if (to.path === "/pos") {
@@ -322,6 +352,7 @@ onMounted(() => {
       value: username,
       caption: username,
       valid: true,
+      fixedUser: true,
     }
     fixedUser.value = true
   } else if (storeUser.pos?.hiveAccTo) {
