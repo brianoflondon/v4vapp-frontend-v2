@@ -160,22 +160,21 @@
         </div>
       </div>
       <!-- Settings area -->
-          <div class="flex row full-width pad-max-width">
-      <!-- Fixed User Bookmark Link -->
-      <div class="col-12 q-px-sm q-py-lg">
-        <!-- bookmark icon -->
-        <div v-if="!hiveAccTo.valid">
-        </div>
-        <div v-else>
-          <a :href="`/pos/@${hiveAccTo.value}/`">
-            <q-icon name="bookmark" class="cursor-pointer" />
-            v4v.app/pos/@{{ hiveAccTo.value }}
-          </a>
+      <div class="flex row full-width pad-max-width">
+        <!-- Fixed User Bookmark Link -->
+        <div class="col-12 q-px-sm q-py-lg">
+          <!-- bookmark icon -->
+          <div v-if="!hiveAccTo.valid"></div>
+          <div v-else>
+            <a :href="`/pos/@${hiveAccTo.value}/`">
+              <q-icon name="bookmark" class="cursor-pointer" />
+              v4v.app/pos/@{{ hiveAccTo.value }}
+            </a>
+          </div>
         </div>
       </div>
-    </div>
-      <div class="full-width pad-max-width q-py-lg">
-        <!-- Explanation what is this page box -->
+      <!-- Explanation what is this page box -->
+      <div class="full-width pad-max-width q-py-lg" v-if="false">
         <div class="pad-max-width">
           <ExplanationBox class="q-pt-md"></ExplanationBox>
         </div>
