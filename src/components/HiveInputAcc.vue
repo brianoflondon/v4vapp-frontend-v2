@@ -123,6 +123,7 @@ function toggleLock() {
 }
 
 async function updateHiveAccTo(val, fixed) {
+  console.log("updateHiveAccTo", val, fixed)
   if (!val) {
     clearInput()
     return
@@ -141,10 +142,10 @@ async function updateHiveAccTo(val, fixed) {
   if (result) {
     if (result?.metadata?.profile?.name) {
       modelValue.value.caption = setCaption(result?.metadata?.profile?.name)
-      modelValue.value.fixedUser = fixed
     } else {
       modelValue.value.caption = setCaption(val)
     }
+    modelValue.value.fixedUser = fixed
     modelValue.value.valid = true
     isValidAccount.value = true
     simpleHiveInput.value.validate()
