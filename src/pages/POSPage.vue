@@ -1,23 +1,9 @@
 <template>
   <q-page>
+    <pre>
+      {{ hiveAccTo }}
+    </pre>
     <div class="flex column text-center items-center">
-      <!-- toggle for fixed user or not -->
-      <div class="div flex row pad-max-width full-width items-center q-pa-sm">
-        <div class="col-8 q-px-sm">
-          <q-toggle
-            v-model="fixedUser"
-            label="Fixed User"
-            color="primary"
-            dense
-          />
-          <q-btn
-            flat
-            round
-            :icon="fixedUser ? 'lock' : 'lock_open'"
-            @click="toggleLock"
-          />
-        </div>
-      </div>
       <!-- Pay To bar -->
       <!-- Pre-selected user name from path -->
       <div
@@ -67,7 +53,7 @@
             </a>
           </div>
         </div>
-        <div class="col-8 q-px-sm">
+        <div class="col-9 q-px-sm">
           <div class="pad-max-width full-width">
             <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
             <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')">
@@ -75,7 +61,7 @@
           </div>
         </div>
         <!-- Button to Show Currency settings -->
-        <div class="div col-4 q-px-sm">
+        <div class="div col-3 q-px-sm">
           <q-btn
             round
             @click="KeychainDialog.settings = !KeychainDialog.settings"
@@ -217,13 +203,11 @@ import { tidyNumber } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 import POSSettingsDialog from "src/components/POSSettingsDialog.vue"
-import ListTransactions from "src/components/hive/ListTransactions.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
-import LocalCurrency from "src/components/utils/LocalCurrency.vue"
 import { useRoute } from "vue-router"
 import PosHeader from "src/components/hive/PosHeader.vue"
 import HiveInputAcc from "src/components/HiveInputAcc.vue"
@@ -231,11 +215,16 @@ import HiveInputAcc from "src/components/HiveInputAcc.vue"
 const route = useRoute()
 const q = useQuasar()
 const t = useI18n().t
-const fixedUser = ref(false)
 const currencySelected = ref("hbd")
 
 const storeUser = useStoreUser()
-const hiveAccTo = ref({ label: "", value: "", caption: "" })
+const hiveAccTo = ref({
+  label: "",
+  value: "",
+  caption: "",
+  fixedUser: false,
+  valid: false,
+})
 
 const KeychainDialog = ref({ show: false, settings: false })
 const CurrencyCalc = ref({
@@ -271,17 +260,6 @@ function resetCurrencyOptions(localCurrency) {
   }
 }
 
-function toggleLock() {
-  console.log("toggleLock", fixedUser.value)
-  console.log("hiveAccTo", hiveAccTo.value)
-  if (!hiveAccTo.value) {
-    fixedUser.value = false
-    return
-  }
-  hiveAccTo.value.fixedUser = !hiveAccTo.value.fixedUser
-  fixedUser.value = !fixedUser.value
-}
-
 watch(route, (to, from) => {
   // Code to execute on route change
   if (to.path === "/pos") {
@@ -294,10 +272,10 @@ watch(route, (to, from) => {
           label: storeUser.pos.hiveAccTo.label,
           value: storeUser.pos.hiveAccTo.value,
           caption: storeUser.pos.hiveAccTo.caption,
+          fixedUser: false,
         }
       }
     }, 100)
-    fixedUser.value = false
   }
 })
 
@@ -345,16 +323,19 @@ const isPaymentValid = computed(() => {
 })
 
 onMounted(() => {
+  console.log("onMounted")
+  console.log("route.params.hiveAccTo", route.params.hiveAccTo)
   if (route.params.hiveAccTo) {
+    console.log(hiveAccTo.value)
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
       label: username,
       value: username,
       caption: username,
-      valid: true,
-      fixedUser: true,
     }
-    fixedUser.value = true
+    hiveAccTo.value.fixedUser = true
+    hiveAccTo.value.valid = true
+    console.log(hiveAccTo.value)
   } else if (storeUser.pos?.hiveAccTo) {
     console.log(
       "no route params, but storeUser.pos.hiveAccTo",
@@ -364,6 +345,7 @@ onMounted(() => {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
       caption: storeUser.pos.hiveAccTo.caption,
+      fixedUser: false,
     }
   } else {
     console.log("no route params, no storeUser.pos.hiveAccTo")
@@ -400,6 +382,7 @@ function useLoggedInUser() {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
       caption: storeUser.profileName,
+      fixedUser: false,
     }
   }
 }
@@ -465,17 +448,6 @@ function updateCurrencySelected(val) {
 }
 
 function enterPressed() {}
-
-function setCaption(profileName) {
-  const prefix = t("pay_to")
-
-  // Check if profileName already starts with the prefix
-  if (profileName.startsWith(prefix)) {
-    return profileName
-  }
-
-  return prefix + " " + profileName
-}
 
 const useStoreUserButtonLabel = computed(() => {
   return t("use") + "\n@" + storeUser.hiveAccname

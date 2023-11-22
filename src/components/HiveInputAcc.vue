@@ -1,7 +1,7 @@
 <template>
   <div>
     <q-input
-      :disable="modelValue?.fixedUser"
+      :readonly="modelValue?.fixedUser"
       ref="simpleHiveInput"
       v-model="simpleInput"
       :label="modelValue?.caption ? modelValue.caption : label"
@@ -84,6 +84,7 @@ const modelValue = defineModel({
   value: "",
   caption: "",
   valid: false,
+  fixedUser: false,
 })
 const simpleInput = ref("")
 const isValidAccount = ref(false)
@@ -95,7 +96,7 @@ const { t } = useI18n()
 watch(modelValue, (val) => {
   if (modelValue.value.value != simpleInput.value) {
     simpleInput.value = modelValue.value.value
-    updateHiveAccTo(simpleInput.value)
+    updateHiveAccTo(simpleInput.value, modelValue.value.fixedUser)
   }
 })
 
@@ -121,7 +122,7 @@ function toggleLock() {
   modelValue.value.fixedUser = !modelValue.value.fixedUser
 }
 
-async function updateHiveAccTo(val) {
+async function updateHiveAccTo(val, fixed) {
   if (!val) {
     clearInput()
     return
@@ -140,6 +141,7 @@ async function updateHiveAccTo(val) {
   if (result) {
     if (result?.metadata?.profile?.name) {
       modelValue.value.caption = setCaption(result?.metadata?.profile?.name)
+      modelValue.value.fixedUser = fixed
     } else {
       modelValue.value.caption = setCaption(val)
     }
@@ -162,17 +164,4 @@ function setCaption(profileName) {
 }
 </script>
 
-<style lang="scss" scoped>
-// Ensure that the lock button is clickable always
-.q-input--disabled,
-.q-input--disabled .q-field__control,
-.q-input--disabled .q-field__prepend,
-.q-input--disabled .q-field__append {
-  opacity: 1 !important; /* Ensures the input doesn't appear dimmed */
-}
-
-.no-disable {
-  opacity: 1; /* Resetting opacity to full */
-  pointer-events: all; /* Ensuring it's clickable */
-}
-</style>
+<style lang="scss" scoped></style>
