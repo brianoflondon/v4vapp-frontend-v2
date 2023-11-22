@@ -49,12 +49,13 @@ export const useCoingeckoStore = defineStore("coingecko", {
       try {
         const url = `${coinGeckoApi}/simple/price`
         const params = {
-          ids: "hive,hive_dollar,btc",
+          ids: "hive,hive_dollar,btc,usd",
           vs_currencies: `btc,usd,eur,${currency}`,
         }
         const res = await axios.get(url, { params })
-
         if (res.status === 200) {
+          res.data.hive_dollar = res.data.usd
+          console.log(res)
           this.cacheDataRates(cacheKey, res.data)
           return res.data
         }
