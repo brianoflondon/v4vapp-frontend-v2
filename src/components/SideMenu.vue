@@ -10,6 +10,10 @@
     <div class="q-pa-md">
       <LocalCurrency />
     </div>
+    <!-- Explanation what is this page box -->
+    <div class="q-py-lg">
+      <ExplanationBox class="q-pt-md"></ExplanationBox>
+    </div>
     <div class="q-pa-md text-caption">{{ appName }} - {{ appVersion }}</div>
   </div>
 </template>
@@ -23,6 +27,7 @@ import HiveLogin from "components/HiveLogin.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
+import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()
@@ -33,16 +38,16 @@ const hiveAccObj = ref()
 const t = useI18n().t
 const linkList = ref([
   {
-    title: t("receive"),
-    caption: t("point_of_sale"),
-    icon: "fa-solid fa-cash-register",
-    link: "/pos",
-  },
-  {
     title: t("lightning"),
     caption: t("lightning"),
     icon: "fa-sharp fa-solid fa-bolt",
     link: "/lnd",
+  },
+  {
+    title: t("receive"),
+    caption: t("point_of_sale"),
+    icon: "fa-solid fa-cash-register",
+    link: "/pos",
   },
   {
     title: t("hive"),

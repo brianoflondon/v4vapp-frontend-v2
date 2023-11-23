@@ -4,88 +4,73 @@
       <!-- Pay To bar -->
       <!-- Pre-selected user name from path -->
       <div
+        v-if="route.params.hiveAccTo"
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
-        v-if="fixedUser"
       >
-        <div class="col-8">
+        <div class="col-9">
           <PosHeader />
         </div>
         <!-- Button to Show Currency settings -->
-        <div class="div col-4 q-px-sm">
+        <div class="div col-3 q-px-sm" v-if="true">
           <q-btn
-            :label="t('local_currency')"
-            class="full-width"
+            round
             @click="KeychainDialog.settings = !KeychainDialog.settings"
-          />
+            icon="settings"
+            ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
+          </q-btn>
         </div>
-      </div>
-      <!-- Select a user -->
-      <div
-        v-if="false"
-        class="flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
-      >
-        <q-banner dense class="full-width bg-primary text-white">
-          <a :href="`pos/@${hiveAccTo.value}`">
-            v4v.app/pos/@{{ hiveAccTo.value }}
-          </a>
-          <template v-slot:action>
-            <q-btn flat color="white" label="Dismiss" />
-          </template>
-        </q-banner>
-      </div>
-      <!-- Fixed User Bookmark Link -->
-      <div
-        class="div flex row pad-max-width full-width items-center q-pa-sm q-pb-md"
-        v-if="!fixedUser"
-      >
-        <div class="col-8 q-px-sm q-pb-md">
+        <div class="col-12 q-px-sm q-pb-md" v-else>
           <!-- bookmark icon -->
           <div v-if="!hiveAccTo.valid">
             <q-icon name="bookmark" class="cursor-pointer" />
           </div>
           <div v-else>
             <a :href="`/pos/@${hiveAccTo.value}/`">
-              <q-icon name="bookmark" class="cursor-pointer" />
-              v4v.app/pos/@{{ hiveAccTo.value }}
+              <q-icon name="bookmark" class="cursor-pointer" />{{
+                `v4v.app/pos/@${hiveAccTo.value}`
+              }}
             </a>
           </div>
         </div>
-        <div class="col-8 q-px-sm">
+      </div>
+      <!-- Select a user and Local Currency Settings -->
+      <div
+        class="div flex row pad-max-width full-width items-start q-pa-sm q-pt-lg q-pb-md"
+        v-else
+      >
+        <div class="col-9 q-px-sm">
           <div class="pad-max-width full-width">
             <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
-            <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')" />
+            <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')">
+            </HiveInputAcc>
           </div>
         </div>
         <!-- Button to Show Currency settings -->
-        <div class="div col-4 q-px-sm">
-          <q-btn
-            :label="t('local_currency')"
-            class="full-width"
-            @click="KeychainDialog.settings = !KeychainDialog.settings"
-          />
-          <q-btn
-            v-if="storeUser.hiveAccname"
-            class="full-width"
-            style="font-size: x-small; white-space: pre-line"
-            color="primary"
-            :label="useStoreUserButtonLabel"
-            @click="useLoggedInUser"
-            :disable="!storeUser.hiveAccname"
-          >
-            <q-tooltip>
-              Reset payment recipient to<br />
-              {{ storeUser.profileName }}<br />
-              @{{ storeUser.hiveAccname }}</q-tooltip
-            >
-          </q-btn>
-        </div>
-        <div v-if="false" class="div col-4 q-px-sm">
-          <q-btn label="Bk" @click="bookmarkSite"></q-btn>
+        <div class="div col-3 q-px-none row justify-start items-center">
+          <div class="q-px-xs">
+            <q-btn
+              round
+              dense
+              @click="KeychainDialog.settings = !KeychainDialog.settings"
+              icon="settings"
+              ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
+            </q-btn>
+          </div>
+          <div class="q-px-xs">
+            <q-btn dense round icon="bookmark" @click="bookmarkSite">
+              <q-tooltip>
+                <a :href="`/pos/@${hiveAccTo.value}/`">
+                  <q-icon name="bookmark" class="cursor-pointer" />
+                  v4v.app/pos/@{{ hiveAccTo.value }}
+                </a>
+              </q-tooltip>
+            </q-btn>
+          </div>
         </div>
       </div>
-      <!-- Display Area -->
+      <!-- Amount Input -->
       <div
-        class="flex row items-center amount-input-area pad-max-width full-width q-pa-sm"
+        class="flex row items-baseline amount-input-area pad-max-width full-width q-pa-sm"
       >
         <div class="col-9 q-pa-sm">
           <q-input
@@ -100,6 +85,7 @@
             @keyup.enter="enterPressed()"
             @keyup.esc="clearAmount(false)"
             :input-style="{ 'text-align': 'right' }"
+            :rules="[(val) => !!val || t('no_amount')]"
           >
             <!-- Use my Own code for the clearable button -->
             <template v-if="amount.txt" v-slot:append>
@@ -174,8 +160,21 @@
         </div>
       </div>
       <!-- Settings area -->
-      <div class="full-width pad-max-width q-py-lg">
-        <!-- Explanation what is this page box -->
+      <div class="flex row full-width pad-max-width">
+        <!-- Fixed User Bookmark Link -->
+        <div class="col-12 q-px-sm q-py-lg">
+          <!-- bookmark icon -->
+          <div v-if="!hiveAccTo.valid"></div>
+          <div v-else>
+            <a :href="`/pos/@${hiveAccTo.value}/`">
+              <q-icon name="bookmark" class="cursor-pointer" />
+              v4v.app/pos/@{{ hiveAccTo.value }}
+            </a>
+          </div>
+        </div>
+      </div>
+      <!-- Explanation what is this page box -->
+      <div class="full-width pad-max-width q-py-lg" v-if="false">
         <div class="pad-max-width">
           <ExplanationBox class="q-pt-md"></ExplanationBox>
         </div>
@@ -197,13 +196,11 @@ import { tidyNumber } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 import POSSettingsDialog from "src/components/POSSettingsDialog.vue"
-import ListTransactions from "src/components/hive/ListTransactions.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
-import LocalCurrency from "src/components/utils/LocalCurrency.vue"
 import { useRoute } from "vue-router"
 import PosHeader from "src/components/hive/PosHeader.vue"
 import HiveInputAcc from "src/components/HiveInputAcc.vue"
@@ -211,11 +208,16 @@ import HiveInputAcc from "src/components/HiveInputAcc.vue"
 const route = useRoute()
 const q = useQuasar()
 const t = useI18n().t
-const fixedUser = ref(false)
 const currencySelected = ref("hbd")
 
 const storeUser = useStoreUser()
-const hiveAccTo = ref({ label: "", value: "", caption: "" })
+const hiveAccTo = ref({
+  label: "",
+  value: "",
+  caption: "",
+  fixedUser: false,
+  valid: false,
+})
 
 const KeychainDialog = ref({ show: false, settings: false })
 const CurrencyCalc = ref({
@@ -247,7 +249,7 @@ function resetCurrencyOptions(localCurrency) {
       label: localCurrency.unit.toUpperCase(),
       value: localCurrency.value,
     }
-    currencyOptions.value.push(localCurrencyOpt)
+    currencyOptions.value.unshift(localCurrencyOpt) // Add to the beginning
   }
 }
 
@@ -263,10 +265,10 @@ watch(route, (to, from) => {
           label: storeUser.pos.hiveAccTo.label,
           value: storeUser.pos.hiveAccTo.value,
           caption: storeUser.pos.hiveAccTo.caption,
+          fixedUser: false,
         }
       }
     }, 100)
-    fixedUser.value = false
   }
 })
 
@@ -305,36 +307,28 @@ const isPaymentValid = computed(() => {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
   if (amount.value.num === 0 || isNaN(amount.value.num)) {
-    q.notify({
-      message: t("no_amount"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
     return false
   }
   if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
-    q.notify({
-      message: t("no_account"),
-      type: "negative",
-      position: "top",
-      timeout: 2000,
-    })
     return false
   }
   return true
 })
 
 onMounted(() => {
+  console.log("onMounted")
+  console.log("route.params.hiveAccTo", route.params.hiveAccTo)
   if (route.params.hiveAccTo) {
+    console.log(hiveAccTo.value)
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
       label: username,
       value: username,
       caption: username,
-      valid: true,
     }
-    fixedUser.value = true
+    hiveAccTo.value.fixedUser = true
+    hiveAccTo.value.valid = true
+    console.log(hiveAccTo.value)
   } else if (storeUser.pos?.hiveAccTo) {
     console.log(
       "no route params, but storeUser.pos.hiveAccTo",
@@ -344,6 +338,7 @@ onMounted(() => {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
       caption: storeUser.pos.hiveAccTo.caption,
+      fixedUser: false,
     }
   } else {
     console.log("no route params, no storeUser.pos.hiveAccTo")
@@ -380,6 +375,7 @@ function useLoggedInUser() {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
       caption: storeUser.profileName,
+      fixedUser: false,
     }
   }
 }
@@ -399,14 +395,18 @@ function bookmarkSite() {
   // Since browsers restrict adding bookmarks via script,
   // inform the user how to bookmark the page manually.
   // jump to a different url
-  window.location.href = "/pos/@" + hiveAccTo.value.value + "/bookmark"
-  alert(
-    "To bookmark this page, press " +
-      (navigator.userAgent.toLowerCase().indexOf("mac") != -1
-        ? "Command/Cmd"
-        : "CTRL") +
-      " + D on your keyboard."
-  )
+  window.location.href = "/pos/@" + hiveAccTo.value.value
+  // wait for the page to load
+  setTimeout(() => {
+    // scroll to the bottom of the page
+    alert(
+      "To bookmark this page, press " +
+        (navigator.userAgent.toLowerCase().indexOf("mac") != -1
+          ? "Command/Cmd"
+          : "CTRL") +
+        " + D on your keyboard."
+    )
+  }, 1000)
 }
 
 function parseLocalizedFloat(val) {
@@ -445,21 +445,6 @@ function updateCurrencySelected(val) {
 }
 
 function enterPressed() {}
-
-function setCaption(profileName) {
-  const prefix = t("pay_to")
-
-  // Check if profileName already starts with the prefix
-  if (profileName.startsWith(prefix)) {
-    return profileName
-  }
-
-  return prefix + " " + profileName
-}
-
-const useStoreUserButtonLabel = computed(() => {
-  return t("use") + "\n@" + storeUser.hiveAccname
-})
 
 // Watch the hiveAccTo for changes and update the storeUser.pos Object
 watch(hiveAccTo, async (val) => {

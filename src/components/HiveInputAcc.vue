@@ -1,6 +1,8 @@
 <template>
   <div>
     <q-input
+      :readonly="modelValue?.fixedUser"
+      ref="simpleHiveInput"
       v-model="simpleInput"
       :label="modelValue?.caption ? modelValue.caption : label"
       map-options
@@ -9,11 +11,23 @@
       clearable
       @keydown.esc="clearInput"
       debounce="500"
+      :rules="[(val) => val === '' || isValidAccount || t('no_account')]"
     >
       <template v-slot:prepend>
         <q-avatar rounded size="md">
           <HiveAvatar :hiveAccname="avatarName" />
         </q-avatar>
+      </template>
+      <template v-slot:append>
+        <q-btn
+          class="no-disable"
+          :disable="false"
+          flat
+          round
+          dense
+          :icon="modelValue?.fixedUser ? 'lock' : 'lock_open'"
+          @click="toggleLock"
+        />
       </template>
     </q-input>
   </div>
@@ -50,7 +64,7 @@
  * accounts, such as social media platforms, content management systems, or blockchain explorers.
  */
 
-import { onMounted, ref, watch } from "vue"
+import { ref, watch } from "vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useI18n } from "vue-i18n"
 import { useHiveProfile } from "src/use/useHive"
@@ -71,14 +85,19 @@ const modelValue = defineModel({
   value: "",
   caption: "",
   valid: false,
+  fixedUser: false,
 })
 const simpleInput = ref("")
+const isValidAccount = ref(false)
 const avatarName = ref("")
+const simpleHiveInput = ref(null)
+
+const { t } = useI18n()
 
 watch(modelValue, (val) => {
   if (modelValue.value.value != simpleInput.value) {
     simpleInput.value = modelValue.value.value
-    updateHiveAccTo(simpleInput.value)
+    updateHiveAccTo(simpleInput.value, modelValue.value.fixedUser)
   }
 })
 
@@ -86,12 +105,26 @@ function clearInput() {
   ;(modelValue.label = ""),
     (modelValue.value = ""),
     (modelValue.caption = props.label),
-    (modelValue.valid = false)
+    (modelValue.valid = false),
+    (modelValue.fixedUser = false)
   simpleInput.value = ""
+  isValidAccount.value = false
+  simpleHiveInput.value.validate()
   avatarName.value = ""
 }
 
-async function updateHiveAccTo(val) {
+function toggleLock() {
+  console.log("toggleLock")
+  console.log("modelValue", modelValue.value)
+  if (!modelValue.value) {
+    modelValue.value.fixedUser = false
+    return
+  }
+  modelValue.value.fixedUser = !modelValue.value.fixedUser
+}
+
+async function updateHiveAccTo(val, fixed) {
+  console.log("updateHiveAccTo", val, fixed)
   if (!val) {
     clearInput()
     return
@@ -102,7 +135,10 @@ async function updateHiveAccTo(val) {
     value: val,
     caption: val,
   }
+  isValidAccount.value = false
   avatarName.value = val
+  simpleHiveInput.value.validate()
+
   const result = await useHiveProfile(val)
   if (result) {
     if (result?.metadata?.profile?.name) {
@@ -110,7 +146,10 @@ async function updateHiveAccTo(val) {
     } else {
       modelValue.value.caption = setCaption(val)
     }
+    modelValue.value.fixedUser = fixed
     modelValue.value.valid = true
+    isValidAccount.value = true
+    simpleHiveInput.value.validate()
   }
 }
 
