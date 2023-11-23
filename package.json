@@ -13,7 +13,7 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@quasar/extras": "^1.16.7",
+    "@quasar/extras": "^1.16.8",
     "@vueuse/core": "^10.1.2",
     "axios": "^1.2.1",
     "hive-auth-wrapper": "^1.0.0",
@@ -23,16 +23,16 @@
     "qr-code-styling": "^1.6.0-rc.1",
     "qrcode": "^1.5.3",
     "qrcode-reader-vue3": "^3.1.2",
-    "quasar": "^2.13.0",
+    "quasar": "^2.14.0",
     "uuid": "^9.0.0",
-    "vue": "^3.3.4",
-    "vue-i18n": "^9.0.0",
-    "vue-qrcode-reader": "^5.3.4",
-    "vue-router": "^4.0.0"
+    "vue": "^3.3.8",
+    "vue-i18n": "^9.7.1",
+    "vue-qrcode-reader": "^5.4.1",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
-    "@intlify/vite-plugin-vue-i18n": "^3.3.1",
-    "@quasar/app-vite": "^1.6.2",
+    "@intlify/vite-plugin-vue-i18n": "^6.0.3",
+    "@quasar/app-vite": "^1.7.0",
     "@types/qrcode": "^1.5.1",
     "autoprefixer": "^10.4.2",
     "eslint": "^8.10.0",
