@@ -49,7 +49,7 @@ const currencyOptionsFiltered = ref([])
 const currency = ref({ label: "US Dollar", value: "usd" })
 
 // This is where the actual numeric value is stored
-const fixedRate = ref(0)
+const fixedRate = ref(null)
 
 const formattedFixedRate = computed({
   get: () => {
@@ -62,8 +62,8 @@ const formattedFixedRate = computed({
       fixedRate.value = parseFloat(value)
       storeUser.pos.fixedRate = fixedRate.value
     } else {
-      fixedRate.value = exchangeRate()
-      storeUser.pos.fixedRate = fixedRate.value
+      fixedRate.value = null
+      storeUser.pos.fixedRate = null
     }
   },
 })
@@ -71,7 +71,7 @@ const formattedFixedRate = computed({
 function exchangeRate() {
   if (!coingeckoRates.value[currency.value?.value]?.value) {
     // set the value to 1 USD if the currency is not found
-    return 1.0
+    return null
   }
   return (
     coingeckoRates.value[currency.value.value]?.value /
@@ -84,7 +84,7 @@ const usdToCurrency = computed(() => {
     return t("set_rate") + ": $1USD = " + currency.value.unit
   }
   return (
-    t("set_rate") +
+    t("market_rate") +
     ": $1USD = " +
     currency.value.unit +
     " " +
@@ -158,7 +158,7 @@ onMounted(async () => {
   if (storeUser.pos.fixedRate) {
     fixedRate.value = parseFloat(storeUser.pos.fixedRate)
   } else {
-    fixedRate.value = exchangeRate().toFixed(2)
+    fixedRate.value = null
   }
 })
 </script>

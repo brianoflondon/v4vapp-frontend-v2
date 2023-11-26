@@ -8,7 +8,7 @@
       "type": "chrome",
       "request": "launch",
       "name": "PWA: chrome",
-      "url": "http://localhost:9200",
+      "url": "http://127.0.0.1:9200",
       "webRoot": "${workspaceFolder}/src",
       // "breakOnLoad": true,
       "sourceMapPathOverrides": {

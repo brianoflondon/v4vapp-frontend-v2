@@ -96,6 +96,14 @@
               />
             </template>
           </q-input>
+          <div
+            v-if="storeUser.pos.fixedRate"
+            dense
+            class="q-pa-none bg-primary text-white fixed-rate-banner"
+            style="font-size: 0.7rem"
+          >
+            {{ isExchangeRateFixed }}
+          </div>
         </div>
         <!-- Currency Selector -->
         <div class="col-3 q-pa-sm amount-input-area">
@@ -301,6 +309,19 @@ watch(
     updateAmounts(amount.value.txt)
   }
 )
+
+const isExchangeRateFixed = computed(() => {
+  // Return a label for use on the amount entry field indicating if the exchange rate is set and fixed in the settings dialog
+  if (storeUser.pos.fixedRate) {
+    return (
+      t("set_rate") +
+      ": $1USD = " +
+      storeUser.localCurrency.unit.toUpperCase() +
+      tidyNumber(storeUser.pos.fixedRate, 2)
+    )
+  }
+  return t("market_rate")
+})
 
 const isPaymentValid = computed(() => {
   // Returns True if this payment screen can produce a QR code
@@ -519,5 +540,9 @@ watch(
 .special-buttons {
   width: 100%;
   height: 100%;
+}
+
+.fixed-rate-banner {
+  font-size: 0.7rem;
 }
 </style>
