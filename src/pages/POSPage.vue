@@ -96,25 +96,29 @@
               />
             </template>
           </q-input>
-          <div
-            v-if="storeUser.pos.fixedRate"
-            dense
-            class="q-pa-none bg-primary text-white fixed-rate-banner"
-            style="font-size: 0.7rem"
-          >
-            {{ isExchangeRateFixed }}
-          </div>
         </div>
         <!-- Currency Selector -->
         <div class="col-3 q-pa-sm amount-input-area">
           <q-select
-            v-model="currencySelected"
-            :options="currencyOptions"
-            label="Currency"
-            map-options
-            @update:model-value="(val) => updateCurrencySelected(val)"
-            dense
+          v-model="currencySelected"
+          :options="currencyOptions"
+          label="Currency"
+          map-options
+          @update:model-value="(val) => updateCurrencySelected(val)"
+          dense
           />
+        </div>
+        <!-- Show fixed rate Bar -->
+        <div
+          v-if="
+            storeUser.pos.fixedRate &&
+            currencySelected === storeUser.localCurrency.value
+          "
+          dense
+          @click="KeychainDialog.settings = !KeychainDialog.settings"
+          class="q-pa-none pad-max-width full-width bg-primary text-white fixed-rate-banner"
+        >
+          {{ exchangeRateMessage }}
         </div>
       </div>
       <!-- Memo -->
@@ -212,6 +216,7 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useRoute } from "vue-router"
 import PosHeader from "src/components/hive/PosHeader.vue"
 import HiveInputAcc from "src/components/HiveInputAcc.vue"
+import { store } from "quasar/wrappers"
 
 const route = useRoute()
 const q = useQuasar()
@@ -310,7 +315,7 @@ watch(
   }
 )
 
-const isExchangeRateFixed = computed(() => {
+const exchangeRateMessage = computed(() => {
   // Return a label for use on the amount entry field indicating if the exchange rate is set and fixed in the settings dialog
   if (storeUser.pos.fixedRate) {
     return (
@@ -543,6 +548,6 @@ watch(
 }
 
 .fixed-rate-banner {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 </style>
