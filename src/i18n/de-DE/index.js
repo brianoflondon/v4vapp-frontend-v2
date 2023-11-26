@@ -37,7 +37,7 @@ export default {
   hive: 'Hive',
   transfer: 'Übertragung',
   not_found: 'nicht gefunden',
-  lightning_failed: 'Lightning payment failed',
+  lightning_failed: 'Lightning-Zahlung fehlgeschlagen',
   Progress: 'In Umsetzung',
   // Login
   keychain_not_installed: 'Keychain ist nicht installiert',
@@ -146,7 +146,7 @@ export default {
   // Point of Sale POS
   point_of_sale: 'Kasse (POS)',
   charge: 'Tarif',
-  set_rate: 'Set Rate',
+  set_rate: 'Rate einstellen',
   // as in charge a customer
   payment: 'Zahlung',
   scan_to_send: 'Scannen Sie diesen Code um zu senden',
