@@ -317,7 +317,6 @@ const isPaymentValid = computed(() => {
 
 onMounted(() => {
   if (route.params.hiveAccTo) {
-    console.log(hiveAccTo.value)
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
       label: username,
@@ -326,12 +325,7 @@ onMounted(() => {
     }
     hiveAccTo.value.fixedUser = true
     hiveAccTo.value.valid = true
-    console.log(hiveAccTo.value)
   } else if (storeUser.pos?.hiveAccTo) {
-    console.log(
-      "no route params, but storeUser.pos.hiveAccTo",
-      storeUser.pos.hiveAccTo
-    )
     hiveAccTo.value = {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
@@ -339,13 +333,9 @@ onMounted(() => {
       fixedUser: false,
     }
   } else {
-    console.log("no route params, no storeUser.pos.hiveAccTo")
     useLoggedInUser()
   }
   // Is there a local currency set? Add it to
-  console.log("storeUser.localCurrency", storeUser.localCurrency)
-  console.log("storeUser.pos.currencySelected", storeUser.pos.currencySelected)
-  console.log("currencySelected.value", currencySelected.value)
   if (storeUser.localCurrency) {
     resetCurrencyOptions(storeUser.localCurrency)
   }
@@ -354,17 +344,9 @@ onMounted(() => {
     CurrencyCalc.value.currency = currencySelected.value
   } else {
     // give me the first item in the currencyOptions list
-    console.log(
-      "first time setting currencySelected to",
-      currencyOptions.value[0].value
-    )
     currencySelected.value = currencyOptions.value[0].value
     storeUser.pos.currencySelected = currencySelected.value
   }
-  console.log("After -------------------------")
-  console.log("storeUser.localCurrency", storeUser.localCurrency)
-  console.log("storeUser.pos.currencySelected", storeUser.pos.currencySelected)
-  console.log("currencySelected.value", currencySelected.value)
 })
 
 function extractUsernameFromRouteParam(routeParam) {
