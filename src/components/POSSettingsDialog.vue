@@ -11,7 +11,7 @@
         <!-- Settings area -->
         <div>
           <!-- List of received transactions -->
-          <div class="q-px-md q-py-xs">
+          <div class="q-px-xs q-py-xs">
             <div class="pad-max-width">
               <LocalCurrency />
             </div>
@@ -19,9 +19,9 @@
         </div>
       </q-card-section>
       <q-card-section>
-        <div class="q-px-md q-py-xs">
+        <div class="q-px-none q-py-xs">
           <q-expansion-item
-            class="full-width"
+            class=""
             expand-separator
             :label="t('list_received_payments')"
           >
