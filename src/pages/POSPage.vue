@@ -102,7 +102,7 @@
           <q-select
             v-model="currencySelected"
             :options="currencyOptions"
-            label="Currency"
+            :label="$t('currency')"
             map-options
             @update:model-value="(val) => updateCurrencySelected(val)"
             dense
@@ -119,7 +119,12 @@
       </div>
       <!-- Memo -->
       <div class="memo-input flex pad-max-width full-width q-px-md q-py-xs">
-        <q-input clearable v-model="memoInput" class="full-width" label="Memo">
+        <q-input
+          clearable
+          v-model="memoInput"
+          class="full-width"
+          :label="t('memo')"
+        >
         </q-input>
       </div>
       <!-- Pay buttons -->
@@ -398,16 +403,16 @@ function bookmarkSite() {
   // jump to a different url
   window.location.href = "/pos/@" + hiveAccTo.value.value
   // wait for the page to load
-  setTimeout(() => {
-    // scroll to the bottom of the page
-    alert(
-      "To bookmark this page, press " +
-        (navigator.userAgent.toLowerCase().indexOf("mac") != -1
-          ? "Command/Cmd"
-          : "CTRL") +
-        " + D on your keyboard."
-    )
-  }, 1000)
+  // setTimeout(() => {
+  //   // scroll to the bottom of the page
+  //   alert(
+  //     "To bookmark this page, press " +
+  //       (navigator.userAgent.toLowerCase().indexOf("mac") != -1
+  //         ? "Command/Cmd"
+  //         : "CTRL") +
+  //       " + D on your keyboard."
+  //   )
+  // }, 1000)
 }
 
 function parseLocalizedFloat(val) {

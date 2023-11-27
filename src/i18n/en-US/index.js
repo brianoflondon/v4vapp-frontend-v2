@@ -21,6 +21,7 @@ export default {
   from: "from",
   to: "to",
   local_currency: "Local Currency",
+  currency: "Currency",
   // Dark Mode Selector
   change_light: "Change to light mode",
   change_dark: "Change to dark mode",
