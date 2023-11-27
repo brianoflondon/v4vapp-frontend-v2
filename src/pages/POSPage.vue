@@ -100,26 +100,22 @@
         <!-- Currency Selector -->
         <div class="col-3 q-pa-sm amount-input-area">
           <q-select
-          v-model="currencySelected"
-          :options="currencyOptions"
-          label="Currency"
-          map-options
-          @update:model-value="(val) => updateCurrencySelected(val)"
-          dense
+            v-model="currencySelected"
+            :options="currencyOptions"
+            label="Currency"
+            map-options
+            @update:model-value="(val) => updateCurrencySelected(val)"
+            dense
           />
         </div>
-        <!-- Show fixed rate Bar -->
-        <div
+        <!-- Show fixed set rate Bar -->
+        <SetRateBar
           v-if="
             storeUser.pos.fixedRate &&
             currencySelected === storeUser.localCurrency.value
           "
-          dense
           @click="KeychainDialog.settings = !KeychainDialog.settings"
-          class="q-pa-none pad-max-width full-width bg-primary text-white fixed-rate-banner"
-        >
-          {{ exchangeRateMessage }}
-        </div>
+        />
       </div>
       <!-- Memo -->
       <div class="memo-input flex pad-max-width full-width q-px-md q-py-xs">
@@ -209,6 +205,7 @@ import { useQuasar } from "quasar"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 import POSSettingsDialog from "src/components/POSSettingsDialog.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
+import SetRateBar from "src/components/utils/SetRateBar.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
@@ -216,7 +213,6 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useRoute } from "vue-router"
 import PosHeader from "src/components/hive/PosHeader.vue"
 import HiveInputAcc from "src/components/HiveInputAcc.vue"
-import { store } from "quasar/wrappers"
 
 const route = useRoute()
 const q = useQuasar()
@@ -314,19 +310,6 @@ watch(
     updateAmounts(amount.value.txt)
   }
 )
-
-const exchangeRateMessage = computed(() => {
-  // Return a label for use on the amount entry field indicating if the exchange rate is set and fixed in the settings dialog
-  if (storeUser.pos.fixedRate) {
-    return (
-      t("set_rate") +
-      ": $1USD = " +
-      storeUser.localCurrency.unit.toUpperCase() +
-      tidyNumber(storeUser.pos.fixedRate, 2)
-    )
-  }
-  return t("market_rate")
-})
 
 const isPaymentValid = computed(() => {
   // Returns True if this payment screen can produce a QR code
@@ -466,7 +449,6 @@ function enterPressed() {}
 
 // Watch the hiveAccTo for changes and update the storeUser.pos Object
 watch(hiveAccTo, async (val) => {
-  console.debug("hiveAccTo", val)
   KeychainDialog.value.hiveAccTo = val.value
   storeUser.pos.hiveAccTo = {
     label: val.label,
@@ -545,9 +527,5 @@ watch(
 .special-buttons {
   width: 100%;
   height: 100%;
-}
-
-.fixed-rate-banner {
-  font-size: 0.8rem;
 }
 </style>
