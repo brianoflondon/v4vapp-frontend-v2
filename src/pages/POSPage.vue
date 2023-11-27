@@ -102,16 +102,29 @@
           <q-select
             v-model="currencySelected"
             :options="currencyOptions"
-            label="Currency"
+            :label="$t('currency')"
             map-options
             @update:model-value="(val) => updateCurrencySelected(val)"
             dense
           />
         </div>
+        <!-- Show fixed set rate Bar -->
+        <SetRateBar
+          v-if="
+            storeUser.pos.fixedRate &&
+            currencySelected === storeUser.localCurrency.value
+          "
+          @click="KeychainDialog.settings = !KeychainDialog.settings"
+        />
       </div>
       <!-- Memo -->
       <div class="memo-input flex pad-max-width full-width q-px-md q-py-xs">
-        <q-input clearable v-model="memoInput" class="full-width" label="Memo">
+        <q-input
+          clearable
+          v-model="memoInput"
+          class="full-width"
+          :label="t('memo')"
+        >
         </q-input>
       </div>
       <!-- Pay buttons -->
@@ -197,6 +210,7 @@ import { useQuasar } from "quasar"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 import POSSettingsDialog from "src/components/POSSettingsDialog.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
+import SetRateBar from "src/components/utils/SetRateBar.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
@@ -316,10 +330,7 @@ const isPaymentValid = computed(() => {
 })
 
 onMounted(() => {
-  console.log("onMounted")
-  console.log("route.params.hiveAccTo", route.params.hiveAccTo)
   if (route.params.hiveAccTo) {
-    console.log(hiveAccTo.value)
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
       label: username,
@@ -328,12 +339,7 @@ onMounted(() => {
     }
     hiveAccTo.value.fixedUser = true
     hiveAccTo.value.valid = true
-    console.log(hiveAccTo.value)
   } else if (storeUser.pos?.hiveAccTo) {
-    console.log(
-      "no route params, but storeUser.pos.hiveAccTo",
-      storeUser.pos.hiveAccTo
-    )
     hiveAccTo.value = {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
@@ -341,19 +347,19 @@ onMounted(() => {
       fixedUser: false,
     }
   } else {
-    console.log("no route params, no storeUser.pos.hiveAccTo")
     useLoggedInUser()
   }
   // Is there a local currency set? Add it to
   if (storeUser.localCurrency) {
     resetCurrencyOptions(storeUser.localCurrency)
   }
-
   if (storeUser.pos.currencySelected) {
     currencySelected.value = storeUser.pos.currencySelected
     CurrencyCalc.value.currency = currencySelected.value
   } else {
-    console.log("No local currency selected show the dialog")
+    // give me the first item in the currencyOptions list
+    currencySelected.value = currencyOptions.value[0].value
+    storeUser.pos.currencySelected = currencySelected.value
   }
 })
 
@@ -397,16 +403,16 @@ function bookmarkSite() {
   // jump to a different url
   window.location.href = "/pos/@" + hiveAccTo.value.value
   // wait for the page to load
-  setTimeout(() => {
-    // scroll to the bottom of the page
-    alert(
-      "To bookmark this page, press " +
-        (navigator.userAgent.toLowerCase().indexOf("mac") != -1
-          ? "Command/Cmd"
-          : "CTRL") +
-        " + D on your keyboard."
-    )
-  }, 1000)
+  // setTimeout(() => {
+  //   // scroll to the bottom of the page
+  //   alert(
+  //     "To bookmark this page, press " +
+  //       (navigator.userAgent.toLowerCase().indexOf("mac") != -1
+  //         ? "Command/Cmd"
+  //         : "CTRL") +
+  //       " + D on your keyboard."
+  //   )
+  // }, 1000)
 }
 
 function parseLocalizedFloat(val) {
@@ -448,7 +454,6 @@ function enterPressed() {}
 
 // Watch the hiveAccTo for changes and update the storeUser.pos Object
 watch(hiveAccTo, async (val) => {
-  console.debug("hiveAccTo", val)
   KeychainDialog.value.hiveAccTo = val.value
   storeUser.pos.hiveAccTo = {
     label: val.label,

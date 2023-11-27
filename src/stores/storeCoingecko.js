@@ -42,7 +42,6 @@ export const useCoingeckoStore = defineStore("coingecko", {
       const cacheKey = `rates-${currency}`
 
       if (this.isCacheValidRates(cacheKey)) {
-        console.log("cache is valid for rate", cacheKey)
         return this.ratesCache[cacheKey]
       }
 
@@ -55,7 +54,6 @@ export const useCoingeckoStore = defineStore("coingecko", {
         const res = await axios.get(url, { params })
         if (res.status === 200) {
           res.data.hive_dollar = res.data.usd
-          console.log(res)
           this.cacheDataRates(cacheKey, res.data)
           return res.data
         }
