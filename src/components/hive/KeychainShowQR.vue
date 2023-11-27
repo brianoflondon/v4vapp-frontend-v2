@@ -17,6 +17,7 @@
       </q-toolbar>
       <!-- Hive or Lightning button toggle -->
       <q-card-section>
+        <!-- Hive HBD Button Toggle -->
         <div class="text-center">
           <q-btn-toggle
             spread
@@ -30,6 +31,7 @@
               // { label: 'other', value: 'other' },
             ]"
           >
+            <!-- HBD Button -->
             <template #hbd>
               <div
                 class="column items-center q-pa-none"
@@ -47,6 +49,7 @@
                 {{ tidyNumber(KeychainDialog.currencyCalc.hbd, 2) }}
               </div>
             </template>
+            <!-- Hive Button -->
             <template #hive>
               <div
                 class="column items-center q-pa-none"
@@ -72,11 +75,21 @@
         >
           <q-btn-toggle
             v-model="showLightning"
+            icon="fa-sharp fa-solid fa-bolt"
             spread
             clearable
             @update:model-value="generateLightningQRCode()"
-            :options="[{ label: 'Lightning', value: true }]"
+            :options="[{ label: '', value: true, slot: 'lightning' }]"
           >
+            <template #lightning>
+              <div class="row items-center q-pa-none" style="font-size: 1.2rem">
+                <div><i class="fa-sharp fa-solid fa-bolt" /></div>
+                <div class="text-center q-px-md" style="font-size: 1.2rem">
+                  {{ t("lightning") }}
+                </div>
+                <div><i class="fa-brands fa-btc" /></div>
+              </div>
+            </template>
           </q-btn-toggle>
         </div>
       </q-card-section>
