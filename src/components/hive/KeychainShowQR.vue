@@ -147,32 +147,6 @@
           </q-btn>
         </div>
       </q-card-section>
-      <q-card-actions>
-        <q-space />
-        <q-btn
-          color="grey"
-          round
-          flat
-          dense
-          :icon="expanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
-          @click="expanded = !expanded"
-        />
-      </q-card-actions>
-
-      <q-slide-transition>
-        <div v-show="expanded">
-          <q-separator />
-          <q-card-section>
-            <div :style="{ width: maxUseableWidth + 'px' }">
-              Amount: {{ KeychainDialog.amountToSend }}
-              {{ KeychainDialog.currencyToSend }}
-              <br />
-              To: {{ KeychainDialog.hiveAccTo }}<br />
-              Memo: {{ KeychainDialog.memo }}
-            </div>
-          </q-card-section>
-        </div>
-      </q-slide-transition>
     </q-card>
   </q-dialog>
 </template>
@@ -204,7 +178,6 @@ const KeychainDialog = defineModel({
   display: "pos",
 })
 const storeApiStatus = useStoreAPIStatus()
-const expanded = ref(false)
 const qrCode = ref(null)
 
 const showLightning = ref(null)
