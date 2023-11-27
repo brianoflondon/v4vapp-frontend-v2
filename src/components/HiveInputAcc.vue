@@ -102,11 +102,11 @@ watch(modelValue, (val) => {
 })
 
 function clearInput() {
-  ;(modelValue.label = ""),
-    (modelValue.value = ""),
-    (modelValue.caption = props.label),
-    (modelValue.valid = false),
-    (modelValue.fixedUser = false)
+  modelValue.value.fixedUser = false
+  modelValue.value.valid = false
+  modelValue.value.value = ""
+  modelValue.value.label = ""
+  modelValue.value.caption = props.label
   simpleInput.value = ""
   isValidAccount.value = false
   simpleHiveInput.value.validate()
@@ -116,7 +116,8 @@ function clearInput() {
 function toggleLock() {
   console.log("toggleLock")
   console.log("modelValue", modelValue.value)
-  if (!modelValue.value) {
+  if (!modelValue.value.value) {
+    clearInput()
     modelValue.value.fixedUser = false
     return
   }
@@ -124,7 +125,7 @@ function toggleLock() {
 }
 
 async function updateHiveAccTo(val, fixed) {
-  console.log("updateHiveAccTo", val, fixed)
+  console.debug("updateHiveAccTo", val, fixed)
   if (!val) {
     clearInput()
     return
