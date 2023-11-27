@@ -169,7 +169,10 @@
         </q-btn>
         <!-- Alternate currencies  -->
         <div class="pad-max-width full-width q-px-md" v-if="isPaymentValid">
-          <AlternateCurrency v-model="CurrencyCalc" />
+          <AlternateCurrency
+            v-model="CurrencyCalc"
+            @currencyClicked="handleCurrencyClicked"
+          />
         </div>
       </div>
       <!-- Settings area -->
@@ -394,6 +397,34 @@ function updateAmounts(val) {
   }
   amount.value.num = parseLocalizedFloat(val)
   CurrencyCalc.value.amount = amount.value.num
+}
+
+function handleCurrencyClicked(currency) {
+  console.log("handleCurrencyClicked", currency)
+  // change amount to match the amount of the selected currency
+  // modify this to use updateAmounts
+
+  switch (currency) {
+    case "hbd":
+      amount.value.num = CurrencyCalc.value.hbd
+      amount.value.txt = tidyNumber(CurrencyCalc.value.hbd, 2)
+      break
+    case "hive":
+      amount.value.num = CurrencyCalc.value.hive
+      amount.value.txt = tidyNumber(CurrencyCalc.value.hive, 2)
+      break
+    case "sats":
+      amount.value.num = CurrencyCalc.value.sats
+      amount.value.txt = tidyNumber(CurrencyCalc.value.sats, 0)
+      break
+    default:
+      amount.value.num = CurrencyCalc.value.local
+      amount.value.txt = tidyNumber(CurrencyCalc.value.local, 2)
+  }
+  CurrencyCalc.value.amount = amount.value.num
+  currencySelected.value = currency
+  CurrencyCalc.value.currency = currency
+  storeUser.pos.currencySelected = currency
 }
 
 function bookmarkSite() {
