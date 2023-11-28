@@ -64,6 +64,7 @@ export class HiveUser {
       hiveAccname: this.hiveAccname,
       profileName: this.profileName,
       keySelected: this.keySelected,
+      localCurrency: this.localCurrency,
       authKey: this.authKey,
       expire: this.expire,
       token: this.token,
@@ -78,7 +79,13 @@ export const useStoreUser = defineStore("useStoreUser", {
     currentUser: useStorage("currentUser", null),
     currentDetails: useStorage("details", null),
     currentProfile: useStorage("profile", null),
+    localCurrency: useStorage("localCurrency", {
+      label: "US Dollar",
+      value: "usd",
+      unit: "$",
+    }),
     users: useStorage("users", {}),
+    pos: useStorage("pos", {}),
   }),
 
   getters: {
@@ -147,12 +154,25 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     hiveBalance() {
       if (!this.currentDetails) return "💰💰💰"
+      console.log("this.currentDetails", this.currentDetails)
       const balNum = parseFloat(this.currentDetails.balance).toFixed(3)
+      return tidyNumber(balNum)
+    },
+    savingsHiveBalance() {
+      if (!this.currentDetails) return "💰💰💰"
+      const balNum = parseFloat(this.currentDetails.savings_balance).toFixed(3)
       return tidyNumber(balNum)
     },
     hbdBalance() {
       if (!this.currentDetails) return "💰💰💰"
       const balNum = parseFloat(this.currentDetails.hbd_balance).toFixed(3)
+      return tidyNumber(balNum)
+    },
+    savingsHbdBalance() {
+      if (!this.currentDetails) return "💰💰💰"
+      const balNum = parseFloat(
+        this.currentDetails.savings_hbd_balance
+      ).toFixed(3)
       return tidyNumber(balNum)
     },
     satsBalance() {
@@ -178,6 +198,31 @@ export const useStoreUser = defineStore("useStoreUser", {
       ).toLocaleString()
 
       return satsTotal
+    },
+    savingsSatsBalance() {
+      if (this.satsBalance === "💰💰💰") return "💰💰💰"
+      const savingsHiveBalance = parseFloat(this.currentDetails.savings_balance)
+      const savingsHbdBalance = parseFloat(
+        this.currentDetails.savings_hbd_balance
+      )
+      if (isNaN(savingsHiveBalance) || isNaN(savingsHbdBalance)) {
+        return "Invalid balance"
+      }
+      const savingsHiveTotal =
+        savingsHiveBalance + savingsHbdBalance / storeAPIStatus.hiveHBDNumber
+      const savingsSatsTotal = Math.round(
+        savingsHiveTotal * storeAPIStatus.hiveSatsNumber
+      ).toLocaleString()
+      return savingsSatsTotal
+    },
+    totalSatsBalance() {
+      if (this.satsBalance === "💰💰💰") return "💰💰💰"
+      if (this.savingsSatsBalance === "💰💰💰") return this.satsBalance
+      const totalSatsBalance = (
+        parseInt(this.satsBalance.replace(/,/g, ""), 10) +
+        parseInt(this.savingsSatsBalance.replace(/,/g, ""), 10)
+      ).toLocaleString()
+      return totalSatsBalance
     },
   },
 
@@ -252,7 +297,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     strategies: [
       {
         storage: localStorage,
-        paths: ["users", "currentUser"],
+        paths: ["users", "currentUser", "pos", "localCurrency"],
       },
     ],
   },

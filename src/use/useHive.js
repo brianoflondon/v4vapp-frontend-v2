@@ -2,14 +2,15 @@
 //
 // Functions related to Hive
 // ----------------------------------------------------------------------------
-import { apiURL } from "boot/axios"
+import { apiURL, api } from "boot/axios"
 import { Dark } from "quasar"
+import { genRandAlphaNum } from "src/use/useUtils"
+import { encodeOp } from "hive-uri"
 
 import "src/assets/hive-tx.min.js"
 
 const useHiveAccountRegex =
   /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
-
 
 export async function useHiveDetails(hiveAccname) {
   // returns Hive Profile and details for a given Hive hiveAccname
@@ -63,9 +64,9 @@ export function useHiveAvatarRef({
 export function useBlankProfileURL() {
   // Returns the blank profile image
   if (Dark.isActive) {
-    return "avatars/hive_logo_dark.svg"
+    return "/avatars/hive_logo_dark.svg"
   } else {
-    return "avatars/hive_logo_light.svg"
+    return "/avatars/hive_logo_light.svg"
   }
 }
 
@@ -82,6 +83,33 @@ export function useHiveAvatarURL({
   return (
     apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
   )
+}
+
+export async function useHiveAvatarBlob({
+  hiveAccname,
+  size = "medium",
+  reason = "v4vapp-v2-useHiveAvatarURL",
+}) {
+  // Uses the Hive.blog image service to get the avatar for a Hive account
+  // Returns null if the hiveAccname is blank or not a valid name.
+  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    return useBlankProfileURL()
+  }
+  const url = "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
+  try {
+    const response = await api.get(url, { responseType: "blob" })
+    const blob = new Blob([response.data], { type: response.data.type })
+
+    // Check if the image is not 0 bytes
+    if (blob.size > 0) {
+      return URL.createObjectURL(blob)
+    } else {
+      return useBlankProfileURL()
+    }
+  } catch (e) {
+    console.error(e)
+  }
+  return useBlankProfileURL()
 }
 
 // -------- Helper functions --------
@@ -247,13 +275,12 @@ export async function useGetHiveWitnessVotes(hiveAccname, witness) {
 // -------- Hive check for transactions --------
 export async function useGetHiveTransactionHistory(
   hiveAccname,
-  limit = 10,
+  limit = 100,
   start = -1,
   opFilterLow = 4,
   opFilterHigh = 4
 ) {
   // Returns the account history for the given account.
-
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     return null
   }
@@ -265,11 +292,141 @@ export async function useGetHiveTransactionHistory(
       opFilterLow,
       opFilterHigh,
     ])
-    return history.result.reverse()
-    // const transfers = history.result.filter((item) => item[1].op[0] === "transfer")
-    // return transfers.reverse()
+    // This removes the un-necessary double list structure
+    return history.result.reverse().map((item) => item[1])
   } catch (error) {
     console.error({ error })
     return null
   }
 }
+
+export function useGetHiveAmountString(amount, currency) {
+  // Returns a string with the amount and currency
+  // convert currency to uppercase
+  currency = currency.toUpperCase()
+  if (!["HIVE", "HBD"].includes(currency)) {
+    return null
+  }
+  if (amount <= 0) {
+    return null
+  }
+  return amount.toFixed(3) + " " + currency
+}
+
+export function useGetCheckCode() {
+  // Returns a string with the amount and currency
+  return "v4v-" + genRandAlphaNum(5)
+}
+
+export function useGenerateHiveTransferOp(
+  from,
+  to,
+  amountToSend,
+  currencyToSend,
+  memo,
+  checkCode = null
+) {
+  // Returns a Hive transfer operation
+  if (!from) {
+    from = "__signer"
+  }
+  if (!to) {
+    return null
+  }
+  const amountString = useGetHiveAmountString(amountToSend, currencyToSend)
+  if (checkCode) {
+    memo = memo ? memo + " " + checkCode : checkCode
+  }
+  const op = [
+    "transfer",
+    {
+      from: from,
+      to: to,
+      amount: amountString,
+      memo: memo,
+    },
+  ]
+  return op
+}
+
+// export async function useGeneratePaymentQR(
+//   payWith,
+//   KeychainDialog,
+//   amount,
+//   hiveAccTo,
+//   memoInput,
+//   CurrencyCalc = null
+// ) {
+//   // Check if there is a running total, if that is 0 use the amount
+//   // on the screen
+//   console.log("useGeneratePaymentQR")
+//   console.log("payWith", payWith)
+//   console.log("amount", amount)
+//   console.log("hiveAccTo", hiveAccTo)
+//   console.log("KeychainDialog", KeychainDialog)
+//   console.log("CurrencyCalc", CurrencyCalc)
+//   if (amount === 0) {
+//     q.notify({
+//       message: t("no_amount"),
+//       type: "negative",
+//       position: "top",
+//       timeout: 2000,
+//     })
+//     return
+//   }
+//   if (hiveAccTo.value === "") {
+//     q.notify({
+//       message: t("no_account"),
+//       type: "negative",
+//       position: "top",
+//       timeout: 2000,
+//     })
+//     return
+//   }
+//   console.log("useGeneratePaymentQR amount", amount)
+//   switch (payWith) {
+//     // If CurencyCalc is null then use the raw amount (HBD or HIVE)
+//     // If CurrencyCalc is not null then use the calculated amount
+//     case "HBD":
+//       KeychainDialog.amountToSend = CurrencyCalc
+//         ? CurrencyCalc.hbd.toFixed(3)
+//         : amount.toFixed(3)
+
+//       KeychainDialog.currencyToSend = "HBD"
+//       break
+//     case "HIVE":
+//       KeychainDialog.amountToSend = CurrencyCalc
+//         ? CurrencyCalc.hive.toFixed(3)
+//         : amount.toFixed(3)
+//       KeychainDialog.currencyToSend = "HIVE"
+//       break
+//     default:
+//       break
+//   }
+
+//   KeychainDialog.amountString =
+//     KeychainDialog.amountToSend + " " + KeychainDialog.currencyToSend
+//   KeychainDialog.hiveAccTo = hiveAccTo.value
+//   // Add a check code onto the memo.
+//   KeychainDialog.checkCode = "v4v-" + genRandAlphaNum(5)
+//   KeychainDialog.memo = memoInput
+//     ? memoInput + " " + KeychainDialog.checkCode
+//     : KeychainDialog.checkCode
+//   KeychainDialog.op = [
+//     "transfer",
+//     {
+//       from: "__signer",
+//       to: KeychainDialog.hiveAccTo,
+//       amount: KeychainDialog.amountString,
+//       memo: KeychainDialog.memo,
+//     },
+//   ]
+//   KeychainDialog.show = true
+
+//   KeychainDialog.qrCodeTextHive = encodeOp(KeychainDialog.op)
+//   KeychainDialog.transactions = await useGetHiveTransactionHistory(
+//     KeychainDialog.hiveAccTo,
+//     20
+//   )
+//   console.log("KeychainDialog", KeychainDialog)
+// }

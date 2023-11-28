@@ -18,14 +18,17 @@ export default {
   and: "and",
   witness: "My Hive Witness",
   prices_fetched: "Prices fetched",
-
+  from: "from",
+  to: "to",
+  local_currency: "Local Currency",
+  currency: "Currency",
   // Dark Mode Selector
   change_light: "Change to light mode",
   change_dark: "Change to dark mode",
-
   // Keychain
   keychain_installed: "Keychain is Installed",
   keychain_missing: "Keychain is Missing",
+  scan_for_keychain: "Keychain/Ecency",
   // IndexPage
   index_page_message: "For more information about this project, please visit",
   // Selector
@@ -35,8 +38,8 @@ export default {
   hive: "Hive",
   transfer: "Transfer",
   not_found: "Not found",
+  lightning_failed: "Lightning payment failed",
   Progress: "Progress",
-
   // Login
   keychain_not_installed: "Keychain is not installed",
   enter_hive_account: "Please enter you Hive Account name",
@@ -74,7 +77,6 @@ export default {
   keychain_installed: "Keychain is Installed",
   keychain_missing: "Keychain is Missing",
   reload_prices: "Reload Prices",
-
   // Invoice
   invoice: "Invoice",
   expires: "expires",
@@ -89,17 +91,17 @@ export default {
   self_payment: "Can't send to v4v.app",
   invoice_hint: "Paste an invoice or scan a QR code",
   waiting_for: "Waiting for reply transaction to appear on Hive blockchain",
+  payment_sent_hive_keychain: "Payment sent by Hive Keychain",
+  check_lightning: "Check your Lightning wallet, payment has been sent",
   invoice_provider_not_working:
     "Lightning Invoice provider is not working right now, try later or check the address",
   requesting: "Requesting",
-
   // HAS Process
   logged_in_as: "Logged in as",
   open_HAS_auth: "Please open your HAS app and authorize the transaction.",
   open_HAS: "Open your HAS app",
   which_account: "Which account do you want to use?",
   rejected_payment: "Payment rejected by user on HAS",
-
   // Please vote
   voting_as: "Voting as",
   vote_for_proposal: "Vote DHF for proposal",
@@ -122,11 +124,9 @@ export default {
   too_high: "Amount too high",
   comment: "Comment",
   comment_length: "Comment is too long",
-
   // HAS Details Page
   resend_transaction: "Retry HAS transaction",
   payment_sent: "HAS Payment Sent",
-
   // Camera
   NotAllowedError: "You need to grant camera access permission",
   NotSupportedError: "No camera found on this device",
@@ -135,14 +135,36 @@ export default {
   StreamApiNotSupportedError: "Stream API is not supported in this browser",
   InsecureContextError: "Secure secure context required (HTTPS, localhost)",
   OtherError: "Unknown camera error",
-
   // Explanation Box
-  explanation_title: "What is this?",
+  explanation_title: "What is this site?",
   explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
   Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
   The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
-  The 'Receive' tab allows you to create a Lightning invoice or Lightning Address to receive BTC sats.\n
-
-
-  `,
+  The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive.\n
+  The old 'Hive' tab is still available, but it is recommended to use the 'Send' and 'Receive' tabs instead.\n`,
+  // Credit Card
+  savings: "Savings",
+  savings_tooltip:
+    "Show the amounts stored in Hive's savings accounts for HBD and Hive",
+  // Transfer page
+  sending: "Sending",
+  // Point of Sale POS
+  point_of_sale: "Point of Sale",
+  charge: "Charge",
+  set_rate: "Set Rate",
+  market_rate: "Market Rate",
+  // as in charge a customer
+  payment: "Payment",
+  scan_to_send: "Scan this code to send",
+  use: "Use",
+  pay_to: "Pay to:",
+  no_amount: "No amount entered",
+  no_account: "No Hive account to send to",
+  old_page: "Old Hive Page",
+  new_page: "New Receive Hive Page",
+  no_fees: "No Fees for Hive or HBD",
+  Fees: "Fees",
+  list_received_payments: "Received Payments",
+  memo: "Memo",
+  calculating_fees: "Calculating fees",
 }

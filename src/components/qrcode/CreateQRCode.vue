@@ -21,7 +21,7 @@
 <style lang="scss" scoped></style>
 
 <script setup>
-import { useHiveAvatarURL } from "src/use/useHive"
+import { useHiveAvatarBlob } from "src/use/useHive"
 import { computed, ref, onMounted, onUpdated, watch, nextTick } from "vue"
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
@@ -60,17 +60,31 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  color: {
+    type: String,
+    default: "#1976D2",
+  },
 })
 
-const avatarUrl = computed(() => {
-  return useHiveAvatarURL({
-    hiveAccname: props.hiveAccname,
-    size: "medium",
-    reason: "qr-code",
-  })
-})
+const avatarUrl = ref("")
+
+watch(
+  () => props.hiveAccname,
+  async (newVal) => {
+    avatarUrl.value = await useHiveAvatarBlob({
+      hiveAccname: newVal,
+      size: "small",
+      reason: "qr-code",
+    })
+  }
+)
 
 onMounted(async () => {
+  avatarUrl.value = await useHiveAvatarBlob({
+    hiveAccname: props.hiveAccname,
+    size: "small",
+    reason: "qr-code",
+  })
   qrTextPage.value = props.qrText
   await newQRCode()
 })
@@ -88,7 +102,6 @@ const htmlText =
 watch(
   () => props.loading,
   async (newVal) => {
-    // console.log("loading", newVal)
     if (newVal) {
       qrCodeContainer.value.innerHTML = htmlText
       await nextTick()
@@ -116,13 +129,13 @@ async function newQRCode() {
       margin: 0,
     },
     dotsOptions: {
-      color: "#1976D2",
+      color: props.color,
       type: "square",
     },
     backgroundOptions: {
       color: quasar.dark.isActive ? "#03002c" : "#f5f5f5",
     },
-    margin: 5,
+    margin: 1,
     imageOptions: {
       crossOrigin: "anonymous",
       hideBackgroundDots: false,

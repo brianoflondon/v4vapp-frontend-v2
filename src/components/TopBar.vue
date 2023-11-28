@@ -5,7 +5,7 @@
         <q-img
           width="50px"
           class="q-mr-sm"
-          src="site-logo/v4vapp-logo-shadows.svg"
+          src="/site-logo/v4vapp-logo-shadows.svg"
         >
           <q-tooltip>{{ appName }} - {{ appVersion }}</q-tooltip>
         </q-img>

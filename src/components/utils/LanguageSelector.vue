@@ -25,6 +25,7 @@ const { locale } = useI18n({ useScope: "global" })
 const localeOptions = [
   { value: "en-US", label: "En" },
   { value: "es-ES", label: "Es" },
+  { value: "de-DE", label: "De" },
 ]
 
 function onItemClick(label) {

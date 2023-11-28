@@ -18,10 +18,10 @@
         </strong>
       </span>
       <span v-if="!smallScreen" class="price-bar-item hbd-price q-pa-xs">
-        <span><i class="fa-brands fa-hive" style="color: green" /></span>
-        <strong>${{ storeAPIStatus.hbd }}</strong>
+        <hbd-logo-icon />
+        <strong>$ {{ storeAPIStatus.hbd }}</strong>
       </span>
-      <span class="price-bar-item api-status-indicator q-pl-lg q-pa-xs">
+      <span class="price-bar-item api-status-indicator q-pl-md q-pa-xs">
         <q-btn
           @click="alert = true"
           flat
@@ -41,7 +41,7 @@
         />
         <q-tooltip>{{ $t('prices_fetched') }}: {{ storeAPIStatus.lastFetchTime }}</q-tooltip>
       </span>
-      <span class="price-bar-item keychain-status-indicator q-pa-xs">
+      <span class="price-bar-item keychain-status-indicator q-pa-none">
         <q-btn
           flat
           dense
@@ -61,9 +61,6 @@
           />
         </q-btn>
       </span>
-      <span class="price-bar-item dark-selector q-pa-xs">
-        <DarkSelector />
-      </span>
     </div>
   </q-footer>
 </template>
@@ -74,6 +71,7 @@ import DarkSelector from "components/utils/DarkSelector.vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
+import HbdLogoIcon from "./utils/HbdLogoIcon.vue"
 
 const storeAPIStatus = useStoreAPIStatus()
 const t = useI18n().t

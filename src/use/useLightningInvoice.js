@@ -4,6 +4,65 @@ import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 
 const storeAPIStatus = useStoreAPIStatus()
 
+export async function useGetLightingHiveInvoice(
+  hiveAccname,
+  amount,
+  currency,
+  memo,
+  checkCode = "",
+  expiry = 300
+) {
+  try {
+    if (expiry > 600) {
+      expiry = 600
+    }
+    let message = memo
+    if (checkCode) {
+      message = memo ? memo + " " + checkCode : checkCode
+    }
+
+    currency = currency.toUpperCase()
+    const callBackResult = await api.get("new_invoice_hive", {
+      params: {
+        hive_accname: hiveAccname,
+        amount: amount,
+        currency: currency,
+        usd_hbd: false,
+        app_name: "v4vapp-pos",
+        expiry: expiry,
+        message: message,
+      },
+    })
+    return callBackResult.data
+  } catch (error) {
+    console.error(error)
+    // Check if the error response exists and has a status property
+    if (error.response && error.response.status) {
+      // Handle 422 status code separately
+      if (error.response.status === 422) {
+        console.error("Status code 422: Unprocessable Entity")
+        return { error: error.response.data.detail[0].msg }
+        // Add your custom logic here
+      }
+    }
+    return null
+  }
+}
+
+export async function useCheckLightningInvoice(paymentHash) {
+  try {
+    const callBackResult = await api.get("check_invoice", {
+      params: {
+        payment_hash: paymentHash,
+      },
+    })
+    return callBackResult.data
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
 export async function useDecodeLightningInvoice(invoice) {
   // Decode a lightning invoice first using local Bolt11 library
   // then using V4V.app API to decode lnurl and lightning addresses

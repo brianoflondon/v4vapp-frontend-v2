@@ -41,11 +41,7 @@
     </template>
     <!-- Use my Own code for the clearable button -->
     <template v-if="modelValue" v-slot:append>
-      <q-icon
-        name="cancel"
-        @click.stop.prevent="escFn"
-        class="cursor-pointer"
-      />
+      <q-icon name="cancel" @click="escFn" class="cursor-pointer" />
     </template>
   </q-select>
 </template>
@@ -98,6 +94,7 @@ function enterFn(input) {}
 
 function escFn(input) {
   // If Esc is pressed, the model is cleared
+  // modelValue.value = null
   modelValue.value = { label: "", value: "", caption: "" }
 }
 

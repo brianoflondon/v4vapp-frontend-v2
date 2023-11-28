@@ -29,7 +29,8 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
     hiveSats: (state) => {
       if (!state.apiStatus) return "💰💰💰"
       return tidyNumber(
-        (state.apiStatus.crypto.hive.btc * 100000000).toFixed(0)
+        (state.apiStatus.crypto.hive.btc * 100000000).toFixed(0),
+        0
       )
     },
     hiveHBDNumber: (state) => {
@@ -59,9 +60,44 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
     prices: (state) => {
       return state.apiStatus ? state.apiStatus.crypto : "fetching prices"
     },
-    /**
-     * @returns {string}
-     */
+    minMax(state) {
+      if (!state.apiStatus) return null
+      const ans = {
+        HIVE: {
+          min: state.apiStatus.config.min_max.min.HIVE,
+          max: state.apiStatus.config.min_max.max.HIVE,
+        },
+        HBD: {
+          min: state.apiStatus.config.min_max.min.HBD,
+          max: state.apiStatus.config.min_max.max.HBD,
+        },
+        USD: {
+          min: state.apiStatus.config.min_max.min.USD,
+          max: state.apiStatus.config.min_max.max.USD,
+        },
+        sats: {
+          min: state.apiStatus.config.min_max.min.sats,
+          max: state.apiStatus.config.min_max.max.sats,
+        },
+      }
+      return ans
+    },
+    hiveMinMax: (state) => {
+      return state.apiStatus
+        ? {
+            min: state.apiStatus.config.min_max.min.HIVE,
+            max: state.apiStatus.config.min_max.max.HIVE,
+          }
+        : null
+    },
+    HBDMinMax: (state) => {
+      return state.apiStatus
+        ? {
+            min: state.apiStatus.config.min_max.min.HBD,
+            max: state.apiStatus.config.min_max.max.HBD,
+          }
+        : null
+    },
     textBar() {
       // autocompletion ✨
       return `Bitcoin <strong>${this.bitcoin}<strong> ▪️ Hive <strong>${this.hive}<strong> ▪️ HBD<strong>${this.hbd}<strong> ▪️ ${this.statusDisp}`
@@ -72,7 +108,7 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
     },
     lastFetchTime: (state) => {
       if (!state.fetchTimestamp) return null
-      return useDateFormat(state.lastFetch, 'HH:mm:ss')
+      return useDateFormat(state.lastFetch, "HH:mm:ss")
     },
   },
 
@@ -115,7 +151,7 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
 
 function prettyPrices(prices) {
   //
-  const bitcoin = tidyNumber(prices.bitcoin.usd.toFixed(0))
+  const bitcoin = tidyNumber(prices.bitcoin.usd.toFixed(0), 0)
   const hive = tidyNumber(prices.hive.usd.toFixed(2))
   const hbd = tidyNumber(prices.hive_dollar.usd.toFixed(2))
   prices.fmt = {

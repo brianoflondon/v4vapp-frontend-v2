@@ -18,6 +18,8 @@ export default {
   and: 'and',
   witness: 'My Hive Witness',
   prices_fetched: 'Prices fetched',
+  from: 'from',
+  to: 'to',
   // Dark Mode Selector
   change_light: 'Change to light mode',
   change_dark: 'Change to dark mode',
@@ -123,5 +125,33 @@ export default {
   OverconstrainedError: 'Installed cameras are not suitable',
   StreamApiNotSupportedError: 'Stream API is not supported in this browser',
   InsecureContextError: 'Secure secure context required (HTTPS, localhost)',
-  OtherError: 'Unknown camera error'
+  OtherError: 'Unknown camera error',
+  // Explanation Box
+  explanation_title: 'What is this site?',
+  explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
+  Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
+  The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
+  The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive.\n
+  The old 'Hive' tab is still available, but it is recommended to use the 'Send' and 'Receive' tabs instead.\n`,
+  // Credit Card
+  savings: 'Savings',
+  savings_tooltip: 'Show the amounts stored in Hive\'s savings accounts for HBD and Hive',
+  // Transfer page
+  sending: 'Sending',
+  // Point of Sale POS
+  point_of_sale: 'Point of Sale',
+  charge: 'Charge',
+  // as in charge a customer
+  payment: 'Payment',
+  scan_to_send: 'Scan this code to send',
+  use: 'Use',
+  pay_to: 'Pay to:',
+  no_amount: 'No amount entered',
+  no_account: 'No Hive account to send to',
+  old_page: 'Old Hive Page',
+  new_page: 'New Receive Hive Page',
+  no_fees: 'No Fees for Hive or HBD',
+  Fees: 'Fees',
+  list_received_payments: 'Received Payments',
+  memo: 'Memo'
 };
