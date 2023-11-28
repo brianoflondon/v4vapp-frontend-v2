@@ -2,18 +2,18 @@
   <div
     class="alternate-currency full-width row wrap justify-around items-start content-start"
   >
-    <div class="text-center q-pa-xs">
+    <div class="text-center q-pa-xs" @click="emitEvent('hbd')">
       <HbdLogoIcon />$ {{ tidyNumber(CurrencyCalc.hbd, 3) }}
     </div>
-    <div class="text-center q-pa-xs">
+    <div class="text-center q-pa-xs" @click="emitEvent('hive')">
       <i class="fa-brands fa-hive" />&thinsp;{{
         tidyNumber(CurrencyCalc.hive, 3)
       }}
     </div>
-    <div class="text-center q-pa-xs">
+    <div class="text-center q-pa-xs" @click="emitEvent(storeUser.localCurrency.value)">
       {{ storeUser.localCurrency.unit }}{{ tidyNumber(CurrencyCalc.local, 2) }}
     </div>
-    <div class="text-center q-pa-xs">
+    <div class="text-center q-pa-xs" @click="emitEvent('sats')">
       {{ tidyNumber(CurrencyCalc.sats, 0) }}シ
     </div>
   </div>
@@ -26,12 +26,11 @@
 </style>
 
 <script setup>
-import { onMounted, watch } from "vue"
+import { onMounted, watch, defineEmits } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
-// import { getCoingeckoRate } from "src/use/useCoinGecko"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
 
 const storeUser = useStoreUser()
@@ -39,6 +38,8 @@ const storeAPIStatus = useStoreAPIStatus()
 const storeCoingecko = useCoingeckoStore()
 
 const CurrencyCalc = defineModel(null)
+
+const emit = defineEmits(["currencyClicked"])
 
 let localRates = {}
 
@@ -72,6 +73,12 @@ watch(
     calcAllAmounts()
   }
 )
+
+function emitEvent(currencyType) {
+  console.log("emitEvent", currencyType)
+  console.log("Currency Local", storeUser.localCurrency.value)
+  emit("currencyClicked", currencyType)
+}
 
 function updateLocalRates() {
   // check if the localRates structure has the storeUser.localCurrency.value in it
