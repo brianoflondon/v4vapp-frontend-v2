@@ -21,6 +21,7 @@ export default {
   from: 'desde',
   to: 'hasta',
   local_currency: 'Moneda Local',
+  currency: 'Currency',
   // Dark Mode Selector
   change_light: 'Cambiar a modo claro',
   change_dark: 'Cambiar a modo oscuro',
@@ -147,6 +148,7 @@ export default {
   point_of_sale: 'Punto de venta',
   charge: 'Costo',
   set_rate: 'Set Rate',
+  market_rate: 'Market Rate',
   // as in charge a customer
   payment: 'Pago',
   scan_to_send: 'Escanea este código para enviar',
