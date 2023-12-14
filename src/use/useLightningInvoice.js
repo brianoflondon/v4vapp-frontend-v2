@@ -255,7 +255,10 @@ export async function callBackGenerateInvoice(callbackURL, amount, comment) {
     params.comment = comment
   }
   let url = new URL(baseURL)
-  url.search = new URLSearchParams(params).toString()
+  // Handle multiple search params in the callback url (co-pilot help)
+  let searchParams = new URLSearchParams(url.search)
+  Object.keys(params).forEach((key) => searchParams.append(key, params[key]))
+  url.search = searchParams.toString()
   let combined = url.toString()
 
   const v4vappUrl = "/lnurlp/proxy/callback/"
