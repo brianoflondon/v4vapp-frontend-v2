@@ -21,7 +21,7 @@ export default {
   from: 'von',
   to: 'nach',
   local_currency: 'Landeswährung',
-  currency: 'Currency',
+  currency: 'Währung',
   // Dark Mode Selector
   change_light: 'Heller Modus',
   change_dark: 'Dunkler Modus',
@@ -73,8 +73,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Wird verarbeitet',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain ist installiert',
+  keychain_missing: 'Keychain ist nicht installiert',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -148,7 +148,7 @@ export default {
   point_of_sale: 'Kasse (POS)',
   charge: 'Tarif',
   set_rate: 'Rate einstellen',
-  market_rate: 'Market Rate',
+  market_rate: 'Marktkurs',
   // as in charge a customer
   payment: 'Zahlung',
   scan_to_send: 'Scannen Sie diesen Code um zu senden',
