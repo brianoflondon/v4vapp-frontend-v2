@@ -1,10 +1,11 @@
 <template>
   <div
-    class="progress-items q-pt-sm q-pb-md q-px-md" style="max-width: 350px"
+    class="progress-items q-pt-sm q-pb-md q-px-md"
+    style="max-width: 350px"
     v-if="dInvoice?.progress && dInvoice?.progress.length > 0"
   >
     <q-list separator>
-      <q-item-label header>{{ $t('Progress') }}</q-item-label>
+      <q-item-label header>{{ $t("Progress") }}</q-item-label>
       <q-separator />
       <q-item
         v-for="(item, index) in dInvoice.progress.slice().reverse()"
@@ -22,18 +23,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
 
-const dInvoice = defineModel({})
+const dInvoice = defineModel()
 
-// dInvoice.value = {
-//   progress: [
-//     "Invoice created",
-//     "Invoice sent",
-//     "Invoice paid",
-//     "Invoice completed",
-//   ],
-// }
 </script>
 
 <style lang="scss" scoped></style>

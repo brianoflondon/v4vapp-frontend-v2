@@ -156,7 +156,7 @@ import NumberButtons from "components/utils/NumberButtons.vue"
 const t = useI18n().t
 
 const storeAPIStatus = useStoreAPIStatus()
-const dInvoice = defineModel({})
+const dInvoice = defineModel()
 const emit = defineEmits(["newInvoice", "amounts"])
 const errorMessage = ref("")
 const errorState = ref(false)

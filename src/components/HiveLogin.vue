@@ -122,7 +122,7 @@ import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue"
 import CountdownBar from "src/components/utils/CountdownBar.vue"
 
 const storeUser = useStoreUser()
-const hiveAccObj = defineModel({})
+const hiveAccObj = defineModel()
 
 const displayQRCode = ref(false)
 const timeMessage = ref()
