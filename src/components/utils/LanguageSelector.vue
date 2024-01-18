@@ -26,6 +26,7 @@ const localeOptions = [
   { value: "en-US", label: "En" },
   { value: "es-ES", label: "Es" },
   { value: "de-DE", label: "De" },
+  { value: "pt-BR", label: "Pt" },
 ]
 
 function onItemClick(label) {
