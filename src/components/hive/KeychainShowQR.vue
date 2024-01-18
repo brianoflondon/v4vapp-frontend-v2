@@ -172,11 +172,7 @@ import { encodeOp } from "hive-uri"
 const q = useQuasar()
 const t = useI18n().t
 
-const KeychainDialog = defineModel({
-  paid: false,
-  loading: true,
-  display: "pos",
-})
+const KeychainDialog = defineModel()
 const storeApiStatus = useStoreAPIStatus()
 const qrCode = ref(null)
 

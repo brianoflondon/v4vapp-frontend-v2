@@ -37,7 +37,7 @@ const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
 const storeCoingecko = useCoingeckoStore()
 
-const CurrencyCalc = defineModel(null)
+const CurrencyCalc = defineModel()
 
 const emit = defineEmits(["currencyClicked"])
 

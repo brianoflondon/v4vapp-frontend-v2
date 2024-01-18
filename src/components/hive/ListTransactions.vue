@@ -42,7 +42,7 @@ import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
 
-const KeychainDialog = defineModel(null)
+const KeychainDialog = defineModel()
 const selectedTransaction = ref(null)
 const showDetails = ref(false)
 

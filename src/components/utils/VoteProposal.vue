@@ -106,7 +106,7 @@ const modelValue = defineModel({
   },
 })
 
-const hiveAccname = ref({ label: "", value: modelValue.hiveUser, caption: "" })
+const hiveAccname = ref({ label: "", value: modelValue.value.hiveUser, caption: "" })
 
 if (!modelValue.value?.proposalId) {
   modelValue.value.proposalId = "265"
