@@ -44,7 +44,7 @@ import { useI18n } from "vue-i18n"
 
 const t = useI18n().t
 
-const KeychainDialog = defineModel({})
+const KeychainDialog = defineModel()
 </script>
 
 <style lang="scss" scoped></style>

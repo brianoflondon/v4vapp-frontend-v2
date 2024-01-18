@@ -62,7 +62,7 @@ import CreateHASQRCode from "components/qrcode/CreateHASQRCode.vue"
 
 const storeUser = useStoreUser()
 const hiveAccObj = ref(null)
-const HASDialog = defineModel(null)
+const HASDialog = defineModel()
 const expiryMessage = ref("")
 
 const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS()

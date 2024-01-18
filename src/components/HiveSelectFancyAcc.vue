@@ -69,7 +69,9 @@ import {
 const t = useI18n().t
 
 const options = ref([])
-const modelValue = defineModel({ label: "", value: "", caption: "" })
+const modelValue = defineModel({
+  default: { label: "", value: "", caption: "" },
+})
 const avatarName = ref("")
 const props = defineProps({
   label: {
