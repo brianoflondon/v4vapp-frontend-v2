@@ -24,7 +24,7 @@
 <script setup>
 import { ref } from "vue"
 
-const dInvoice = defineModel({})
+const dInvoice = defineModel()
 
 // dInvoice.value = {
 //   progress: [
