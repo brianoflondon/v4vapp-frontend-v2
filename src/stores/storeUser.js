@@ -154,7 +154,6 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     hiveBalance() {
       if (!this.currentDetails) return "💰💰💰"
-      console.log("this.currentDetails", this.currentDetails)
       const balNum = parseFloat(this.currentDetails.balance).toFixed(3)
       return tidyNumber(balNum)
     },
