@@ -3,14 +3,13 @@
     <q-btn-dropdown flat dense dropdown-icon="language">
       <q-list>
         <q-item
-          v-for="localeOption in localeOptions"
-          :key="localeOption.value"
+          v-for="(option, index) in localeOptions"
+          :key="index"
           clickable
-          v-close-popup
-          @click="onItemClick(localeOption.value)"
+          @click="onItemClick(option.value)"
         >
           <q-item-section>
-            <q-item-label>{{ localeOption.label }}</q-item-label>
+            {{ option.label }} {{ option.flag  }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -23,10 +22,10 @@ import { useI18n } from "vue-i18n"
 const { locale } = useI18n({ useScope: "global" })
 
 const localeOptions = [
-  { value: "en-US", label: "En" },
-  { value: "es-ES", label: "Es" },
-  { value: "de-DE", label: "De" },
-  { value: "pt-BR", label: "Pt" },
+  { value: "en-US", label: "En", flag: "🇬🇧" },
+  { value: "es-ES", label: "Es", flag: "🇪🇸" },
+  { value: "de-DE", label: "De", flag: "🇩🇪" },
+  { value: "pt-BR", label: "Pt", flag: "🇧🇷" },
 ]
 
 function onItemClick(label) {
