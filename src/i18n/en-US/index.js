@@ -149,6 +149,8 @@ export default {
   charge: 'Charge',
   set_rate: 'Set Rate',
   market_rate: 'Market Rate',
+  sales: 'Sales',
+  history: 'History',
   // as in charge a customer
   payment: 'Payment',
   scan_to_send: 'Scan this code to send',

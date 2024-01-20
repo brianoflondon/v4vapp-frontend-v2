@@ -1,6 +1,30 @@
 <template>
   <q-page>
     <div class="flex column text-center items-center">
+      <q-tabs v-model="currentTab" align="justify" dense>
+        <q-route-tab
+          :to="`/pos/sales${
+            route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
+          }`"
+          name="sales"
+          :label="$t('sales')"
+        />
+        <q-route-tab
+          :to="`/pos/history${
+            route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
+          }`"
+          name="history"
+          :label="$t('history')"
+        />
+        <q-route-tab
+          :to="`/pos/currency${
+            route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
+          }`"
+          name="currency"
+          :label="$t('currency')"
+        />
+      </q-tabs>
+
       <!-- Pay To bar -->
       <!-- Pre-selected user name from path -->
       <div
@@ -227,6 +251,8 @@ const q = useQuasar()
 const t = useI18n().t
 const currencySelected = ref("hbd")
 
+const currentTab = ref("sales")
+
 const storeUser = useStoreUser()
 const hiveAccTo = ref({
   label: "",
@@ -333,6 +359,16 @@ const isPaymentValid = computed(() => {
 })
 
 onMounted(() => {
+  console.log("route", route.path)
+  console.log("currentTab.value", currentTab.value)
+  const path = route.path
+  if (path.includes("/sales")) {
+    currentTab.value = "sales"
+  } else if (path.includes("/history")) {
+    currentTab.value = "history"
+  } else if (path.includes("/currency")) {
+    currentTab.value = "currency"
+  }
   if (route.params.hiveAccTo) {
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
