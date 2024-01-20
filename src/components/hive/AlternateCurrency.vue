@@ -26,7 +26,7 @@
 </style>
 
 <script setup>
-import { onMounted, watch, defineEmits } from "vue"
+import { onMounted, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
