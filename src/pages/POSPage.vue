@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <div class="flex column text-center items-center">
-      <q-tabs v-model="currentTab" align="justify" dense>
+      <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
         <q-route-tab
           :to="`/pos/sales${
             route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
