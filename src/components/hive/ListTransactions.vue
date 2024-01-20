@@ -15,7 +15,7 @@
           <q-td class="no-border text-left">
             {{ props.row.op[1].from }}
           </q-td>
-          <q-td class="no-border">
+          <q-td class="no-border text-right">
             {{ props.row.op[1].amount }}
           </q-td>
         </q-tr>

@@ -24,6 +24,22 @@
           :label="$t('currency')"
         />
       </q-tabs>
+      <q-tab-panels v-model="currentTab">
+        <q-tab-panel name="history">
+          <div class="q-px-none q-py-xs">
+            <ListTransactions v-model="KeychainDialog"></ListTransactions>
+          </div>
+        </q-tab-panel>
+        <q-tab-panel name="currency">
+          <div>
+            <div class="q-px-xs q-py-xs">
+              <div class="pad-max-width">
+                <LocalCurrency />
+              </div>
+            </div>
+          </div>
+        </q-tab-panel>
+      </q-tab-panels>
 
       <!-- Pay To bar -->
       <!-- Pre-selected user name from path -->
@@ -245,6 +261,8 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useRoute } from "vue-router"
 import PosHeader from "src/components/hive/PosHeader.vue"
 import HiveInputAcc from "src/components/HiveInputAcc.vue"
+import LocalCurrency from "src/components/utils/LocalCurrency.vue"
+import ListTransactions from "src/components/hive/ListTransactions.vue"
 
 const route = useRoute()
 const q = useQuasar()
