@@ -43,7 +43,6 @@
               icon="expand_more"
               @click="props.expand = !props.expand"
             ></q-btn>
-            {{ props.expand }}
           </q-td>
         </q-tr>
         <q-tr v-if="props.expand">
