@@ -5,8 +5,6 @@
 import { apiURL, api } from "boot/axios"
 import { Dark } from "quasar"
 import { genRandAlphaNum } from "src/use/useUtils"
-import { encodeOp } from "hive-uri"
-
 import "src/assets/hive-tx.min.js"
 
 const useHiveAccountRegex =
@@ -293,6 +291,9 @@ export async function useGetHiveTransactionHistory(
       opFilterHigh,
     ])
     // This removes the un-necessary double list structure
+    if (!history.result) {
+      return null
+    }
     return history.result.reverse().map((item) => item[1])
   } catch (error) {
     console.error({ error })

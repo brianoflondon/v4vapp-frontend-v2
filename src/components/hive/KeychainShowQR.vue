@@ -154,6 +154,8 @@
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import { useStoreSales } from "src/stores/storeSales"
+
 import { useQuasar, copyToClipboard } from "quasar"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useTruncateLnbc } from "src/use/useUtils.js"
@@ -174,6 +176,7 @@ const t = useI18n().t
 
 const KeychainDialog = defineModel()
 const storeApiStatus = useStoreAPIStatus()
+const storeSales = useStoreSales()
 const qrCode = ref(null)
 
 const showLightning = ref(null)
@@ -261,16 +264,52 @@ onBeforeMount(() => {
 onMounted(async () => {
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
+      // storeSales.clearSales()
       KeychainDialog.value.transactions = val
       KeychainDialog.value.paid = false
       KeychainDialog.value.loading = false
-      const firstTrxId = KeychainDialog.value.transactions[0].trx_id
-      checkHiveTransaction(KeychainDialog.value.hiveAccTo, firstTrxId)
+      checkHiveTransaction()
       KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
       startCountdown()
+      console.log("KeychainDialog", KeychainDialog.value)
+      // storeSales.addSale({
+      //   checkCode: KeychainDialog.value.checkCode,
+      //   hiveAccTo: KeychainDialog.value.hiveAccTo,
+      //   amount: KeychainDialog.value.amountToSend,
+      //   currencyToSend: KeychainDialog.value.currencyToSend,
+      //   amountString: KeychainDialog.value.amountString,
+      //   memo: KeychainDialog.value.memo,
+      //   timestamp: new Date(),
+      //   paid: false,
+      // })
     }
   )
 })
+
+function updateStoreSales() {
+  storeSales.updateSale({
+    checkCode: KeychainDialog.value.checkCode,
+    hiveAccTo: KeychainDialog.value.hiveAccTo,
+    amount: KeychainDialog.value.amountToSend,
+    currencyToSend: KeychainDialog.value.currencyToSend,
+    amountString: KeychainDialog.value.amountString,
+    memo: KeychainDialog.value.memo,
+    timestamp: new Date(),
+    paid: false,
+  })
+  // if (!storeSales.findSale(KeychainDialog.value.checkCode)) {
+  //   storeSales.addSale({
+  //     checkCode: KeychainDialog.value.checkCode,
+  //     hiveAccTo: KeychainDialog.value.hiveAccTo,
+  //     amount: KeychainDialog.value.amountToSend,
+  //     currencyToSend: KeychainDialog.value.currencyToSend,
+  //     amountString: KeychainDialog.value.amountString,
+  //     memo: KeychainDialog.value.memo,
+  //     timestamp: new Date(),
+  //     paid: false,
+  //   })
+  // }
+}
 
 // Calculates the fees charged in the same currency Hive/HBD as
 // the amount being sent.
@@ -313,6 +352,7 @@ async function updateQRCode() {
     KeychainDialog.value.amountToSend,
     KeychainDialog.value.currencyToSend
   )
+  updateStoreSales()
   if (showLightning.value) {
     await generateLightningQRCode()
     return
@@ -366,7 +406,9 @@ async function generateLightningQRCode() {
     KeychainDialog.value.qrCodeTextLightning =
       "lightning:" + KeychainDialog.value?.lndData[cur]["payment_request"]
     KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextLightning
+    storeSales.markAsLightning(KeychainDialog.value.checkCode)
   } else {
+    storeSales.markAsHive(KeychainDialog.value.checkCode)
     KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   }
 }
@@ -403,7 +445,7 @@ function startCountdown() {
   intervalRef.value.push(intervalId)
 }
 
-async function checkHiveTransaction(username, trx_id, count = 0) {
+async function checkHiveTransaction(count = 0) {
   try {
     while (count < maxChecks) {
       count += 1
@@ -414,43 +456,37 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
       })
 
       KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
-        username,
+        KeychainDialog.value.hiveAccTo,
         20
       )
-      const transaction_found = findObjectBefore(
+      const transactionFound = findTransactionWithCheckCode(
         KeychainDialog.value.transactions,
-        trx_id
+        KeychainDialog.value.checkCode
       )
-
-      if (!transaction_found) {
+      if (!transactionFound) {
         continue // Continue to the next iteration of the loop
       }
-      // Update the most recent trx_id
-      trx_id = transaction_found?.trx_id
-      if (
-        transaction_found?.op[1].memo.endsWith(KeychainDialog.value.checkCode)
-      ) {
-        const message = `${t("payment")}: ${
-          transaction_found?.op[1].amount
-        }\n${useTruncateLnbc(transaction_found?.op[1].memo)}`
+      // Transaction found
 
-        q.notify({
-          color: "positive",
-          avatar: "/site-logo/v4vapp-logo.svg",
-          timeout: 10000,
-          message: message,
-          position: "top",
-        })
-        KeychainDialog.value.paid = true
-        // wait 5 seconds before closing the dialog
-        await new Promise((resolve) => {
-          const watchingInterval = setTimeout(resolve, 1000 * 5)
-          intervalRef.value.push(watchingInterval)
-        })
-        KeychainDialog.value.show = false
-        return // Exit the function if the transaction is found
-      }
-      continue // Continue to the next iteration of the loop
+      const message = `${t("payment")}: ${
+        transactionFound?.op[1].amount
+      }\n${useTruncateLnbc(transactionFound?.op[1].memo)}`
+
+      q.notify({
+        color: "positive",
+        avatar: "/site-logo/v4vapp-logo.svg",
+        timeout: 10000,
+        message: message,
+        position: "top",
+      })
+      KeychainDialog.value.paid = true
+      // wait 5 seconds before closing the dialog
+      await new Promise((resolve) => {
+        const watchingInterval = setTimeout(resolve, 1000 * 5)
+        intervalRef.value.push(watchingInterval)
+      })
+      KeychainDialog.value.show = false
+      return // Exit the function if the transaction is found
     } // End of the While Loop
     const memo = `${t("transfer")}: ${t("not_found")}:`
     q.notify({
@@ -468,19 +504,33 @@ async function checkHiveTransaction(username, trx_id, count = 0) {
 }
 
 /**
- * Finds the object in the 'data' array that occurs before the object with the specified 'target_trx_id'.
+ * Searches through an array of transactions to find a transaction with a memo that ends with the provided checkCode.
+ * If such a transaction is found, it marks the corresponding sale as paid in the storeSales store,
+ * and adds additional information (trx_id, hiveAccFrom, amountPaid) to the sale.
  *
- * @param {Array} data - The array of objects to search.
- * @param {string} target_trx_id - The transaction ID to search for.
- * @returns {Object|null} - The object that occurs before the target object, or null if not found.
+ * @param {Array} transactions - An array of transaction objects to search through.
+ * @param {string} checkCode - The checkCode to search for in the transaction memos.
+ *
+ * @returns {Object} The found transaction object, or undefined if no transaction with a matching checkCode is found.
  */
-function findObjectBefore(data, target_trx_id) {
-  for (let i = 1; i < data.length; i++) {
-    if (data[i].trx_id === target_trx_id) {
-      return data[i - 1]
-    }
+function findTransactionWithCheckCode(transactions, checkCode) {
+  const transactionFound = transactions.find((transaction) =>
+    transaction.op[1].memo.endsWith(checkCode)
+  )
+  if (transactionFound) {
+    console.log("transactionFound", transactionFound)
+    const trx_id = transactionFound?.trx_id
+    // modify the transaction object to include the memo without the checkCode
+    const hiveAccFrom = transactionFound.op[1].from
+    const amountPaid = transactionFound.op[1].amount
+    storeSales.markPaid(
+      KeychainDialog.value.checkCode,
+      trx_id,
+      hiveAccFrom,
+      amountPaid
+    )
+    return transactionFound
   }
-  return null
 }
 </script>
 

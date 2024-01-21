@@ -272,6 +272,7 @@ const currencySelected = ref("hbd")
 const currentTab = ref("sales")
 
 const storeUser = useStoreUser()
+
 const hiveAccTo = ref({
   label: "",
   value: "",
@@ -560,6 +561,7 @@ function showPaymentQR(payWith) {
   if (!isPaymentValid.value) {
     return
   }
+  console.log("showPaymentQR", payWith)
   KeychainDialog.value.memo = memoInput.value
   KeychainDialog.value.currencyToSend = payWith
   KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
