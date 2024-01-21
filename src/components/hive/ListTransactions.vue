@@ -40,25 +40,54 @@
               round
               flat
               dense
-              icon="expand_more"
+              :icon="props.expand ? 'expand_less' : 'expand_more'"
               @click="props.expand = !props.expand"
             ></q-btn>
           </q-td>
         </q-tr>
         <q-tr v-if="props.expand">
           <q-td colspan="100%">
-            <div class="flex">
+            <div
+              class="fit row inline wrap justify-start items-start content-start"
+            >
               <div>
-                <div>
-                  <div>{{ $t("pay_to") }} {{ props.row.hiveAccTo }}</div>
-                  <q-avatar rounded size="md">
-                    <HiveAvatar :hiveAccname="props.row.hiveAccTo" />
-                  </q-avatar>
-                  {{ props.row.amountString }}
+                <div
+                  class="fit col inline wrap justify-start items-start content-start"
+                >
+                  <div>
+                    {{ $t("pay_to") }}
+                  </div>
+                  <div>
+                    <q-avatar rounded size="md">
+                      <HiveAvatar :hiveAccname="props.row.hiveAccTo" />
+                    </q-avatar>
+                  </div>
+                  <div>
+                    {{ props.row.hiveAccTo }}
+                  </div>
                 </div>
               </div>
+              <div class="fit col items-start content-left">
+                <div>{{ props.row.amountString }}</div>
+                <div v-if="props.row.memo" class="q-px-md">
+                  {{ $t("memo") }} : {{ props.row.memo }}
+                </div>
+                <div class="q-px-md" style="font-size: x-small">
+                  {{ props.row.checkCode }}
+                </div>
+              </div>
+              <div v-if="props.row.paid">
+                <div>Paid by</div>
+                <div>
+                  <q-avatar rounded size="md">
+                    <HiveAvatar :hiveAccname="props.row.hiveAccFrom" />
+                  </q-avatar>
+                </div>
+                  <div>
+                    {{ props.row.hiveAccFrom }}
+                  </div>
+              </div>
             </div>
-            <div>More details</div>
           </q-td>
         </q-tr>
       </template>
