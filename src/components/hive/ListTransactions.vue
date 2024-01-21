@@ -1,6 +1,79 @@
 <template>
   <div>
     <q-table
+      v-model:selected="selectedTransaction"
+      :rows="storeSales.salesAll"
+      dense
+      row-key="checkCode"
+      :columns="localSalesColumns"
+      :visible-columns="['date', 'amountstring', 'status', 'expand']"
+      separator="none"
+      :pagination="{
+        rowsPerPage: 5,
+        display: true,
+        sortBy: 'props.timestamp',
+      }"
+    >
+      <template #body="props">
+        <q-tr :props="props">
+          <q-td :props="props" key="date">
+            {{ formatDateTimeLocale(props.row.timestamp).date }}
+          </q-td>
+          <q-td k:props="props" key="amountstring" dense>
+            {{ props.row.amountString }}
+          </q-td>
+          <q-td :props="props" key="status">
+            <q-chip
+              dense
+              :color="props.row.paid ? 'green' : 'yellow-10'"
+              :icon="
+                props.row.lightning
+                  ? 'fa-sharp fa-solid fa-bolt'
+                  : 'fa-brands fa-hive'
+              "
+            >
+              {{ props.row.paid ? $t("paid") : $t("pending") }}
+            </q-chip>
+          </q-td>
+          <q-td :props="props" key="expand">
+            <q-btn
+              round
+              flat
+              dense
+              icon="expand_more"
+              @click="props.expand = !props.expand"
+            ></q-btn>
+            {{ props.expand }}
+          </q-td>
+        </q-tr>
+        <q-tr v-if="props.expand">
+          <q-td colspan="100%">
+            <div class="flex">
+              <div>
+                <div>
+                  <div>{{ $t("pay_to") }} {{ props.row.hiveAccTo }}</div>
+                  <q-avatar rounded size="md">
+                    <HiveAvatar :hiveAccname="props.row.hiveAccTo" />
+                  </q-avatar>
+                  {{ props.row.amountString }}
+                </div>
+              </div>
+            </div>
+            <div>More details</div>
+          </q-td>
+        </q-tr>
+      </template>
+    </q-table>
+  </div>
+  <q-separator />
+  <div v-if="false">
+    <q-table :rows="storeSales.salesAll" dense row-key="checkCode">
+      <q-tr :props="props" @click="handleRowClick(props.row)"> </q-tr>
+    </q-table>
+  </div>
+  <!-- hide the following -->
+  <div v-if="false">
+    <q-table
       :rows="filteredData"
       :columns="myColumns"
       dense
@@ -38,13 +111,51 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue"
 import { useGetHiveTransactionHistory } from "src/use/useHive"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
+import { useStoreSales } from "src/stores/storeSales"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
 
+const storeSales = useStoreSales()
 const KeychainDialog = defineModel()
-const selectedTransaction = ref(null)
-const showDetails = ref(false)
+const selectedTransaction = ref()
+
+const localSalesColumns = ref([
+  {
+    name: "selected",
+    field: "selected",
+    align: "center",
+    sortable: true,
+    hide: true,
+  },
+  {
+    name: "date",
+    label: t("date"),
+    field: (row) => formatDateTimeLocale(row.timestamp).date,
+    sortable: true,
+    align: "left",
+  },
+  {
+    name: "amountstring",
+    label: t("amount"),
+    field: (row) => row.amountString,
+    sortable: true,
+    align: "right",
+  },
+  {
+    name: "status",
+    label: t("status"),
+    sortable: true,
+    align: "right",
+    field: (row) => row.paid,
+  },
+  {
+    name: "expand",
+    field: "expand",
+    align: "center",
+  },
+])
 
 watch(
   () => KeychainDialog.value.hiveAccTo,
@@ -64,8 +175,6 @@ watch(
 
 function handleRowClick(row) {
   console.log("row", row)
-  selectedTransaction.value = row
-  showDetails.value = true
 }
 
 /**

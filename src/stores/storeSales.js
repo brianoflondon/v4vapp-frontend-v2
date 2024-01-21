@@ -15,6 +15,10 @@ export const useStoreSales = defineStore("storeSales", {
       // filter for paid sales
       return this.requestedSales.filter((sale) => sale.paid)
     },
+    salesAll() {
+      // filter for all sales
+      return this.requestedSales
+    },
   },
 
   actions: {
