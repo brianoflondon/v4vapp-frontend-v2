@@ -26,6 +26,7 @@ export const useStoreSales = defineStore("storeSales", {
       // insert in reverse order
       this.requestedSales.unshift(sale)
     },
+
     updateSale(sale) {
       console.log("updateSale", sale)
       // check if sale in database by searching for checkCode

@@ -25,8 +25,8 @@
         />
       </q-tabs>
       <q-tab-panels v-model="currentTab">
-        <q-tab-panel name="history">
-          <div class="q-px-none q-py-xs">
+        <q-tab-panel name="history" class="full-width">
+          <div class="full-width q-px-none q-py-xs">
             <ListTransactions
               v-model="KeychainDialog"
               @update-fields="handleRetryTransaction"

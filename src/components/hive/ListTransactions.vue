@@ -1,37 +1,12 @@
 <template>
-  <div>
-    <div
-      class="q-pb-sm fit row no-wrap justify-center items-end content-center"
-    >
-      <div>
-        <q-btn
-          dense
-          flat
-          icon="fa-brands fa-hive"
-          @click="importFromHive"
-          class="q-mr-sm"
-        >
-          <q-tooltip>{{ $t("import_from_hive") }}</q-tooltip>
-          {{ $t("import_hive") }}</q-btn
-        >
-      </div>
-      <div>
-        <q-btn
-          dense
-          flat
-          icon="delete"
-          @click="deleteLocalSales"
-          class="q-mr-sm"
-        >
-          <q-tooltip>{{ $t("delete_local_sales") }}</q-tooltip>
-          {{ $t("local records") }}</q-btn
-        >
-      </div>
+  <div class="q-pa-none">
+    <div>
+      <q-input v-model="searchFilter" label="Search"></q-input>
     </div>
-    <div>filter goes here</div>
-
+  </div>
+  <div class="q-pa-none">
     <q-table
-      :rows="storeSales.salesAll"
+      :rows="filteredDataLocal"
       dense
       v-model:expanded="rowsExpanded"
       row-key="checkCode"
@@ -44,6 +19,7 @@
         sortBy: 'props.timestamp',
       }"
     >
+      <template v-slot:top> </template>
       <template v-slot:header-cell-amountstring="props">
         <q-th :props="props" style="text-align: center">
           {{ props.col.label }}
@@ -184,9 +160,9 @@
     </q-table>
   </div>
   <!-- Data from Hive only -->
-  <div v-if="true">
+  <div v-if="false">
     <q-table
-      :rows="filteredData"
+      :rows="filteredDataHive"
       :columns="myColumns"
       dense
       row-key="trx_id"
@@ -218,6 +194,36 @@
       </template>
     </q-table>
   </div>
+  <div class="q-pt-sm">
+    <div
+      class="q-pb-sm fit row no-wrap justify-center items-end content-center"
+    >
+      <div>
+        <q-btn
+          dense
+          flat
+          icon="fa-brands fa-hive"
+          @click="importFromHive"
+          class="q-mr-sm"
+        >
+          <q-tooltip>{{ $t("import_from_hive") }}</q-tooltip>
+          {{ $t("import_hive") }}</q-btn
+        >
+      </div>
+      <div>
+        <q-btn
+          dense
+          flat
+          icon="delete"
+          @click="deleteLocalSales"
+          class="q-mr-sm"
+        >
+          <q-tooltip>{{ $t("delete_local_sales") }}</q-tooltip>
+          {{ $t("local records") }}</q-btn
+        >
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -232,7 +238,7 @@ const t = useI18n().t
 
 const storeSales = useStoreSales()
 const KeychainDialog = defineModel()
-const selectedTransaction = ref()
+const searchFilter = ref()
 const emit = defineEmits(["update-fields"])
 
 const rowsExpanded = ref([])
@@ -266,6 +272,22 @@ const localSalesColumns = ref([
   },
 ])
 
+const filteredDataLocal = computed(() => {
+  const localData = storeSales.salesAll
+  if (!searchFilter.value) return localData
+  return localData.filter((row) => {
+    return (
+      row.hiveAccTo.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
+      row.hiveAccFrom
+        .toLowerCase()
+        .includes(searchFilter.value.toLowerCase()) ||
+      row.memo.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
+      row.checkCode.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
+      row.amountString.toLowerCase().includes(searchFilter.value.toLowerCase())
+    )
+  })
+})
+
 watch(
   () => KeychainDialog.value.hiveAccTo,
   async (val) => {
@@ -297,7 +319,7 @@ function importFromHive() {
     KeychainDialog.value.transactions
   )
   // for all the records in transactions add them to the local sales store
-  filteredData.value.reverse().forEach((transaction) => {
+  filteredDataHive.value.reverse().forEach((transaction) => {
     const memo = transaction.op[1].memo
     const hiveAccTo = transaction.op[1].to
     const amount = transaction.op[1].amount
@@ -465,7 +487,7 @@ onMounted(() => {
  * @returns {Array} An array of filtered transactions that meet the criteria.
  * If no transactions exist or they don't match the criteria, an empty array is returned.
  */
-const filteredData = computed(() => {
+const filteredDataHive = computed(() => {
   const transactions = KeychainDialog.value.transactions
 
   if (!Array.isArray(transactions)) return []
