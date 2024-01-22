@@ -37,8 +37,8 @@
               round
               flat
               dense
-              :icon="rowsExpanded ? 'expand_less' : 'expand_more'"
-              @click="rowsExpanded = []"
+              :icon="rowsExpanded.length === 0 ? 'expand_more' : 'expand_less'"
+              @click="expandAll"
             ></q-btn>
           </q-td>
         </q-th>
@@ -273,17 +273,18 @@ const localSalesColumns = ref([
 ])
 
 const filteredDataLocal = computed(() => {
+  console.log("searchFilter.value", searchFilter.value)
   const localData = storeSales.salesAll
   if (!searchFilter.value) return localData
   return localData.filter((row) => {
     return (
-      row.hiveAccTo.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
+      row.hiveAccTo?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
       row.hiveAccFrom
-        .toLowerCase()
+        ?.toLowerCase()
         .includes(searchFilter.value.toLowerCase()) ||
-      row.memo.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
-      row.checkCode.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
-      row.amountString.toLowerCase().includes(searchFilter.value.toLowerCase())
+      row.memo?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
+      row.checkCode?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
+      row.amountString?.toLowerCase().includes(searchFilter.value.toLowerCase())
     )
   })
 })
@@ -304,11 +305,12 @@ watch(
   }
 )
 
-function expandAll(props) {
-  console.log("expandAll", props)
-  // props.forEach((row) => {
-  //   row.expand = !row.expand
-  // })
+function expandAll() {
+  if (rowsExpanded.value.length === 0) {
+    rowsExpanded.value = filteredDataLocal.value.map((row) => row.checkCode)
+  } else {
+    rowsExpanded.value = []
+  }
 }
 
 function importFromHive() {
