@@ -308,6 +308,7 @@ function importFromHive() {
     const trx_id = transaction.trx_id
     const timestampUnix = transaction.timestampUnix
     const strippedMemo = transaction.strippedMemo
+    const lightning = hiveAccFrom === "v4vapp" ? true : false
     // turn timestampUnix into a date object
     const paidDate = new Date(timestampUnix)
     const sale = {
@@ -322,6 +323,7 @@ function importFromHive() {
       timestampUnix: timestampUnix,
       paidDate: paidDate,
       trx_id: trx_id,
+      lightning: lightning,
       paid: true,
     }
     console.log("paidDate", paidDate)
