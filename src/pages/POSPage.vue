@@ -27,7 +27,10 @@
       <q-tab-panels v-model="currentTab">
         <q-tab-panel name="history">
           <div class="q-px-none q-py-xs">
-            <ListTransactions v-model="KeychainDialog"></ListTransactions>
+            <ListTransactions
+              v-model="KeychainDialog"
+              @update-fields="handleRetryTransaction"
+            ></ListTransactions>
           </div>
         </q-tab-panel>
         <q-tab-panel name="currency">
@@ -420,6 +423,26 @@ onMounted(() => {
     storeUser.pos.currencySelected = currencySelected.value
   }
 })
+
+function handleRetryTransaction(val) {
+  console.log("handleRetryTransaction")
+  console.log("val", val)
+  console.log("hiveAccTo.value", hiveAccTo.value)
+  KeychainDialog.value.hiveAccTo = val.hiveAccTo
+
+  hiveAccTo.value = {
+    label: val.hiveAccTo,
+    value: val.hiveAccTo,
+    caption: val.hiveAccTo,
+  }
+  hiveAccTo.value.valid = true
+
+  currencySelected.value = val.currencyToSend
+  amount.value.num = val.amount
+  updateAmounts(amount.value.txt)
+
+  console.log("hiveAccTo.value", hiveAccTo.value)
+}
 
 function extractUsernameFromRouteParam(routeParam) {
   // Assuming routeParam is in the format 'v4vapp.dev/bookmark'

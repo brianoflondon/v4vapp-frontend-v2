@@ -1,5 +1,6 @@
 <template>
   <q-dialog v-model="KeychainDialog.show">
+    {{ KeychainDialog.display }}
     <q-card>
       <q-toolbar>
         <!-- Title Bar -->
@@ -134,17 +135,22 @@
       </q-card-section>
       <q-card-section>
         <div class="flex q-gutter-sm items-center">
-          <q-btn
-            icon="content_copy"
-            round
-            @click="copyToClipboard(KeychainDialog.qrCodeText)"
-          >
-            <q-tooltip>{{ t("copy_qrcode") }}</q-tooltip>
-          </q-btn>
+          <div>
+            <q-btn
+              icon="content_copy"
+              round
+              @click="copyToClipboard(KeychainDialog.qrCodeText)"
+            >
+              <q-tooltip>{{ t("copy_qrcode") }}</q-tooltip>
+            </q-btn>
 
-          <q-btn icon="download" round @click="downloadQR('png')">
-            <q-tooltip>{{ t("download_tooltip") }}</q-tooltip>
-          </q-btn>
+            <q-btn icon="download" round @click="downloadQR('png')">
+              <q-tooltip>{{ t("download_tooltip") }}</q-tooltip>
+            </q-btn>
+          </div>
+          <div class="text-right">
+            <pre>{{ KeychainDialog.checkCode }}</pre>
+          </div>
         </div>
       </q-card-section>
     </q-card>
@@ -264,24 +270,12 @@ onBeforeMount(() => {
 onMounted(async () => {
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
-      // storeSales.clearSales()
       KeychainDialog.value.transactions = val
       KeychainDialog.value.paid = false
       KeychainDialog.value.loading = false
       checkHiveTransaction()
       KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
       startCountdown()
-      console.log("KeychainDialog", KeychainDialog.value)
-      // storeSales.addSale({
-      //   checkCode: KeychainDialog.value.checkCode,
-      //   hiveAccTo: KeychainDialog.value.hiveAccTo,
-      //   amount: KeychainDialog.value.amountToSend,
-      //   currencyToSend: KeychainDialog.value.currencyToSend,
-      //   amountString: KeychainDialog.value.amountString,
-      //   memo: KeychainDialog.value.memo,
-      //   timestamp: new Date(),
-      //   paid: false,
-      // })
     }
   )
 })
@@ -295,6 +289,7 @@ function updateStoreSales() {
     amountString: KeychainDialog.value.amountString,
     memo: KeychainDialog.value.memo,
     timestamp: new Date(),
+    timestampUnix: new Date().getTime(),
     paid: false,
   })
   // if (!storeSales.findSale(KeychainDialog.value.checkCode)) {

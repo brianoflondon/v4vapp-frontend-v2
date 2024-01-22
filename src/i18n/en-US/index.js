@@ -174,4 +174,5 @@ export default {
   paid: "Paid",
   pending: "Pending",
   date: "Date",
+  paid_by: "Paid by",
 }

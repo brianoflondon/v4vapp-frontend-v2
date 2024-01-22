@@ -53,7 +53,7 @@ export const useStoreSales = defineStore("storeSales", {
       )
       this.requestedSales[index].lightning = false
     },
-    removeSale(check) {
+    removeSale(checkCode) {
       const index = this.requestedSales.findIndex(
         (s) => s.checkCode === checkCode
       )

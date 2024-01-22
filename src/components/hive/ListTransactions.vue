@@ -1,9 +1,39 @@
 <template>
   <div>
+    <div
+      class="q-pb-sm fit row no-wrap justify-center items-end content-center"
+    >
+      <div>
+        <q-btn
+          dense
+          flat
+          icon="fa-brands fa-hive"
+          @click="importFromHive"
+          class="q-mr-sm"
+        >
+          <q-tooltip>{{ $t("import_from_hive") }}</q-tooltip>
+          {{ $t("import_hive") }}</q-btn
+        >
+      </div>
+      <div>
+        <q-btn
+          dense
+          flat
+          icon="delete"
+          @click="deleteLocalSales"
+          class="q-mr-sm"
+        >
+          <q-tooltip>{{ $t("delete_local_sales") }}</q-tooltip>
+          {{ $t("local records") }}</q-btn
+        >
+      </div>
+    </div>
+    <div>filter goes here</div>
+
     <q-table
-      v-model:selected="selectedTransaction"
       :rows="storeSales.salesAll"
       dense
+      v-model:expanded="rowsExpanded"
       row-key="checkCode"
       :columns="localSalesColumns"
       :visible-columns="['date', 'amountstring', 'status', 'expand']"
@@ -14,7 +44,31 @@
         sortBy: 'props.timestamp',
       }"
     >
+      <template v-slot:header-cell-amountstring="props">
+        <q-th :props="props" style="text-align: center">
+          {{ props.col.label }}
+        </q-th>
+      </template>
+      <template v-slot:header-cell-status="props">
+        <q-th :props="props" style="text-align: center">
+          {{ props.col.label }}
+        </q-th>
+      </template>
+      <template v-slot:header-cell-expand="props">
+        <q-th :props="props" style="text-align: center">
+          <q-td :props="props" key="expand">
+            <q-btn
+              round
+              flat
+              dense
+              :icon="rowsExpanded ? 'expand_less' : 'expand_more'"
+              @click="rowsExpanded = []"
+            ></q-btn>
+          </q-td>
+        </q-th>
+      </template>
       <template #body="props">
+        <!-- Main table  -->
         <q-tr :props="props">
           <q-td :props="props" key="date">
             {{ formatDateTimeLocale(props.row.timestamp).date }}
@@ -22,7 +76,7 @@
           <q-td k:props="props" key="amountstring" dense>
             {{ props.row.amountString }}
           </q-td>
-          <q-td :props="props" key="status">
+          <q-td :props="props" key="status" @click="handleRowClick(props)">
             <q-chip
               dense
               :color="props.row.paid ? 'green' : 'yellow-10'"
@@ -45,6 +99,7 @@
             ></q-btn>
           </q-td>
         </q-tr>
+        <!-- End of main table  -->
         <!-- Expanded row details  -->
         <q-tr v-if="props.expand">
           <q-td colspan="100%">
@@ -128,8 +183,8 @@
       <q-tr :props="props" @click="handleRowClick(props.row)"> </q-tr>
     </q-table>
   </div>
-  <!-- hide the following -->
-  <div v-if="false">
+  <!-- Data from Hive only -->
+  <div v-if="true">
     <q-table
       :rows="filteredData"
       :columns="myColumns"
@@ -172,32 +227,29 @@ import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
 import { useStoreSales } from "src/stores/storeSales"
 import { useI18n } from "vue-i18n"
+import { Dialog } from "quasar"
 const t = useI18n().t
 
 const storeSales = useStoreSales()
 const KeychainDialog = defineModel()
 const selectedTransaction = ref()
+const emit = defineEmits(["update-fields"])
 
+const rowsExpanded = ref([])
 const localSalesColumns = ref([
-  {
-    name: "selected",
-    field: "selected",
-    align: "center",
-    sortable: true,
-    hide: true,
-  },
   {
     name: "date",
     label: t("date"),
-    field: (row) => formatDateTimeLocale(row.timestamp).date,
+    field: (row) => row.timestampUnix,
     sortable: true,
     align: "left",
+    sortBy: (row) => row.timestampUnix,
+    sortMethod: (a, b) => parseInt(a) - parseInt(b), // Assuming timestampUnix is a string of a number
   },
   {
     name: "amountstring",
     label: t("amount"),
     field: (row) => row.amountString,
-    sortable: true,
     align: "right",
   },
   {
@@ -230,8 +282,108 @@ watch(
   }
 )
 
-function handleRowClick(row) {
-  console.log("row", row)
+function expandAll(props) {
+  console.log("expandAll", props)
+  // props.forEach((row) => {
+  //   row.expand = !row.expand
+  // })
+}
+
+function importFromHive() {
+  updateTransactions()
+  console.log("importFromHive")
+  console.log(
+    "KeychainDialog.value.transactions",
+    KeychainDialog.value.transactions
+  )
+  // for all the records in transactions add them to the local sales store
+  filteredData.value.reverse().forEach((transaction) => {
+    const memo = transaction.op[1].memo
+    const hiveAccTo = transaction.op[1].to
+    const amount = transaction.op[1].amount
+    const checkCode = transaction.checkCode
+    const hiveAccFrom = transaction.op[1].from
+    const amountString = amount
+    const currencyToSend = "HIVE"
+    const trx_id = transaction.trx_id
+    const timestampUnix = transaction.timestampUnix
+    const strippedMemo = transaction.strippedMemo
+    // turn timestampUnix into a date object
+    const paidDate = new Date(timestampUnix)
+    const sale = {
+      checkCode: checkCode,
+      hiveAccTo: hiveAccTo,
+      hiveAccFrom: hiveAccFrom,
+      amount: amount,
+      currencyToSend: currencyToSend,
+      amountString: amountString,
+      memo: strippedMemo,
+      timestamp: paidDate,
+      timestampUnix: timestampUnix,
+      paidDate: paidDate,
+      trx_id: trx_id,
+      paid: true,
+    }
+    console.log("paidDate", paidDate)
+    storeSales.updateSale(sale)
+  })
+}
+
+const deleteLocalSales = () => {
+  Dialog.create({
+    // todo: replace these with i18n
+    title: "Confirm",
+    message: "Are you sure you want to delete all pending sales?",
+    ok: {
+      label: "Yes",
+      icon: "delete",
+      color: "primary",
+    },
+    cancel: {
+      label: "No",
+      color: "negative",
+    },
+  }).onOk(() => {
+    storeSales.clearSales()
+  })
+}
+
+/**
+ * Handles the click event on a row in the transactions list.
+ *
+ * @param {Object} props - The properties of the row that was clicked.
+ * @param {Object} props.row - The data of the row that was clicked.
+ * @param {boolean} props.row.paid - Whether the transaction has been paid.
+ * @param {string} props.row.hiveAccTo - The account to which the transaction is to be made.
+ * @param {number} props.row.amount - The amount of the transaction.
+ * @param {string} props.row.memo - The memo of the transaction.
+ * @param {string} props.row.currencyToSend - The currency to be sent in the transaction.
+ * @param {string} props.row.checkCode - The check code of the transaction.
+ * @param {boolean} props.expand - Whether the row is expanded.
+ *
+ * If the transaction has been paid, it toggles the expansion of the row.
+ * If the transaction has not been paid, it emits an 'update-fields' event with the transaction data,
+ * waits for a bit, shows the KeychainDialog, and then removes the sale from the store.
+ */
+async function handleRowClick(props) {
+  console.log("row", props.row)
+  if (props.row.paid) {
+    console.log("paid")
+    props.expand = !props.expand
+  } else {
+    emit("update-fields", {
+      hiveAccTo: props.row.hiveAccTo,
+      amount: props.row.amount,
+      memo: props.row.memo,
+      currencyToSend: props.row.currencyToSend,
+    })
+    // wait a bit for the fields to update
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    // After updating fields on the parent, show the dialog
+    KeychainDialog.value.show = true
+    // then delete the previous attempt at the transaction
+    storeSales.removeSale(props.row.checkCode)
+  }
 }
 
 /**
@@ -389,7 +541,7 @@ const myColumns = ref([
   border-bottom: none;
 }
 .bordered-div {
-  // border: 1px solid #eee; /* light gray */
+  border: 1px solid #eee; /* light gray */
 }
 
 .small-text {
@@ -399,5 +551,4 @@ const myColumns = ref([
 .custom-link {
   color: var(--q-color-on-background); /* Default color for light mode */
 }
-
 </style>
