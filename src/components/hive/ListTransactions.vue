@@ -1,8 +1,6 @@
 <template>
   <div class="q-pa-none">
-    <div>
-      <q-input v-model="searchFilter" label="Search"></q-input>
-    </div>
+    <q-input class="q-pa-none" v-model="searchFilter" label="Search"></q-input>
   </div>
   <div class="q-pa-none">
     <q-table
@@ -206,7 +204,7 @@
           @click="importFromHive"
           class="q-mr-sm"
         >
-          <q-tooltip>{{ $t("import_from_hive") }}</q-tooltip>
+          <q-tooltip>{{ $t("import_from_hive_tooltip") }}</q-tooltip>
           {{ $t("import_hive") }}</q-btn
         >
       </div>
@@ -218,8 +216,8 @@
           @click="deleteLocalSales"
           class="q-mr-sm"
         >
-          <q-tooltip>{{ $t("delete_local_sales") }}</q-tooltip>
-          {{ $t("local records") }}</q-btn
+          <q-tooltip>{{ $t("delete_local_records_tooltip") }}</q-tooltip>
+          {{ $t("local_records") }}</q-btn
         >
       </div>
     </div>
@@ -273,7 +271,6 @@ const localSalesColumns = ref([
 ])
 
 const filteredDataLocal = computed(() => {
-  console.log("searchFilter.value", searchFilter.value)
   const localData = storeSales.salesAll
   if (!searchFilter.value) return localData
   return localData.filter((row) => {
@@ -293,7 +290,7 @@ watch(
   () => KeychainDialog.value.hiveAccTo,
   async (val) => {
     KeychainDialog.value.transactions = val
-    await updateTransactions()
+    updateTransactions()
   }
 )
 
@@ -301,7 +298,7 @@ watch(
   () => KeychainDialog.value.paid,
   async (val) => {
     KeychainDialog.value.paid = val
-    await updateTransactions()
+    updateTransactions()
   }
 )
 
@@ -313,13 +310,22 @@ function expandAll() {
   }
 }
 
-function importFromHive() {
-  updateTransactions()
-  console.log("importFromHive")
-  console.log(
-    "KeychainDialog.value.transactions",
-    KeychainDialog.value.transactions
-  )
+/**
+ * Asynchronously imports transactions from Hive blockchain.
+ *
+ * This function first updates the transactions by calling `updateTransactions()`.
+ * Then, for each transaction in `filteredDataHive`, it creates a `sale` object
+ * with various properties derived from the transaction data, including a `lightning`
+ * property that is `true` if the transaction is from the "v4vapp" account.
+ * Finally, it updates the sales store with the `sale` object.
+ *
+ * Note: This function modifies `filteredDataHive` in-place by reversing it.
+ *
+ * @async
+ */
+async function importFromHive() {
+  console.log("importFromHive running for ", KeychainDialog.value.hiveAccTo)
+  await updateTransactions()
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.reverse().forEach((transaction) => {
     const memo = transaction.op[1].memo
@@ -328,11 +334,10 @@ function importFromHive() {
     const checkCode = transaction.checkCode
     const hiveAccFrom = transaction.op[1].from
     const amountString = amount
-    const currencyToSend = "HIVE"
+    const currencyToSend = transaction.op[1].amount.split(" ")[1].toLowerCase()
     const trx_id = transaction.trx_id
     const timestampUnix = transaction.timestampUnix
     const strippedMemo = transaction.strippedMemo
-    const lightning = hiveAccFrom === "v4vapp" ? true : false
     // turn timestampUnix into a date object
     const paidDate = new Date(timestampUnix)
     const sale = {
@@ -347,10 +352,9 @@ function importFromHive() {
       timestampUnix: timestampUnix,
       paidDate: paidDate,
       trx_id: trx_id,
-      lightning: lightning,
+      lightning: hiveAccFrom === "v4vapp",
       paid: true,
     }
-    console.log("paidDate", paidDate)
     storeSales.updateSale(sale)
   })
 }
@@ -471,8 +475,10 @@ async function updateTransactions() {
 }
 
 onMounted(() => {
+  console.log("mounted ListTransactions.vue")
   KeychainDialog.value.transactions = []
   updateTransactions()
+  importFromHive()
 })
 
 /**

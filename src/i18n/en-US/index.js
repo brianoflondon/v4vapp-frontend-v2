@@ -175,4 +175,11 @@ export default {
   pending: "Pending",
   date: "Date",
   paid_by: "Paid by",
+  import_hive: "Import Hive",
+  local_records: "Local Records",
+  import_from_hive_tooltip: "Import all past sales from Hive",
+  delete_local_records_tooltip: `Delete all local records. This will erase all pending payments, \n
+    but successful payments can be re- imported from Hive with the \n
+    Import Hive button`,
+  
 }

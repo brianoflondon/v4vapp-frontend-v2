@@ -24,13 +24,15 @@
           :label="$t('currency')"
         />
       </q-tabs>
-      <q-tab-panels v-model="currentTab">
+      <q-tab-panels v-model="currentTab" class="pad-max-width q-pa-none">
         <q-tab-panel name="history" class="full-width">
-          <div class="full-width q-px-none q-py-xs">
-            <ListTransactions
-              v-model="KeychainDialog"
-              @update-fields="handleRetryTransaction"
-            ></ListTransactions>
+          <div class="q-pa-none">
+            <div class="q-pa-none pad-max-width">
+              <ListTransactions
+                v-model="KeychainDialog"
+                @update-fields="handleRetryTransaction"
+              ></ListTransactions>
+            </div>
           </div>
         </q-tab-panel>
         <q-tab-panel name="currency">
