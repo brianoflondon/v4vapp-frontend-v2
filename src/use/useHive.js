@@ -10,6 +10,12 @@ import "src/assets/hive-tx.min.js"
 const useHiveAccountRegex =
   /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
 
+const baseURLBlockExplorer = "https://hivehub.dev/tx/"
+
+export function useGenerateTxUrl(txId) {
+  return `${baseURLBlockExplorer}${txId}`
+}
+
 export async function useHiveDetails(hiveAccname) {
   // returns Hive Profile and details for a given Hive hiveAccname
   if (!hiveAccname?.match(useHiveAccountRegex)) {

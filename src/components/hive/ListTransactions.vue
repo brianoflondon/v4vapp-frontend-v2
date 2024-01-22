@@ -45,51 +45,80 @@
             ></q-btn>
           </q-td>
         </q-tr>
+        <!-- Expanded row details  -->
         <q-tr v-if="props.expand">
           <q-td colspan="100%">
             <div
-              class="fit row inline wrap justify-start items-start content-start"
+              class="fit row justify-start items-start content-start bordered-div"
             >
               <div>
-                <div
-                  class="fit col inline wrap justify-start items-start content-start"
-                >
-                  <div>
+                <!-- Payee  -->
+                <div class="q-pr-sm">
+                  <div class="small-text">
                     {{ $t("pay_to") }}
                   </div>
-                  <div>
+                  <div class="">
                     <q-avatar rounded size="md">
                       <HiveAvatar :hiveAccname="props.row.hiveAccTo" />
                     </q-avatar>
                   </div>
-                  <div>
+                  <div class="small-text">
                     {{ props.row.hiveAccTo }}
                   </div>
                 </div>
               </div>
-              <div class="fit col items-start content-left">
-                <div>{{ props.row.amountString }}</div>
-                <div v-if="props.row.memo" class="q-px-md">
-                  {{ $t("memo") }} : {{ props.row.memo }}
+              <!-- End of Payee -->
+              <!-- Payer  -->
+              <div v-if="props.row.paid" class="q-px-sm">
+                <div class="small-text">
+                  {{ $t("paid_by") }}
                 </div>
-                <div class="q-px-md" style="font-size: x-small">
-                  {{ props.row.checkCode }}
-                </div>
-              </div>
-              <div v-if="props.row.paid">
-                <div>Paid by</div>
-                <div>
+                <div class="">
                   <q-avatar rounded size="md">
                     <HiveAvatar :hiveAccname="props.row.hiveAccFrom" />
                   </q-avatar>
                 </div>
-                  <div>
-                    {{ props.row.hiveAccFrom }}
-                  </div>
+                <div class="small-text">
+                  {{ props.row.hiveAccFrom }}
+                </div>
+              </div>
+              <!-- End of Payer -->
+              <!-- details of transaction  -->
+              <div class="col-grow self-end text-right">
+                <div v-if="props.row.paid">
+                  {{ formatDateTimeLocale(props.row.paidDate).date }}
+                  {{ formatDateTimeLocale(props.row.paidDate).time }}
+                  <a
+                    :href="useGenerateTxUrl(props.row.trx_id)"
+                    target="_blank"
+                    class="custom-link"
+                  >
+                    <q-btn
+                      size="xs"
+                      text-color="inherit"
+                      flat
+                      dense
+                      icon="open_in_new"
+                      name="open_in_new"
+                    />
+                  </a>
+                </div>
+                <div v-else>
+                  {{ formatDateTimeLocale(props.row.timestamp).date }}
+                  {{ formatDateTimeLocale(props.row.timestamp).time }}
+                </div>
+                <div class="">{{ props.row.amountString }}</div>
+                <div v-if="props.row.memo" class="">
+                  {{ props.row.memo }}
+                </div>
+                <div class="small-text">
+                  {{ props.row.checkCode }}
+                </div>
               </div>
             </div>
           </q-td>
         </q-tr>
+        <!-- End of expanded row details -->
       </template>
     </q-table>
   </div>
@@ -138,7 +167,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from "vue"
-import { useGetHiveTransactionHistory } from "src/use/useHive"
+import { useGetHiveTransactionHistory, useGenerateTxUrl } from "src/use/useHive"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
 import { useStoreSales } from "src/stores/storeSales"
@@ -359,4 +388,16 @@ const myColumns = ref([
 .no-border {
   border-bottom: none;
 }
+.bordered-div {
+  // border: 1px solid #eee; /* light gray */
+}
+
+.small-text {
+  font-size: x-small;
+}
+
+.custom-link {
+  color: var(--q-color-on-background); /* Default color for light mode */
+}
+
 </style>
