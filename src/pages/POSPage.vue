@@ -407,7 +407,8 @@ function handleRetryTransaction(val) {
   }
   hiveAccTo.value.valid = true
 
-  currencySelected.value = val.currencyToSend
+  handleCurrencyClicked(val.currencyToSend)
+
   amount.value.num = val.amount
   amount.value.txt = tidyNumber(val.amount, 3)
   memoInput.value = val.memo
