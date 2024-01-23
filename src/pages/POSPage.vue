@@ -600,7 +600,8 @@ watch(
 }
 
 .pad-max-width {
-  max-width: 400px;
+  max-width: 600px;
+  padding: 1rem 0.5rem;
 }
 
 .full-width {
