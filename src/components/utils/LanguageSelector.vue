@@ -9,7 +9,7 @@
           @click="onItemClick(option.value)"
         >
           <q-item-section>
-            {{ option.label }} {{ option.flag  }}
+            {{ option.label }} {{ option.flag }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -22,7 +22,8 @@ import { useI18n } from "vue-i18n"
 const { locale } = useI18n({ useScope: "global" })
 
 const localeOptions = [
-  { value: "en-US", label: "En", flag: "🇬🇧" },
+  { value: "en-UK", label: "En", flag: "🇬🇧" },
+  { value: "en-US", label: "En", flag: "🇺🇸" },
   { value: "es-ES", label: "Es", flag: "🇪🇸" },
   { value: "de-DE", label: "De", flag: "🇩🇪" },
   { value: "pt-BR", label: "Pt", flag: "🇧🇷" },
