@@ -1,13 +1,7 @@
 <template>
-  <div
-    class="q-pb-sm fit row wrap justify-start items-center content-start"
-  >
+  <div class="q-pb-sm fit row wrap justify-start items-center content-start">
     <div class="col-grow">
-      <q-input
-        dense
-        v-model="searchFilter"
-        label="Search"
-      ></q-input>
+      <q-input dense v-model="searchFilter" label="Search"></q-input>
     </div>
     <div>
       <q-btn-toggle
@@ -21,9 +15,10 @@
       ></q-btn-toggle>
     </div>
   </div>
-
+  <!-- Main table -->
   <div class="q-pa-none">
     <q-table
+      class="q-pa-xs"
       :rows="filteredDataLocal"
       dense
       v-model:expanded="rowsExpanded"
@@ -33,7 +28,7 @@
       separator="none"
       :pagination="{
         rowsPerPage: 5,
-        display: true,
+        display: false,
         sortBy: 'props.timestamp',
       }"
     >
@@ -58,8 +53,8 @@
           ></q-btn>
         </q-th>
       </template>
+      <!-- Main table body  -->
       <template #body="props">
-        <!-- Main table  -->
         <q-tr :props="props">
           <q-td :props="props" key="date">
             {{ formatDateTimeLocale(props.row.timestamp).date }}
@@ -169,59 +164,25 @@
     </q-table>
   </div>
   <q-separator />
-  <div v-if="false">
-    <q-table :rows="storeSales.salesAll" dense row-key="checkCode">
-      <q-tr :props="props" @click="handleRowClick(props.row)"> </q-tr>
-    </q-table>
-  </div>
-  <!-- Data from Hive only -->
-  <div v-if="false">
-    <q-table
-      :rows="filteredDataHive"
-      :columns="myColumns"
-      dense
-      row-key="trx_id"
-      :visible-columns="['age', 'from', 'amount']"
-    >
-      <template #body="props">
-        <q-tr :props="props" @click="handleRowClick(props.row)">
-          <q-td class="no-border">
-            {{ prettyTime(props.row.timestampUnix) }}
-          </q-td>
-          <q-td class="no-border text-left">
-            {{ props.row.op[1].from }}
-          </q-td>
-          <q-td class="no-border text-right">
-            {{ props.row.op[1].amount }}
-          </q-td>
-        </q-tr>
-        <q-tr :props="props" @click="handleRowClick(props.row)">
-          <q-td>
-            {{ formatDateTimeLocale(props.row.timestampUnix).date }}
-          </q-td>
-          <q-td colspan="2" class="text-left">
-            {{ props.row.strippedMemo }}
-            <span class="text-right" style="font-size: x-small">{{
-              props.row.checkCode
-            }}</span>
-          </q-td>
-        </q-tr>
-      </template>
-    </q-table>
-  </div>
+  <!-- End of main table -->
+  <!-- Totals  and import buttons-->
   <div class="q-pt-sm bordered-div">
+    <!-- total amounts -->
     <div class="q-pb-sm fit row no-wrap justify-center bordered-div">
-      <div class="bordered-div">
+      <div class="q-px-sm bordered-div">
         <i class="fa-brands fa-hive" />{{ totalAmounts.hive }}
       </div>
-      <div>&nbsp;-&nbsp;</div>
-      <div class="bordered-div"><hbd-logo-icon />{{ totalAmounts.hbd }}</div>
-      <div>&nbsp;=&nbsp;</div>
-      <div class="bordered-div">${{ totalAmounts.usd }}</div>
+      <div><q-icon name="add" /></div>
+      <div class="q-px-sm bordered-div">
+        <hbd-logo-icon />&nbsp;{{ totalAmounts.hbd }}
+      </div>
+      <div><q-icon name="drag_handle" /></div>
+      <div class="q-px-sm bordered-div">${{ totalAmounts.usd }}</div>
     </div>
+    <!-- end total amounts -->
     <!-- Import and delete buttons -->
     <div
-      class="q-pb-sm q-gutter-md fit row no-wrap justify-center items-center bordered-div"
+      class="q-pb-sm fit row no-wrap justify-evenly items-center bordered-div"
     >
       <div class="bordered-div">
         <q-btn
@@ -347,8 +308,6 @@ watch(
 )
 
 function getAmounts() {
-  console.log("getAmounts")
-  console.log("filteredLocalData", filteredDataLocal.value)
   const amounts = {
     hive: 0,
     hbd: 0,
@@ -365,7 +324,6 @@ function getAmounts() {
   amounts.hbd = amounts.hbd.toFixed(3)
   // convert hive to USD
   totalAmounts.value = amounts
-  console.log("storeAPIStatus.prices", storeAPIStatus.prices)
   if (storeAPIStatus.prices === "fetching prices") {
     // wait a bit and try again
     setTimeout(() => {
@@ -582,7 +540,6 @@ async function updateTransactions() {
 }
 
 onMounted(() => {
-  console.log("mounted ListTransactions.vue")
   KeychainDialog.value.transactions = []
   updateTransactions()
   importFromHive()
@@ -680,7 +637,7 @@ const myColumns = ref([
   border-bottom: none;
 }
 .bordered-div {
-  border: 1px solid #eee; /* light gray */
+  // border: 1px solid #eee; /* light gray */
 }
 
 .small-text {
@@ -693,5 +650,10 @@ const myColumns = ref([
 
 .q-tr {
   border-bottom: 1px solid #eee;
+}
+
+.q-table--dense .q-table th,
+.q-table--dense .q-table td {
+  padding: 0px 2px !important;
 }
 </style>
