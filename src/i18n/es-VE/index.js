@@ -22,6 +22,9 @@ export default {
   to: 'to',
   local_currency: 'Local Currency',
   currency: 'Currency',
+  confirm: 'Confirm',
+  yes: 'Yes',
+  no: 'No',
   // Dark Mode Selector
   change_light: 'Change to light mode',
   change_dark: 'Change to dark mode',
@@ -149,6 +152,8 @@ export default {
   charge: 'Charge',
   set_rate: 'Set Rate',
   market_rate: 'Market Rate',
+  sales: 'Sales',
+  history: 'History',
   // as in charge a customer
   payment: 'Payment',
   scan_to_send: 'Scan this code to send',
@@ -162,5 +167,18 @@ export default {
   Fees: 'Fees',
   list_received_payments: 'Received Payments',
   memo: 'Memo',
-  calculating_fees: 'Calculating fees'
+  calculating_fees: 'Calculating fees',
+  // Transaction list
+  date: 'Date',
+  paid: 'Paid',
+  pending: 'Pending',
+  date: 'Date',
+  paid_by: 'Paid by',
+  import_hive: 'Import Hive',
+  local_records: 'Local Records',
+  import_from_hive_tooltip: 'Import all past sales from Hive',
+  delete_local_records_tooltip: `Delete all local records. This will erase all pending payments, \n
+    but successful payments can be re- imported from Hive with the \n
+    Import Hive button`,
+  delete_pending_message: 'Are you sure you want to delete all pending sales?'
 };
