@@ -1,5 +1,7 @@
 <template>
-  <div class="q-pb-sm fit row wrap justify-start items-center content-start">
+  <div
+    class="list-trans-header q-pb-sm fit row wrap justify-start items-center content-start"
+  >
     <div class="col-grow">
       <q-input dense v-model="searchFilter" label="Search"></q-input>
     </div>
@@ -16,7 +18,7 @@
     </div>
   </div>
   <!-- Main table -->
-  <div class="q-pa-none">
+  <div class="list-trans-main-table q-pa-none">
     <q-table
       class="q-pa-xs"
       :rows="filteredDataLocal"
@@ -179,9 +181,11 @@
   <q-separator />
   <!-- End of main table -->
   <!-- Totals  and import buttons-->
-  <div class="q-pt-sm bordered-div">
+  <div class="list-trans-totals-buttons q-pt-sm bordered-div">
     <!-- total amounts -->
-    <div class="q-pb-sm fit row no-wrap justify-center bordered-div">
+    <div
+      class="list-trans-totals q-pb-sm fit row no-wrap justify-center bordered-div"
+    >
       <div class="q-px-sm bordered-div">
         <i class="fa-brands fa-hive" />{{ totalAmounts.hive }}
       </div>
@@ -195,9 +199,9 @@
     <!-- end total amounts -->
     <!-- Import and delete buttons -->
     <div
-      class="q-pb-sm fit row no-wrap justify-evenly items-center bordered-div"
+      class="list-trans-buttons q-pb-sm fit row no-wrap justify-evenly items-center bordered-div"
     >
-      <div class="bordered-div">
+      <div class="list-trans-import bordered-div">
         <q-btn
           dense
           rounded
@@ -212,7 +216,7 @@
           </div>
         </q-btn>
       </div>
-      <div class="bordered-div">
+      <div class="list-trans-delete bordered-div">
         <q-btn
           dense
           rounded
@@ -224,6 +228,21 @@
           <q-tooltip>{{ $t("delete_local_records_tooltip") }}</q-tooltip>
           <div class="q-px-">
             {{ $t("local_records") }}
+          </div>
+        </q-btn>
+      </div>
+      <div class="list-trans-delete bordered-div">
+        <q-btn
+          dense
+          rounded
+          size="sm"
+          icon="archive"
+          @click="exportToCsv"
+          class="q-mr-sm"
+        >
+          <q-tooltip>{{ $t("delete_local_records_tooltip") }}</q-tooltip>
+          <div class="q-px-">
+            {{ $t("Export to CSV") }}
           </div>
         </q-btn>
       </div>
@@ -240,7 +259,7 @@ import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
 import { useStoreSales } from "src/stores/storeSales"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
-import { Dialog } from "quasar"
+import { Dialog, exportFile } from "quasar"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 const t = useI18n().t
 const storeAPIStatus = useStoreAPIStatus()
@@ -644,6 +663,74 @@ function prettyDate(row) {
 function prettyTime(timestampUnix) {
   const timeDiff = Date.now() - timestampUnix
   return formatTimeDifference(timeDiff)
+}
+
+function wrapCsvValue(val, formatFn, row) {
+  let formatted = formatFn !== void 0 ? formatFn(val, row) : val
+
+  formatted =
+    formatted === void 0 || formatted === null ? "" : String(formatted)
+
+  formatted = formatted.split('"').join('""')
+  /**
+   * Excel accepts \n and \r in strings, but some other CSV parsers do not
+   * Uncomment the next two lines to escape new lines
+   */
+  // .split('\n').join('\\n')
+  // .split('\r').join('\\r')
+
+  return `"${formatted}"`
+}
+
+function exportToCsv() {
+  // naive encoding to csv format
+
+  const columns = [
+    { name: "amount", label: "amount" },
+    { name: "amountPaid", label: "amountPaid" },
+    { name: "amountString", label: "amountString" },
+    { name: "checkCode", label: "checkCode" },
+    { name: "currencyToSend", label: "currencyToSend" },
+    { name: "hiveAccFrom", label: "hiveAccFrom" },
+    { name: "hiveAccTo", label: "hiveAccTo" },
+    { name: "memo", label: "memo" },
+    { name: "paid", label: "paid" },
+    { name: "paidDate", label: "paidDate" },
+    { name: "timestamp", label: "timestamp" },
+    { name: "timestampUnix", label: "timestampUnix" },
+    { name: "trx_id", label: "trx_id" },
+    { name: "usd", label: "usd" },
+  ]
+
+  const rows = filteredDataLocal.value
+  // naive encoding to csv format
+  const content = [columns.map((col) => wrapCsvValue(col.label))]
+    .concat(
+      rows.map((row) =>
+        columns
+          .map((col) =>
+            wrapCsvValue(
+              typeof col.field === "function"
+                ? col.field(row)
+                : row[col.field === void 0 ? col.name : col.field],
+              col.format,
+              row
+            )
+          )
+          .join(",")
+      )
+    )
+    .join("\r\n")
+
+  const status = exportFile("table-export.csv", content, "text/csv")
+
+  if (status !== true) {
+    $q.notify({
+      message: "Browser denied file download...",
+      color: "negative",
+      icon: "warning",
+    })
+  }
 }
 </script>
 
