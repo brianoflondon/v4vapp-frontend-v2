@@ -1,6 +1,6 @@
 <template>
   <q-page>
-    <div class="flex column text-center items-center">
+    <div class="flex column text-center items-center q-pa-none">
       <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
         <q-route-tab
           :to="`/pos/sales${
@@ -24,10 +24,13 @@
           :label="$t('currency')"
         />
       </q-tabs>
-      <q-tab-panels v-model="currentTab" class="pad-max-width q-pa-none">
-        <q-tab-panel name="history" class="full-width">
-          <div class="q-pa-none">
-            <div class="q-pa-none pad-max-width">
+      <q-tab-panels
+        v-model="currentTab"
+        class="div flex row pad-max-width full-width items-center"
+      >
+        <q-tab-panel name="history" class="q-pa-none full-width">
+          <div>
+            <div class="q-px-xs q-py-xs">
               <ListTransactions
                 v-model="KeychainDialog"
                 @update-fields="handleRetryTransaction"
@@ -52,30 +55,8 @@
         v-if="route.params.hiveAccTo"
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
       >
-        <div class="col-9">
+        <div class="col-10">
           <PosHeader />
-        </div>
-        <!-- Button to Show Currency settings -->
-        <div class="div col-3 q-px-sm" v-if="true">
-          <q-btn
-            round
-            @click="KeychainDialog.settings = !KeychainDialog.settings"
-            icon="settings"
-            ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
-          </q-btn>
-        </div>
-        <div class="col-12 q-px-sm q-pb-md" v-else>
-          <!-- bookmark icon -->
-          <div v-if="!hiveAccTo.valid">
-            <q-icon name="bookmark" class="cursor-pointer" />
-          </div>
-          <div v-else>
-            <a :href="`/pos/@${hiveAccTo.value}/`">
-              <q-icon name="bookmark" class="cursor-pointer" />{{
-                `v4v.app/pos/@${hiveAccTo.value}`
-              }}
-            </a>
-          </div>
         </div>
       </div>
       <!-- Select a user and Local Currency Settings -->
@@ -83,7 +64,7 @@
         class="div flex row pad-max-width full-width items-start q-pa-sm q-pt-lg q-pb-md"
         v-else
       >
-        <div class="col-9 q-px-sm">
+        <div class="col-10 q-px-sm">
           <div class="pad-max-width full-width">
             <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
             <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')">
@@ -91,16 +72,7 @@
           </div>
         </div>
         <!-- Button to Show Currency settings -->
-        <div class="div col-3 q-px-none row justify-start items-center">
-          <div class="q-px-xs">
-            <q-btn
-              round
-              dense
-              @click="KeychainDialog.settings = !KeychainDialog.settings"
-              icon="settings"
-              ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
-            </q-btn>
-          </div>
+        <div class="div col-2 q-px-none row justify-start items-center">
           <div class="q-px-xs">
             <q-btn dense round icon="bookmark" @click="bookmarkSite">
               <q-tooltip>
@@ -244,10 +216,6 @@
     <!-- Show the QR dialog -->
     <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
     <!-- Show the settings dialog -->
-    <POSSettingsDialog
-      v-if="KeychainDialog.settings"
-      v-model="KeychainDialog"
-    />
   </q-page>
 </template>
 

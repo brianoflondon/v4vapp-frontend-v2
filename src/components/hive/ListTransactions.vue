@@ -17,7 +17,6 @@
         sortBy: 'props.timestamp',
       }"
     >
-      <template v-slot:top> </template>
       <template v-slot:header-cell-amountstring="props">
         <q-th :props="props" style="text-align: center">
           {{ props.col.label }}
@@ -29,16 +28,14 @@
         </q-th>
       </template>
       <template v-slot:header-cell-expand="props">
-        <q-th :props="props" style="text-align: center">
-          <q-td :props="props" key="expand">
-            <q-btn
-              round
-              flat
-              dense
-              :icon="rowsExpanded.length === 0 ? 'expand_more' : 'expand_less'"
-              @click="expandAll"
-            ></q-btn>
-          </q-td>
+        <q-th :props="props" style="text-align: right">
+          <q-btn
+            round
+            flat
+            dense
+            :icon="rowsExpanded.length === 0 ? 'expand_more' : 'expand_less'"
+            @click="expandAll"
+          ></q-btn>
         </q-th>
       </template>
       <template #body="props">
@@ -60,10 +57,12 @@
                   : 'fa-brands fa-hive'
               "
             >
-              {{ props.row.paid ? $t("paid") : $t("pending") }}
+              <div class="q-px-xs">
+                {{ props.row.paid ? $t("paid") : $t("pending") }}
+              </div>
             </q-chip>
           </q-td>
-          <q-td :props="props" key="expand">
+          <q-td :props="props" key="expand" style="text-align: right">
             <q-btn
               round
               flat
@@ -77,9 +76,7 @@
         <!-- Expanded row details  -->
         <q-tr v-if="props.expand">
           <q-td colspan="100%">
-            <div
-              class="fit row justify-start items-start content-start bordered-div"
-            >
+            <div class="fit row justify-start items-start content-start">
               <div>
                 <!-- Payee  -->
                 <div class="q-pr-sm">
@@ -192,35 +189,55 @@
       </template>
     </q-table>
   </div>
-  <div class="q-pt-sm">
+  <div class="q-pt-sm bordered-div">
+    <div class="q-pb-sm fit row no-wrap justify-center bordered-div">
+
+      <div class="bordered-div">
+        <i class="fa-brands fa-hive" />{{ totalAmounts.hive }}
+      </div>
+      <div>&nbsp;-&nbsp;</div>
+      <div class="bordered-div">
+        <hbd-logo-icon />{{ totalAmounts.hbd }}
+      </div>
+      <div>&nbsp;=&nbsp;</div>
+      <div class="bordered-div">${{ totalAmounts.usd }}</div>
+    </div>
+    <!-- Import and delete buttons -->
     <div
-      class="q-pb-sm fit row no-wrap justify-center items-end content-center"
+      class="q-pb-sm q-gutter-md fit row no-wrap justify-center items-center bordered-div"
     >
-      <div>
+      <div class="bordered-div">
         <q-btn
           dense
-          flat
+          rounded
+          size="sm"
           icon="fa-brands fa-hive"
           @click="importFromHive"
           class="q-mr-sm"
         >
           <q-tooltip>{{ $t("import_from_hive_tooltip") }}</q-tooltip>
-          {{ $t("import_hive") }}</q-btn
-        >
+          <div class="q-px-xs">
+            {{ $t("import_hive") }}
+          </div>
+        </q-btn>
       </div>
-      <div>
+      <div class="bordered-div">
         <q-btn
           dense
-          flat
+          rounded
+          size="sm"
           icon="delete"
           @click="deleteLocalSales"
           class="q-mr-sm"
         >
           <q-tooltip>{{ $t("delete_local_records_tooltip") }}</q-tooltip>
-          {{ $t("local_records") }}</q-btn
-        >
+          <div class="q-px-">
+            {{ $t("local_records") }}
+          </div>
+        </q-btn>
       </div>
     </div>
+    <!-- End of import and delete buttons -->
   </div>
 </template>
 
@@ -230,10 +247,18 @@ import { useGetHiveTransactionHistory, useGenerateTxUrl } from "src/use/useHive"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
 import { useStoreSales } from "src/stores/storeSales"
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
 import { Dialog } from "quasar"
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 const t = useI18n().t
+const storeAPIStatus = useStoreAPIStatus()
 
+const totalAmounts = ref({
+  hive: 0,
+  hbd: 0,
+  usd: 0,
+})
 const storeSales = useStoreSales()
 const KeychainDialog = defineModel()
 const searchFilter = ref()
@@ -266,14 +291,13 @@ const localSalesColumns = ref([
   {
     name: "expand",
     field: "expand",
-    align: "center",
   },
 ])
 
 const filteredDataLocal = computed(() => {
   const localData = storeSales.salesAll
   if (!searchFilter.value) return localData
-  return localData.filter((row) => {
+  const filteredData = localData.filter((row) => {
     return (
       row.hiveAccTo?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
       row.hiveAccFrom
@@ -284,8 +308,49 @@ const filteredDataLocal = computed(() => {
       row.amountString?.toLowerCase().includes(searchFilter.value.toLowerCase())
     )
   })
+  return filteredData
 })
 
+watch(
+  () => filteredDataLocal.value,
+  (val) => {
+    getAmounts()
+  }
+)
+
+function getAmounts() {
+  console.log("getAmounts")
+  console.log("filteredLocalData", filteredDataLocal.value)
+  const amounts = {
+    hive: 0,
+    hbd: 0,
+    usd: 0,
+  }
+  filteredDataLocal.value.forEach((row) => {
+    if (row.currencyToSend === "hive") {
+      amounts.hive += parseFloat(row.amount)
+    } else if (row.currencyToSend === "hbd") {
+      amounts.hbd += parseFloat(row.amount)
+    }
+  })
+  amounts.hive = amounts.hive.toFixed(3)
+  amounts.hbd = amounts.hbd.toFixed(3)
+  // convert hive to USD
+  amounts.usd = amounts.hive * storeAPIStatus.prices.hive.usd
+  amounts.usd += amounts.hbd * storeAPIStatus.prices.hive_dollar.usd
+  console.log(amounts.usd)
+  totalAmounts.value = amounts
+  totalAmounts.value.usd = amounts.usd.toFixed(2)
+}
+
+/**
+ * Watches for changes in `KeychainDialog.value.hiveAccTo`.
+ *
+ * When `KeychainDialog.value.hiveAccTo` changes, it assigns the new value to `KeychainDialog.value.transactions`
+ * and then calls the `updateTransactions` function.
+ *
+ * Note: This function is asynchronous.
+ */
 watch(
   () => KeychainDialog.value.hiveAccTo,
   async (val) => {
@@ -302,6 +367,12 @@ watch(
   }
 )
 
+/**
+ * Toggles the expansion of all rows in the table.
+ *
+ * If no rows are currently expanded, it expands all rows by setting `rowsExpanded.value` to an array of all checkCodes.
+ * If there are any expanded rows, it collapses all rows by setting `rowsExpanded.value` to an empty array.
+ */
 function expandAll() {
   if (rowsExpanded.value.length === 0) {
     rowsExpanded.value = filteredDataLocal.value.map((row) => row.checkCode)
@@ -324,8 +395,7 @@ function expandAll() {
  * @async
  */
 async function importFromHive() {
-  console.log("importFromHive running for ", KeychainDialog.value.hiveAccTo)
-  await updateTransactions()
+  updateTransactions()
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.reverse().forEach((transaction) => {
     const memo = transaction.op[1].memo
@@ -357,6 +427,7 @@ async function importFromHive() {
     }
     storeSales.updateSale(sale)
   })
+  getAmounts()
 }
 
 const deleteLocalSales = () => {
@@ -379,7 +450,8 @@ const deleteLocalSales = () => {
 }
 
 /**
- * Handles the click event on a row in the transactions list.
+ * Handles the click event on a row in the transactions list. Generates a new invoice
+ * if necessary and shows the KeychainDialog.
  *
  * @param {Object} props - The properties of the row that was clicked.
  * @param {Object} props.row - The data of the row that was clicked.
@@ -582,5 +654,9 @@ const myColumns = ref([
 
 .custom-link {
   color: var(--q-color-on-background); /* Default color for light mode */
+}
+
+.q-tr {
+  border-bottom: 1px solid #eee;
 }
 </style>

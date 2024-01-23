@@ -28,18 +28,14 @@ export const useStoreSales = defineStore("storeSales", {
     },
 
     updateSale(sale) {
-      console.log("updateSale", sale)
-      // check if sale in database by searching for checkCode
-      // if not found, add it
-      // if found, update it
       const index = this.requestedSales.findIndex(
         (s) => s.checkCode === sale.checkCode
       )
       if (index === -1) {
         this.addSale(sale)
       } else {
-        //update all the fields of sale which have changed
-        this.requestedSales[index] = sale
+        // Update only the properties of the sale that have changed
+        Object.assign(this.requestedSales[index], sale)
       }
     },
     markAsLightning(checkCode) {
