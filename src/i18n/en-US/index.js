@@ -180,5 +180,6 @@ export default {
   delete_local_records_tooltip: `Delete all local records. This will erase all pending payments, \n
     but successful payments can be re- imported from Hive with the \n
     Import Hive button`,
-  delete_pending_message: 'Are you sure you want to delete all pending sales?'
+  delete_all_pending_message: 'Are you sure you want to delete all pending sales?',
+  delete_one_pending_message: 'Are you sure you want to delete this pending sale?',
 };

@@ -79,7 +79,12 @@
               </q-chip>
             </span>
             <span v-if="!props.row.paid">
-              <q-btn icon="delete" dense flat @click="deletePending(props)">
+              <q-btn
+                icon="delete"
+                dense
+                flat
+                @click="deleteLocalSalesConfirm(props.row)"
+              >
                 <!-- <q-tooltip>{{ $t("delete_pending_tooltip") }}</q-tooltip> -->
               </q-btn>
             </span>
@@ -213,7 +218,7 @@
           rounded
           size="sm"
           icon="delete"
-          @click="deleteLocalSales"
+          @click="deleteLocalSalesConfirm"
           class="q-mr-sm"
         >
           <q-tooltip>{{ $t("delete_local_records_tooltip") }}</q-tooltip>
@@ -440,11 +445,24 @@ async function importFromHive() {
   getAmounts()
 }
 
-const deleteLocalSales = () => {
+const deleteLocalSalesConfirm = (row) => {
+  let message
+  if (row?.checkCode) {
+    message =
+      t("delete_one_pending_message") +
+      "<br>" +
+      row.checkCode +
+      "<br>" +
+      row.amountString +
+      "<br>" +
+      sanitizeHTML(row.memo)
+  } else {
+    message = [t("delete_all_pending_message")]
+  }
   Dialog.create({
-    // todo: replace these with i18n
+    message: message,
+    html: true,
     title: t("confirm"),
-    message: t("delete_pending_message"),
     ok: {
       label: t("yes"),
       icon: "delete",
@@ -455,8 +473,21 @@ const deleteLocalSales = () => {
       color: "negative",
     },
   }).onOk(() => {
-    storeSales.clearSales()
+    if (row?.checkCode) {
+      storeSales.deleteSale(checkCode)
+    } else {
+      storeSales.clearSales()
+    }
   })
+}
+
+function sanitizeHTML(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
 }
 
 /**
@@ -501,11 +532,6 @@ async function retryPending(props) {
       console.log("error showing dialog", e)
     }
   }
-}
-
-function deletePending(props) {
-  console.log("deletePending row", props.row)
-  storeSales.removeSale(props.row.checkCode)
 }
 
 /**
