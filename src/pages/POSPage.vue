@@ -351,8 +351,6 @@ const isPaymentValid = computed(() => {
 })
 
 onMounted(() => {
-  console.log("route", route.path)
-  console.log("currentTab.value", currentTab.value)
   const path = route.path
   if (path.includes("/sales")) {
     currentTab.value = "sales"
@@ -394,10 +392,16 @@ onMounted(() => {
   }
 })
 
+/**
+ * Handles the retry of a transaction.
+ *
+ * This function is called when a transaction needs to be retried. It sets up the necessary values for the transaction,
+ * such as the account to send to (`hiveAccTo`), the currency to send (`currencyToSend`), the amount to send (`amount`),
+ * and the memo (`memoInput`). After setting these values, it updates the amounts and shows the payment QR code.
+ *
+ * @param {Object} val - The transaction data. Should have properties: `hiveAccTo`, `currencyToSend`, `amount`, and `memo`.
+ */
 function handleRetryTransaction(val) {
-  console.log("handleRetryTransaction")
-  console.log("val", val)
-  console.log("hiveAccTo.value", hiveAccTo.value)
   KeychainDialog.value.hiveAccTo = val.hiveAccTo
 
   hiveAccTo.value = {
@@ -413,14 +417,21 @@ function handleRetryTransaction(val) {
   amount.value.txt = tidyNumber(val.amount, 3)
   memoInput.value = val.memo
   updateAmounts(amount.value.txt)
-  console.log('updated amounts', CurrencyCalc.value)
   // wait a tick
   setTimeout(() => {
     showPaymentQR(val.currencyToSend)
   }, 100)
-  console.log("hiveAccTo.value", hiveAccTo.value)
 }
 
+/**
+ * Extracts the username from a route parameter.
+ *
+ * This function assumes that the route parameter is in the format 'v4vapp.dev/bookmark', and extracts the substring
+ * before the first '/'. If there is no '/', it extracts the entire string.
+ *
+ * @param {string} routeParam - The route parameter from which to extract the username.
+ * @returns {string} The extracted username.
+ */
 function extractUsernameFromRouteParam(routeParam) {
   // Assuming routeParam is in the format 'v4vapp.dev/bookmark'
   var slashPosition = routeParam.indexOf("/")
@@ -455,7 +466,6 @@ function updateAmounts(val) {
 }
 
 function handleCurrencyClicked(currency) {
-  console.log("handleCurrencyClicked", currency)
   // change amount to match the amount of the selected currency
   // modify this to use updateAmounts
 

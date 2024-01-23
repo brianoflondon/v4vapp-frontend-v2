@@ -60,8 +60,12 @@ export const useCoingeckoStore = defineStore("coingecko", {
           return res.data
         }
       } catch (err) {
-        console.log("coingecko Error fetching rates")
+        console.error("coingecko Error fetching rates")
         console.error(err)
+        // return cached data if available
+        if (this.ratesCache[cacheKey]) {
+          return this.ratesCache[cacheKey]
+        }
         throw err
       }
     },

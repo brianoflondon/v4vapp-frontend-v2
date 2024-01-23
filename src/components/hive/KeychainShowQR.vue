@@ -135,7 +135,7 @@
       </q-card-section>
       <q-card-section>
         <div class="flex q-gutter-sm items-center">
-          <div>
+          <div class="q-px-sm">
             <q-btn
               icon="content_copy"
               round
@@ -143,12 +143,13 @@
             >
               <q-tooltip>{{ t("copy_qrcode") }}</q-tooltip>
             </q-btn>
-
+          </div>
+          <div>
             <q-btn icon="download" round @click="downloadQR('png')">
               <q-tooltip>{{ t("download_tooltip") }}</q-tooltip>
             </q-btn>
           </div>
-          <div class="text-right">
+          <div class="col-grow text-right">
             <pre>{{ KeychainDialog.checkCode }}</pre>
           </div>
         </div>
@@ -287,7 +288,8 @@ function updateStoreSales() {
       : KeychainDialog.value.currencyToSend === "hive"
       ? "hive"
       : ""
-  const usd = KeychainDialog.value.amountToSend * storeApiStatus.prices[currency]?.usd
+  const usd =
+    KeychainDialog.value.amountToSend * storeApiStatus.prices[currency]?.usd
   storeSales.updateSale({
     checkCode: KeychainDialog.value.checkCode,
     hiveAccTo: KeychainDialog.value.hiveAccTo,

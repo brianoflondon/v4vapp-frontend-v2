@@ -62,20 +62,27 @@
           <q-td k:props="props" key="amountstring" dense>
             {{ props.row.amountString }}
           </q-td>
-          <q-td :props="props" key="status" @click="handleRowClick(props)">
-            <q-chip
-              dense
-              :color="props.row.paid ? 'green' : 'yellow-10'"
-              :icon="
-                props.row.lightning
-                  ? 'fa-sharp fa-solid fa-bolt'
-                  : 'fa-brands fa-hive'
-              "
-            >
-              <div class="q-px-xs">
-                {{ props.row.paid ? $t("paid") : $t("pending") }}
-              </div>
-            </q-chip>
+          <q-td :props="props" key="status">
+            <span @click="retryPending(props)">
+              <q-chip
+                dense
+                :color="props.row.paid ? 'green' : 'yellow-10'"
+                :icon="
+                  props.row.lightning
+                    ? 'fa-sharp fa-solid fa-bolt'
+                    : 'fa-brands fa-hive'
+                "
+              >
+                <div class="q-px-xs">
+                  {{ props.row.paid ? $t("paid") : $t("pending") }}
+                </div>
+              </q-chip>
+            </span>
+            <span v-if="!props.row.paid">
+              <q-btn icon="delete" dense flat @click="deletePending(props)">
+                <!-- <q-tooltip>{{ $t("delete_pending_tooltip") }}</q-tooltip> -->
+              </q-btn>
+            </span>
           </q-td>
           <q-td :props="props" key="expand" style="text-align: right">
             <q-btn
@@ -152,9 +159,7 @@
                 <div v-if="props.row.memo" class="">
                   {{ props.row.memo }}
                 </div>
-                <div>
-                  USD ${{  props.row.usd.toFixed(2) }}
-                </div>
+                <div>USD ${{ props.row.usd.toFixed(2) }}</div>
                 <div class="small-text">
                   {{ props.row.checkCode }}
                 </div>
@@ -267,7 +272,7 @@ const localSalesColumns = ref([
   {
     name: "status",
     label: t("status"),
-    align: "right",
+    align: "center",
     field: (row) => row.paid,
   },
   {
@@ -472,8 +477,8 @@ const deleteLocalSales = () => {
  * If the transaction has not been paid, it emits an 'update-fields' event with the transaction data,
  * waits for a bit, shows the KeychainDialog, and then removes the sale from the store.
  */
-async function handleRowClick(props) {
-  console.log("handleRowClick row", props.row)
+async function retryPending(props) {
+  console.log("retryPending row", props.row)
   if (props.row.paid) {
     console.log("paid")
     props.expand = !props.expand
@@ -496,6 +501,11 @@ async function handleRowClick(props) {
       console.log("error showing dialog", e)
     }
   }
+}
+
+function deletePending(props) {
+  console.log("deletePending row", props.row)
+  storeSales.removeSale(props.row.checkCode)
 }
 
 /**
@@ -616,7 +626,7 @@ function prettyTime(timestampUnix) {
   border-bottom: none;
 }
 .bordered-div {
-  // border: 1px solid #eee; /* light gray */
+  border: 1px solid #eee; /* light gray */
 }
 
 .small-text {
