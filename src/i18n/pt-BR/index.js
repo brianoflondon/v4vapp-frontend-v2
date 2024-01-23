@@ -22,6 +22,9 @@ export default {
   to: 'para',
   local_currency: 'Moeda Local',
   currency: 'Moeda',
+  confirm: 'Confirm',
+  yes: 'Yes',
+  no: 'No',
   // Dark Mode Selector
   change_light: 'Mudar para modo dia',
   change_dark: 'Mudar para modo noite',
@@ -73,8 +76,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Falhou',
   working: 'Processando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Instale o app Hive Keychain',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Atualizar preços',
   // Invoice
   invoice: 'Fatura',
@@ -149,6 +152,8 @@ export default {
   charge: 'Cobrar',
   set_rate: 'Definir taxa',
   market_rate: 'Taxa do mercado',
+  sales: 'Sales',
+  history: 'History',
   // as in charge a customer
   payment: 'Pagamento',
   scan_to_send: 'Escaneie este código para enviar',
@@ -162,5 +167,18 @@ export default {
   Fees: 'Taxas',
   list_received_payments: 'Pagamentos recebidos',
   memo: 'Memo',
-  calculating_fees: 'Calculando taxas'
+  calculating_fees: 'Calculando taxas',
+  // Transaction list
+  date: 'Date',
+  paid: 'Paid',
+  pending: 'Pending',
+  date: 'Date',
+  paid_by: 'Paid by',
+  import_hive: 'Import Hive',
+  local_records: 'Local Records',
+  import_from_hive_tooltip: 'Import all past sales from Hive',
+  delete_local_records_tooltip: `Delete all local records. This will erase all pending payments, \n
+    but successful payments can be re- imported from Hive with the \n
+    Import Hive button`,
+  delete_pending_message: 'Are you sure you want to delete all pending sales?'
 };
