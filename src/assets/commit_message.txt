@@ -1,4 +1,4 @@
-Remove bordered div
+Commit message for a commit
 
 Signed-off-by: Brian of London (home imac) <brian@v4v.app>
 
