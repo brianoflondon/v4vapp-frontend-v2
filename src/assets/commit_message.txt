@@ -1,4 +1,0 @@
-Fix UI issues and update error handling in various components
-
-Signed-off-by: Brian of London (home imac) <brian@v4v.app>
-

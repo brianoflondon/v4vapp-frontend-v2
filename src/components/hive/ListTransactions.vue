@@ -626,7 +626,7 @@ function prettyTime(timestampUnix) {
   border-bottom: none;
 }
 .bordered-div {
-  border: 1px solid #eee; /* light gray */
+  // border: 1px solid #eee; /* light gray */
 }
 
 .small-text {
