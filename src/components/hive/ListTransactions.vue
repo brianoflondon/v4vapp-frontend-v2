@@ -1,7 +1,27 @@
 <template>
-  <div class="q-pa-none">
-    <q-input class="q-pa-none" v-model="searchFilter" label="Search"></q-input>
+  <div
+    class="q-pb-sm fit row wrap justify-start items-center content-start"
+  >
+    <div class="col-grow">
+      <q-input
+        dense
+        v-model="searchFilter"
+        label="Search"
+      ></q-input>
+    </div>
+    <div>
+      <q-btn-toggle
+        v-model="paidFilter"
+        dense
+        :options="[
+          { label: '', value: 'all', icon: 'fa-solid fa-dollar-sign' },
+          { label: '', value: 'paid', icon: 'fa-solid fa-check' },
+          { label: '', value: 'pending', icon: 'fa-solid fa-clock' },
+        ]"
+      ></q-btn-toggle>
+    </div>
   </div>
+
   <div class="q-pa-none">
     <q-table
       :rows="filteredDataLocal"
@@ -191,14 +211,11 @@
   </div>
   <div class="q-pt-sm bordered-div">
     <div class="q-pb-sm fit row no-wrap justify-center bordered-div">
-
       <div class="bordered-div">
         <i class="fa-brands fa-hive" />{{ totalAmounts.hive }}
       </div>
       <div>&nbsp;-&nbsp;</div>
-      <div class="bordered-div">
-        <hbd-logo-icon />{{ totalAmounts.hbd }}
-      </div>
+      <div class="bordered-div"><hbd-logo-icon />{{ totalAmounts.hbd }}</div>
       <div>&nbsp;=&nbsp;</div>
       <div class="bordered-div">${{ totalAmounts.usd }}</div>
     </div>
@@ -262,6 +279,7 @@ const totalAmounts = ref({
 const storeSales = useStoreSales()
 const KeychainDialog = defineModel()
 const searchFilter = ref()
+const paidFilter = ref("all")
 const emit = defineEmits(["update-fields"])
 
 const rowsExpanded = ref([])
@@ -296,8 +314,17 @@ const localSalesColumns = ref([
 
 const filteredDataLocal = computed(() => {
   const localData = storeSales.salesAll
-  if (!searchFilter.value) return localData
-  const filteredData = localData.filter((row) => {
+  const filteredByPaidStatus = localData.filter((row) => {
+    return (
+      paidFilter.value === "all" ||
+      (paidFilter.value === "paid" && row.paid) ||
+      (paidFilter.value === "pending" && !row.paid)
+    )
+  })
+
+  if (!searchFilter.value) return filteredByPaidStatus
+
+  const filteredData = filteredByPaidStatus.filter((row) => {
     return (
       row.hiveAccTo?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
       row.hiveAccFrom
@@ -308,6 +335,7 @@ const filteredDataLocal = computed(() => {
       row.amountString?.toLowerCase().includes(searchFilter.value.toLowerCase())
     )
   })
+
   return filteredData
 })
 
@@ -336,10 +364,17 @@ function getAmounts() {
   amounts.hive = amounts.hive.toFixed(3)
   amounts.hbd = amounts.hbd.toFixed(3)
   // convert hive to USD
-  amounts.usd = amounts.hive * storeAPIStatus.prices.hive.usd
-  amounts.usd += amounts.hbd * storeAPIStatus.prices.hive_dollar.usd
-  console.log(amounts.usd)
   totalAmounts.value = amounts
+  console.log("storeAPIStatus.prices", storeAPIStatus.prices)
+  if (storeAPIStatus.prices === "fetching prices") {
+    // wait a bit and try again
+    setTimeout(() => {
+      getAmounts()
+    }, 1000)
+    return
+  }
+  amounts.usd = amounts.hive * storeAPIStatus.prices?.hive?.usd
+  amounts.usd += amounts.hbd * storeAPIStatus.prices?.hive_dollar?.usd
   totalAmounts.value.usd = amounts.usd.toFixed(2)
 }
 
