@@ -1,6 +1,6 @@
 <template>
   <div class="language-selector">
-    <q-btn-dropdown flat dense dropdown-icon="language">
+    <q-btn-dropdown flat dense dropdown-icon="language" v-model="dropDownOpen">
       <q-list>
         <q-item
           v-for="(option, index) in localeOptions"
@@ -18,11 +18,13 @@
 </template>
 
 <script setup>
+import { ref } from "vue"
 import { useI18n } from "vue-i18n"
 const { locale } = useI18n({ useScope: "global" })
+const dropDownOpen = ref(false)
 
 const localeOptions = [
-  { value: "en-UK", label: "En", flag: "🇬🇧" },
+  { value: "en-GB", label: "En", flag: "🇬🇧" },
   { value: "en-US", label: "En", flag: "🇺🇸" },
   { value: "es-ES", label: "Es", flag: "🇪🇸" },
   { value: "de-DE", label: "De", flag: "🇩🇪" },
@@ -32,6 +34,7 @@ const localeOptions = [
 function onItemClick(label) {
   // Handle item click logic here
   locale.value = label
+  dropDownOpen.value = false
 }
 </script>
 
