@@ -57,7 +57,7 @@
       <template #body="props">
         <q-tr :props="props">
           <q-td :props="props" key="date">
-            {{ formatDateTimeLocale(props.row.timestamp).date }}
+            {{ prettyDate(props.row) }}
           </q-td>
           <q-td k:props="props" key="amountstring" dense>
             {{ props.row.amountString }}
@@ -579,57 +579,20 @@ const filteredDataHive = computed(() => {
   })
 })
 
+
+function prettyDate(row) {
+  const timeDiff = Date.now() - row.timestampUnix
+  // check if timediff is less than one day
+  if (timeDiff < 86400000) {
+    return formatTimeDifference(timeDiff)
+  }
+  return formatDateTimeLocale(row.timestamp).date
+}
+
 function prettyTime(timestampUnix) {
   const timeDiff = Date.now() - timestampUnix
   return formatTimeDifference(timeDiff)
 }
-
-// useDateFormat(row.timestampUnix, "HH:mm DD-MM-YYYY"),
-const myColumns = ref([
-  {
-    name: "age",
-    label: "Age",
-    field: (row) => prettyTime(row.timestampUnix),
-    align: "center",
-  },
-  {
-    name: "time",
-    label: "Time",
-    field: (row) => formatDateTimeLocale(row.timestamp).time,
-  },
-  {
-    name: "from",
-    label: t("from"),
-    field: (row) => row.op[1].from,
-    align: "left",
-    sortable: true,
-  },
-  {
-    name: "amount",
-    label: t("amount"),
-    field: (row) => row.op[1].amount,
-  },
-  {
-    name: "memo",
-    label: t("memo"),
-    field: (row) => row.op[1].memo,
-  },
-  {
-    name: "strippedMemo",
-    label: t("memo"),
-    field: (row) => row.op[1].memo.replace(/v4v-\w+$/, ""),
-  },
-  {
-    name: "checkCode",
-    label: "checkCode",
-    field: (row) => row.op[1].memo.match(/v4v-\w+$/),
-  },
-  {
-    name: "trx_id",
-    label: "trx_id",
-    field: (row) => row.trx_id,
-  },
-])
 </script>
 
 <style lang="scss" scoped>
