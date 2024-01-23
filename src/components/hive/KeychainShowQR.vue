@@ -281,6 +281,13 @@ onMounted(async () => {
 })
 
 function updateStoreSales() {
+  const currency =
+    KeychainDialog.value.currencyToSend === "hbd"
+      ? "hive_dollar"
+      : KeychainDialog.value.currencyToSend === "hive"
+      ? "hive"
+      : ""
+  const usd = KeychainDialog.value.amountToSend * storeApiStatus.prices[currency]?.usd
   storeSales.updateSale({
     checkCode: KeychainDialog.value.checkCode,
     hiveAccTo: KeychainDialog.value.hiveAccTo,
@@ -290,6 +297,7 @@ function updateStoreSales() {
     memo: KeychainDialog.value.memo,
     timestamp: new Date(),
     timestampUnix: new Date().getTime(),
+    usd: usd,
     paid: false,
   })
   // if (!storeSales.findSale(KeychainDialog.value.checkCode)) {

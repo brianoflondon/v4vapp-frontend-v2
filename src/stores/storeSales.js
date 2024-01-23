@@ -17,6 +17,7 @@ export const useStoreSales = defineStore("storeSales", {
     },
     salesAll() {
       // filter for all sales
+      // sort this by timestampUnix descending
       return this.requestedSales
     },
   },

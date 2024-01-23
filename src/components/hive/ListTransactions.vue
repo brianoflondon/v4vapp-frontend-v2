@@ -29,7 +29,7 @@
       :pagination="{
         rowsPerPage: 5,
         display: false,
-        sortBy: 'props.timestamp',
+        sortBy: 'date',
       }"
     >
       <template v-slot:header-cell-amountstring="props">
@@ -152,6 +152,9 @@
                 <div v-if="props.row.memo" class="">
                   {{ props.row.memo }}
                 </div>
+                <div>
+                  USD ${{  props.row.usd.toFixed(2) }}
+                </div>
                 <div class="small-text">
                   {{ props.row.checkCode }}
                 </div>
@@ -248,22 +251,22 @@ const localSalesColumns = ref([
   {
     name: "date",
     label: t("date"),
-    field: (row) => row.timestampUnix,
     sortable: true,
+    field: (row) => row.timestampUnix,
     align: "left",
-    sortBy: (row) => row.timestampUnix,
-    sortMethod: (a, b) => parseInt(a) - parseInt(b), // Assuming timestampUnix is a string of a number
+    sort: (a, b, rowA, rowB) => rowB.timestampUnix - rowA.timestampUnix,
   },
   {
     name: "amountstring",
     label: t("amount"),
     field: (row) => row.amountString,
     align: "right",
+    sortable: true,
+    sort: (a, b, rowA, rowB) => rowB.usd - rowA.usd,
   },
   {
     name: "status",
     label: t("status"),
-    sortable: true,
     align: "right",
     field: (row) => row.paid,
   },
@@ -391,18 +394,26 @@ async function importFromHive() {
   updateTransactions()
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.reverse().forEach((transaction) => {
-    const memo = transaction.op[1].memo
     const hiveAccTo = transaction.op[1].to
-    const amount = transaction.op[1].amount
+    const amountString = transaction.op[1].amount
+    const amount = transaction.op[1].amount.split(" ")[0]
+    const currencyToSend = transaction.op[1].amount.split(" ")[1].toLowerCase()
     const checkCode = transaction.checkCode
     const hiveAccFrom = transaction.op[1].from
-    const amountString = amount
-    const currencyToSend = transaction.op[1].amount.split(" ")[1].toLowerCase()
     const trx_id = transaction.trx_id
     const timestampUnix = transaction.timestampUnix
     const strippedMemo = transaction.strippedMemo
+    const currency =
+      currencyToSend === "hbd"
+        ? "hive_dollar"
+        : currencyToSend === "hive"
+        ? "hive"
+        : ""
+    const usd = amount * storeAPIStatus.prices[currency]?.usd
+
     // turn timestampUnix into a date object
     const paidDate = new Date(timestampUnix)
+
     const sale = {
       checkCode: checkCode,
       hiveAccTo: hiveAccTo,
@@ -417,6 +428,7 @@ async function importFromHive() {
       trx_id: trx_id,
       lightning: hiveAccFrom === "v4vapp",
       paid: true,
+      usd: usd,
     }
     storeSales.updateSale(sale)
   })
