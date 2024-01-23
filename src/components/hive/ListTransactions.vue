@@ -426,15 +426,15 @@ async function importFromHive() {
 const deleteLocalSales = () => {
   Dialog.create({
     // todo: replace these with i18n
-    title: "Confirm",
-    message: "Are you sure you want to delete all pending sales?",
+    title: t("confirm"),
+    message: t("delete_pending_message"),
     ok: {
-      label: "Yes",
+      label: t("yes"),
       icon: "delete",
       color: "primary",
     },
     cancel: {
-      label: "No",
+      label: t("no"),
       color: "negative",
     },
   }).onOk(() => {
@@ -461,7 +461,7 @@ const deleteLocalSales = () => {
  * waits for a bit, shows the KeychainDialog, and then removes the sale from the store.
  */
 async function handleRowClick(props) {
-  console.log("row", props.row)
+  console.log("handleRowClick row", props.row)
   if (props.row.paid) {
     console.log("paid")
     props.expand = !props.expand
@@ -473,11 +473,16 @@ async function handleRowClick(props) {
       currencyToSend: props.row.currencyToSend,
     })
     // wait a bit for the fields to update
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 700))
     // After updating fields on the parent, show the dialog
-    KeychainDialog.value.show = true
-    // then delete the previous attempt at the transaction
-    storeSales.removeSale(props.row.checkCode)
+    console.log("show dialog", KeychainDialog.value)
+    try {
+      // KeychainDialog.value.show = true
+      // then delete the previous attempt at the transaction
+      storeSales.removeSale(props.row.checkCode)
+    } catch (e) {
+      console.log("error showing dialog", e)
+    }
   }
 }
 
@@ -578,7 +583,6 @@ const filteredDataHive = computed(() => {
     )
   })
 })
-
 
 function prettyDate(row) {
   const timeDiff = Date.now() - row.timestampUnix

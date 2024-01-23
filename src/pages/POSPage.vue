@@ -409,8 +409,14 @@ function handleRetryTransaction(val) {
 
   currencySelected.value = val.currencyToSend
   amount.value.num = val.amount
+  amount.value.txt = tidyNumber(val.amount, 3)
+  memoInput.value = val.memo
   updateAmounts(amount.value.txt)
-
+  console.log('updated amounts', CurrencyCalc.value)
+  // wait a tick
+  setTimeout(() => {
+    showPaymentQR(val.currencyToSend)
+  }, 100)
   console.log("hiveAccTo.value", hiveAccTo.value)
 }
 
@@ -554,7 +560,6 @@ function showPaymentQR(payWith) {
   if (!isPaymentValid.value) {
     return
   }
-  console.log("showPaymentQR", payWith)
   KeychainDialog.value.memo = memoInput.value
   KeychainDialog.value.currencyToSend = payWith
   KeychainDialog.value.hiveAccTo = hiveAccTo.value.value

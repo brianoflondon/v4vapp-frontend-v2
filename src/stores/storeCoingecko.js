@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import axios from "axios"
 
 const coinGeckoApi = "https://api.coingecko.com/api/v3"
-const maxCacheAge = 600000 // 10 minutes in milliseconds
+const maxCacheAge = 10 * 60 * 1000 // 10 minutes in milliseconds
 
 export const useCoingeckoStore = defineStore("coingecko", {
   state: () => ({
@@ -40,12 +40,14 @@ export const useCoingeckoStore = defineStore("coingecko", {
 
     async getCoingeckoRate(currency) {
       const cacheKey = `rates-${currency}`
-
+      console.log("coingecko cacheKey", cacheKey)
       if (this.isCacheValidRates(cacheKey)) {
+        console.log("coingecko Using cached rates")
         return this.ratesCache[cacheKey]
       }
 
       try {
+        console.log("coingecko Fetching rates", currency)
         const url = `${coinGeckoApi}/simple/price`
         const params = {
           ids: "hive,hive_dollar,btc,usd",
@@ -58,6 +60,7 @@ export const useCoingeckoStore = defineStore("coingecko", {
           return res.data
         }
       } catch (err) {
+        console.log("coingecko Error fetching rates")
         console.error(err)
         throw err
       }
