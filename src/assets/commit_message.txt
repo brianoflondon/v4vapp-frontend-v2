@@ -1,4 +1,4 @@
-Adding commit message to sidebar
+Remove bordered div
 
 Signed-off-by: Brian of London (home imac) <brian@v4v.app>
 
