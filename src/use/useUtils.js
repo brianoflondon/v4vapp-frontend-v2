@@ -73,28 +73,22 @@ export function formatTime(timeInSeconds) {
  * @returns {{ time: string, date: string }} An object containing formatted time and date strings.
  */
 export function formatDateTimeLocale(isoString) {
-  /**
-   * Formats a time duration in seconds into a human-readable string.
-   *
-   * @param {number} timeInSeconds - The time duration in seconds to format.
-   * @returns {string} The formatted time string in the format "Xh Ym Zs" or "Ym Zs" or "Zs".
-   */
-  // const { locale } = useI18n({ useScope: "global" })
-
+  const { locale } = useI18n({ useScope: "global" })
   // Parse the given UTC ISO string into a Date object
   const date = new Date(isoString)
 
   // Format time with hours, minutes, and seconds
-  const timeFormat = date.toLocaleTimeString([], {
+  const timeFormat = date.toLocaleTimeString(locale.value, {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
   })
 
   // Format date with day and month
-  const dateFormat = date.toLocaleDateString([], {
+  const dateFormat = date.toLocaleDateString(locale.value, {
     day: "2-digit",
     month: "2-digit",
+    year: "2-digit",
   })
 
   return {
@@ -178,7 +172,6 @@ export function genRandAlphaNum(length) {
   return result
 }
 
-
 /**
  * Truncate the section of a string that starts with "lnbc" if it exceeds a certain length.
  *
@@ -191,19 +184,19 @@ export function genRandAlphaNum(length) {
  * console.log(truncateLnbc(testString)); // Outputs "lnbc5u1pjs..."
  */
 export function useTruncateLnbc(inputString, maxLength = 9) {
-    // Check if the string contains "lnbc"
-    if (inputString.includes("lnbc")) {
-        // Use a regular expression to match the "lnbc" pattern and grab everything after it
-        const match = inputString.match(/(lnbc[^\s]+)/);
+  // Check if the string contains "lnbc"
+  if (inputString.includes("lnbc")) {
+    // Use a regular expression to match the "lnbc" pattern and grab everything after it
+    const match = inputString.match(/(lnbc[^\s]+)/)
 
-        if (match && match[1].length > maxLength) {
-            // If the matched string exceeds the maxLength, truncate it and append '...'
-            const truncated = match[1].substr(0, maxLength) + '...';
-            // Replace the original matched string with the truncated one in the inputString
-            return inputString.replace(match[1], truncated);
-        }
+    if (match && match[1].length > maxLength) {
+      // If the matched string exceeds the maxLength, truncate it and append '...'
+      const truncated = match[1].substr(0, maxLength) + "..."
+      // Replace the original matched string with the truncated one in the inputString
+      return inputString.replace(match[1], truncated)
     }
+  }
 
-    // If "lnbc" wasn't found or if the matched string didn't exceed maxLength, return the inputString as is
-    return inputString;
+  // If "lnbc" wasn't found or if the matched string didn't exceed maxLength, return the inputString as is
+  return inputString
 }

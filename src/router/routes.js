@@ -6,11 +6,40 @@ const routes = [
       { path: "", component: () => import("pages/LightningPage.vue") },
       { path: "/lnd", component: () => import("pages/LightningPage.vue") },
       { path: "/hive", component: () => import("pages/HivePage.vue") },
+
       {
-        path: "/pos/@:hiveAccTo(.*)", // Allow any character including dots after '@'
+        path: "/pos/sales/@:hiveAccTo(.*)", // Allow any character including dots after '@'
+        component: () => import("pages/POSPage.vue"),
+      },
+      {
+        path: "/pos/history/@:hiveAccTo(.*)", // Allow any character including dots after '@'
+        component: () => import("pages/POSPage.vue"),
+      },
+      {
+        path: "/pos/currency/@:hiveAccTo(.*)", // Allow any character including dots after '@'
         component: () => import("pages/POSPage.vue"),
       },
       { path: "/pos", component: () => import("pages/POSPage.vue") },
+      { path: "/pos/sales", component: () => import("pages/POSPage.vue") },
+      { path: "/pos/history", component: () => import("pages/POSPage.vue") },
+      { path: "/pos/currency", component: () => import("pages/POSPage.vue") },
+      {
+        path: "/pos/@:hiveAccTo(.*)", // Allow any character including dots after '@'
+        redirect: to => {
+          // the function receives the target route as the argument
+          // we return a redirect path here
+          return '/pos/sales/@' + to.params.hiveAccTo
+        }
+      },
+
+      // {
+      //   path: "/pos/@:hiveAccTo(.*)", // Allow any character including dots after '@'
+      //   component: () => import("pages/POSPage.vue"),
+      // },
+      // { path: "/pos", component: () => import("pages/POSPage.vue") },
+      // { path: "/pos/sales", component: () => import("pages/POSPage.vue") },
+      // { path: "/pos/history", component: () => import("pages/POSPage.vue") },
+      // { path: "/pos/currency", component: () => import("pages/POSPage.vue") },
       { path: "/index", component: () => import("pages/IndexPage.vue") },
       { path: "/vote", component: () => import("pages/VoteNow.vue") },
       { path: "/status", component: () => import("pages/StatusPage.vue") },

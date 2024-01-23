@@ -1,36 +1,62 @@
 <template>
   <q-page>
-    <div class="flex column text-center items-center">
+    <div class="flex column text-center items-center q-pa-none">
+      <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
+        <q-route-tab
+          :to="`/pos/sales${
+            route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
+          }`"
+          name="sales"
+          :label="$t('sales')"
+        />
+        <q-route-tab
+          :to="`/pos/history${
+            route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
+          }`"
+          name="history"
+          :label="$t('history')"
+        />
+        <q-route-tab
+          :to="`/pos/currency${
+            route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
+          }`"
+          name="currency"
+          :label="$t('currency')"
+        />
+      </q-tabs>
+      <q-tab-panels
+        v-model="currentTab"
+        class="div flex row pad-max-width full-width items-center"
+      >
+        <q-tab-panel name="history" class="q-pa-none full-width">
+          <div>
+            <div class="q-px-xs q-py-xs">
+              <ListTransactions
+                v-model="KeychainDialog"
+                @update-fields="handleRetryTransaction"
+              ></ListTransactions>
+            </div>
+          </div>
+        </q-tab-panel>
+        <q-tab-panel name="currency">
+          <div>
+            <div class="q-px-xs q-py-xs">
+              <div class="pad-max-width">
+                <LocalCurrency />
+              </div>
+            </div>
+          </div>
+        </q-tab-panel>
+      </q-tab-panels>
+
       <!-- Pay To bar -->
       <!-- Pre-selected user name from path -->
       <div
         v-if="route.params.hiveAccTo"
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
       >
-        <div class="col-9">
+        <div class="col-10">
           <PosHeader />
-        </div>
-        <!-- Button to Show Currency settings -->
-        <div class="div col-3 q-px-sm" v-if="true">
-          <q-btn
-            round
-            @click="KeychainDialog.settings = !KeychainDialog.settings"
-            icon="settings"
-            ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
-          </q-btn>
-        </div>
-        <div class="col-12 q-px-sm q-pb-md" v-else>
-          <!-- bookmark icon -->
-          <div v-if="!hiveAccTo.valid">
-            <q-icon name="bookmark" class="cursor-pointer" />
-          </div>
-          <div v-else>
-            <a :href="`/pos/@${hiveAccTo.value}/`">
-              <q-icon name="bookmark" class="cursor-pointer" />{{
-                `v4v.app/pos/@${hiveAccTo.value}`
-              }}
-            </a>
-          </div>
         </div>
       </div>
       <!-- Select a user and Local Currency Settings -->
@@ -38,7 +64,7 @@
         class="div flex row pad-max-width full-width items-start q-pa-sm q-pt-lg q-pb-md"
         v-else
       >
-        <div class="col-9 q-px-sm">
+        <div class="col-10 q-px-sm">
           <div class="pad-max-width full-width">
             <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
             <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')">
@@ -46,16 +72,7 @@
           </div>
         </div>
         <!-- Button to Show Currency settings -->
-        <div class="div col-3 q-px-none row justify-start items-center">
-          <div class="q-px-xs">
-            <q-btn
-              round
-              dense
-              @click="KeychainDialog.settings = !KeychainDialog.settings"
-              icon="settings"
-              ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
-            </q-btn>
-          </div>
+        <div class="div col-2 q-px-none row justify-start items-center">
           <div class="q-px-xs">
             <q-btn dense round icon="bookmark" @click="bookmarkSite">
               <q-tooltip>
@@ -199,10 +216,6 @@
     <!-- Show the QR dialog -->
     <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
     <!-- Show the settings dialog -->
-    <POSSettingsDialog
-      v-if="KeychainDialog.settings"
-      v-model="KeychainDialog"
-    />
   </q-page>
 </template>
 
@@ -221,13 +234,18 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useRoute } from "vue-router"
 import PosHeader from "src/components/hive/PosHeader.vue"
 import HiveInputAcc from "src/components/HiveInputAcc.vue"
+import LocalCurrency from "src/components/utils/LocalCurrency.vue"
+import ListTransactions from "src/components/hive/ListTransactions.vue"
 
 const route = useRoute()
 const q = useQuasar()
 const t = useI18n().t
 const currencySelected = ref("hbd")
 
+const currentTab = ref("sales")
+
 const storeUser = useStoreUser()
+
 const hiveAccTo = ref({
   label: "",
   value: "",
@@ -333,6 +351,16 @@ const isPaymentValid = computed(() => {
 })
 
 onMounted(() => {
+  console.log("route", route.path)
+  console.log("currentTab.value", currentTab.value)
+  const path = route.path
+  if (path.includes("/sales")) {
+    currentTab.value = "sales"
+  } else if (path.includes("/history")) {
+    currentTab.value = "history"
+  } else if (path.includes("/currency")) {
+    currentTab.value = "currency"
+  }
   if (route.params.hiveAccTo) {
     const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
@@ -365,6 +393,32 @@ onMounted(() => {
     storeUser.pos.currencySelected = currencySelected.value
   }
 })
+
+function handleRetryTransaction(val) {
+  console.log("handleRetryTransaction")
+  console.log("val", val)
+  console.log("hiveAccTo.value", hiveAccTo.value)
+  KeychainDialog.value.hiveAccTo = val.hiveAccTo
+
+  hiveAccTo.value = {
+    label: val.hiveAccTo,
+    value: val.hiveAccTo,
+    caption: val.hiveAccTo,
+  }
+  hiveAccTo.value.valid = true
+
+  currencySelected.value = val.currencyToSend
+  amount.value.num = val.amount
+  amount.value.txt = tidyNumber(val.amount, 3)
+  memoInput.value = val.memo
+  updateAmounts(amount.value.txt)
+  console.log('updated amounts', CurrencyCalc.value)
+  // wait a tick
+  setTimeout(() => {
+    showPaymentQR(val.currencyToSend)
+  }, 100)
+  console.log("hiveAccTo.value", hiveAccTo.value)
+}
 
 function extractUsernameFromRouteParam(routeParam) {
   // Assuming routeParam is in the format 'v4vapp.dev/bookmark'

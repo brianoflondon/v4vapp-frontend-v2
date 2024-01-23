@@ -71,7 +71,7 @@ import DarkSelector from "components/utils/DarkSelector.vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
-import HbdLogoIcon from "./utils/HbdLogoIcon.vue"
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 
 const storeAPIStatus = useStoreAPIStatus()
 const t = useI18n().t

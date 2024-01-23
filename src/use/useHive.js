@@ -5,12 +5,16 @@
 import { apiURL, api } from "boot/axios"
 import { Dark } from "quasar"
 import { genRandAlphaNum } from "src/use/useUtils"
-import { encodeOp } from "hive-uri"
-
 import "src/assets/hive-tx.min.js"
 
 const useHiveAccountRegex =
   /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
+
+const baseURLBlockExplorer = "https://hivehub.dev/tx/"
+
+export function useGenerateTxUrl(txId) {
+  return `${baseURLBlockExplorer}${txId}`
+}
 
 export async function useHiveDetails(hiveAccname) {
   // returns Hive Profile and details for a given Hive hiveAccname
@@ -293,6 +297,9 @@ export async function useGetHiveTransactionHistory(
       opFilterHigh,
     ])
     // This removes the un-necessary double list structure
+    if (!history.result) {
+      return null
+    }
     return history.result.reverse().map((item) => item[1])
   } catch (error) {
     console.error({ error })
