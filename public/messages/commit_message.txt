@@ -1,4 +1,4 @@
-Hide commit message in production
+Refactor TabBar and POSPage components
 
 Signed-off-by: Brian of London (home imac) <brian@v4v.app>
 
