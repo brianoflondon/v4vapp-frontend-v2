@@ -240,9 +240,9 @@
           @click="exportToCsv"
           class="q-mr-sm"
         >
-          <q-tooltip>{{ $t("delete_local_records_tooltip") }}</q-tooltip>
+          <q-tooltip>{{ $t("export_to_csv_tooltip") }}</q-tooltip>
           <div class="q-px-">
-            {{ $t("Export to CSV") }}
+            {{ $t("export_to_csv") }}
           </div>
         </q-btn>
       </div>
