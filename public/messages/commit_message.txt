@@ -1,4 +1,4 @@
-Commit message for a commit
+Update version to 1.10.3 in package-lock.json and package.json
 
 Signed-off-by: Brian of London (home imac) <brian@v4v.app>
 

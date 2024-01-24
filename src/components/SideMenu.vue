@@ -15,7 +15,9 @@
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
     <div class="q-pa-md text-caption">{{ appName }} - {{ appVersion }}</div>
-    <div class="q-pa-md text-caption">{{ commitMessage }}</div>
+    <div v-if="commitMessage" class="q-pa-md text-caption">
+      {{ commitMessage }}
+    </div>
   </div>
 </template>
 
@@ -84,7 +86,12 @@ watch(storeUser, async (val) => {
 })
 
 onMounted(() => {
-  fetchCommitMessage()
+  // only do this if dev. is in the hostname
+  // if window location is not v4v.app
+  console.log("window.location.hostname", window.location.hostname)
+  if (!window.location.hostname !== "v4v.app") {
+    fetchCommitMessage()
+  }
 })
 
 const fetchCommitMessage = async () => {
