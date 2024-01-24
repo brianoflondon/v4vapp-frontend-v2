@@ -1,4 +1,2 @@
-Update package version to 1.10.4 and refactor TabBar and POSPage components
-
-Signed-off-by: Brian of London (home imac) <brian@v4v.app>
+1.10.7
 
