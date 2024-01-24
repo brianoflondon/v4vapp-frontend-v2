@@ -1,6 +1,5 @@
 <template>
   <q-dialog v-model="KeychainDialog.show">
-    {{ KeychainDialog.display }}
     <q-card>
       <q-toolbar>
         <!-- Title Bar -->
@@ -8,6 +7,12 @@
           <!-- {{ titleOptions }} -->
           {{ titleOptions[KeychainDialog.display].title }}
         </q-toolbar-title>
+        <q-circular-progress
+          :value="hiveCheckTimer"
+          size="xs"
+          color="primary"
+          class="q-ma-md"
+        />
         <q-btn
           flat
           round
@@ -178,7 +183,16 @@ import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
 import { encodeOp } from "hive-uri"
 
-const hiveCheckTime = 1 // seconds between each check
+const hiveCheckTime = 5 // seconds between each check
+const hiveCheckTimer = ref(100)
+
+const maxChecks = 20 // 20 checks total
+
+const checkTimeTotal = hiveCheckTime * maxChecks
+let currentTime = 0
+const progress = ref(1)
+
+const intervalRef = ref([])
 
 const q = useQuasar()
 const t = useI18n().t
@@ -252,15 +266,6 @@ const dotColor = computed(() => {
     return "#18D231"
   }
 })
-
-const checkTime = 2 // 5 seconds between each check
-const maxChecks = 80 // 20 checks total
-
-const checkTimeTotal = checkTime * maxChecks
-let currentTime = 0
-const progress = ref(1)
-
-const intervalRef = ref([])
 
 onBeforeMount(() => {
   KeychainDialog.value.checkCode = useGetCheckCode()
@@ -440,20 +445,40 @@ function startCountdown() {
   intervalRef.value.push(intervalId)
 }
 
+function startHiveCheckTimer() {
+  const intervalId = setInterval(() => {
+    hiveCheckTimer.value -= 1 // Increment by 1 second
+    // Stop the countdown when the progress reaches 0 or the maxChecks time is reached
+    if (hiveCheckTimer.value <= 0) {
+      clearInterval(intervalId)
+      hiveCheckTimer.value = 100 // Reset currentTime for future runs
+    }
+  }, (hiveCheckTime * 1000) / 105) // Update every second
+
+  // Store the interval ID so it can be cleared later if needed
+  intervalRef.value.push(intervalId)
+}
+
 async function checkHiveTransaction(count = 0) {
   try {
     while (count < maxChecks) {
       count += 1
 
+      // Wait for hiveCheckTime seconds before checking again
+      // also displays the countdown timer
+
       await new Promise((resolve) => {
-        const watchingInterval = setTimeout(resolve, 1000 * checkTime)
+        const watchingInterval = setTimeout(resolve, 1000 * hiveCheckTime)
         intervalRef.value.push(watchingInterval)
+        startHiveCheckTimer()
       })
 
       KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
         KeychainDialog.value.hiveAccTo,
-        20
+        5
       )
+      console.log("Checking Hive....")
+      hiveCheckTimer.value = 100
       const transactionFound = findTransactionWithCheckCode(
         KeychainDialog.value.transactions,
         KeychainDialog.value.checkCode
@@ -509,6 +534,12 @@ async function checkHiveTransaction(count = 0) {
  * @returns {Object} The found transaction object, or undefined if no transaction with a matching checkCode is found.
  */
 function findTransactionWithCheckCode(transactions, checkCode) {
+  if (!transactions || !checkCode) {
+    console.log(
+      "findTransactionWithCheckCode: missing transactions or checkCode"
+    )
+    return
+  }
   const transactionFound = transactions.find((transaction) =>
     transaction.op[1].memo.endsWith(checkCode)
   )

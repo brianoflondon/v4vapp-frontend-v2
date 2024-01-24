@@ -267,6 +267,8 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 const t = useI18n().t
 const storeAPIStatus = useStoreAPIStatus()
 
+const maxNumTransactions = 40 // max number of transactions to show in the table
+
 const totalAmounts = ref({
   hive: 0,
   hbd: 0,
@@ -410,22 +412,22 @@ function expandAll() {
 }
 
 /**
- * Asynchronously imports transactions from Hive blockchain.
+ * Imports transactions from Hive.
  *
- * This function first updates the transactions by calling `updateTransactions()`.
- * Then, for each transaction in `filteredDataHive`, it creates a `sale` object
- * with various properties derived from the transaction data, including a `lightning`
- * property that is `true` if the transaction is from the "v4vapp" account.
- * Finally, it updates the sales store with the `sale` object.
- *
- * Note: This function modifies `filteredDataHive` in-place by reversing it.
- *
- * @async
+ * 1. Gets the length of the transactions before importing.
+ * 2. Calls `updateTransactions` to update the transactions.
+ * 3. For each transaction, it:
+ *    - Adds it to the local sales store.
+ *    - Gets the amount in USD.
+ * 4. Gets the length of the transactions after importing.
+ * 5. Calculates the number of new transactions.
  */
 async function importFromHive() {
+  const lengthBefore = filteredDataHive.value.length
+  console.log("storeSales.salesAll length", storeSales.salesAll.length)
   updateTransactions()
   // for all the records in transactions add them to the local sales store
-  filteredDataHive.value.reverse().forEach((transaction) => {
+  filteredDataHive.value.forEach((transaction) => {
     const hiveAccTo = transaction.op[1].to
     const amountString = transaction.op[1].amount
     const amount = transaction.op[1].amount.split(" ")[0]
@@ -465,10 +467,14 @@ async function importFromHive() {
     storeSales.updateSale(sale)
   })
   getAmounts()
+  const lengthAfter = filteredDataHive.value.length
+  const newTransactions = lengthAfter - lengthBefore
+  console.log("newTransactions", newTransactions)
+  console.log("storeSales.salesAll length", storeSales.salesAll.length)
 }
 
 const deleteLocalSalesConfirm = (row) => {
-  let message
+  let message = ""
   if (row?.checkCode) {
     message =
       t("delete_one_pending_message") +
@@ -479,7 +485,7 @@ const deleteLocalSalesConfirm = (row) => {
       "<br>" +
       sanitizeHTML(row.memo)
   } else {
-    message = [t("delete_all_pending_message")]
+    message = t("delete_all_pending_message")
   }
   Dialog.create({
     message: message,
@@ -495,8 +501,9 @@ const deleteLocalSalesConfirm = (row) => {
       color: "negative",
     },
   }).onOk(() => {
+    console.log("deleteLocalSalesConfirm row", row)
     if (row?.checkCode) {
-      storeSales.deleteSale(checkCode)
+      storeSales.removeSale(row.checkCode)
     } else {
       storeSales.clearSales()
     }
@@ -574,11 +581,13 @@ async function retryPending(props) {
  * @returns {void}
  */
 async function updateTransactions() {
+  // show where this function was called from
+  console.log("updateTransactions called from", new Error().stack.split("\n")[2])
   const trans = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     200
   )
-
+  console.log("num trans from Hive", trans.length)
   if (trans) {
     // Filter out the transactions that are not from the POS
     let posTrans = trans.filter((transaction) => {
@@ -586,10 +595,15 @@ async function updateTransactions() {
       return memo && memo.match(/v4v-\w+$/)
     })
 
+    console.log("num trans after filtering", posTrans.length)
+
     // If posTrans is empty, exit early
     if (posTrans.length === 0) {
       return
     }
+    posTrans = posTrans.slice(0, maxNumTransactions)
+    console.log("num trans after slice", posTrans.length)
+
 
     // Add extra fields to the transactions
     posTrans.forEach((transaction) => {
@@ -610,13 +624,21 @@ async function updateTransactions() {
       transaction.checkCode = memo.match(/v4v-\w+$/)[0]
     })
 
-    KeychainDialog.value.transactions = posTrans
+    KeychainDialog.value.transactions = posTrans.reverse()
+    console.log("num trans after reverse", posTrans.length)
+
   }
 }
 
+/**
+ * Runs when the component is mounted.
+ *
+ * 1. Clears the transactions.
+ * 2. Calls `updateTransactions` to update the transactions.
+ */
 onMounted(() => {
-  KeychainDialog.value.transactions = []
-  updateTransactions()
+  // KeychainDialog.value.transactions = []
+  // updateTransactions()
   importFromHive()
 })
 
@@ -685,6 +707,18 @@ function wrapCsvValue(val, formatFn, row) {
   return `"${formatted}"`
 }
 
+
+/**
+ * Exports the transactions to a CSV file.
+ *
+ * 1. Creates an array of column names.
+ * 2. Creates an array of rows.
+ * 3. Encodes the column names and rows to CSV format.
+ * 4. Exports the CSV file.
+ *
+ * @function
+ * @returns {void}
+ */
 function exportToCsv() {
   // naive encoding to csv format
 
