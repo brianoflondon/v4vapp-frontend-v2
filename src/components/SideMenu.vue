@@ -88,7 +88,7 @@ onMounted(() => {
 })
 
 const fetchCommitMessage = async () => {
-  const response = await fetch("/src/assets/commit_message.txt")
+  const response = await fetch("/messages/commit_message.txt")
   commitMessage.value = await response.text()
 }
 </script>
