@@ -64,15 +64,15 @@
         class="div flex row pad-max-width full-width items-start q-pa-sm q-pt-lg q-pb-md"
         v-else
       >
-        <div class="col-10 q-px-sm">
+        <div class="col-11 q-px-sm">
           <div class="pad-max-width full-width">
             <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
             <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')">
             </HiveInputAcc>
           </div>
         </div>
-        <!-- Button to Show Currency settings -->
-        <div class="div col-2 q-px-none row justify-start items-center">
+        <!-- Button to Show bookmark settings -->
+        <div class="div col-1 q-px-none">
           <div class="q-px-xs">
             <q-btn dense round icon="bookmark" @click="bookmarkSite">
               <q-tooltip>
@@ -499,7 +499,7 @@ function bookmarkSite() {
   // Since browsers restrict adding bookmarks via script,
   // inform the user how to bookmark the page manually.
   // jump to a different url
-  window.location.href = "/pos/@" + hiveAccTo.value.value
+  window.location.href = "/pos/sales/@" + hiveAccTo.value.value
   // wait for the page to load
   // setTimeout(() => {
   //   // scroll to the bottom of the page
