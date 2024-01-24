@@ -178,6 +178,8 @@ import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
 import { encodeOp } from "hive-uri"
 
+const hiveCheckTime = 1 // seconds between each check
+
 const q = useQuasar()
 const t = useI18n().t
 
@@ -302,18 +304,6 @@ function updateStoreSales() {
     usd: usd,
     paid: false,
   })
-  // if (!storeSales.findSale(KeychainDialog.value.checkCode)) {
-  //   storeSales.addSale({
-  //     checkCode: KeychainDialog.value.checkCode,
-  //     hiveAccTo: KeychainDialog.value.hiveAccTo,
-  //     amount: KeychainDialog.value.amountToSend,
-  //     currencyToSend: KeychainDialog.value.currencyToSend,
-  //     amountString: KeychainDialog.value.amountString,
-  //     memo: KeychainDialog.value.memo,
-  //     timestamp: new Date(),
-  //     paid: false,
-  //   })
-  // }
 }
 
 // Calculates the fees charged in the same currency Hive/HBD as
@@ -485,9 +475,9 @@ async function checkHiveTransaction(count = 0) {
         position: "top",
       })
       KeychainDialog.value.paid = true
-      // wait 5 seconds before closing the dialog
+      // wait hiveCheckTime seconds before closing the dialog
       await new Promise((resolve) => {
-        const watchingInterval = setTimeout(resolve, 1000 * 5)
+        const watchingInterval = setTimeout(resolve, 1000 * hiveCheckTime)
         intervalRef.value.push(watchingInterval)
       })
       KeychainDialog.value.show = false
