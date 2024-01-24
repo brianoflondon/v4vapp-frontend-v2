@@ -300,6 +300,7 @@ watch(route, (to, from) => {
         hiveAccTo.value = {
           label: storeUser.pos.hiveAccTo.label,
           value: storeUser.pos.hiveAccTo.value,
+          valid: true,
           caption: storeUser.pos.hiveAccTo.caption,
           fixedUser: false,
         }
@@ -342,6 +343,7 @@ const isPaymentValid = computed(() => {
   // Returns True if this payment screen can produce a QR code
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
+  console.log("isPaymentValid computed", amount.value.num, hiveAccTo.value.valid)
   if (amount.value.num === 0 || isNaN(amount.value.num)) {
     return false
   }
