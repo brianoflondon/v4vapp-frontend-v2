@@ -108,7 +108,7 @@
             <div class="fit row justify-start items-start content-start">
               <div>
                 <!-- Payee  -->
-                <div class="q-pr-sm">
+                <div class="q-pr-sm fixed-width-to-from-hive">
                   <div class="small-text">
                     {{ $t("pay_to") }}
                   </div>
@@ -124,7 +124,10 @@
               </div>
               <!-- End of Payee -->
               <!-- Payer  -->
-              <div v-if="props.row.paid" class="q-px-sm">
+              <div
+                v-if="props.row.paid"
+                class="q-px-sm fixed-width-to-from-hive"
+              >
                 <div class="small-text">
                   {{ $t("paid_by") }}
                 </div>
@@ -740,6 +743,10 @@ function exportToCsv() {
 }
 .bordered-div {
   // border: 1px solid #eee; /* light gray */
+}
+
+.fixed-width-to-from-hive {
+  width: 13ch;
 }
 
 .small-text {
