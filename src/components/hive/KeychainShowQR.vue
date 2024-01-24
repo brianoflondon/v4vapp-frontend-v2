@@ -447,13 +447,13 @@ function startCountdown() {
 
 function startHiveCheckTimer() {
   const intervalId = setInterval(() => {
-    hiveCheckTimer.value -= 1 // Increment by 1 second
+    hiveCheckTimer.value -= 2 // Increment by 1 second
     // Stop the countdown when the progress reaches 0 or the maxChecks time is reached
     if (hiveCheckTimer.value <= 0) {
       clearInterval(intervalId)
       hiveCheckTimer.value = 100 // Reset currentTime for future runs
     }
-  }, (hiveCheckTime * 1000) / 105) // Update every second
+  }, (hiveCheckTime * 1000) / 50) // Update every hiveCheckTime/100 ms
 
   // Store the interval ID so it can be cleared later if needed
   intervalRef.value.push(intervalId)
