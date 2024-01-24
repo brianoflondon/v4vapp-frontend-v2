@@ -1,4 +1,8 @@
 import { defineStore } from "pinia"
+import { useStorage } from "@vueuse/core"
+import { useAppDetails } from "src/use/useAppDetails.js"
+const { appName, appVersion } = useAppDetails()
+
 import axios from "axios"
 
 const coinGeckoApi = "https://api.coingecko.com/api/v3"
@@ -6,20 +10,38 @@ const maxCacheAge = 10 * 60 * 1000 // 10 minutes in milliseconds
 
 export const useCoingeckoStore = defineStore("coingecko", {
   state: () => ({
-    exchangeRates: null,
-    currencyOptions: null,
-    ratesCache: {}, // Initialize as an empty object
-    lastFetched: {}, // Initialize as an empty object
+    exchangeRates: useStorage("exchangeRates", {}),
+    currencyOptions: useStorage("currencyOptions", {}),
+    ratesCache: useStorage("ratesCache", {}),
+    lastFetched: useStorage("lastFetched", {}),
+    lastFetchedHuman: useStorage("lastFetchedHuman", {}),
   }),
 
   actions: {
     async fetchCoingeckoRates() {
+      const storedAppVersion = window.localStorage.getItem("appVersion")
+      console.log("coingecko storedAppVersion", storedAppVersion)
+      console.log("coingecko appVersion", appVersion.value)
+      if (storedAppVersion !== appVersion.value) {
+        console.log("coingecko appVersion changed")
+        this.exchangeRates = {}
+        this.currencyOptions = {}
+        this.ratesCache = {}
+        this.lastFetched = {}
+        this.lastFetchedHuman = {}
+        window.localStorage.setItem("appVersion", appVersion.value)
+      }
+
+      console.log("coingecko Fetching rates")
+      console.log("coingecko cacheKey", "exchangeRates")
       if (this.isCacheValid("exchangeRates")) {
+        console.log("coingecko Using cached rates")
         return [this.exchangeRates, this.currencyOptions]
       }
 
       try {
         const url = `${coinGeckoApi}/exchange_rates`
+        console.log("coingecko fetchCoingeckoRates url", url)
         const res = await axios.get(url)
 
         if (res.status === 200) {
@@ -33,6 +55,9 @@ export const useCoingeckoStore = defineStore("coingecko", {
         console.error(err)
         if (this.exchangeRates && this.currencyOptions) {
           return [this.exchangeRates, this.currencyOptions]
+        }
+        if (this.ratesCache["exchangeRates"]) {
+          return this.ratesCache[cacheKey]
         }
         throw err
       }
@@ -53,6 +78,7 @@ export const useCoingeckoStore = defineStore("coingecko", {
           ids: "hive,hive_dollar,btc,usd",
           vs_currencies: `btc,usd,eur,${currency}`,
         }
+        console.log("coingecko getCoingeckoRate url", url, currency)
         const res = await axios.get(url, { params })
         if (res.status === 200) {
           res.data.hive_dollar = res.data.usd
@@ -71,11 +97,15 @@ export const useCoingeckoStore = defineStore("coingecko", {
     },
 
     cacheDataRates(key, data) {
+      console.log("coingecko cacheDataRates", key, data)
       this.ratesCache[key] = data
       this.lastFetched[key] = Date.now()
+      this.lastFetchedHuman[key] = new Date().toLocaleString()
+      console.log("coingecko cacheDataRates", this.ratesCache)
     },
 
     isCacheValidRates(key) {
+      console.log("coingecko isCacheValidRates", key)
       return (
         this.ratesCache[key] && Date.now() - this.lastFetched[key] < maxCacheAge
       )
@@ -106,10 +136,27 @@ export const useCoingeckoStore = defineStore("coingecko", {
       this[key] = exchangeRates
       this.currencyOptions = currencyOptions
       this.lastFetched[key] = Date.now()
+      this.lastFetchedHuman[key] = new Date().toLocaleString()
     },
 
     isCacheValid(key) {
       return this[key] && Date.now() - this.lastFetched[key] < maxCacheAge
     },
+  },
+  persist: {
+    enabled: true,
+    strategies: [
+      {
+        storage: localStorage,
+        paths: [
+          "exchangeRates",
+          "currencyOptions",
+          "ratesCache",
+          "lastFetched",
+          "lastFetchedHuman",
+          "appVersion"
+        ],
+      },
+    ],
   },
 })

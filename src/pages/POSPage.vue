@@ -290,10 +290,11 @@ function resetCurrencyOptions(localCurrency) {
 
 watch(route, (to, from) => {
   // Code to execute on route change
-  if (to.path === "/pos") {
+  if (to.path.includes("/pos")) {
     // first unset hiveAccTo to trigger a refresh
     // wait half a second then run the code
     // wait for a tick
+    console.log("route changed refresh hiveAccTo properties")
     setTimeout(() => {
       if (storeUser.pos?.hiveAccTo) {
         hiveAccTo.value = {
@@ -352,6 +353,7 @@ const isPaymentValid = computed(() => {
 
 onMounted(() => {
   const path = route.path
+  console.log("POSPage.vue onMounted path: ", path)
   if (path.includes("/sales")) {
     currentTab.value = "sales"
   } else if (path.includes("/history")) {
