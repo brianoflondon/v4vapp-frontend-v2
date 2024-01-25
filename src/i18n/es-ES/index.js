@@ -23,6 +23,7 @@ export default {
   confirm: 'Confirm',
   yes: 'Yes',
   no: 'No',
+  all: 'All',
   // Dark Mode Selector
   change_light: 'Cambiar a modo claro',
   change_dark: 'Cambiar a modo oscuro',
@@ -74,8 +75,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Keychain no se encuentra',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',

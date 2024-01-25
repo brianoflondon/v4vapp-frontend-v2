@@ -23,6 +23,7 @@ export default {
   confirm: 'Confirm',
   yes: 'Yes',
   no: 'No',
+  all: 'All',
   // Dark Mode Selector
   change_light: 'Change to light mode',
   change_dark: 'Change to dark mode',
