@@ -1,19 +1,25 @@
 <template>
   <!-- List header and search filter -->
-  <div class="list-trans-header full-width row items-center bordered-div">
+  <div class="list-trans-header q-pb-md full-width row items-center bordered-div">
     <div class="col-grow bordered-div">
-      <q-input dense v-model="searchFilter" label="Search"></q-input>
+      <q-input dense v-model="searchFilter" clearable label="Search"></q-input>
     </div>
-    <div class="bordered-div">
+    <div class="q-pl-lg bordered-div">
       <q-btn-toggle
-        v-model="paidFilter"
-        dense
-        :options="[
-          { label: '', value: 'all', icon: 'fa-solid fa-dollar-sign' },
-          { label: '', value: 'paid', icon: 'fa-solid fa-check' },
-          { label: '', value: 'pending', icon: 'fa-solid fa-clock' },
-        ]"
-      ></q-btn-toggle>
+      v-model="paidFilter"
+      dense
+      :options="[
+        { label: '', value: 'all', icon: 'fa-solid fa-dollar-sign' },
+        { label: '', value: 'paid', icon: 'fa-solid fa-check' },
+        { label: '', value: 'pending', icon: 'fa-solid fa-clock' },
+      ]"
+        >
+        <q-tooltip>
+          <q-icon name="fa-solid fa-dollar-sign" /> {{ $t("all") }}<br>
+          <q-icon name="fa-solid fa-check" /> {{ $t("paid") }}<br>
+          <q-icon name="fa-solid fa-clock" /> {{ $t("pending") }}<br>
+        </q-tooltip>
+      </q-btn-toggle>
     </div>
   </div>
   <!-- End of list header and search filter -->
@@ -615,7 +621,6 @@ async function updateTransactions() {
       const memo = transaction.op[1].memo
       return memo && memo.match(/v4v-\w+$/)
     })
-
 
     // If posTrans is empty, exit early
     if (posTrans.length === 0) {
