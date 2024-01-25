@@ -19,9 +19,9 @@ export default {
   from: 'desde',
   to: 'hasta',
   local_currency: 'Moneda Local',
-  currency: 'Currency',
-  confirm: 'Confirm',
-  yes: 'Yes',
+  currency: 'Moneda',
+  confirm: 'Confirmar',
+  yes: 'Si',
   no: 'No',
   all: 'All',
   // Dark Mode Selector
@@ -76,7 +76,7 @@ export default {
   failure: 'Fallo',
   working: 'Trabajando',
   keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_missing: 'Keychain no se encuentra',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
