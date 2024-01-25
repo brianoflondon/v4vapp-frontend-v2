@@ -1,5 +1,3 @@
-// This is just an example,
-// so you can safely delete all default props below
 export default {
   // General
   loading: 'Loading ...',
@@ -180,5 +178,8 @@ export default {
   delete_local_records_tooltip: `Delete all local records. This will erase all pending payments, \n
     but successful payments can be re- imported from Hive with the \n
     Import Hive button`,
-  delete_pending_message: 'Are you sure you want to delete all pending sales?'
+  delete_all_pending_message: 'Are you sure you want to delete all pending sales?',
+  delete_one_pending_message: 'Are you sure you want to delete this pending sale?',
+  export_to_csv: 'Export to CSV',
+  export_to_csv_tooltip: 'Export all the currently displayed sales to a CSV file'
 };
