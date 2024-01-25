@@ -8,6 +8,30 @@ import axios from "axios"
 const coinGeckoApi = "https://api.coingecko.com/api/v3"
 const maxCacheAge = 10 * 60 * 1000 // 10 minutes in milliseconds
 
+/**
+ * Custom store for Coingecko data.
+ * @typedef {Object} CoingeckoStore
+ * @property {Object} state - The state of the Coingecko store.
+ * @property {Object} state.exchangeRates - The exchange rates data.
+ * @property {Object} state.currencyOptions - The currency options data.
+ * @property {Object} state.ratesCache - The rates cache data.
+ * @property {Object} state.lastFetched - The last fetched data.
+ * @property {Object} state.lastFetchedHuman - The last fetched data in human-readable format.
+ * @property {Object} actions - The actions of the Coingecko store.
+ * @property {Function} actions.fetchCoingeckoRates - Fetches the Coingecko rates.
+ * @property {Function} actions.getCoingeckoRate - Gets the Coingecko rate for a specific currency.
+ * @property {Function} actions.cacheDataRates - Caches the data rates with the specified key.
+ * @property {Function} actions.isCacheValidRates - Checks if the cache for the specified key is valid.
+ * @property {Function} actions.buildCurrencyOptions - Builds the currency options based on the Coingecko rates.
+ * @property {Function} actions.getExtraCurrencyOptions - Gets additional currency options.
+ * @property {Function} actions.cacheData - Caches the exchange rates and currency options.
+ * @property {Function} actions.isCacheValid - Checks if the cache for the specified key is valid.
+ * @property {Object} persist - The persistence configuration for the Coingecko store.
+ * @property {boolean} persist.enabled - Indicates if persistence is enabled.
+ * @property {Array} persist.strategies - The persistence strategies.
+ * @property {Object} persist.strategies.storage - The storage mechanism for persistence.
+ * @property {Array} persist.strategies.paths - The paths to be persisted.
+ */
 export const useCoingeckoStore = defineStore("coingecko", {
   state: () => ({
     exchangeRates: useStorage("exchangeRates", {}),
@@ -31,13 +55,12 @@ export const useCoingeckoStore = defineStore("coingecko", {
       }
 
       if (this.isCacheValid("exchangeRates")) {
-        console.log("coingecko Using cached rates")
         return [this.exchangeRates, this.currencyOptions]
       }
 
       try {
         const url = `${coinGeckoApi}/exchange_rates`
-        console.log("coingecko fetchCoingeckoRates url", url)
+        console.debug("coingecko fetchCoingeckoRates url", url)
         const res = await axios.get(url)
 
         if (res.status === 200) {
@@ -59,22 +82,27 @@ export const useCoingeckoStore = defineStore("coingecko", {
       }
     },
 
+
+    /**
+     * Fetches Coingecko rates for a given currency.
+     * @param {string} currency - The currency for which rates are to be fetched.
+     * @returns {Promise<Object>} - A promise that resolves to an object containing the Coingecko rates.
+     * @throws {Error} - If there is an error fetching the rates.
+     */
     async getCoingeckoRate(currency) {
       const cacheKey = `rates-${currency}`
-      console.log("coingecko cacheKey", cacheKey)
       if (this.isCacheValidRates(cacheKey)) {
-        console.log("coingecko Using cached rates")
+        console.debug("coingecko Using cached rates")
         return this.ratesCache[cacheKey]
       }
 
       try {
-        console.log("coingecko Fetching rates", currency)
+        console.debug("coingecko Fetching rates", currency)
         const url = `${coinGeckoApi}/simple/price`
         const params = {
           ids: "hive,hive_dollar,btc,usd",
           vs_currencies: `btc,usd,eur,${currency}`,
         }
-        console.log("coingecko getCoingeckoRate url", url, currency)
         const res = await axios.get(url, { params })
         if (res.status === 200) {
           res.data.hive_dollar = res.data.usd
@@ -92,14 +120,24 @@ export const useCoingeckoStore = defineStore("coingecko", {
       }
     },
 
+
+    /**
+     * Caches the data rates with the specified key.
+     * @param {string} key - The key to cache the data rates.
+     * @param {any} data - The data rates to be cached.
+     */
     cacheDataRates(key, data) {
-      console.log("coingecko cacheDataRates", key, data)
       this.ratesCache[key] = data
       this.lastFetched[key] = Date.now()
       this.lastFetchedHuman[key] = new Date().toLocaleString()
-      console.log("coingecko cacheDataRates", this.ratesCache)
     },
 
+
+    /**
+     * Checks if the cache for rates is valid.
+     * @param {string} key - The cache key.
+     * @returns {boolean} - True if the cache is valid, false otherwise.
+     */
     isCacheValidRates(key) {
       console.log("coingecko isCacheValidRates", key)
       return (
@@ -107,6 +145,12 @@ export const useCoingeckoStore = defineStore("coingecko", {
       )
     },
 
+    /**
+     * Builds an array of currency options based on the provided coingecko rates.
+     * Each currency option object contains a label, value, and unit.
+     * @param {Object} coingeckoRates - The coingecko rates object.
+     * @returns {Array} - An array of currency options.
+     */
     buildCurrencyOptions(coingeckoRates) {
       const currencyOptions = Object.entries(coingeckoRates).map(
         ([key, rate]) => ({
@@ -120,6 +164,10 @@ export const useCoingeckoStore = defineStore("coingecko", {
       return currencyOptions
     },
 
+    /**
+     * Retrieves the extra currency options.
+     * @returns {Array} An array of objects representing the extra currency options.
+     */
     getExtraCurrencyOptions() {
       return [
         { label: "Guatemalan Quetzal", value: "GTQ", unit: "gtq" },
