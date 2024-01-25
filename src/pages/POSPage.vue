@@ -24,27 +24,21 @@
           :label="$t('currency')"
         />
       </q-tabs>
-      <q-tab-panels
-        v-model="currentTab"
-        class="div flex row pad-max-width full-width items-center"
-      >
-        <q-tab-panel name="history" class="q-pa-none full-width">
-          <div>
-            <div class="q-px-xs q-py-xs">
-              <ListTransactions
-                v-model="KeychainDialog"
-                @update-fields="handleRetryTransaction"
-              ></ListTransactions>
-            </div>
+      <q-tab-panels v-model="currentTab">
+        <q-tab-panel v-show="false" name="sales">
+          <div></div>
+        </q-tab-panel>
+        <q-tab-panel name="history">
+          <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+            <ListTransactions
+              v-model="KeychainDialog"
+              @update-fields="handleRetryTransaction"
+            ></ListTransactions>
           </div>
         </q-tab-panel>
         <q-tab-panel name="currency">
-          <div>
-            <div class="q-px-xs q-py-xs">
-              <div class="pad-max-width">
-                <LocalCurrency />
-              </div>
-            </div>
+          <div class="flex row pad-max-width full-width q-px-xs q-py-xs">
+            <LocalCurrency />
           </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -342,7 +336,11 @@ const isPaymentValid = computed(() => {
   // Returns True if this payment screen can produce a QR code
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
-  console.log("isPaymentValid computed", amount.value.num, hiveAccTo.value.valid)
+  console.log(
+    "isPaymentValid computed",
+    amount.value.num,
+    hiveAccTo.value.valid
+  )
   if (amount.value.num === 0 || isNaN(amount.value.num)) {
     return false
   }

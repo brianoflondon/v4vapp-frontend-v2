@@ -1,11 +1,10 @@
 <template>
-  <div
-    class="list-trans-header q-pb-sm fit row wrap justify-start items-center content-start"
-  >
-    <div class="col-grow">
+  <!-- List header and search filter -->
+  <div class="list-trans-header full-width row items-center bordered-div">
+    <div class="col-grow bordered-div">
       <q-input dense v-model="searchFilter" label="Search"></q-input>
     </div>
-    <div>
+    <div class="bordered-div">
       <q-btn-toggle
         v-model="paidFilter"
         dense
@@ -17,241 +16,231 @@
       ></q-btn-toggle>
     </div>
   </div>
+  <!-- End of list header and search filter -->
   <!-- Main table -->
-  <div class="list-trans-main-table q-pa-none">
-    <q-table
-      class="q-pa-xs"
-      :rows="filteredDataLocal"
-      dense
-      v-model:expanded="rowsExpanded"
-      row-key="checkCode"
-      :columns="localSalesColumns"
-      :visible-columns="['date', 'amountstring', 'status', 'expand']"
-      separator="none"
-      :pagination="{
-        rowsPerPage: 5,
-        display: false,
-        sortBy: 'date',
-      }"
-    >
-      <template v-slot:header-cell-amountstring="props">
-        <q-th :props="props" style="text-align: center">
-          {{ props.col.label }}
-        </q-th>
-      </template>
-      <template v-slot:header-cell-status="props">
-        <q-th :props="props" style="text-align: center">
-          {{ props.col.label }}
-        </q-th>
-      </template>
-      <template v-slot:header-cell-expand="props">
-        <q-th :props="props" style="text-align: right">
-          <q-btn
-            round
-            flat
-            dense
-            :icon="rowsExpanded.length === 0 ? 'expand_more' : 'expand_less'"
-            @click="expandAll"
-          ></q-btn>
-        </q-th>
-      </template>
-      <!-- Main table body  -->
-      <template #body="props">
-        <q-tr :props="props">
-          <q-td :props="props" key="date">
-            {{ prettyDate(props.row) }}
-          </q-td>
-          <q-td k:props="props" key="amountstring" dense>
-            {{ props.row.amountString }}
-          </q-td>
-          <q-td :props="props" key="status">
-            <span @click="retryPending(props)">
-              <q-chip
-                dense
-                :color="props.row.paid ? 'green' : 'yellow-10'"
-                :icon="
-                  props.row.lightning
-                    ? 'fa-sharp fa-solid fa-bolt'
-                    : 'fa-brands fa-hive'
-                "
-              >
-                <div class="q-px-xs">
-                  {{ props.row.paid ? $t("paid") : $t("pending") }}
-                </div>
-              </q-chip>
-            </span>
-            <span v-if="!props.row.paid">
-              <q-btn
-                icon="delete"
-                dense
-                flat
-                @click="deleteLocalSalesConfirm(props.row)"
-              >
-                <!-- <q-tooltip>{{ $t("delete_pending_tooltip") }}</q-tooltip> -->
-              </q-btn>
-            </span>
-          </q-td>
-          <q-td :props="props" key="expand" style="text-align: right">
+  <div class="list-trans-main-table full-width row items-center bordered-div">
+    <div class="col-grow bordered-div">
+      <q-table
+        class="q-pa-xs"
+        :rows="filteredDataLocal"
+        dense
+        v-model:expanded="rowsExpanded"
+        row-key="checkCode"
+        :columns="localSalesColumns"
+        :visible-columns="['date', 'amountstring', 'status', 'expand']"
+        separator="none"
+        :pagination="{
+          rowsPerPage: 5,
+          display: false,
+          sortBy: 'date',
+        }"
+      >
+        <template v-slot:header-cell-amountstring="props">
+          <q-th :props="props" style="text-align: center">
+            {{ props.col.label }}
+          </q-th>
+        </template>
+        <template v-slot:header-cell-status="props">
+          <q-th :props="props" style="text-align: center">
+            {{ props.col.label }}
+          </q-th>
+        </template>
+        <template v-slot:header-cell-expand="props">
+          <q-th :props="props" style="text-align: right">
             <q-btn
               round
               flat
               dense
-              :icon="props.expand ? 'expand_less' : 'expand_more'"
-              @click="props.expand = !props.expand"
+              :icon="rowsExpanded.length === 0 ? 'expand_more' : 'expand_less'"
+              @click="expandAll"
             ></q-btn>
-          </q-td>
-        </q-tr>
-        <!-- End of main table  -->
-        <!-- Expanded row details  -->
-        <q-tr v-if="props.expand">
-          <q-td colspan="100%">
-            <div class="fit row justify-start items-start content-start">
-              <div>
-                <!-- Payee  -->
-                <div class="q-pr-sm fixed-width-to-from-hive">
+          </q-th>
+        </template>
+        <!-- Main table body  -->
+        <template #body="props">
+          <q-tr :props="props">
+            <q-td :props="props" key="date">
+              {{ prettyDate(props.row) }}
+            </q-td>
+            <q-td k:props="props" key="amountstring" dense>
+              {{ props.row.amountString }}
+            </q-td>
+            <q-td :props="props" key="status">
+              <span @click="retryPending(props)">
+                <q-chip
+                  dense
+                  :color="props.row.paid ? 'green' : 'yellow-10'"
+                  :icon="
+                    props.row.lightning
+                      ? 'fa-sharp fa-solid fa-bolt'
+                      : 'fa-brands fa-hive'
+                  "
+                >
+                  <div class="q-px-xs">
+                    {{ props.row.paid ? $t("paid") : $t("pending") }}
+                  </div>
+                </q-chip>
+              </span>
+              <span v-if="!props.row.paid">
+                <q-btn
+                  icon="delete"
+                  dense
+                  flat
+                  @click="deleteLocalSalesConfirm(props.row)"
+                >
+                  <!-- <q-tooltip>{{ $t("delete_pending_tooltip") }}</q-tooltip> -->
+                </q-btn>
+              </span>
+            </q-td>
+            <q-td :props="props" key="expand" style="text-align: right">
+              <q-btn
+                round
+                flat
+                dense
+                :icon="props.expand ? 'expand_less' : 'expand_more'"
+                @click="props.expand = !props.expand"
+              ></q-btn>
+            </q-td>
+          </q-tr>
+          <!-- End of main table  -->
+          <!-- Expanded row details  -->
+          <q-tr v-if="props.expand">
+            <q-td colspan="100%">
+              <div class="fit row justify-start items-start content-start">
+                <div>
+                  <!-- Payee  -->
+                  <div class="q-pr-sm fixed-width-to-from-hive">
+                    <div class="small-text">
+                      {{ $t("pay_to") }}
+                    </div>
+                    <div class="">
+                      <q-avatar rounded size="md">
+                        <HiveAvatar :hiveAccname="props.row.hiveAccTo" />
+                      </q-avatar>
+                    </div>
+                    <div class="small-text">
+                      {{ props.row.hiveAccTo }}
+                    </div>
+                  </div>
+                </div>
+                <!-- End of Payee -->
+                <!-- Payer  -->
+                <div
+                  v-if="props.row.paid"
+                  class="q-px-sm fixed-width-to-from-hive"
+                >
                   <div class="small-text">
-                    {{ $t("pay_to") }}
+                    {{ $t("paid_by") }}
                   </div>
                   <div class="">
                     <q-avatar rounded size="md">
-                      <HiveAvatar :hiveAccname="props.row.hiveAccTo" />
+                      <HiveAvatar :hiveAccname="props.row.hiveAccFrom" />
                     </q-avatar>
                   </div>
                   <div class="small-text">
-                    {{ props.row.hiveAccTo }}
+                    {{ props.row.hiveAccFrom }}
+                  </div>
+                </div>
+                <!-- End of Payer -->
+                <!-- details of transaction  -->
+                <div class="col-grow self-end text-right">
+                  <div v-if="props.row.paid">
+                    {{ formatDateTimeLocale(props.row.paidDate).date }}
+                    {{ formatDateTimeLocale(props.row.paidDate).time }}
+                    <a
+                      :href="useGenerateTxUrl(props.row.trx_id)"
+                      target="_blank"
+                      class="custom-link"
+                    >
+                      <q-btn
+                        size="xs"
+                        text-color="inherit"
+                        flat
+                        dense
+                        icon="open_in_new"
+                        name="open_in_new"
+                      />
+                    </a>
+                  </div>
+                  <div v-else>
+                    {{ formatDateTimeLocale(props.row.timestamp).date }}
+                    {{ formatDateTimeLocale(props.row.timestamp).time }}
+                  </div>
+                  <div class="">{{ props.row.amountString }}</div>
+                  <div v-if="props.row.memo" class="">
+                    {{ props.row.memo }}
+                  </div>
+                  <div>USD ${{ props.row.usd.toFixed(2) }}</div>
+                  <div class="small-text">
+                    {{ props.row.checkCode }}
                   </div>
                 </div>
               </div>
-              <!-- End of Payee -->
-              <!-- Payer  -->
-              <div
-                v-if="props.row.paid"
-                class="q-px-sm fixed-width-to-from-hive"
-              >
-                <div class="small-text">
-                  {{ $t("paid_by") }}
-                </div>
-                <div class="">
-                  <q-avatar rounded size="md">
-                    <HiveAvatar :hiveAccname="props.row.hiveAccFrom" />
-                  </q-avatar>
-                </div>
-                <div class="small-text">
-                  {{ props.row.hiveAccFrom }}
-                </div>
-              </div>
-              <!-- End of Payer -->
-              <!-- details of transaction  -->
-              <div class="col-grow self-end text-right">
-                <div v-if="props.row.paid">
-                  {{ formatDateTimeLocale(props.row.paidDate).date }}
-                  {{ formatDateTimeLocale(props.row.paidDate).time }}
-                  <a
-                    :href="useGenerateTxUrl(props.row.trx_id)"
-                    target="_blank"
-                    class="custom-link"
-                  >
-                    <q-btn
-                      size="xs"
-                      text-color="inherit"
-                      flat
-                      dense
-                      icon="open_in_new"
-                      name="open_in_new"
-                    />
-                  </a>
-                </div>
-                <div v-else>
-                  {{ formatDateTimeLocale(props.row.timestamp).date }}
-                  {{ formatDateTimeLocale(props.row.timestamp).time }}
-                </div>
-                <div class="">{{ props.row.amountString }}</div>
-                <div v-if="props.row.memo" class="">
-                  {{ props.row.memo }}
-                </div>
-                <div>USD ${{ props.row.usd.toFixed(2) }}</div>
-                <div class="small-text">
-                  {{ props.row.checkCode }}
-                </div>
-              </div>
-            </div>
-          </q-td>
-        </q-tr>
-        <!-- End of expanded row details -->
-      </template>
-    </q-table>
+            </q-td>
+          </q-tr>
+          <!-- End of expanded row details -->
+        </template>
+      </q-table>
+    </div>
   </div>
-  <q-separator />
   <!-- End of main table -->
-  <!-- Totals  and import buttons-->
-  <div class="list-trans-totals-buttons q-pt-sm bordered-div">
-    <!-- total amounts -->
-    <div
-      class="list-trans-totals q-pb-sm fit row no-wrap justify-center bordered-div"
-    >
-      <div class="q-px-sm bordered-div">
-        <i class="fa-brands fa-hive" />{{ totalAmounts.hive }}
-      </div>
-      <div><q-icon name="add" /></div>
-      <div class="q-px-sm bordered-div">
-        <hbd-logo-icon />&nbsp;{{ totalAmounts.hbd }}
-      </div>
-      <div><q-icon name="drag_handle" /></div>
-      <div class="q-px-sm bordered-div">${{ totalAmounts.usd }}</div>
+  <!-- Totals -->
+  <div
+    class="list-trans-totals full-width justify-center row items-center bordered-div"
+  >
+    <div class="q-px-sm q-py-md">
+      <i class="fa-brands fa-hive" />&nbsp;{{ totalAmounts.hive }}
     </div>
-    <!-- end total amounts -->
-    <!-- Import and delete buttons -->
-    <div
-      class="list-trans-buttons q-pb-sm fit row no-wrap justify-evenly items-center bordered-div"
-    >
-      <div class="list-trans-import bordered-div">
-        <q-btn
-          dense
-          rounded
-          size="sm"
-          icon="fa-brands fa-hive"
-          @click="importFromHive"
-          class="q-mr-sm"
-        >
-          <q-tooltip>{{ $t("import_from_hive_tooltip") }}</q-tooltip>
-          <div class="q-px-xs">
-            {{ $t("import_hive") }}
-          </div>
-        </q-btn>
-      </div>
-      <div class="list-trans-delete bordered-div">
-        <q-btn
-          dense
-          rounded
-          size="sm"
-          icon="delete"
-          @click="deleteLocalSalesConfirm"
-          class="q-mr-sm"
-        >
-          <q-tooltip>{{ $t("delete_local_records_tooltip") }}</q-tooltip>
-          <div class="q-px-">
-            {{ $t("local_records") }}
-          </div>
-        </q-btn>
-      </div>
-      <div class="list-trans-delete bordered-div">
-        <q-btn
-          dense
-          rounded
-          size="sm"
-          icon="archive"
-          @click="exportToCsv"
-          class="q-mr-sm"
-        >
-          <q-tooltip>{{ $t("export_to_csv_tooltip") }}</q-tooltip>
-          <div class="q-px-">
-            {{ $t("export_to_csv") }}
-          </div>
-        </q-btn>
-      </div>
+    <div class="q-px-sm q-py-md">+</div>
+    <div class="q-px-sm q-py-md">
+      <hbd-logo-icon />&nbsp;{{ totalAmounts.hbd }}
     </div>
-    <!-- End of import and delete buttons -->
+    <div class="q-px-sm q-py-md">=</div>
+    <div class="q-px-sm q-py-md">USD ${{ totalAmounts.usd }}</div>
   </div>
+  <!-- End Totals -->
+  <!-- Import buttons and delete buttons -->
+  <div
+    class="list-trans-buttons full-width justify-evenly row items-center bordered-div"
+  >
+    <div class="q-px-sm q-py-md">
+      <q-btn
+        dense
+        rounded
+        size="sm"
+        icon="fa-brands fa-hive"
+        @click="importFromHive"
+      >
+        <q-tooltip>{{ $t("import_from_hive_tooltip") }}</q-tooltip>
+        <div class="q-px-xs">
+          {{ $t("import_hive") }}
+        </div>
+      </q-btn>
+    </div>
+    <div class="q-px-sm q py-md">
+      <q-btn
+        dense
+        rounded
+        size="sm"
+        icon="delete"
+        @click="deleteLocalSalesConfirm"
+      >
+        <q-tooltip>{{ $t("delete_local_records_tooltip") }}</q-tooltip>
+        <div class="q-px-xs">
+          {{ $t("local_records") }}
+        </div>
+      </q-btn>
+    </div>
+    <div class="q-px-sm q py-md">
+      <q-btn dense rounded size="sm" icon="archive" @click="exportToCsv">
+        <q-tooltip>{{ $t("export_to_csv_tooltip") }}</q-tooltip>
+        <div class="q-px-xs">
+          {{ $t("export_to_csv") }}
+        </div>
+      </q-btn>
+    </div>
+  </div>
+  <!-- End of import buttons and delete buttons -->
 </template>
 
 <script setup>
@@ -582,7 +571,10 @@ async function retryPending(props) {
  */
 async function updateTransactions() {
   // show where this function was called from
-  console.log("updateTransactions called from", new Error().stack.split("\n")[2])
+  console.log(
+    "updateTransactions called from",
+    new Error().stack.split("\n")[2]
+  )
   const trans = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     200
@@ -603,7 +595,6 @@ async function updateTransactions() {
     }
     posTrans = posTrans.slice(0, maxNumTransactions)
     console.log("num trans after slice", posTrans.length)
-
 
     // Add extra fields to the transactions
     posTrans.forEach((transaction) => {
@@ -626,7 +617,6 @@ async function updateTransactions() {
 
     KeychainDialog.value.transactions = posTrans.reverse()
     console.log("num trans after reverse", posTrans.length)
-
   }
 }
 
@@ -706,7 +696,6 @@ function wrapCsvValue(val, formatFn, row) {
 
   return `"${formatted}"`
 }
-
 
 /**
  * Exports the transactions to a CSV file.
