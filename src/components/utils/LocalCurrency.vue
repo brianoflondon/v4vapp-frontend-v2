@@ -23,7 +23,7 @@
       >
         <template v-slot:append>
           <!-- small -->
-          <div class="text-caption">
+          <div class="">
             {{ currency.unit?.toUpperCase() }}
           </div>
         </template>

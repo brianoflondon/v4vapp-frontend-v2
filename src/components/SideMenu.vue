@@ -15,11 +15,14 @@
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
     <div class="q-pa-md text-caption">{{ appName }} - {{ appVersion }}</div>
+    <div v-if="commitMessage" class="q-pa-md text-caption">
+      {{ commitMessage }}
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue"
+import { ref, watch, onMounted } from "vue"
 import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
 import UserList from "components/hive/UserList.vue"
@@ -34,6 +37,7 @@ const storeUser = useStoreUser()
 // const rightDrawerOpen = defineModel(false)
 
 const hiveAccObj = ref()
+const commitMessage = ref()
 
 const t = useI18n().t
 const linkList = ref([
@@ -81,13 +85,19 @@ watch(storeUser, async (val) => {
   }
 })
 
-watch(hiveAccObj, async (val) => {
-  // console.debug("hiveAccObj", val)
-  // hiveUsername.value = val.value
-  // label.value = "Loading..."
-  // hiveDetails.value = await useHiveDetails(val.value)
-  // label.value = hiveDetails.value?.profile?.name || t("hive_account")
+onMounted(() => {
+  // only do this if dev. is in the hostname
+  // if window location is not v4v.app
+  console.log("window.location.hostname", window.location.hostname)
+  if (!window.location.hostname !== "v4v.app") {
+    fetchCommitMessage()
+  }
 })
+
+const fetchCommitMessage = async () => {
+  const response = await fetch("/messages/commit_message.txt")
+  commitMessage.value = await response.text()
+}
 </script>
 
 <style lang="scss" scoped></style>

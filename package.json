@@ -1,6 +1,6 @@
 {
   "name": "v4vapp-frontend-v2",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "V4V.app Value 4 Value Hive Lightning Bridge",
   "productName": "V4V.app",
   "author": "Brian of London (Dot) <brian@v4v.app>",
@@ -10,7 +10,8 @@
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build"
+    "build": "quasar build",
+    "patch": "npm version patch && git push --follow-tags"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.8",

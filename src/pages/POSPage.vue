@@ -24,27 +24,21 @@
           :label="$t('currency')"
         />
       </q-tabs>
-      <q-tab-panels
-        v-model="currentTab"
-        class="div flex row pad-max-width full-width items-center"
-      >
-        <q-tab-panel name="history" class="q-pa-none full-width">
-          <div>
-            <div class="q-px-xs q-py-xs">
-              <ListTransactions
-                v-model="KeychainDialog"
-                @update-fields="handleRetryTransaction"
-              ></ListTransactions>
-            </div>
+      <q-tab-panels v-model="currentTab">
+        <q-tab-panel v-show="false" name="sales">
+          <div></div>
+        </q-tab-panel>
+        <q-tab-panel name="history">
+          <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+            <ListTransactions
+              v-model="KeychainDialog"
+              @update-fields="handleRetryTransaction"
+            ></ListTransactions>
           </div>
         </q-tab-panel>
         <q-tab-panel name="currency">
-          <div>
-            <div class="q-px-xs q-py-xs">
-              <div class="pad-max-width">
-                <LocalCurrency />
-              </div>
-            </div>
+          <div class="flex row pad-max-width full-width q-px-xs q-py-xs">
+            <LocalCurrency />
           </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -64,15 +58,15 @@
         class="div flex row pad-max-width full-width items-start q-pa-sm q-pt-lg q-pb-md"
         v-else
       >
-        <div class="col-10 q-px-sm">
+        <div class="col-11 q-px-sm">
           <div class="pad-max-width full-width">
             <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
             <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')">
             </HiveInputAcc>
           </div>
         </div>
-        <!-- Button to Show Currency settings -->
-        <div class="div col-2 q-px-none row justify-start items-center">
+        <!-- Button to Show bookmark settings -->
+        <div class="div col-1 q-px-none">
           <div class="q-px-xs">
             <q-btn dense round icon="bookmark" @click="bookmarkSite">
               <q-tooltip>
@@ -224,7 +218,6 @@ import { ref, onMounted, watch, computed } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
-import POSSettingsDialog from "src/components/POSSettingsDialog.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import SetRateBar from "src/components/utils/SetRateBar.vue"
 import { useStoreUser } from "src/stores/storeUser"
@@ -290,7 +283,7 @@ function resetCurrencyOptions(localCurrency) {
 
 watch(route, (to, from) => {
   // Code to execute on route change
-  if (to.path === "/pos") {
+  if (to.path.includes("/pos")) {
     // first unset hiveAccTo to trigger a refresh
     // wait half a second then run the code
     // wait for a tick
@@ -299,6 +292,7 @@ watch(route, (to, from) => {
         hiveAccTo.value = {
           label: storeUser.pos.hiveAccTo.label,
           value: storeUser.pos.hiveAccTo.value,
+          valid: true,
           caption: storeUser.pos.hiveAccTo.caption,
           fixedUser: false,
         }
@@ -351,8 +345,6 @@ const isPaymentValid = computed(() => {
 })
 
 onMounted(() => {
-  console.log("route", route.path)
-  console.log("currentTab.value", currentTab.value)
   const path = route.path
   if (path.includes("/sales")) {
     currentTab.value = "sales"
@@ -394,10 +386,16 @@ onMounted(() => {
   }
 })
 
+/**
+ * Handles the retry of a transaction.
+ *
+ * This function is called when a transaction needs to be retried. It sets up the necessary values for the transaction,
+ * such as the account to send to (`hiveAccTo`), the currency to send (`currencyToSend`), the amount to send (`amount`),
+ * and the memo (`memoInput`). After setting these values, it updates the amounts and shows the payment QR code.
+ *
+ * @param {Object} val - The transaction data. Should have properties: `hiveAccTo`, `currencyToSend`, `amount`, and `memo`.
+ */
 function handleRetryTransaction(val) {
-  console.log("handleRetryTransaction")
-  console.log("val", val)
-  console.log("hiveAccTo.value", hiveAccTo.value)
   KeychainDialog.value.hiveAccTo = val.hiveAccTo
 
   hiveAccTo.value = {
@@ -407,19 +405,27 @@ function handleRetryTransaction(val) {
   }
   hiveAccTo.value.valid = true
 
-  currencySelected.value = val.currencyToSend
+  handleCurrencyClicked(val.currencyToSend)
+
   amount.value.num = val.amount
   amount.value.txt = tidyNumber(val.amount, 3)
   memoInput.value = val.memo
   updateAmounts(amount.value.txt)
-  console.log('updated amounts', CurrencyCalc.value)
   // wait a tick
   setTimeout(() => {
     showPaymentQR(val.currencyToSend)
   }, 100)
-  console.log("hiveAccTo.value", hiveAccTo.value)
 }
 
+/**
+ * Extracts the username from a route parameter.
+ *
+ * This function assumes that the route parameter is in the format 'v4vapp.dev/bookmark', and extracts the substring
+ * before the first '/'. If there is no '/', it extracts the entire string.
+ *
+ * @param {string} routeParam - The route parameter from which to extract the username.
+ * @returns {string} The extracted username.
+ */
 function extractUsernameFromRouteParam(routeParam) {
   // Assuming routeParam is in the format 'v4vapp.dev/bookmark'
   var slashPosition = routeParam.indexOf("/")
@@ -454,7 +460,6 @@ function updateAmounts(val) {
 }
 
 function handleCurrencyClicked(currency) {
-  console.log("handleCurrencyClicked", currency)
   // change amount to match the amount of the selected currency
   // modify this to use updateAmounts
 
@@ -486,7 +491,7 @@ function bookmarkSite() {
   // Since browsers restrict adding bookmarks via script,
   // inform the user how to bookmark the page manually.
   // jump to a different url
-  window.location.href = "/pos/@" + hiveAccTo.value.value
+  window.location.href = "/pos/sales/@" + hiveAccTo.value.value
   // wait for the page to load
   // setTimeout(() => {
   //   // scroll to the bottom of the page
@@ -589,7 +594,8 @@ watch(
 }
 
 .pad-max-width {
-  max-width: 400px;
+  max-width: 600px;
+  padding: 1rem 0.5rem;
 }
 
 .full-width {
