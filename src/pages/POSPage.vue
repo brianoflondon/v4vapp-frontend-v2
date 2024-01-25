@@ -287,7 +287,6 @@ watch(route, (to, from) => {
     // first unset hiveAccTo to trigger a refresh
     // wait half a second then run the code
     // wait for a tick
-    console.log("route changed refresh hiveAccTo properties")
     setTimeout(() => {
       if (storeUser.pos?.hiveAccTo) {
         hiveAccTo.value = {
@@ -336,11 +335,6 @@ const isPaymentValid = computed(() => {
   // Returns True if this payment screen can produce a QR code
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
-  console.log(
-    "isPaymentValid computed",
-    amount.value.num,
-    hiveAccTo.value.valid
-  )
   if (amount.value.num === 0 || isNaN(amount.value.num)) {
     return false
   }
@@ -352,7 +346,6 @@ const isPaymentValid = computed(() => {
 
 onMounted(() => {
   const path = route.path
-  console.log("POSPage.vue onMounted path: ", path)
   if (path.includes("/sales")) {
     currentTab.value = "sales"
   } else if (path.includes("/history")) {

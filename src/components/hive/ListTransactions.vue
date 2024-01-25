@@ -197,6 +197,9 @@
     </div>
     <div class="q-px-sm q-py-md">=</div>
     <div class="q-px-sm q-py-md">USD ${{ totalAmounts.usd }}</div>
+    <div class="q-px-sm q-py-md">
+      {{ totalAmounts.localSymbol }}&nbsp;{{ totalAmounts.local }}
+    </div>
   </div>
   <!-- End Totals -->
   <!-- Import buttons and delete buttons -->
@@ -250,11 +253,15 @@ import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
 import { useStoreSales } from "src/stores/storeSales"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import { useStoreUser } from "src/stores/storeUser"
+import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { useI18n } from "vue-i18n"
 import { Dialog, exportFile } from "quasar"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 const t = useI18n().t
 const storeAPIStatus = useStoreAPIStatus()
+const storeUser = useStoreUser()
+const storeCoingecko = useCoingeckoStore()
 
 const maxNumTransactions = 40 // max number of transactions to show in the table
 
@@ -329,11 +336,16 @@ const filteredDataLocal = computed(() => {
 watch(
   () => filteredDataLocal.value,
   (val) => {
-    getAmounts()
+    calcTotalAmounts()
   }
 )
 
-function getAmounts() {
+watch([() => storeUser.localCurrency, () => storeUser.pos.fixedRate], () => {
+  calcTotalAmounts()
+})
+
+async function calcTotalAmounts() {
+  calcLocalTotal()
   const amounts = {
     hive: 0,
     hbd: 0,
@@ -353,13 +365,38 @@ function getAmounts() {
   if (storeAPIStatus.prices === "fetching prices") {
     // wait a bit and try again
     setTimeout(() => {
-      getAmounts()
+      calcTotalAmounts()
     }, 1000)
     return
   }
   amounts.usd = amounts.hive * storeAPIStatus.prices?.hive?.usd
   amounts.usd += amounts.hbd * storeAPIStatus.prices?.hive_dollar?.usd
   totalAmounts.value.usd = amounts.usd.toFixed(2)
+}
+
+async function calcLocalTotal() {
+  const localRates = await storeCoingecko.getCoingeckoRate(
+    storeUser.localCurrency.value
+  )
+  var adustRate = 1
+  if (storeUser.pos.fixedRate) {
+    adustRate =
+      storeUser.pos.fixedRate /
+      localRates.hive_dollar[storeUser.localCurrency.value]
+  }
+
+  const convertLocal = (amount, currency) => {
+    return (
+      amount * localRates[currency][storeUser.localCurrency.value] * adustRate
+    )
+  }
+
+  totalAmounts.value.local = convertLocal(
+    totalAmounts.value.usd,
+    "usd"
+  ).toFixed(2)
+
+  totalAmounts.value.localSymbol = storeUser.localCurrency.unit
 }
 
 /**
@@ -413,7 +450,6 @@ function expandAll() {
  */
 async function importFromHive() {
   const lengthBefore = filteredDataHive.value.length
-  console.log("storeSales.salesAll length", storeSales.salesAll.length)
   updateTransactions()
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.forEach((transaction) => {
@@ -455,11 +491,9 @@ async function importFromHive() {
     }
     storeSales.updateSale(sale)
   })
-  getAmounts()
+  calcTotalAmounts()
   const lengthAfter = filteredDataHive.value.length
   const newTransactions = lengthAfter - lengthBefore
-  console.log("newTransactions", newTransactions)
-  console.log("storeSales.salesAll length", storeSales.salesAll.length)
 }
 
 const deleteLocalSalesConfirm = (row) => {
@@ -490,7 +524,6 @@ const deleteLocalSalesConfirm = (row) => {
       color: "negative",
     },
   }).onOk(() => {
-    console.log("deleteLocalSalesConfirm row", row)
     if (row?.checkCode) {
       storeSales.removeSale(row.checkCode)
     } else {
@@ -527,9 +560,7 @@ function sanitizeHTML(str) {
  * waits for a bit, shows the KeychainDialog, and then removes the sale from the store.
  */
 async function retryPending(props) {
-  console.log("retryPending row", props.row)
   if (props.row.paid) {
-    console.log("paid")
     props.expand = !props.expand
   } else {
     emit("update-fields", {
@@ -541,13 +572,12 @@ async function retryPending(props) {
     // wait a bit for the fields to update
     await new Promise((resolve) => setTimeout(resolve, 700))
     // After updating fields on the parent, show the dialog
-    console.log("show dialog", KeychainDialog.value)
     try {
       // KeychainDialog.value.show = true
       // then delete the previous attempt at the transaction
       storeSales.removeSale(props.row.checkCode)
     } catch (e) {
-      console.log("error showing dialog", e)
+      console.error("error showing dialog", e)
     }
   }
 }
@@ -579,7 +609,6 @@ async function updateTransactions() {
     KeychainDialog.value.hiveAccTo,
     200
   )
-  console.log("num trans from Hive", trans.length)
   if (trans) {
     // Filter out the transactions that are not from the POS
     let posTrans = trans.filter((transaction) => {
@@ -587,14 +616,12 @@ async function updateTransactions() {
       return memo && memo.match(/v4v-\w+$/)
     })
 
-    console.log("num trans after filtering", posTrans.length)
 
     // If posTrans is empty, exit early
     if (posTrans.length === 0) {
       return
     }
     posTrans = posTrans.slice(0, maxNumTransactions)
-    console.log("num trans after slice", posTrans.length)
 
     // Add extra fields to the transactions
     posTrans.forEach((transaction) => {
@@ -616,7 +643,6 @@ async function updateTransactions() {
     })
 
     KeychainDialog.value.transactions = posTrans.reverse()
-    console.log("num trans after reverse", posTrans.length)
   }
 }
 
@@ -778,10 +804,6 @@ function exportToCsv() {
 
 .custom-link {
   color: var(--q-color-on-background); /* Default color for light mode */
-}
-
-.q-tr {
-  border-bottom: 1px solid #eee;
 }
 
 .q-table--dense .q-table th,

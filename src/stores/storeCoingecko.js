@@ -20,8 +20,6 @@ export const useCoingeckoStore = defineStore("coingecko", {
   actions: {
     async fetchCoingeckoRates() {
       const storedAppVersion = window.localStorage.getItem("appVersion")
-      console.log("coingecko storedAppVersion", storedAppVersion)
-      console.log("coingecko appVersion", appVersion.value)
       if (storedAppVersion !== appVersion.value) {
         console.log("coingecko appVersion changed")
         this.exchangeRates = {}
@@ -32,8 +30,6 @@ export const useCoingeckoStore = defineStore("coingecko", {
         window.localStorage.setItem("appVersion", appVersion.value)
       }
 
-      console.log("coingecko Fetching rates")
-      console.log("coingecko cacheKey", "exchangeRates")
       if (this.isCacheValid("exchangeRates")) {
         console.log("coingecko Using cached rates")
         return [this.exchangeRates, this.currencyOptions]
@@ -154,7 +150,7 @@ export const useCoingeckoStore = defineStore("coingecko", {
           "ratesCache",
           "lastFetched",
           "lastFetchedHuman",
-          "appVersion"
+          "appVersion",
         ],
       },
     ],
