@@ -120,13 +120,21 @@
           />
         </div>
         <!-- Show fixed set rate Bar -->
-        <SetRateBar
-          v-if="
-            storeUser.pos.fixedRate &&
-            currencySelected === storeUser.localCurrency.value
-          "
-          @click="KeychainDialog.settings = !KeychainDialog.settings"
-        />
+        <div
+          dense
+          class="q-pa-none full-width items-baseline bg-primary text-white "
+        >
+          <div class="fixed-rate-banner"
+            v-if="
+              storeUser.pos.fixedRate &&
+              currencySelected === storeUser.localCurrency.value
+            "
+          >
+            <SetRateBar
+              @click="KeychainDialog.settings = !KeychainDialog.settings"
+            />
+          </div>
+        </div>
       </div>
       <!-- Memo -->
       <div class="memo-input flex pad-max-width full-width q-px-md q-py-xs">
@@ -585,6 +593,10 @@ watch(
 </script>
 
 <style lang="scss" scoped>
+.fixed-rate-banner {
+  font-size: 0.8rem;
+}
+
 .amount-display {
   font-size: 2rem;
 }

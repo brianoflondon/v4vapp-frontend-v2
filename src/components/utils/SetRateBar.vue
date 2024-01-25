@@ -1,10 +1,5 @@
 <template>
-  <div
-    dense
-    class="q-pa-none pad-max-width full-width bg-primary text-white fixed-rate-banner"
-  >
-    {{ exchangeRateMessage }}
-  </div>
+  {{ exchangeRateMessage }}
 </template>
 
 <script setup>
@@ -31,7 +26,5 @@ const exchangeRateMessage = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.fixed-rate-banner {
-  font-size: 0.8rem;
-}
+
 </style>
