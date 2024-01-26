@@ -34,6 +34,7 @@
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "^6.0.3",
     "@quasar/app-vite": "^1.7.0",
+    "@quasar/quasar-app-extension-qmarkdown": "^2.0.0-beta.10",
     "@types/qrcode": "^1.5.1",
     "autoprefixer": "^10.4.2",
     "eslint": "^8.54.0",

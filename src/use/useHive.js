@@ -6,6 +6,7 @@ import { apiURL, api } from "boot/axios"
 import { Dark } from "quasar"
 import { genRandAlphaNum } from "src/use/useUtils"
 import "src/assets/hive-tx.min.js"
+import "https://unpkg.com/@hiveio/dhive@latest/dist/dhive.js"
 
 const useHiveAccountRegex =
   /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
@@ -14,6 +15,20 @@ const baseURLBlockExplorer = "https://hivehub.dev/tx/"
 
 export function useGenerateTxUrl(txId) {
   return `${baseURLBlockExplorer}${txId}`
+}
+
+export async function useGetHiveFeesPost() {
+  console.log("useGetHiveFeesPost")
+  let client = new dhive.Client("https://api.hive.blog")
+  return client.database
+    .call("get_content", ["v4vapp", "hive-to-lightning-gateway-fees"])
+    .then((content) => {
+      return content.body
+    })
+    .catch((error) => {
+      console.error(error)
+      return "Loading error"
+    })
 }
 
 export async function useHiveDetails(hiveAccname) {

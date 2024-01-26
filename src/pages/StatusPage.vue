@@ -25,23 +25,43 @@
             </div>
           </q-card-section>
           <q-card-section>
+            <q-markdown :content="contentStatus"> </q-markdown>
+          </q-card-section>
+          <q-card-section>
             <div class="vote-button q-pa-lg text-center">
               <VoteProposal v-model="voteOptions" />
             </div>
           </q-card-section>
         </q-card>
+        <q-markdown
+          content="hello world"
+        ></q-markdown>
       </div>
     </div>
   </q-page>
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
+import { useGetHiveFeesPost } from "src/use/useHive"
+import { QMarkdown } from "@quasar/quasar-ui-qmarkdown"
 
 const { appName, appVersion } = useAppDetails()
 console.log("appName", appName, "appVersion", appVersion)
+
+const contentStatus = ref("Loading....")
+
+onMounted(async () => {
+  try {
+    contentStatus.value = await useGetHiveFeesPost()
+    console.log("contentStatus", contentStatus.value)
+  } catch (error) {
+    contentStatus.value = "Error loading content"
+    console.log("error", error)
+  }
+})
 
 const voteOptions = ref({
   hiveUser: "",
@@ -50,4 +70,8 @@ const voteOptions = ref({
 })
 </script>
 
-<style lang="sass" scoped></style>
+<style lang="scss" scoped>
+.q-markdown h1 {
+  font-size: 1.1rem;
+}
+</style>
