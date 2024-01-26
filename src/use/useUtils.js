@@ -210,7 +210,7 @@ export function useTruncateLnbc(inputString, maxLength = 9) {
  * @param {string} routeParam - The route parameter from which to extract the username.
  * @returns {string} The extracted username.
  */
-export function extractUsernameFromRouteParam(routeParam) {
+export function useUsernameFromRouteParam(routeParam) {
   // Assuming routeParam is in the format 'v4vapp.dev/bookmark'
   var slashPosition = routeParam.indexOf("/")
 

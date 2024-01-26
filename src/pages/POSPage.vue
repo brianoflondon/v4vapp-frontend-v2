@@ -224,7 +224,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
-import { tidyNumber, extractUsernameFromRouteParam } from "src/use/useUtils"
+import { tidyNumber, useUsernameFromRouteParam } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
@@ -363,7 +363,7 @@ onMounted(() => {
     currentTab.value = "currency"
   }
   if (route.params.hiveAccTo) {
-    const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
+    const username = useUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
       label: username,
       value: username,
