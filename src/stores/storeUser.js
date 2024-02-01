@@ -3,6 +3,7 @@ import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
+import { api, apiLogin } from "boot/axios.js"
 
 const storeAPIStatus = useStoreAPIStatus()
 
@@ -14,7 +15,8 @@ export class HiveUser {
     timestamp = null,
     authKey = null,
     expire = null,
-    token = null
+    token = null,
+    apiToken = null
   ) {
     this.hiveAccname = hiveAccname
     this.profileName = profileName
@@ -22,6 +24,7 @@ export class HiveUser {
     this.authKey = authKey
     this.expire = expire
     this.token = token
+    this.apiToken = apiToken
     if (!timestamp) timestamp = Date.now()
     this.timestamp = timestamp
   }
@@ -35,6 +38,7 @@ export class HiveUser {
       authKey: this.authKey,
       expire: this.expire,
       token: this.token,
+      apiToken: this.apiToken,
     }
   }
 
@@ -68,6 +72,7 @@ export class HiveUser {
       authKey: this.authKey,
       expire: this.expire,
       token: this.token,
+      apiToken: this.apiToken,
       timestamp: this.timestamp,
       loginAge: this.loginAge,
     }
@@ -137,7 +142,8 @@ export const useStoreUser = defineStore("useStoreUser", {
           temp.timestamp,
           temp.authKey,
           temp.expire,
-          temp.token
+          temp.token,
+          temp.apiToken
         )
         return hiveUser
       }
@@ -240,7 +246,8 @@ export const useStoreUser = defineStore("useStoreUser", {
       keySelected,
       authKey = null,
       expire = null,
-      token = null
+      token = null,
+      apiToken = null
     ) {
       try {
         const hiveDetails = await useHiveDetails(hiveAccname)
@@ -253,8 +260,14 @@ export const useStoreUser = defineStore("useStoreUser", {
             Date.now(),
             authKey,
             expire,
-            token
+            token,
+            apiToken
           )
+
+          apiLogin.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${apiToken}`
+
           this.users[hiveAccname] = newUser
           this.currentUser = hiveAccname
           this.currentDetails = hiveDetails
@@ -272,6 +285,9 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.currentUser = hiveAccname
           // test if login is still valid
           this.update()
+          apiLogin.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${this.apiToken}`
         }
       } catch (err) {
         console.log(err)

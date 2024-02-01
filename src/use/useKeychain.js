@@ -110,9 +110,6 @@ export async function useValidateApi(clientId, signedMessage) {
         "Content-Type": "application/json",
       },
     })
-    apiLogin.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${validate.data.access_token}`
     return validate
   } catch (error) {
     console.error({ error })

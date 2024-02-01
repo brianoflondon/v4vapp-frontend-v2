@@ -313,6 +313,16 @@ async function loginApiKeychain(username) {
     console.log("signedMessage: ", signedMessage)
     const validate = await useValidateApi(clientId, signedMessage)
     console.log("validate: ", validate)
+    // need to store this token in the storeUser store
+    hiveAccObj.value["loggedIn"] = true
+    storeUser.login(
+      username,
+      props.keyType,
+      null,
+      null,
+      null,
+      validate.data.access_token
+    )
     console.log("apiLogin.defaults: ", apiLogin.defaults)
     const check = await apiLogin.get("/users/all/")
     console.log("check: ", check)
