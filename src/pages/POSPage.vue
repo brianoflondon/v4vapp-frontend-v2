@@ -122,9 +122,10 @@
         <!-- Show fixed set rate Bar -->
         <div
           dense
-          class="q-pa-none full-width items-baseline bg-primary text-white "
+          class="q-pa-none full-width items-baseline bg-primary text-white"
         >
-          <div class="fixed-rate-banner"
+          <div
+            class="fixed-rate-banner"
             v-if="
               storeUser.pos.fixedRate &&
               currencySelected === storeUser.localCurrency.value
@@ -223,7 +224,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
-import { tidyNumber } from "src/use/useUtils"
+import { tidyNumber, useUsernameFromRouteParam } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
@@ -362,7 +363,7 @@ onMounted(() => {
     currentTab.value = "currency"
   }
   if (route.params.hiveAccTo) {
-    const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
+    const username = useUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
       label: username,
       value: username,
@@ -423,27 +424,6 @@ function handleRetryTransaction(val) {
   setTimeout(() => {
     showPaymentQR(val.currencyToSend)
   }, 100)
-}
-
-/**
- * Extracts the username from a route parameter.
- *
- * This function assumes that the route parameter is in the format 'v4vapp.dev/bookmark', and extracts the substring
- * before the first '/'. If there is no '/', it extracts the entire string.
- *
- * @param {string} routeParam - The route parameter from which to extract the username.
- * @returns {string} The extracted username.
- */
-function extractUsernameFromRouteParam(routeParam) {
-  // Assuming routeParam is in the format 'v4vapp.dev/bookmark'
-  var slashPosition = routeParam.indexOf("/")
-
-  // Extract the substring before the first /
-  // If there is no /, it extracts the entire string
-  var username =
-    slashPosition !== -1 ? routeParam.substring(0, slashPosition) : routeParam
-
-  return username
 }
 
 function useLoggedInUser() {

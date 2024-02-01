@@ -201,6 +201,27 @@ export function useTruncateLnbc(inputString, maxLength = 9) {
   return inputString
 }
 
+/**
+ * Extracts the username from a route parameter.
+ *
+ * This function assumes that the route parameter is in the format 'v4vapp.dev/bookmark', and extracts the substring
+ * before the first '/'. If there is no '/', it extracts the entire string.
+ *
+ * @param {string} routeParam - The route parameter from which to extract the username.
+ * @returns {string} The extracted username.
+ */
+export function useUsernameFromRouteParam(routeParam) {
+  // Assuming routeParam is in the format 'v4vapp.dev/bookmark'
+  var slashPosition = routeParam.indexOf("/")
+
+  // Extract the substring before the first /
+  // If there is no /, it extracts the entire string
+  var username =
+    slashPosition !== -1 ? routeParam.substring(0, slashPosition) : routeParam
+
+  return username
+}
+
 export function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,

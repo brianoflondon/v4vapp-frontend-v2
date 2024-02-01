@@ -4,6 +4,10 @@ const routes = [
     component: () => import("layouts/MainLayout.vue"),
     children: [
       { path: "", component: () => import("pages/LightningPage.vue") },
+      {
+        path: "@:hiveAccTo([a-z0-9-.]+)", // Allow any character including dots after '@'
+        component: () => import("pages/HiveAccountPage.vue"),
+      },
       { path: "/lnd", component: () => import("pages/LightningPage.vue") },
       { path: "/hive", component: () => import("pages/HivePage.vue") },
 
@@ -25,11 +29,11 @@ const routes = [
       { path: "/pos/currency", component: () => import("pages/POSPage.vue") },
       {
         path: "/pos/@:hiveAccTo(.*)", // Allow any character including dots after '@'
-        redirect: to => {
+        redirect: (to) => {
           // the function receives the target route as the argument
           // we return a redirect path here
-          return '/pos/sales/@' + to.params.hiveAccTo
-        }
+          return "/pos/sales/@" + to.params.hiveAccTo
+        },
       },
 
       // {
