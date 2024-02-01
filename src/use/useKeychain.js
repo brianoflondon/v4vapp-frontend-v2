@@ -1,12 +1,11 @@
 import { KeychainSDK } from "keychain-sdk"
-import { serverHiveAccount } from  "boot/axios"
+import { serverHiveAccount, apiLogin, api } from "boot/axios"
 
 const keychain = new KeychainSDK(window)
 
 /*************************************************
  ****     Hive Keycahin Functions
  **************************************************/
-
 
 export async function useIsHiveKeychainInstalled() {
   try {
@@ -86,6 +85,35 @@ export async function useHiveKeychainTransfer(
     const transfer = await keychain.transfer(formParamsAsObject.data)
     console.log({ transfer })
     return transfer
+  } catch (error) {
+    console.error({ error })
+    return error
+  }
+}
+
+export async function useGetApiKeychainChallenge(hiveAccName, clientId) {
+  const getChallenge = await apiLogin.get(`/auth/${hiveAccName}`, {
+    params: {
+      clientId: clientId,
+    },
+  })
+  return getChallenge
+}
+
+export async function useValidateApi(clientId, signedMessage) {
+  try {
+    const validate = await apiLogin.post(`/auth_validate/`, signedMessage, {
+      params: {
+        clientId: clientId,
+      },
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    apiLogin.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${validate.data.access_token}`
+    return validate
   } catch (error) {
     console.error({ error })
     return error

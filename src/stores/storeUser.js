@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
-import { tidyNumber } from "src/use/useUtils.js"
+import { tidyNumber, generateUUID } from "src/use/useUtils.js"
 
 const storeAPIStatus = useStoreAPIStatus()
 
@@ -86,6 +86,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     }),
     users: useStorage("users", {}),
     pos: useStorage("pos", {}),
+    clientId: useStorage("clientId", generateUUID()),
   }),
 
   getters: {
@@ -296,7 +297,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     strategies: [
       {
         storage: localStorage,
-        paths: ["users", "currentUser", "pos", "localCurrency"],
+        paths: ["users", "currentUser", "pos", "localCurrency", "clientId"],
       },
     ],
   },

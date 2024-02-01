@@ -12,12 +12,19 @@ import axios from "axios"
 const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
-const apiURL = "https://api.v4v.app/v1"
+// const apiURL = "https://api.v4v.app/v1"
+// const apiLoginURL = "https://api.v4v.app"
+
+const apiURL = "https://devapi.v4v.app/v1"
+const apiLoginURL = "https://devapi.v4v.app"
+
 // const apiURL = "http://127.0.0.1:1818/v1"
+// const apiLoginURL = "http://127.0.0.1:1818"
 
 const serverHiveAccount = "v4vapp"
 
 const api = axios.create({ baseURL: apiURL })
+const apiLogin = axios.create({ baseURL: apiLoginURL })
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
@@ -29,6 +36,8 @@ export default boot(({ app }) => {
   app.config.globalProperties.$api = api
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
   //       so you can easily perform requests against your app's API
+
+  app.config.globalProperties.$apiLoginURL = apiLogin
 })
 
-export { axios, api, apiURL, myNodePubKey, serverHiveAccount }
+export { axios, api, apiLogin, apiURL, myNodePubKey, serverHiveAccount }

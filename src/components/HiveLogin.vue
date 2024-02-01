@@ -1,6 +1,15 @@
 <template>
   <q-card>
     <q-list>
+      <div class="text-center">
+        <q-btn
+          dense
+          flat
+          icon="perm_identity"
+          label="testing"
+          @click="loginApiKeychain(hiveAccObj?.value)"
+        />
+      </div>
       <q-expansion-item
         expand-separator
         icon="perm_identity"
@@ -107,11 +116,14 @@
  */
 
 import { ref, watch, onMounted } from "vue"
+import { apiLogin, api } from "src/boot/axios"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import {
+  useGetApiKeychainChallenge,
   useHiveKeychainLogin,
   useIsHiveKeychainInstalled,
+  useValidateApi,
 } from "src/use/useKeychain"
 import { useHAS, HASLogin } from "src/use/useHAS"
 import { useBip39 } from "src/use/useBip39"
@@ -159,7 +171,7 @@ async function loginHAS(username) {
     if (!username) {
       quasar.notify({
         timeout: 2000,
-        avatar: useHiveAvatarURL({hiveAccname: username}),
+        avatar: useHiveAvatarURL({ hiveAccname: username }),
         color: "info",
         message: t("enter_hive_account"),
         position: position,
@@ -283,6 +295,29 @@ async function loginKeychain(username) {
       color: "negative",
       timeout: 1500,
     })
+  }
+}
+
+async function loginApiKeychain(username) {
+  console.log("loginApiKeychain")
+  try {
+    const clientId = useStoreUser().clientId
+    console.log("clientId: ", clientId)
+    const challenge = await useGetApiKeychainChallenge(username, clientId)
+    console.log(challenge)
+    const signedMessage = await useHiveKeychainLogin({
+      hiveAccname: username,
+      message: challenge.data.challenge,
+      keyType: props.keyType,
+    })
+    console.log("signedMessage: ", signedMessage)
+    const validate = await useValidateApi(clientId, signedMessage)
+    console.log("validate: ", validate)
+    console.log("apiLogin.defaults: ", apiLogin.defaults)
+    const check = await apiLogin.get("/users/all/")
+    console.log("check: ", check)
+  } catch (error) {
+    console.log("error: ", error)
   }
 }
 </script>
