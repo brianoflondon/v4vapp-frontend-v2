@@ -16,9 +16,9 @@ const myNodePubKey =
 // const apiLoginURL = "https://api.v4v.app"
 
 const apiURL = "https://devapi.v4v.app/v1"
-// const apiLoginURL = "https://devapi.v4v.app"
+const apiLoginURL = "https://devapi.v4v.app"
 
-// const apiURL = "http://127.0.0.1:1818/v1"
+const apiURL = "http://127.0.0.1:1818/v1"
 const apiLoginURL = "http://127.0.0.1:1818"
 
 const serverHiveAccount = "v4vapp"
