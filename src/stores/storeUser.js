@@ -263,11 +263,9 @@ export const useStoreUser = defineStore("useStoreUser", {
             token,
             apiToken
           )
-
           apiLogin.defaults.headers.common[
             "Authorization"
-          ] = `Bearer ${apiToken}`
-
+          ] = `Bearer ${this.users[hiveAccname].apiToken}`
           this.users[hiveAccname] = newUser
           this.currentUser = hiveAccname
           this.currentDetails = hiveDetails
@@ -284,10 +282,15 @@ export const useStoreUser = defineStore("useStoreUser", {
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
           // test if login is still valid
-          this.update()
+          console.log("bearer token", this.users[hiveAccname].apiToken)
+          console.log(apiLogin.defaults.headers)
           apiLogin.defaults.headers.common[
             "Authorization"
-          ] = `Bearer ${this.apiToken}`
+          ] = `Bearer ${this.users[hiveAccname].apiToken}`
+
+          console.log(apiLogin.defaults.headers)
+
+          this.update()
         }
       } catch (err) {
         console.log(err)

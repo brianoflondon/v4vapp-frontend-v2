@@ -323,7 +323,10 @@ async function loginApiKeychain(username) {
       null,
       validate.data.access_token
     )
-    console.log("apiLogin.defaults: ", apiLogin.defaults)
+    apiLogin.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${validate.data.access_token}`
+    console.log("apiLogin.defaults: ", apiLogin.defaults.headers.common)
     const check = await apiLogin.get("/users/all/")
     console.log("check: ", check)
   } catch (error) {

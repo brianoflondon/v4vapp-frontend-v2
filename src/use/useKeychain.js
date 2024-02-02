@@ -102,7 +102,7 @@ export async function useGetApiKeychainChallenge(hiveAccName, clientId) {
 
 export async function useValidateApi(clientId, signedMessage) {
   try {
-    const validate = await apiLogin.post(`/auth_validate/`, signedMessage, {
+    const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {
       params: {
         clientId: clientId,
       },
