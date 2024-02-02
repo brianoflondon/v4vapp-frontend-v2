@@ -1,6 +1,20 @@
 <template>
   <q-page>
     <div>
+      <q-btn @click="fetchData">{{ storeUser.currentUser }}</q-btn>
+    </div>
+    <div class="q-pa-md row items-start q-gutter-md">
+      <q-table
+        :rows="data"
+        row-key="group_id"
+        :visible-columns="['trx_reason', 'max_sats','last_timestamp']"
+      ></q-table>
+
+      <div v-if="data">
+        <pre>{{ data[0] }}</pre>
+      </div>
+    </div>
+    <div>
       <div v-if="hiveAccname">{{ hiveAccname }}</div>
       <div v-else>Default Value</div>
       <div v-if="hiveAccname?.value">{{ hiveAccname.value }}</div>
@@ -59,9 +73,40 @@
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import HiveSelectAcc from "components/HiveSelectAcc.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { ref } from "vue"
+import { useStoreUser } from "src/stores/storeUser"
+import { ref, watch, onMounted } from "vue"
+import { apiLogin } from "src/boot/axios"
 
+const storeUser = useStoreUser()
+const data = ref()
+const columns = ref()
 const hiveAccname = ref({ label: "", value: "", caption: "" })
+
+columns.value = [
+  {
+    name: "id",
+    field: "group_id",
+  },
+  {
+    name: "trx_reason",
+    field: "trx_reason",
+  },
+]
+
+async function fetchData() {
+  console.log("fetchData")
+  let rawData = []
+  try {
+    rawData = await apiLogin.get("/v1/trx_records/")
+    data.value = rawData.data
+  } catch (error) {
+    console.error("fetchData error", error)
+  }
+}
+
+onMounted(async () => {
+  console.log("HiveSelectDemoPage mounted")
+})
 </script>
 
 <style lang="sass" scoped>

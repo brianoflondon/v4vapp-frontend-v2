@@ -116,7 +116,7 @@
  */
 
 import { ref, watch, onMounted } from "vue"
-import { apiLogin, api } from "src/boot/axios"
+import { apiLogin } from "src/boot/axios"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import {
@@ -327,8 +327,8 @@ async function loginApiKeychain(username) {
       "Authorization"
     ] = `Bearer ${validate.data.access_token}`
     console.log("apiLogin.defaults: ", apiLogin.defaults.headers.common)
-    const check = await apiLogin.get("/users/all/")
-    console.log("check: ", check)
+    // const check = await apiLogin.get("/v1/trx_records/")
+    // console.log("check: ", check)
   } catch (error) {
     console.log("error: ", error)
   }
