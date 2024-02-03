@@ -1,9 +1,8 @@
 <template>
   <q-page>
     <div>{{ hiveAccount }}</div>
-    <div><q-btn label="Fetch Data" @click="fetchData"></q-btn></div>
+    <div><q-btn label="Fetch Data" @click="loginToApi"></q-btn></div>
     <div>
-      <q-toggle v-model="showData" label="Show Data" />
       <q-table
         :rows="data"
         row-key="group_id"
@@ -70,6 +69,7 @@ async function fetchData() {
 async function loginToApi() {
   console.log("loginToApi")
   await loginApiKeychain(hiveAccount.value)
+  await fetchData()
 }
 
 async function loginApiKeychain(username) {
