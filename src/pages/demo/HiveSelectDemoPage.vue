@@ -7,7 +7,7 @@
       <q-table
         :rows="data"
         row-key="group_id"
-        :visible-columns="['trx_reason', 'max_sats','last_timestamp']"
+        :visible-columns="['trx_reason', 'max_sats', 'last_timestamp']"
       ></q-table>
 
       <div v-if="data">
@@ -76,6 +76,7 @@ import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { ref, watch, onMounted } from "vue"
 import { apiLogin } from "src/boot/axios"
+import { store } from "quasar/wrappers"
 
 const storeUser = useStoreUser()
 const data = ref()
@@ -96,11 +97,13 @@ columns.value = [
 async function fetchData() {
   console.log("fetchData")
   let rawData = []
-  try {
-    rawData = await apiLogin.get("/v1/trx_records/")
-    data.value = rawData.data
-  } catch (error) {
-    console.error("fetchData error", error)
+  if (storeUser.apiTokenSet()) {
+    try {
+      rawData = await apiLogin.get("/v1/trx_records/")
+      data.value = rawData.data
+    } catch (error) {
+      console.error("fetchData error", error)
+    }
   }
 }
 

@@ -296,6 +296,22 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.log(err)
       }
     },
+    /**
+     * Sets the API token for a given hive account name.
+     * @param {string} [hiveAccname=this.currentUser] - The hive account name.
+     * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
+     */
+    apiTokenSet(hiveAccname = this.currentUser) {
+      console.log("Trying to use apiTokenSet", hiveAccname)
+      if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
+        console.log("apiTokenSet successful", hiveAccname)
+        apiLogin.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${this.users[hiveAccname].apiToken}`
+        return true
+      }
+      return false
+    },
     async logout() {
       if (this.currentUser in this.users) {
         delete this.users[this.currentUser]
