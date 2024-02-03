@@ -42,6 +42,25 @@ export class HiveUser {
     }
   }
 
+  setApiToken() {
+    // Set the token for the user
+    if (!this.apiToken) return false
+    apiLogin.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${this.apiToken}`
+    console.log("apiTokenSet successful", this.hiveAccname)
+    // need to test if the API token is working
+    return true
+  }
+
+  clearApiToken() {
+    // Clear the token for the user
+    this.apiToken = null
+    apiLogin.defaults.headers.common["Authorization"] = ""
+    console.log("apiToken cleared", this.hiveAccname)
+    return true
+  }
+
   // Return the time since the login in seconds
   get loginAge() {
     return (Date.now() - this.timestamp) / 1000
@@ -241,6 +260,16 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       onOpen()
     },
+    /**
+     * Logs in a user with the provided credentials.
+     * @param {string} hiveAccname - The Hive account name.
+     * @param {string} keySelected - The selected key.
+     * @param {string|null} authKey - The authentication key (optional).
+     * @param {string|null} expire - The expiration date (optional).
+     * @param {string|null} token - The token (optional).
+     * @param {string|null} apiToken - The API token (optional).
+     * @returns {Promise<void>} - A promise that resolves when the login is successful.
+     */
     async login(
       hiveAccname,
       keySelected,
@@ -281,15 +310,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.log("switchUser to ", hiveAccname, " from ", this.currentUser)
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
-          // test if login is still valid
-          console.log("bearer token", this.users[hiveAccname].apiToken)
-          console.log(apiLogin.defaults.headers)
-          apiLogin.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${this.users[hiveAccname].apiToken}`
-
-          console.log(apiLogin.defaults.headers)
-
+          this.apiTokenSet(hiveAccname)
           this.update()
         }
       } catch (err) {
@@ -308,6 +329,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         apiLogin.defaults.headers.common[
           "Authorization"
         ] = `Bearer ${this.users[hiveAccname].apiToken}`
+        // need to test if the API token is working
         return true
       }
       return false

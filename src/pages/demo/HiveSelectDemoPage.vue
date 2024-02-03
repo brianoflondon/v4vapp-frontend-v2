@@ -76,7 +76,6 @@ import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { ref, watch, onMounted } from "vue"
 import { apiLogin } from "src/boot/axios"
-import { store } from "quasar/wrappers"
 
 const storeUser = useStoreUser()
 const data = ref()

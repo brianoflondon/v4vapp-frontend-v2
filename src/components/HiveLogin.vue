@@ -299,9 +299,10 @@ async function loginKeychain(username) {
 }
 
 async function loginApiKeychain(username) {
+
   console.log("loginApiKeychain")
   try {
-    const clientId = useStoreUser().clientId
+    const clientId = storeUser.clientId
     console.log("clientId: ", clientId)
     const challenge = await useGetApiKeychainChallenge(username, clientId)
     console.log(challenge)
