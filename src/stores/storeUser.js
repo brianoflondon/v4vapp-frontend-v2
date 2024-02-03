@@ -292,9 +292,11 @@ export const useStoreUser = defineStore("useStoreUser", {
             token,
             apiToken
           )
-          apiLogin.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${this.users[hiveAccname].apiToken}`
+          if (apiToken) {
+            apiLogin.defaults.headers.common[
+              "Authorization"
+            ] = `Bearer ${apiToken}`
+          }
           this.users[hiveAccname] = newUser
           this.currentUser = hiveAccname
           this.currentDetails = hiveDetails
