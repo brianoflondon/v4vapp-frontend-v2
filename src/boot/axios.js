@@ -18,8 +18,15 @@ const myNodePubKey =
 // const apiURL = "https://devapi.v4v.app/v1"
 // const apiLoginURL = "https://devapi.v4v.app"
 
-const apiURL = "http://127.0.0.1:1818/v1"
-const apiLoginURL = "http://127.0.0.1:1818"
+const useLocal = false // Set this to false to use the devapi URLs
+
+const apiURL = useLocal
+  ? "http://127.0.0.1:1818/v1"
+  : "https://devapi.v4v.app/v1"
+
+const apiLoginURL = useLocal
+  ? "http://127.0.0.1:1818"
+  : "https://devapi.v4v.app"
 
 const serverHiveAccount = "v4vapp"
 

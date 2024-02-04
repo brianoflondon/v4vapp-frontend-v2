@@ -16,6 +16,7 @@
     </div>
     <div class="q-pa-md text-caption">{{ appName }} - {{ appVersion }}</div>
     <div class="q-pa-md text-caption">{{ storeUser.currentUser }}</div>
+    <div class="q-pa-md text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
   </div>
 </template>
 
@@ -29,6 +30,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
+import { apiLogin } from "src/boot/axios"
 
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()
