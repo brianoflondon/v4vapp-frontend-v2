@@ -16,6 +16,10 @@
         :label="$t('login_as')"
       >
         <q-item>
+          <HiveInputAcc v-model="hiveAccObj" :prefix="t('pay_to')">
+          </HiveInputAcc>
+        </q-item>
+        <q-item v-if="false">
           <HiveSelectFancyAcc
             dense
             :label="props.label"
@@ -118,6 +122,7 @@
 import { ref, watch, onMounted } from "vue"
 import { apiLogin } from "src/boot/axios"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
+import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import {
   useGetApiKeychainChallenge,
