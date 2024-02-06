@@ -1,15 +1,6 @@
 <template>
   <q-card>
     <q-list>
-      <div class="text-center">
-        <q-btn
-          dense
-          flat
-          icon="perm_identity"
-          label="testing"
-          @click="loginApiKeychain(hiveAccObj?.value)"
-        />
-      </div>
       <q-expansion-item
         expand-separator
         icon="perm_identity"
@@ -131,7 +122,6 @@ import {
   useValidateApi,
 } from "src/use/useKeychain"
 import { useHAS, HASLogin } from "src/use/useHAS"
-import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
@@ -210,7 +200,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 function adminCheck() {
   console.log("storeUser.currentUser: ", storeUser.currentUser)
   if (storeUser.currentUser === "brianoflondon") {
-    return true
+    return false
   }
   return false
 }
@@ -220,7 +210,9 @@ async function loginKeychain(username) {
     storeUser.login(username, props.keyType)
     return
   }
+  // Fetch the avatar for the user
   const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
+  // Check for Hive Keychain in the browser
   isKeychain.value = await useIsHiveKeychainInstalled()
   let position = "left"
   if (Platform.is.mobile) {
@@ -236,6 +228,7 @@ async function loginKeychain(username) {
     })
     return
   }
+  // Check for a valid Hive account in the input field
   if (!username) {
     quasar.notify({
       timeout: 2000,
@@ -246,27 +239,41 @@ async function loginKeychain(username) {
     })
     return
   }
-  const words = await useBip39(3)
-  const signMessage = words.join("-")
+  // Fetch the challenge message from the server
   try {
-    const note = quasar.notify({
+    const clientId = storeUser.clientId
+    const challenge = await useGetApiKeychainChallenge(username, clientId)
+    var note = quasar.notify({
       group: false, // required to be updatable
       timeout: 0, // we want to be in control when it gets dismissed
       avatar: avatarUrl,
       message: `${t("login_in_progress")}: @${username}`,
-      caption: `${t("sign_this")}: ${signMessage}`,
+      caption: `${t("sign_this")}: ${challenge.data.challenge}`,
       position: position,
       color: "info",
     })
     await delay(300)
-    const result = await useHiveKeychainLogin({
+    const signedMessage = await useHiveKeychainLogin({
       hiveAccname: username,
-      message: signMessage,
+      message: challenge.data.challenge,
       keyType: props.keyType,
     })
-    if (result.success && result?.data?.message == signMessage) {
+    if (
+      signedMessage.success &&
+      signedMessage?.data?.message == challenge.data.challenge
+    ) {
+      console.log("now to validate")
+      const validate = await useValidateApi(clientId, signedMessage)
+      // need to store this token in the storeUser store
       hiveAccObj.value["loggedIn"] = true
-      storeUser.login(username, props.keyType)
+      storeUser.login(
+        username,
+        props.keyType,
+        null,
+        null,
+        null,
+        validate.data.access_token
+      )
       note({
         icon: "done", // we add an icon
         avatar: avatarUrl,
@@ -274,19 +281,19 @@ async function loginKeychain(username) {
         spinner: false, // we reset the spinner setting so the icon can be displayed
         multiLine: true,
         message: `${t("login_success")}`,
-        caption: `${result?.data?.message} <br> ${t(
-          "matches"
-        )} <br> ${signMessage}`,
+        caption: `${signedMessage?.data?.message} <br> ${t("matches")} <br> ${
+          challenge.data.challenge
+        }`,
         color: "positive",
         timeout: 1500,
       })
-    } else if (!result.success) {
+    } else if (!signedMessage.success) {
       hiveAccObj.value["loggedIn"] = false
       note({
         icon: "cancel", // we add an icon
         spinner: false, // we reset the spinner setting so the icon can be displayed
         message: t("login_failed"),
-        caption: `${result?.message}`,
+        caption: `${signedMessage?.message}`,
         color: "negative",
         timeout: 1500,
       })
@@ -304,6 +311,8 @@ async function loginKeychain(username) {
   }
 }
 
+
+// Depreciated, use loginKeychain instead
 async function loginApiKeychain(username) {
   console.log("loginApiKeychain")
   try {

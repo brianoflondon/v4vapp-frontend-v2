@@ -61,6 +61,11 @@ export class HiveUser {
     return true
   }
 
+  get hasApiToken() {
+    if (this.apiToken) return true
+    return false
+  }
+
   // Return the time since the login in seconds
   get loginAge() {
     return (Date.now() - this.timestamp) / 1000
