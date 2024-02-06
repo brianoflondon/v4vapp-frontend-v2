@@ -178,7 +178,8 @@ async function loginHAS(username) {
       })
       return
     }
-    await HASLogin(username)
+    answer = await HASLogin(username)
+    console.log("HAS Login answer: ", answer)
   } catch (error) {
     console.log("error: ", error)
   }
@@ -299,7 +300,6 @@ async function loginKeychain(username) {
 }
 
 async function loginApiKeychain(username) {
-
   console.log("loginApiKeychain")
   try {
     const clientId = storeUser.clientId
