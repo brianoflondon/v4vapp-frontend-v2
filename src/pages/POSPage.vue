@@ -144,6 +144,7 @@
           v-model="memoInput"
           class="full-width"
           :label="t('memo')"
+          :rules="[(val) => !memoHasPipe || $t('memo_pipe')]"
         >
         </q-input>
       </div>
@@ -350,7 +351,20 @@ const isPaymentValid = computed(() => {
   if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
     return false
   }
+  if (memoHasPipe.value) {
+    return false
+  }
   return true
+})
+
+const memoHasPipe = computed(() => {
+  if (!memoInput.value) {
+    return false
+  }
+  if (memoInput.value.includes("|")) {
+    return true
+  }
+  return false
 })
 
 onMounted(() => {
