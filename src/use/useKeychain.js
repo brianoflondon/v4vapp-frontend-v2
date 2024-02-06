@@ -127,7 +127,8 @@ export async function useLoginFlow(hiveAccObj, props) {
       console.log("now to validate")
       const validate = await useValidateApi(clientId, signedMessage)
       // need to store this token in the storeUser store
-      // hiveAccObj.value["loggedIn"] = true
+      hiveAccObj["loggedIn"] = true
+      hiveAccObj.caption = validate.data.access_token
       storeUser.login(
         hiveAccObj.value,
         props.keyType,

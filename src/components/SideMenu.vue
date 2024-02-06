@@ -1,10 +1,18 @@
 <template>
   <div>
     <div class="q-pa-md">
-      <UserList @update="(val) => (hiveUsername = val)"  @click="$emit('close-menu')" />
+      <UserList
+        @update="(val) => (hiveUsername = val)"
+        @click="$emit('close-menu')"
+      />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
-    <q-list  @click="$emit('close-menu')">
+    <div>
+      <pre>
+        {{ hiveAccObj }}
+      </pre>
+    </div>
+    <q-list @click="$emit('close-menu')">
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
     </q-list>
     <div class="q-pa-md">
