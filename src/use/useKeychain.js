@@ -140,7 +140,7 @@ export async function useLoginFlow(hiveAccObj, props) {
       note({
         icon: "done", // we add an icon
         avatar: avatarUrl,
-        html: true,
+        // html: true,
         spinner: false, // we reset the spinner setting so the icon can be displayed
         multiLine: true,
         message: `${t("login_success")}`,
