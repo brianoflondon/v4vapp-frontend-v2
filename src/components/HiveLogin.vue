@@ -33,7 +33,7 @@
             rounded
             :label="t('hive_keychain')"
             icon="img:/keychain/hive-keychain-round.svg"
-            @click="loginKeychain(hiveAccObj?.value)"
+            @click="useLoginFlow(hiveAccObj, props)"
           />
           <q-tooltip v-if="!hiveAccObj && isKeychain">{{
             t("enter_hive_account")
@@ -120,6 +120,7 @@ import {
   useHiveKeychainLogin,
   useIsHiveKeychainInstalled,
   useValidateApi,
+  useLoginFlow,
 } from "src/use/useKeychain"
 import { useHAS, HASLogin } from "src/use/useHAS"
 import { useI18n } from "vue-i18n"
@@ -133,6 +134,9 @@ const hiveAccObj = defineModel()
 
 const displayQRCode = ref(false)
 const timeMessage = ref()
+
+const t = useI18n().t
+const quasar = useQuasar()
 
 if (Platform.is.mobile) {
   console.log("Running on a mobile device")
@@ -151,9 +155,6 @@ const props = defineProps({
     default: "Posting",
   },
 })
-
-const t = useI18n().t
-const quasar = useQuasar()
 
 const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS()
 
@@ -310,7 +311,6 @@ async function loginKeychain(username) {
     })
   }
 }
-
 
 // Depreciated, use loginKeychain instead
 async function loginApiKeychain(username) {
