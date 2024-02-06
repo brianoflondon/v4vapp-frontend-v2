@@ -26,6 +26,7 @@ import { apiLogin } from "src/boot/axios"
 import {
   useGetApiKeychainChallenge,
   useHiveKeychainLogin,
+  useLoginFlow,
   useValidateApi,
 } from "src/use/useKeychain"
 
@@ -76,6 +77,10 @@ async function loginToApi() {
 
 async function loginApiKeychain(username) {
   console.log("loginApiKeychain")
+  let hiveAccObj = { value: username }
+  const props = {keyType: "posting"}
+  await useLoginFlow(hiveAccObj, props)
+  return
   try {
     const clientId = storeUser.clientId
     console.log("clientId: ", clientId)

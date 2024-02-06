@@ -1,6 +1,11 @@
 import { KeychainSDK } from "keychain-sdk"
-import { serverHiveAccount, apiLogin, api } from "boot/axios"
+import { serverHiveAccount, apiLogin } from "boot/axios"
+import { useHiveAvatarURL } from "src/use/useHive.js"
+import { Platform, Notify } from "quasar"
+import { i18n } from "boot/i18n"
+import { useStoreUser } from "src/stores/storeUser"
 
+const storeUser = useStoreUser()
 const keychain = new KeychainSDK(window)
 
 /*************************************************
@@ -22,7 +27,7 @@ export async function useHiveKeychainLogin({
   message = null,
   keyType = "posting",
 }) {
-  console.log("useHiveKeychainLogin")
+  console.log("useHiveKeychainLogin: ", hiveAccname, message, keyType)
   const isKeychainIn = keychain.isKeychainInstalled()
   if (!isKeychainIn || !hiveAccname) {
     return null
@@ -48,6 +53,123 @@ export async function useHiveKeychainLogin({
   } catch (error) {
     console.error({ error })
     return error
+  }
+}
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export async function useLoginFlow(hiveAccObj, props) {
+  // Fetch the avatar for the user
+  const t = i18n.global.t
+  console.log("useLoginFlow: ", hiveAccObj)
+  // changes to hiveAccObj object DO flow back to the
+  // reactive object in the component
+  console.log("i18n: ", i18n.global.t("keychain_not_installed"))
+  const avatarUrl = useHiveAvatarURL({ hiveAccname: hiveAccObj.value })
+  console.log("avatarUrl: ", avatarUrl)
+  // Check for Hive Keychain in the browser
+  const isKeychainInstalled = await useIsHiveKeychainInstalled()
+  console.log("isKeychainInstalled: ", isKeychainInstalled)
+  let position = "left"
+  if (Platform.is.mobile) {
+    position = "top"
+  }
+  if (!isKeychainInstalled) {
+    Notify.create({
+      timeout: 2000,
+      avatar: avatarUrl,
+      color: "warning",
+      message: t("keychain_not_installed"),
+      position: position,
+    })
+    return
+  }
+  // Check for a valid Hive account in the input field
+  if (!hiveAccObj) {
+    Notify.create({
+      timeout: 2000,
+      avatar: avatarUrl,
+      color: "info",
+      message: t("enter_hive_account"),
+      position: position,
+    })
+    return
+  }
+  // Fetch the challenge message from the server
+  try {
+    const clientId = storeUser.clientId
+    console.log("clientId: ", clientId)
+    const challenge = await useGetApiKeychainChallenge(
+      hiveAccObj.value,
+      clientId
+    )
+
+    console.log("challenge: ", challenge)
+    var note = Notify.create({
+      group: false, // required to be updatable
+      timeout: 0, // we want to be in control when it gets dismissed
+      avatar: avatarUrl,
+      message: `${t("login_in_progress")}: @${hiveAccObj.value}`,
+      caption: `${t("sign_this")}: ${challenge.data.challenge}`,
+      position: position,
+      color: "info",
+    })
+    await delay(300)
+    const signedMessage = await useHiveKeychainLogin({
+      hiveAccname: hiveAccObj.value,
+      message: challenge.data.challenge,
+      keyType: props.keyType,
+    })
+    if (
+      signedMessage.success &&
+      signedMessage?.data?.message == challenge.data.challenge
+    ) {
+      console.log("now to validate")
+      const validate = await useValidateApi(clientId, signedMessage)
+      // need to store this token in the storeUser store
+      // hiveAccObj.value["loggedIn"] = true
+      storeUser.login(
+        hiveAccObj.value,
+        props.keyType,
+        null,
+        null,
+        null,
+        validate.data.access_token
+      )
+      note({
+        icon: "done", // we add an icon
+        avatar: avatarUrl,
+        html: true,
+        spinner: false, // we reset the spinner setting so the icon can be displayed
+        multiLine: true,
+        message: `${t("login_success")}`,
+        caption: `${signedMessage?.data?.message} <br> ${t("matches")} <br> ${
+          challenge.data.challenge
+        }`,
+        color: "positive",
+        timeout: 1500,
+      })
+    } else if (!signedMessage.success) {
+      hiveAccObj["loggedIn"] = false
+      note({
+        icon: "cancel", // we add an icon
+        spinner: false, // we reset the spinner setting so the icon can be displayed
+        message: t("login_failed"),
+        caption: `${signedMessage?.message}`,
+        color: "negative",
+        timeout: 1500,
+      })
+    }
+  } catch (error) {
+    // hiveAccObj["loggedIn"] = false
+    console.error("error: ", error)
+    note({
+      icon: "cancel", // we add an icon
+      spinner: false, // we reset the spinner setting so the icon can be displayed
+      message: `${error}`,
+      color: "negative",
+      timeout: 1500,
+    })
   }
 }
 
