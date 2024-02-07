@@ -91,7 +91,7 @@ async function fetchData() {
     console.log("fetchData for user", user.hiveAccname)
     if (user.setApiToken()) {
       try {
-        const rawData = await apiLogin.get("/v1/trx_records/")
+        const rawData = await apiLogin.get("/trx_records/")
         data.value = rawData.data["HIVETOLND"]
       } catch (error) {
         console.error("fetchData error", error)

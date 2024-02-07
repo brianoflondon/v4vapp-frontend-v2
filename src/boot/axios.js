@@ -27,7 +27,7 @@ const rootUrl = process.env.DEV_API
   : "https://devapi.v4v.app/v1"
 
 const apiURL = useLocal ? "http://127.0.0.1:1818/v1" : rootUrl
-const apiLoginURL = useLocal ? "http://127.0.0.1:1818" : rootUrl
+const apiLoginURL = useLocal ? "http://127.0.0.1:1818/v1" : rootUrl
 
 const serverHiveAccount = "v4vapp"
 

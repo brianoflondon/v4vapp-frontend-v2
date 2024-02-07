@@ -98,7 +98,7 @@ async function fetchData() {
   let rawData = []
   if (storeUser.apiTokenSet()) {
     try {
-      rawData = await apiLogin.get("/v1/trx_records/")
+      rawData = await apiLogin.get("/trx_records/")
       data.value = rawData.data
     } catch (error) {
       console.error("fetchData error", error)
