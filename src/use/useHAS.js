@@ -4,6 +4,7 @@ import { serverHiveAccount } from "boot/axios"
 import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { v4 as uuidv4 } from "uuid"
+import { apiLogin } from "boot/axios"
 
 const qrCodeTextHAS = ref("")
 const expiry = ref(0)
@@ -57,18 +58,27 @@ export async function HASLogin(username = "", keyType = "posting") {
   const status = HAS.status()
   console.log(status)
 
+  async function getChallenge(hiveAccName, clientId) {
+    const getChallenge = await apiLogin.get(`/auth/${hiveAccName}`, {
+      params: {
+        clientId: clientId,
+      },
+    })
+    return getChallenge
+  }
+
   if (auth.expire > Date.now()) {
     // token exists and is still valid - no need to login again
     resolve(true)
   } else {
+    const clientId = storeUser.clientId
+    const challenge = await getChallenge(username, clientId)
+    console.log("challenge", challenge)
     let challenge_data = undefined
     // optional - create a challenge to be signed with the posting key
     challenge_data = {
       key_type: keyType,
-      challenge: JSON.stringify({
-        login: auth.username,
-        ts: Date.now(),
-      }),
+      challenge: challenge.data.challenge,
     }
     console.log("challenge_data", challenge_data)
 
@@ -86,26 +96,65 @@ export async function HASLogin(username = "", keyType = "posting") {
       const URI = `has://auth_req/${btoa(auth_payload_string)}`
       qrCodeTextHAS.value = URI
     })
-      .then((res) => resolve(res)) // Authentication request approved
+      .then((res) => resolveAuth(res, auth, challenge_data)) // Authentication request approved
       .catch((err) => reject(err)) // Authentication request rejected or error occurred
   }
 }
 
 // Authentication request approved
-function resolve(res) {
-  console.log("resolve", res.data)
+async function resolveAuth(res, auth, challenge_data) {
+  console.log("--- resolveAuth ---")
+  console.log("res.data", res.data)
   console.log("auth_payload", auth_payload)
-  storeUser.login(
-    auth_payload.account,
-    "posting",
-    auth_payload.key,
-    res.data.expire,
-    res.data.token
-  )
-  qrCodeTextHAS.value = null
-  expiry.value = 0
-  auth_payload = {}
-  resolvedHAS.value = res
+  console.log("challenge_data", challenge_data)
+
+  // Now we call the API to get the token
+  // TRY HERE
+  try {
+    var formData = new URLSearchParams()
+
+    let usernameData = {
+      hiveAccName: auth_payload.account,
+      clientId: storeUser.clientId,
+    }
+
+    let usernameString = JSON.stringify(usernameData)
+    formData.append("username", usernameString)
+    const passwordData = {
+      success: true,
+      publicKey: res.data.challenge.pubkey,
+      result: res.data.challenge.challenge,
+      data: {
+        username: auth_payload.account,
+        message: challenge_data.challenge,
+        key: "posting",
+      },
+    }
+
+    let passwordString = JSON.stringify(passwordData)
+    formData.append("password", passwordString)
+
+    console.log("formData", formData)
+
+    const responseApi = await apiLogin.post(`/token/`, formData)
+    console.log("responseApi", responseApi)
+    storeUser.login(
+      auth_payload.account,
+      "posting",
+      auth_payload.key,
+      res.data.expire,
+      res.data.token,
+      responseApi.data.access_token
+    )
+    qrCodeTextHAS.value = null
+    expiry.value = 0
+    auth_payload = {}
+    resolvedHAS.value = res
+  } catch (error) {
+    console.log("signature failure")
+    console.error("error", error)
+  }
+
   if (pendingTransaction) {
     const start = Date.now()
     console.log("pendingTransaction delay executing now")

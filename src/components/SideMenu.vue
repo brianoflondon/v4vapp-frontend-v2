@@ -8,9 +8,6 @@
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
     <div>
-      <pre>
-        {{ hiveAccObj }}
-      </pre>
     </div>
     <q-list @click="$emit('close-menu')">
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />

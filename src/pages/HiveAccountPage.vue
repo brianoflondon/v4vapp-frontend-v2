@@ -1,9 +1,21 @@
 <template>
   <q-page>
     <div class="flex row items-baseline justify-center">
-      <div>{{ hiveAccount }}</div>
-      <div><q-btn label="Login" @click="loginToApi"></q-btn></div>
-      <div><q-btn label="Fetch" @click="fetchData"></q-btn></div>
+      <UserList
+        @update="(val) => (hiveUsername = val)"
+        @click="$emit('close-menu')"
+      />
+      <div class="q-pa-sm">{{ hiveAccount }}</div>
+      <div class="q-pa-sm">
+        <q-btn label="Login" @click="loginToApi"></q-btn>
+      </div>
+      <div class="q-pa-sm">
+        <q-btn
+          :disable="!apiTokenValid"
+          label="Fetch"
+          @click="fetchData"
+        ></q-btn>
+      </div>
     </div>
     <div>
       <q-table
@@ -17,7 +29,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import { useI18n } from "vue-i18n"
 import { useRoute } from "vue-router"
 import { useUsernameFromRouteParam } from "src/use/useUtils.js"
@@ -29,14 +41,32 @@ import {
   useLoginFlow,
   useValidateApi,
 } from "src/use/useKeychain"
+import UserList from "src/components/hive/UserList.vue"
 
 const storeUser = useStoreUser()
 
 const route = useRoute()
 const routePage = ref("")
-
+const hiveAccObj = ref()
 const hiveAccount = ref()
 const data = ref()
+
+const apiTokenValid = computed(() => {
+  // console.log(storeUser.getUser(hiveAccount.value).hasApiToken)
+  console.log(
+    "storeUser.getUser(hiveAccount.value)",
+    storeUser.getUser(hiveAccount.value)
+  )
+  const user = storeUser.getUser(hiveAccount.value)
+  if (user) {
+    console.log("user.hasApiToken", user.hasApiToken)
+    console.log("user.apiToken", user.apiToken)
+    if (user.hasApiToken) {
+      return true
+    }
+  }
+  return false
+})
 
 onMounted(async () => {
   console.log("GetHive.vue onMounted")
@@ -46,6 +76,10 @@ onMounted(async () => {
   if (hiveAccount.value === "") {
     console.error("No Hive Account Name")
   } else {
+    console.log("hiveAccount", hiveAccount.value)
+    console.log("storeUser", storeUser)
+    const user = storeUser.getUser(hiveAccount.value)
+    user.checkApiTokenValid()
     await fetchData()
   }
 })
@@ -60,7 +94,6 @@ async function fetchData() {
         const rawData = await apiLogin.get("/v1/trx_records/")
         data.value = rawData.data["HIVETOLND"]
       } catch (error) {
-        user.clearApiToken()
         console.error("fetchData error", error)
       }
     } else {
@@ -78,7 +111,7 @@ async function loginToApi() {
 async function loginApiKeychain(username) {
   console.log("loginApiKeychain")
   let hiveAccObj = { value: username }
-  const props = {keyType: "posting"}
+  const props = { keyType: "posting" }
   await useLoginFlow(hiveAccObj, props)
   return
   try {

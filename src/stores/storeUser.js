@@ -61,6 +61,22 @@ export class HiveUser {
     return true
   }
 
+  /**
+   * Checks if the API token is valid.
+   * @returns {Promise<boolean>} A promise that resolves to true if the API token is valid, otherwise false.
+   */
+  async checkApiTokenValid() {
+    // Check if the user has an API token
+    if (!this.apiToken) return false
+    apiLogin.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${this.apiToken}`
+    const resp = await apiLogin.get("/auth/check/")
+    console.log("checkApiTokenValid", resp.status, resp.data)
+    if (resp.status === 200) return true
+    return false
+  }
+
   get hasApiToken() {
     if (this.apiToken) return true
     return false

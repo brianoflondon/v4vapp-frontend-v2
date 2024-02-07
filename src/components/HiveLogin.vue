@@ -174,7 +174,7 @@ async function loginHAS(username) {
       })
       return
     }
-    answer = await HASLogin(username)
+    const answer = await HASLogin(username)
     console.log("HAS Login answer: ", answer)
   } catch (error) {
     console.log("error: ", error)
