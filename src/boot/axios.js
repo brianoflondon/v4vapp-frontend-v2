@@ -16,17 +16,17 @@ const myNodePubKey =
 // Set this to false to use the devapi URLs
 console.log("process.env", process.env)
 console.log("PROD: ", process.env.PROD)
-console.log("DEV: ", process.env.DEV)
+console.log("DEV_API: ", process.env.DEV_API)
+console.log("LOCAL_API: ", process.env.LOCAL_API)
 
-const useLocal = process.env.DEV ? true : false
 
-const rootUrl = process.env.PROD
+const useLocal = process.env.LOCAL_API ? true : false
+
+const rootUrl = process.env.DEV_API
   ? "https://api.v4v.app/v1"
   : "https://devapi.v4v.app/v1"
-console.log("rootUrl: ", rootUrl)
 
 const apiURL = useLocal ? "http://127.0.0.1:1818/v1" : rootUrl
-
 const apiLoginURL = useLocal ? "http://127.0.0.1:1818" : rootUrl
 
 const serverHiveAccount = "v4vapp"

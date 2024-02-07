@@ -15,7 +15,8 @@
         "webpack://quasar-project/./src/*": "${webRoot}/*"
       },
       "env": {
-        "DEV": "true",
+        "DEV_API": "true",
+        "LOCAL_API": "true",
       }
     },
     {
