@@ -14,10 +14,10 @@ const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
 // Set this to false to use the devapi URLs
-console.log("process.env", process.env)
-console.log("PROD: ", process.env.PROD)
-console.log("DEV_API: ", process.env.DEV_API)
-console.log("LOCAL_API: ", process.env.LOCAL_API)
+// console.log("process.env", process.env)
+// console.log("PROD: ", process.env.PROD)
+// console.log("DEV_API: ", process.env.DEV_API)
+// console.log("LOCAL_API: ", process.env.LOCAL_API)
 
 
 const useLocal = process.env.LOCAL_API ? true : false
