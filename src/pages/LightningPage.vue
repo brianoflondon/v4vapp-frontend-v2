@@ -212,7 +212,6 @@
 import { computed, ref, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-// import { QrcodeStream } from "qrcode-reader-vue3"
 import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"

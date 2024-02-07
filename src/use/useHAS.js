@@ -136,6 +136,7 @@ async function resolveAuth(res, auth, challenge_data) {
 
     console.log("formData", formData)
 
+    console.log("apiLogin", apiLogin)
     const responseApi = await apiLogin.post(`/token/`, formData)
     console.log("responseApi", responseApi)
     storeUser.login(
