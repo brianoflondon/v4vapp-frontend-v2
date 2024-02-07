@@ -166,6 +166,13 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveUser.token) return null
       return hiveUser.token
     },
+    async hasValidApiToken() {
+      console.log("hasApiToken checking if valid")
+      if (!this.currentUser) return null
+      const hiveUser = this.users[this.currentUser]
+      if (!hiveUser.apiToken) return null
+      return await hiveUser.checkApiTokenValid
+    },
     user() {
       // Return the HiveUser object for the passed user hiveAccname
       if (!this.currentUser) return null
