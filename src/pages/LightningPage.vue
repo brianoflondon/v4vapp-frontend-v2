@@ -837,11 +837,13 @@ async function checkHiveTransaction(username, trx_id, notif) {
     }
     voteOptions.value.showButton = true
     voteOptions.value.showDialog = false
+    // pause for 5 seconds to allow the transaction to be found
+    console.log("transaction_found waiting 10 seconds")
+    await new Promise((resolve) => setTimeout(resolve, 10000))
+    console.log("clearing form")
+    clearReset()
     return
   }
-
-  // Continue with the rest of your original function logic for when a transaction is found
-  // ...
 }
 
 /**
