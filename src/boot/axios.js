@@ -45,7 +45,7 @@ export default boot(({ app }) => {
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
   //       so you can easily perform requests against your app's API
 
-  app.config.globalProperties.$apiLoginURL = apiLogin
+  app.config.globalProperties.$apiLogin = apiLogin
 })
 
 export { axios, api, apiLogin, apiURL, myNodePubKey, serverHiveAccount }
