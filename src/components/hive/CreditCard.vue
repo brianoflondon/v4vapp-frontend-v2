@@ -133,6 +133,9 @@ const lightDark = computed(() => {
 })
 
 const hasValidApiToken = computed(() => {
+  if (!storeUser.currentUser) {
+    return false
+  }
   return storeUser.hasValidApiToken
 })
 
