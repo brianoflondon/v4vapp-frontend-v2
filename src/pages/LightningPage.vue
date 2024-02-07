@@ -227,7 +227,7 @@ import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
-import { serverHiveAccount } from "src/boot/axios"
+import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 
 const invoiceText = ref(null)

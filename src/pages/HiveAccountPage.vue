@@ -34,7 +34,8 @@ import { useI18n } from "vue-i18n"
 import { useRoute } from "vue-router"
 import { useUsernameFromRouteParam } from "src/use/useUtils.js"
 import { useStoreUser } from "src/stores/storeUser"
-import { apiLogin } from "src/boot/axios"
+import { apiLogin } from "boot/axios"
+import { api } from "boot/axios"
 import {
   useGetApiKeychainChallenge,
   useHiveKeychainLogin,
@@ -91,7 +92,7 @@ async function fetchData() {
     console.log("fetchData for user", user.hiveAccname)
     if (user.setApiToken()) {
       try {
-        const rawData = await apiLogin.get("/trx_records/")
+        const rawData = await apiLogin.get("/v1/trx_records/")
         data.value = rawData.data["HIVETOLND"]
       } catch (error) {
         console.error("fetchData error", error)

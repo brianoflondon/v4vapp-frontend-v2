@@ -7,8 +7,7 @@
       />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
-    <div>
-    </div>
+    <div></div>
     <q-list @click="$emit('close-menu')">
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
     </q-list>
@@ -35,7 +34,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
-import { apiLogin } from "src/boot/axios"
+import { apiLogin } from "boot/axios"
 
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()

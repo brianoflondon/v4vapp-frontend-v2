@@ -111,7 +111,7 @@
  */
 
 import { ref, watch, onMounted } from "vue"
-import { apiLogin } from "src/boot/axios"
+import { apiLogin } from "boot/axios"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"

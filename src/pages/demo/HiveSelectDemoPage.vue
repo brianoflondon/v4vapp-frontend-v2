@@ -75,7 +75,7 @@ import HiveSelectAcc from "components/HiveSelectAcc.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { ref, watch, onMounted } from "vue"
-import { apiLogin } from "src/boot/axios"
+import { api } from "boot/axios"
 
 const storeUser = useStoreUser()
 const data = ref()
@@ -98,7 +98,7 @@ async function fetchData() {
   let rawData = []
   if (storeUser.apiTokenSet()) {
     try {
-      rawData = await apiLogin.get("/trx_records/")
+      rawData = await api.get("/trx_records/")
       data.value = rawData.data
     } catch (error) {
       console.error("fetchData error", error)

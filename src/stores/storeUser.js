@@ -3,7 +3,7 @@ import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
-import { api, apiLogin } from "boot/axios.js"
+import { api, apiLogin } from "boot/axios"
 
 const storeAPIStatus = useStoreAPIStatus()
 
