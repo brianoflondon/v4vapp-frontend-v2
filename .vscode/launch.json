@@ -13,6 +13,9 @@
       // "breakOnLoad": true,
       "sourceMapPathOverrides": {
         "webpack://quasar-project/./src/*": "${webRoot}/*"
+      },
+      "env": {
+        "DEV": "true",
       }
     },
     {
