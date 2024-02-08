@@ -75,7 +75,7 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain is Installed',
+  keychain_installed: 'Keychain está instalado',
   keychain_missing: 'Keychain no se encuentra',
   reload_prices: 'Recargar precios',
   // Invoice
@@ -153,6 +153,7 @@ export default {
   market_rate: 'Market Rate',
   sales: 'Sales',
   history: 'History',
+  memo_pipe: 'Memo must NOT contain the "pipe" symbol: "|"',
   // as in charge a customer
   payment: 'Pago',
   scan_to_send: 'Escanea este código para enviar',
