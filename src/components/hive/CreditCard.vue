@@ -140,10 +140,10 @@ const creditCardStripStyle = computed(() => {
   }
 })
 const creditCardOverlay = computed(() => {
-  return `credit-card/overlay/${lightDark.value}/credit-card.webp`
+  return `/credit-card/overlay/${lightDark.value}/credit-card.webp`
 })
 const creditCardBackground = computed(() => {
-  return `credit-card/backgrounds/${
+  return `/credit-card/backgrounds/${
     backgroundImage[backgroundIndex.value]
   }.webp`
 })

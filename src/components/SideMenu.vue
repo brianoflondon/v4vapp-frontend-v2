@@ -15,9 +15,7 @@
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
     <div class="q-pa-md text-caption">{{ appName }} - {{ appVersion }}</div>
-    <div v-if="commitMessage" class="q-pa-md text-caption">
-      {{ commitMessage }}
-    </div>
+    <div class="q-pa-md text-caption">{{ storeUser.currentUser }}</div>
   </div>
 </template>
 
