@@ -6,7 +6,7 @@
       basic
       style="border-radius: 15px"
     />
-    <div class="stored-sats" v-if="hasValidApiToken">
+    <div class="stored-sats" v-if="devMode && hasValidApiToken">
       <div class="credit-card-shading" :style="creditCardShading">
         <div class="div-border items-end flex row">
           <div class="div-border card-spacer row col-12"></div>
@@ -17,9 +17,9 @@
             >
               Logged in to API
             </div>
-            <div class="div-border text-h6 credit-card-text embossed-text">
-
-            </div>
+            <div
+              class="div-border text-h6 credit-card-text embossed-text"
+            ></div>
           </div>
         </div>
       </div>
@@ -110,6 +110,8 @@ import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 
 const q = useQuasar()
 const savingsToggle = ref(false)
+
+const devMode = ref(process.env.DEV_API)
 
 const backgroundImage = [
   "sealogo01",
