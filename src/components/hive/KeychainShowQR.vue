@@ -181,7 +181,7 @@ import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
-import { encodeOp } from "hive-uri"
+import { encodeOp, Parameters } from "hive-uri"
 
 const hiveCheckTime = 5 // seconds between each check
 const hiveCheckTimer = ref(100)
@@ -365,7 +365,20 @@ async function updateQRCode() {
     KeychainDialog.value.memo,
     KeychainDialog.value.checkCode
   )
-  KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
+
+  // params seems to break Hive Keychain
+  let params = {
+    // signer: KeychainDialog.value.hiveAccTo,
+    // callback: "https://webhook.site/#!/62064ca7-46d9-49fa-88b8-212cfb7590f3",
+    // no_broadcast: true,
+  }
+
+  KeychainDialog.value.qrCodeTextHive = encodeOp(
+    KeychainDialog.value.op,
+    params
+  )
+
+  // KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
 }
 

@@ -1,10 +1,14 @@
 <template>
   <div>
     <div class="q-pa-md">
-      <UserList @update="(val) => (hiveUsername = val)" />
+      <UserList
+        @update="(val) => (hiveUsername = val)"
+        @click="$emit('close-menu')"
+      />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
-    <q-list>
+    <div></div>
+    <q-list @click="$emit('close-menu')">
       <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
     </q-list>
     <div class="q-pa-md">
@@ -16,6 +20,7 @@
     </div>
     <div class="q-pa-md text-caption">{{ appName }} - {{ appVersion }}</div>
     <div class="q-pa-md text-caption">{{ storeUser.currentUser }}</div>
+    <div class="q-pa-md text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
   </div>
 </template>
 
@@ -29,6 +34,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
+import { apiLogin } from "boot/axios"
 
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()

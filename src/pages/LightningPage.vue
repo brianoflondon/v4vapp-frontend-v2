@@ -212,7 +212,6 @@
 import { computed, ref, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-// import { QrcodeStream } from "qrcode-reader-vue3"
 import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
@@ -228,7 +227,7 @@ import { useQuasar } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
-import { serverHiveAccount } from "src/boot/axios"
+import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 
 const invoiceText = ref(null)
@@ -837,11 +836,13 @@ async function checkHiveTransaction(username, trx_id, notif) {
     }
     voteOptions.value.showButton = true
     voteOptions.value.showDialog = false
+    // pause for 5 seconds to allow the transaction to be found
+    console.log("transaction_found waiting 10 seconds")
+    await new Promise((resolve) => setTimeout(resolve, 10000))
+    console.log("clearing form")
+    clearReset()
     return
   }
-
-  // Continue with the rest of your original function logic for when a transaction is found
-  // ...
 }
 
 /**

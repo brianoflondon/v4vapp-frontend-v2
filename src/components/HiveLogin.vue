@@ -7,6 +7,10 @@
         :label="$t('login_as')"
       >
         <q-item>
+          <HiveInputAcc v-model="hiveAccObj" :prefix="t('pay_to')">
+          </HiveInputAcc>
+        </q-item>
+        <q-item v-if="false">
           <HiveSelectFancyAcc
             dense
             :label="props.label"
@@ -29,7 +33,7 @@
             rounded
             :label="t('hive_keychain')"
             icon="img:/keychain/hive-keychain-round.svg"
-            @click="loginKeychain(hiveAccObj?.value)"
+            @click="useLoginFlow(hiveAccObj, props)"
           />
           <q-tooltip v-if="!hiveAccObj && isKeychain">{{
             t("enter_hive_account")
@@ -107,14 +111,18 @@
  */
 
 import { ref, watch, onMounted } from "vue"
+import { apiLogin } from "boot/axios"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
+import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import {
+  useGetApiKeychainChallenge,
   useHiveKeychainLogin,
   useIsHiveKeychainInstalled,
+  useValidateApi,
+  useLoginFlow,
 } from "src/use/useKeychain"
 import { useHAS, HASLogin } from "src/use/useHAS"
-import { useBip39 } from "src/use/useBip39"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
@@ -126,6 +134,9 @@ const hiveAccObj = defineModel()
 
 const displayQRCode = ref(false)
 const timeMessage = ref()
+
+const t = useI18n().t
+const quasar = useQuasar()
 
 if (Platform.is.mobile) {
   console.log("Running on a mobile device")
@@ -145,9 +156,6 @@ const props = defineProps({
   },
 })
 
-const t = useI18n().t
-const quasar = useQuasar()
-
 const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS()
 
 async function loginHAS(username) {
@@ -159,14 +167,15 @@ async function loginHAS(username) {
     if (!username) {
       quasar.notify({
         timeout: 2000,
-        avatar: useHiveAvatarURL({hiveAccname: username}),
+        avatar: useHiveAvatarURL({ hiveAccname: username }),
         color: "info",
         message: t("enter_hive_account"),
         position: position,
       })
       return
     }
-    await HASLogin(username)
+    const answer = await HASLogin(username)
+    console.log("HAS Login answer: ", answer)
   } catch (error) {
     console.log("error: ", error)
   }
@@ -192,7 +201,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 function adminCheck() {
   console.log("storeUser.currentUser: ", storeUser.currentUser)
   if (storeUser.currentUser === "brianoflondon") {
-    return true
+    return false
   }
   return false
 }
@@ -202,7 +211,9 @@ async function loginKeychain(username) {
     storeUser.login(username, props.keyType)
     return
   }
+  // Fetch the avatar for the user
   const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
+  // Check for Hive Keychain in the browser
   isKeychain.value = await useIsHiveKeychainInstalled()
   let position = "left"
   if (Platform.is.mobile) {
@@ -218,6 +229,7 @@ async function loginKeychain(username) {
     })
     return
   }
+  // Check for a valid Hive account in the input field
   if (!username) {
     quasar.notify({
       timeout: 2000,
@@ -228,27 +240,41 @@ async function loginKeychain(username) {
     })
     return
   }
-  const words = await useBip39(3)
-  const signMessage = words.join("-")
+  // Fetch the challenge message from the server
   try {
-    const note = quasar.notify({
+    const clientId = storeUser.clientId
+    const challenge = await useGetApiKeychainChallenge(username, clientId)
+    var note = quasar.notify({
       group: false, // required to be updatable
       timeout: 0, // we want to be in control when it gets dismissed
       avatar: avatarUrl,
       message: `${t("login_in_progress")}: @${username}`,
-      caption: `${t("sign_this")}: ${signMessage}`,
+      caption: `${t("sign_this")}: ${challenge.data.challenge}`,
       position: position,
       color: "info",
     })
     await delay(300)
-    const result = await useHiveKeychainLogin({
+    const signedMessage = await useHiveKeychainLogin({
       hiveAccname: username,
-      message: signMessage,
+      message: challenge.data.challenge,
       keyType: props.keyType,
     })
-    if (result.success && result?.data?.message == signMessage) {
+    if (
+      signedMessage.success &&
+      signedMessage?.data?.message == challenge.data.challenge
+    ) {
+      console.log("now to validate")
+      const validate = await useValidateApi(clientId, signedMessage)
+      // need to store this token in the storeUser store
       hiveAccObj.value["loggedIn"] = true
-      storeUser.login(username, props.keyType)
+      storeUser.login(
+        username,
+        props.keyType,
+        null,
+        null,
+        null,
+        validate.data.access_token
+      )
       note({
         icon: "done", // we add an icon
         avatar: avatarUrl,
@@ -256,19 +282,19 @@ async function loginKeychain(username) {
         spinner: false, // we reset the spinner setting so the icon can be displayed
         multiLine: true,
         message: `${t("login_success")}`,
-        caption: `${result?.data?.message} <br> ${t(
-          "matches"
-        )} <br> ${signMessage}`,
+        caption: `${signedMessage?.data?.message} <br> ${t("matches")} <br> ${
+          challenge.data.challenge
+        }`,
         color: "positive",
         timeout: 1500,
       })
-    } else if (!result.success) {
+    } else if (!signedMessage.success) {
       hiveAccObj.value["loggedIn"] = false
       note({
         icon: "cancel", // we add an icon
         spinner: false, // we reset the spinner setting so the icon can be displayed
         message: t("login_failed"),
-        caption: `${result?.message}`,
+        caption: `${signedMessage?.message}`,
         color: "negative",
         timeout: 1500,
       })
@@ -283,6 +309,43 @@ async function loginKeychain(username) {
       color: "negative",
       timeout: 1500,
     })
+  }
+}
+
+// Depreciated, use loginKeychain instead
+async function loginApiKeychain(username) {
+  console.log("loginApiKeychain")
+  try {
+    const clientId = storeUser.clientId
+    console.log("clientId: ", clientId)
+    const challenge = await useGetApiKeychainChallenge(username, clientId)
+    console.log(challenge)
+    const signedMessage = await useHiveKeychainLogin({
+      hiveAccname: username,
+      message: challenge.data.challenge,
+      keyType: props.keyType,
+    })
+    console.log("signedMessage: ", signedMessage)
+    const validate = await useValidateApi(clientId, signedMessage)
+    console.log("validate: ", validate)
+    // need to store this token in the storeUser store
+    hiveAccObj.value["loggedIn"] = true
+    storeUser.login(
+      username,
+      props.keyType,
+      null,
+      null,
+      null,
+      validate.data.access_token
+    )
+    apiLogin.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${validate.data.access_token}`
+    console.log("apiLogin.defaults: ", apiLogin.defaults.headers.common)
+    // const check = await apiLogin.get("/v1/trx_records/")
+    // console.log("check: ", check)
+  } catch (error) {
+    console.log("error: ", error)
   }
 }
 </script>

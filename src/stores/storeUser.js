@@ -2,7 +2,8 @@ import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
-import { tidyNumber } from "src/use/useUtils.js"
+import { tidyNumber, generateUUID } from "src/use/useUtils.js"
+import { api, apiLogin } from "boot/axios"
 
 const storeAPIStatus = useStoreAPIStatus()
 
@@ -14,7 +15,8 @@ export class HiveUser {
     timestamp = null,
     authKey = null,
     expire = null,
-    token = null
+    token = null,
+    apiToken = null
   ) {
     this.hiveAccname = hiveAccname
     this.profileName = profileName
@@ -22,6 +24,7 @@ export class HiveUser {
     this.authKey = authKey
     this.expire = expire
     this.token = token
+    this.apiToken = apiToken
     if (!timestamp) timestamp = Date.now()
     this.timestamp = timestamp
   }
@@ -35,7 +38,48 @@ export class HiveUser {
       authKey: this.authKey,
       expire: this.expire,
       token: this.token,
+      apiToken: this.apiToken,
     }
+  }
+
+  setApiToken() {
+    // Set the token for the user
+    if (!this.apiToken) return false
+    apiLogin.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${this.apiToken}`
+    console.log("apiTokenSet successful", this.hiveAccname)
+    // need to test if the API token is working
+    return true
+  }
+
+  clearApiToken() {
+    // Clear the token for the user
+    this.apiToken = null
+    apiLogin.defaults.headers.common["Authorization"] = ""
+    console.log("apiToken cleared", this.hiveAccname)
+    return true
+  }
+
+  /**
+   * Checks if the API token is valid.
+   * @returns {Promise<boolean>} A promise that resolves to true if the API token is valid, otherwise false.
+   */
+  async checkApiTokenValid() {
+    // Check if the user has an API token
+    if (!this.apiToken) return false
+    apiLogin.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${this.apiToken}`
+    const resp = await apiLogin.get("/auth/check/")
+    console.log("checkApiTokenValid", resp.status, resp.data)
+    if (resp.status === 200) return true
+    return false
+  }
+
+  get hasApiToken() {
+    if (this.apiToken) return true
+    return false
   }
 
   // Return the time since the login in seconds
@@ -68,6 +112,7 @@ export class HiveUser {
       authKey: this.authKey,
       expire: this.expire,
       token: this.token,
+      apiToken: this.apiToken,
       timestamp: this.timestamp,
       loginAge: this.loginAge,
     }
@@ -86,6 +131,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     }),
     users: useStorage("users", {}),
     pos: useStorage("pos", {}),
+    clientId: useStorage("clientId", generateUUID()),
   }),
 
   getters: {
@@ -120,6 +166,13 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveUser.token) return null
       return hiveUser.token
     },
+    async hasValidApiToken() {
+      console.log("hasApiToken checking if valid")
+      if (!this.currentUser) return null
+      const hiveUser = this.users[this.currentUser]
+      if (!hiveUser.apiToken) return null
+      return await hiveUser.checkApiTokenValid
+    },
     user() {
       // Return the HiveUser object for the passed user hiveAccname
       if (!this.currentUser) return null
@@ -136,7 +189,8 @@ export const useStoreUser = defineStore("useStoreUser", {
           temp.timestamp,
           temp.authKey,
           temp.expire,
-          temp.token
+          temp.token,
+          temp.apiToken
         )
         return hiveUser
       }
@@ -234,12 +288,23 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       onOpen()
     },
+    /**
+     * Logs in a user with the provided credentials.
+     * @param {string} hiveAccname - The Hive account name.
+     * @param {string} keySelected - The selected key.
+     * @param {string|null} authKey - The authentication key (optional).
+     * @param {string|null} expire - The expiration date (optional).
+     * @param {string|null} token - The token (optional).
+     * @param {string|null} apiToken - The API token (optional).
+     * @returns {Promise<void>} - A promise that resolves when the login is successful.
+     */
     async login(
       hiveAccname,
       keySelected,
       authKey = null,
       expire = null,
-      token = null
+      token = null,
+      apiToken = null
     ) {
       try {
         const hiveDetails = await useHiveDetails(hiveAccname)
@@ -252,8 +317,14 @@ export const useStoreUser = defineStore("useStoreUser", {
             Date.now(),
             authKey,
             expire,
-            token
+            token,
+            apiToken
           )
+          if (apiToken) {
+            apiLogin.defaults.headers.common[
+              "Authorization"
+            ] = `Bearer ${apiToken}`
+          }
           this.users[hiveAccname] = newUser
           this.currentUser = hiveAccname
           this.currentDetails = hiveDetails
@@ -269,12 +340,29 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.log("switchUser to ", hiveAccname, " from ", this.currentUser)
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
-          // test if login is still valid
+          this.apiTokenSet(hiveAccname)
           this.update()
         }
       } catch (err) {
         console.log(err)
       }
+    },
+    /**
+     * Sets the API token for a given hive account name.
+     * @param {string} [hiveAccname=this.currentUser] - The hive account name.
+     * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
+     */
+    apiTokenSet(hiveAccname = this.currentUser) {
+      console.log("Trying to use apiTokenSet", hiveAccname)
+      if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
+        console.log("apiTokenSet successful", hiveAccname)
+        apiLogin.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${this.users[hiveAccname].apiToken}`
+        // need to test if the API token is working
+        return true
+      }
+      return false
     },
     async logout() {
       if (this.currentUser in this.users) {
@@ -296,7 +384,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     strategies: [
       {
         storage: localStorage,
-        paths: ["users", "currentUser", "pos", "localCurrency"],
+        paths: ["users", "currentUser", "pos", "localCurrency", "clientId"],
       },
     ],
   },

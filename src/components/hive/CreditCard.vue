@@ -6,7 +6,25 @@
       basic
       style="border-radius: 15px"
     />
-    <div class="credit-card-shading" :style="creditCardShading"></div>
+    <div class="stored-sats" v-if="hasValidApiToken">
+      <div class="credit-card-shading" :style="creditCardShading">
+        <div class="div-border items-end flex row">
+          <div class="div-border card-spacer row col-12"></div>
+
+          <div class="row col-12">
+            <div
+              class="div-border col-6 text-right text-h6 credit-card-text embossed-text"
+            >
+              Logged in to API
+            </div>
+            <div class="div-border text-h6 credit-card-text embossed-text">
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <q-img
       :src="creditCardOverlay"
       width="365px"
@@ -20,7 +38,7 @@
       <div class="row">
         <div class="col-8 flex items-center">
           <div class="credit-card-avatar">
-            <q-avatar rounded size="md">
+            <q-avatar rounded size="xl">
               <HiveAvatar :hiveAccname="storeUser.hiveAccname" />
             </q-avatar>
           </div>
@@ -114,6 +132,13 @@ const lightDark = computed(() => {
   return "light"
 })
 
+const hasValidApiToken = computed(() => {
+  if (!storeUser.currentUser) {
+    return false
+  }
+  return storeUser.hasValidApiToken
+})
+
 const balances = computed(() => {
   if (savingsToggle.value) {
     return {
@@ -165,6 +190,13 @@ storeUser.update()
 </script>
 
 <style lang="scss" scoped>
+.div-border {
+  // border: 1px solid black;
+}
+
+.card-spacer {
+  height: 4.5rem;
+}
 .credit-card-background {
   position: relative;
   width: 365px;
@@ -181,10 +213,6 @@ storeUser.update()
   left: 0;
   border-radius: 15px;
 }
-
-// .credit-card-text {
-//   color: white;
-// }
 
 .credit-card-aspect-ratio {
   width: 100%;

@@ -36,6 +36,7 @@
     "@quasar/app-vite": "^1.7.0",
     "@types/qrcode": "^1.5.1",
     "autoprefixer": "^10.4.2",
+    "dotenv": "^16.4.1",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^9.0.0",
