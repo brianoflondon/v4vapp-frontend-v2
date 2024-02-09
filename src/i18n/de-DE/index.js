@@ -20,10 +20,10 @@ export default {
   to: 'nach',
   local_currency: 'Landeswährung',
   currency: 'Währung',
-  confirm: 'Confirm',
-  yes: 'Yes',
-  no: 'No',
-  all: 'All',
+  confirm: 'Bestätige',
+  yes: 'Ja',
+  no: 'Nein',
+  all: 'Alles',
   // Dark Mode Selector
   change_light: 'Heller Modus',
   change_dark: 'Dunkler Modus',
@@ -151,9 +151,9 @@ export default {
   charge: 'Tarif',
   set_rate: 'Rate einstellen',
   market_rate: 'Marktkurs',
-  sales: 'Sales',
-  history: 'History',
-  memo_pipe: 'Memo must NOT contain the "pipe" symbol: "|"',
+  sales: 'Verkäufe',
+  history: 'Verlauf',
+  memo_pipe: 'Memo darf NICHT das "Pipe"-Symbol enthalten: "|"',
   // as in charge a customer
   payment: 'Zahlung',
   scan_to_send: 'Scannen Sie diesen Code um zu senden',
@@ -169,19 +169,19 @@ export default {
   memo: 'Notiz',
   calculating_fees: 'Berechnung der Gebühren',
   // Transaction list
-  date: 'Date',
-  paid: 'Paid',
-  pending: 'Pending',
-  date: 'Date',
-  paid_by: 'Paid by',
-  import_hive: 'Import Hive',
-  local_records: 'Local Records',
-  import_from_hive_tooltip: 'Import all past sales from Hive',
-  delete_local_records_tooltip: `Delete all local records. This will erase all pending payments, \n
-    but successful payments can be re- imported from Hive with the \n
-    Import Hive button`,
-  delete_all_pending_message: 'Are you sure you want to delete all pending sales?',
-  delete_one_pending_message: 'Are you sure you want to delete this pending sale?',
+  date: 'Datum',
+  paid: 'Bezahlt',
+  pending: 'Anstehend',
+  date: 'Datum',
+  paid_by: 'Gezahlt von',
+  import_hive: 'Hive-Import',
+  local_records: 'Lokale Einträge',
+  import_from_hive_tooltip: 'Alle bisherigen Verkäufe aus Hive importieren',
+  delete_local_records_tooltip: `Lösche alle lokalen Einträge. Dies löscht alle ausstehenden Zahlungen \n
+    aber erfolgreiche Zahlungen können mit dem \n
+    Import-Button aus Hive-Datei importiert`,
+  delete_all_pending_message: 'Möchten Sie wirklich alle ausstehenden Verkäufe löschen?',
+  delete_one_pending_message: 'Sind Sie sicher, dass Sie diesen ausstehenden Verkauf löschen möchten?',
   export_to_csv: 'Export to CSV',
   export_to_csv_tooltip: 'Export all the currently displayed sales to a CSV file'
 };
