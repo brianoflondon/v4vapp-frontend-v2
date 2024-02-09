@@ -153,7 +153,7 @@ export default {
   market_rate: 'Marktkurs',
   sales: 'Verkäufe',
   history: 'Verlauf',
-  memo_pipe: 'Memo darf NICHT das "Pipe"-Symbol enthalten: "|"',
+  memo_pipe: 'Die Nachricht darf NICHT das Symbol enthalten: "|"',
   // as in charge a customer
   payment: 'Zahlung',
   scan_to_send: 'Scannen Sie diesen Code um zu senden',
@@ -173,7 +173,7 @@ export default {
   paid: 'Bezahlt',
   pending: 'Anstehend',
   date: 'Datum',
-  paid_by: 'Gezahlt von',
+  paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',
   import_from_hive_tooltip: 'Alle bisherigen Verkäufe aus Hive importieren',
@@ -182,6 +182,6 @@ export default {
     Import-Button aus Hive-Datei importiert`,
   delete_all_pending_message: 'Möchten Sie wirklich alle ausstehenden Verkäufe löschen?',
   delete_one_pending_message: 'Sind Sie sicher, dass Sie diesen ausstehenden Verkauf löschen möchten?',
-  export_to_csv: 'Export to CSV',
-  export_to_csv_tooltip: 'Export all the currently displayed sales to a CSV file'
+  export_to_csv: 'Exportieren in CSV',
+  export_to_csv_tooltip: 'Exportieren Sie alle derzeit angezeigten Verkäufe in eine CSV-Datei'
 };
