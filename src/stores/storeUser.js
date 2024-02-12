@@ -373,7 +373,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         const resp = await apiLogin.get("/v1/v4vapp/keepsats")
         return resp.data
       }
-      return false
+      return {}
     },
     /**
      * Logs out the current user.

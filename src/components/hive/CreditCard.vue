@@ -6,7 +6,7 @@
       basic
       style="border-radius: 15px"
     />
-    <div class="stored-sats" v-if="devMode && hasValidApiToken">
+    <div class="stored-sats">
       <div class="credit-card-shading" :style="creditCardShading">
         <div class="div-border items-end flex row">
           <div class="div-border card-spacer row col-12"></div>
@@ -187,6 +187,7 @@ const creditCardShading = computed(() => {
 async function getKeepSatsBalance() {
   try {
     keepSats.value = await storeUser.getKeepSats()
+    console.log("getKeepSatsBalance", keepSats.value)
     keepSats.value.sats = tidyNumber(keepSats.value.net_sats, 0)
     console.log("getKeepSatsBalance", keepSats.value)
   } catch (error) {
