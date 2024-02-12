@@ -3,7 +3,7 @@ import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
-import { api, apiLogin } from "boot/axios"
+import { api, apiLogin } from "src/boot/axios"
 
 const storeAPIStatus = useStoreAPIStatus()
 
@@ -335,6 +335,10 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.error(err)
       }
     },
+    /**
+     * Switches the current user to the specified hive account name.
+     * @param {string} hiveAccname - The hive account name to switch to.
+     */
     switchUser(hiveAccname) {
       try {
         console.log("switchUser to ", hiveAccname, " from ", this.currentUser)
@@ -364,6 +368,11 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       return false
     },
+    /**
+     * Logs out the current user.
+     * Removes the current user from the list of users and resets the current user details and profile.
+     * @returns {Promise<void>} A promise that resolves when the logout process is complete.
+     */
     async logout() {
       if (this.currentUser in this.users) {
         delete this.users[this.currentUser]
