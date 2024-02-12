@@ -264,6 +264,21 @@ export async function useValidateApi(clientId, signedMessage) {
         "Content-Type": "application/json",
       },
     })
+    const validateAgain = await fetch(`https://devapi.v4v.app/auth/validate/?clientId=${clientId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(signedMessage),
+    })
+    const responseDataAgain = await validate.json()
+    Notify.create({
+      timeout: 0,
+      color: 'warning',
+      message: JSON.stringify(responseDataAgain)
+    })
+
+
     const tempMessage = JSON.stringify(validate)
     if (validate.status === 200) {
       console.log("Success")
