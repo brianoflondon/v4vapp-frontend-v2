@@ -127,10 +127,19 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
     ) {
       console.log("now to validate")
       const validate = await useValidateApi(clientId, signedMessage)
+      console.log("Result of validate", JSON.stringify(validate.data))
       // need to store this token in the storeUser store
+      //
+      var tempMessage = "Validate result: " + JSON.stringify(validate.data)
+      Notify.create({
+        message: tempMessage,
+        multiLine: true,
+        timeout: 5000,
+        position: "left",
+      })
       hiveAccObj["loggedIn"] = true
       hiveAccObj.caption = validate.data.access_token
-      storeUser.login(
+      await storeUser.login(
         hiveAccObj.value,
         props.keyType,
         null,
@@ -138,6 +147,13 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         null,
         validate.data.access_token
       )
+      tempMessage = "After storeUser.login"
+      Notify.create({
+        message: tempMessage,
+        multiLine: true,
+        timeout: 5000,
+        position: "left",
+      })
       note({
         icon: "done", // we add an icon
         avatar: avatarUrl,
