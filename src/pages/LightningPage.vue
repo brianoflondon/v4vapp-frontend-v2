@@ -173,6 +173,9 @@
             />
           </div>
         </div>
+        <div>
+          <HiveLightningTrans :username="storeUser.currentUser" />
+        </div>
         <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
         <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
         <!-- Vote Button -->
@@ -229,6 +232,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
 import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
+import HiveLightningTrans from "src/components/v4vapp/HiveLightningTrans.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)

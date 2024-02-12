@@ -14,7 +14,9 @@ const keychain = new KeychainSDK(window)
 
 export async function useIsHiveKeychainInstalled() {
   try {
+    console.log('-------------> useIsHiveKeychainInstalled')
     const isKeychainIn = await keychain.isKeychainInstalled()
+    console.log("isKeychainIn: ", isKeychainIn)
     return isKeychainIn
   } catch (error) {
     console.error({ error })
@@ -58,10 +60,10 @@ export async function useHiveKeychainLogin({
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export async function useLoginFlow(hiveAccObj, props) {
+export async function useKeychainLoginFlow(hiveAccObj, props) {
   // Fetch the avatar for the user
   const t = i18n.global.t
-  console.log("useLoginFlow: ", hiveAccObj)
+  console.log("useKeychainLoginFlow: ", hiveAccObj)
   // changes to hiveAccObj object DO flow back to the
   // reactive object in the component
   console.log("i18n: ", i18n.global.t("keychain_not_installed"))
@@ -223,7 +225,20 @@ export async function useGetApiKeychainChallenge(hiveAccName, clientId) {
   return getChallenge
 }
 
+/**
+ * Validates the signed message with the API.
+ *
+ * @param {string} signedMessage - The signed message to be validated.
+ * @param {string} clientId - The client ID.
+ * @returns {Promise} - A promise that resolves with the validation result.
+ */
 export async function useValidateApi(clientId, signedMessage) {
+  Notify.create({
+    timeout: 2000,
+    color: "warning",
+    message: "Validating...",
+    position: position,
+  })
   try {
     const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {
       params: {
@@ -232,6 +247,12 @@ export async function useValidateApi(clientId, signedMessage) {
       headers: {
         "Content-Type": "application/json",
       },
+    })
+    Notify.create({
+      timeout: 2000,
+      color: "warning",
+      message: validate.data,
+      position: "left",
     })
     return validate
   } catch (error) {
