@@ -17,8 +17,19 @@ export function useHAS() {
 
 let auth_payload = {}
 
+export async function useIsHASAvailable() {
+  try {
+    const status = HAS.status()
+    console.log("status", status)
+    return status.connected
+  } catch (error) {
+    console.error({ error })
+    return false
+  }
+}
+
 // Login to HAS
-export async function HASLogin(username = "", keyType = "posting") {
+export async function useHASLogin(username = "", keyType = "posting") {
   // Your application information
   if (username === "") {
     console.error("username is empty")
@@ -135,8 +146,12 @@ async function resolveAuth(res, auth, challenge_data) {
     formData.append("password", passwordString)
 
     console.log("formData", formData)
-
-    console.log("apiLogin", apiLogin)
+    console.log("------------------------------------")
+    console.log("usernameString")
+    console.log(usernameString)
+    console.log("passwordString")
+    console.log(passwordString)
+    console.log("------------------------------------")
     const responseApi = await apiLogin.post(`/token`, formData)
     console.log("responseApi", responseApi)
     storeUser.login(

@@ -6,6 +6,7 @@
         icon="perm_identity"
         :label="$t('login_as')"
       >
+        <!-- Hive Account name input -->
         <q-item>
           <HiveInputAcc v-model="hiveAccObj" :prefix="t('pay_to')">
           </HiveInputAcc>
@@ -21,13 +22,15 @@
         <q-item-label class="text-left q-pa-sm">
           {{ $t("login_with") }}:
         </q-item-label>
+        <!-- Hive Keychain Button -->
         <q-item dense class="justify-center">
           <q-btn
             style="width: 200px"
             :disable="
               typeof hiveAccObj === 'undefined' ||
               hiveAccObj === '' ||
-              hiveAccObj === null
+              hiveAccObj === null ||
+              isKeychain === false
             "
             align="left"
             rounded
@@ -42,13 +45,15 @@
             t("keychain_not_installed")
           }}</q-tooltip>
         </q-item>
+        <!-- HAS Button  -->
         <q-item class="justify-center">
           <q-btn
             style="width: 200px"
             :disable="
               typeof hiveAccObj === 'undefined' ||
               hiveAccObj === '' ||
-              hiveAccObj === null
+              hiveAccObj === null ||
+              isHAS === false
             "
             label="HAS"
             align="left"
@@ -122,7 +127,7 @@ import {
   useValidateApi,
   useLoginFlow,
 } from "src/use/useKeychain"
-import { useHAS, HASLogin } from "src/use/useHAS"
+import { useHAS, useHASLogin, useIsHASAvailable } from "src/use/useHAS"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
@@ -144,6 +149,7 @@ if (Platform.is.mobile) {
   console.log("Not running on a mobile device")
 }
 const isKeychain = ref(false)
+const isHAS = ref(false)
 
 const props = defineProps({
   label: {
@@ -174,7 +180,7 @@ async function loginHAS(username) {
       })
       return
     }
-    const answer = await HASLogin(username)
+    const answer = await useHASLogin(username)
     console.log("HAS Login answer: ", answer)
   } catch (error) {
     console.log("error: ", error)
@@ -192,6 +198,7 @@ watch(qrCodeTextHAS, (newValue) => {
 
 onMounted(async () => {
   isKeychain.value = await useIsHiveKeychainInstalled()
+  useIsHASAvailable.value = await useIsHASAvailable()
 })
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
