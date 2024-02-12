@@ -1,6 +1,5 @@
 <template>
   <q-card>
-    keychain: {{ isKeychain }} HAS: {{ isHAS }}
     <q-list>
       <q-expansion-item
         expand-separator

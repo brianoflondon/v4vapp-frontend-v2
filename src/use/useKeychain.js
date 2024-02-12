@@ -127,17 +127,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
     ) {
       console.log("now to validate")
       const validate = await useValidateApi(clientId, signedMessage)
-      const validateData = JSON.stringify(validate.data)
-      console.log("Result of validate", validateData)
       // need to store this token in the storeUser store
-      //
-      var tempMessage = "Validate result: " + validateData
-      Notify.create({
-        message: tempMessage,
-        multiLine: true,
-        timeout: 5000,
-        position: "left",
-      })
       hiveAccObj["loggedIn"] = true
       hiveAccObj.caption = validate.data.access_token
       await storeUser.login(
@@ -148,13 +138,6 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         null,
         validate.data.access_token
       )
-      tempMessage = "After storeUser.login"
-      Notify.create({
-        message: tempMessage,
-        multiLine: true,
-        timeout: 5000,
-        position: "left",
-      })
       note({
         icon: "done", // we add an icon
         avatar: avatarUrl,
@@ -255,53 +238,23 @@ export async function useValidateApi(clientId, signedMessage) {
     message: "Validating...",
     position: "left",
   })
-  // try {
-  const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {
-    params: {
-      clientId: clientId,
-    },
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-
-  if (validate.status === 422) {
-    Notify.create({
-      message: "422 error from validate",
-    })
-  }
-
-  const validateAgain = await fetch(
-    `https://devapi.v4v.app/auth/validate/?clientId=${clientId}`,
-    {
-      method: "POST",
+  try {
+    const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {
+      params: {
+        clientId: clientId,
+      },
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(signedMessage),
+    })
+    return validate
+  } catch (error) {
+    if (validate.status === 422) {
+      Notify.create({
+        message: "422 error from validate",
+      })
     }
-  )
-  const responseDataAgain = await validateAgain.json()
-  const responseDataText = JSON.stringify(responseDataAgain)
-  Notify.create({
-    timeout: 0,
-    color: "warning",
-    message: responseDataText,
-  })
-
-  const tempMessage = JSON.stringify(validate)
-  if (validate.status === 200) {
-    console.log("Success")
+    console.error({ error })
+    return error
   }
-  Notify.create({
-    timeout: 0,
-    color: "warning",
-    message: tempMessage,
-    position: "left",
-  })
-  return validate
-  // } catch (error) {
-  //   console.error({ error })
-  //   return error
-  // }
 }
