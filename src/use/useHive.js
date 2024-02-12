@@ -2,7 +2,7 @@
 //
 // Functions related to Hive
 // ----------------------------------------------------------------------------
-import { apiURL, api } from "boot/axios"
+import { apiURL, api, apiLogin } from "boot/axios"
 import { Dark } from "quasar"
 import { genRandAlphaNum } from "src/use/useUtils"
 import "src/assets/hive-tx.min.js"

@@ -15,7 +15,7 @@
             <div
               class="div-border col-6 text-right text-h6 credit-card-text embossed-text"
             >
-              Logged in to API
+              {{ tidyNumber(keepSats["net_sats"], 0) }}
             </div>
             <div
               class="div-border text-h6 credit-card-text embossed-text"
@@ -104,14 +104,16 @@
 import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { computed, ref } from "vue"
-const storeUser = useStoreUser()
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
+import { tidyNumber } from "src/use/useUtils"
 
+const storeUser = useStoreUser()
 const q = useQuasar()
 const savingsToggle = ref(false)
 
 const devMode = ref(process.env.DEV_API)
+const keepSats = ref({})
 
 const backgroundImage = [
   "sealogo01",
@@ -182,8 +184,19 @@ const creditCardShading = computed(() => {
   }
 })
 
+async function getKeepSatsBalance() {
+  try {
+    keepSats.value = await storeUser.getKeepSats()
+    keepSats.value.sats = tidyNumber(keepSats.value.net_sats, 0)
+    console.log("getKeepSatsBalance", keepSats.value)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 function changeBackground() {
   console.log("changeBackground")
+  getKeepSatsBalance()
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
   console.log(backgroundIndex.value)
 }

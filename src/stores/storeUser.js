@@ -368,6 +368,13 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       return false
     },
+    async getKeepSats(hiveAccname = this.currentUser) {
+      if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
+        const resp = await apiLogin.get("/v1/v4vapp/keepsats")
+        return resp.data
+      }
+      return false
+    },
     /**
      * Logs out the current user.
      * Removes the current user from the list of users and resets the current user details and profile.
