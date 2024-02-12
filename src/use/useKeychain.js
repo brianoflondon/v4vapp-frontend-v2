@@ -14,7 +14,7 @@ const keychain = new KeychainSDK(window)
 
 export async function useIsHiveKeychainInstalled() {
   try {
-    console.log('-------------> useIsHiveKeychainInstalled')
+    console.log("-------------> useIsHiveKeychainInstalled")
     const isKeychainIn = await keychain.isKeychainInstalled()
     console.log("isKeychainIn: ", isKeychainIn)
     return isKeychainIn
@@ -66,7 +66,6 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
   console.log("useKeychainLoginFlow: ", hiveAccObj)
   // changes to hiveAccObj object DO flow back to the
   // reactive object in the component
-  console.log("i18n: ", i18n.global.t("keychain_not_installed"))
   const avatarUrl = useHiveAvatarURL({ hiveAccname: hiveAccObj.value })
   console.log("avatarUrl: ", avatarUrl)
   // Check for Hive Keychain in the browser
@@ -237,7 +236,7 @@ export async function useValidateApi(clientId, signedMessage) {
     timeout: 2000,
     color: "warning",
     message: "Validating...",
-    position: position,
+    position: "left",
   })
   try {
     const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {

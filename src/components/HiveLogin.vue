@@ -1,5 +1,6 @@
 <template>
   <q-card>
+    keychain: {{ isKeychain }} HAS: {{ isHAS }}
     <q-list>
       <q-expansion-item
         expand-separator
@@ -115,16 +116,12 @@
  *
  */
 
-import { ref, watch, onMounted } from "vue"
-import { apiLogin } from "boot/axios"
+import { ref, watch, onMounted, computed } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import {
-  useGetApiKeychainChallenge,
-  useHiveKeychainLogin,
   useIsHiveKeychainInstalled,
-  useValidateApi,
   useKeychainLoginFlow,
 } from "src/use/useKeychain"
 import { useHAS, useHASLogin, useIsHASAvailable } from "src/use/useHAS"
@@ -148,8 +145,9 @@ if (Platform.is.mobile) {
 } else {
   console.log("Not running on a mobile device")
 }
-const isKeychain = ref(false)
-const isHAS = ref(false)
+
+const isHAS = ref(true)
+const isKeychain = ref(true)
 
 const props = defineProps({
   label: {
@@ -197,8 +195,9 @@ watch(qrCodeTextHAS, (newValue) => {
 })
 
 onMounted(async () => {
+  console.log("onMounted HiveLogin")
   isKeychain.value = await useIsHiveKeychainInstalled()
-  useIsHASAvailable.value = await useIsHASAvailable()
+  isHAS.value = await useIsHASAvailable()
 })
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -212,6 +211,4 @@ function adminCheck() {
   }
   return false
 }
-
-
 </script>

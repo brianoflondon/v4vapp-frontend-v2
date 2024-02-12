@@ -19,6 +19,7 @@ let auth_payload = {}
 
 export async function useIsHASAvailable() {
   try {
+    console.log("useIsHasAvailable running")
     const status = HAS.status()
     console.log("status", status)
     return status.connected
