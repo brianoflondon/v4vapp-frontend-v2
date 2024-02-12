@@ -16,8 +16,13 @@ export function useGenerateTxUrl(txId) {
   return `${baseURLBlockExplorer}${txId}`
 }
 
+/**
+ * Retrieves Hive profile and details for a given Hive account name.
+ *
+ * @param {string} hiveAccname - The Hive account name.
+ * @returns {Promise<Object|null>} - The Hive profile and details, or null if an error occurs.
+ */
 export async function useHiveDetails(hiveAccname) {
-  // returns Hive Profile and details for a given Hive hiveAccname
   if (!hiveAccname?.match(useHiveAccountRegex)) {
     console.debug("Invalid Hive hiveAccname")
     return null
@@ -117,9 +122,12 @@ export async function useHiveAvatarBlob({
 }
 
 // -------- Helper functions --------
+/**
+ * Extracts the profile from the posting_json_metadata field or if that doesn't exist checks the profile.
+ * @param {object} data - The data object containing the posting_json_metadata and json_metadata fields.
+ * @returns {object|null} - The extracted profile object or null if not found.
+ */
 async function extractProfile(data) {
-  // Extracts the profile from the posting_json_metadata field or
-  // if that doesn't exist checks the profile.
   try {
     const profile = await JSON.parse(data["posting_json_metadata"])["profile"]
     return profile
@@ -134,10 +142,14 @@ async function extractProfile(data) {
 }
 
 // -------- Hive Account Reputation --------
+/**
+ * Searches through Hive for accounts matching a pattern and returns them sorted by reputation.
+ * If there is an exact match in the list, it will be the first item.
+ * @param {string} val - The pattern to search for.
+ * @param {number} [maxAcc=6] - The maximum number of accounts to return.
+ * @returns {Promise<Array<string>>} - The sorted accounts.
+ */
 export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
-  // search through Hive for accounts matching pattern val
-  // return sorted by reputation.
-  // If there is an exact match in the list, it will be the first item.
   if (val.length < 2) {
     return
   }
@@ -355,87 +367,3 @@ export function useGenerateHiveTransferOp(
   ]
   return op
 }
-
-
-
-// export async function useGeneratePaymentQR(
-//   payWith,
-//   KeychainDialog,
-//   amount,
-//   hiveAccTo,
-//   memoInput,
-//   CurrencyCalc = null
-// ) {
-//   // Check if there is a running total, if that is 0 use the amount
-//   // on the screen
-//   console.log("useGeneratePaymentQR")
-//   console.log("payWith", payWith)
-//   console.log("amount", amount)
-//   console.log("hiveAccTo", hiveAccTo)
-//   console.log("KeychainDialog", KeychainDialog)
-//   console.log("CurrencyCalc", CurrencyCalc)
-//   if (amount === 0) {
-//     q.notify({
-//       message: t("no_amount"),
-//       type: "negative",
-//       position: "top",
-//       timeout: 2000,
-//     })
-//     return
-//   }
-//   if (hiveAccTo.value === "") {
-//     q.notify({
-//       message: t("no_account"),
-//       type: "negative",
-//       position: "top",
-//       timeout: 2000,
-//     })
-//     return
-//   }
-//   console.log("useGeneratePaymentQR amount", amount)
-//   switch (payWith) {
-//     // If CurencyCalc is null then use the raw amount (HBD or HIVE)
-//     // If CurrencyCalc is not null then use the calculated amount
-//     case "HBD":
-//       KeychainDialog.amountToSend = CurrencyCalc
-//         ? CurrencyCalc.hbd.toFixed(3)
-//         : amount.toFixed(3)
-
-//       KeychainDialog.currencyToSend = "HBD"
-//       break
-//     case "HIVE":
-//       KeychainDialog.amountToSend = CurrencyCalc
-//         ? CurrencyCalc.hive.toFixed(3)
-//         : amount.toFixed(3)
-//       KeychainDialog.currencyToSend = "HIVE"
-//       break
-//     default:
-//       break
-//   }
-
-//   KeychainDialog.amountString =
-//     KeychainDialog.amountToSend + " " + KeychainDialog.currencyToSend
-//   KeychainDialog.hiveAccTo = hiveAccTo.value
-//   // Add a check code onto the memo.
-//   KeychainDialog.checkCode = "v4v-" + genRandAlphaNum(5)
-//   KeychainDialog.memo = memoInput
-//     ? memoInput + " " + KeychainDialog.checkCode
-//     : KeychainDialog.checkCode
-//   KeychainDialog.op = [
-//     "transfer",
-//     {
-//       from: "__signer",
-//       to: KeychainDialog.hiveAccTo,
-//       amount: KeychainDialog.amountString,
-//       memo: KeychainDialog.memo,
-//     },
-//   ]
-//   KeychainDialog.show = true
-
-//   KeychainDialog.qrCodeTextHive = encodeOp(KeychainDialog.op)
-//   KeychainDialog.transactions = await useGetHiveTransactionHistory(
-//     KeychainDialog.hiveAccTo,
-//     20
-//   )
-//   console.log("KeychainDialog", KeychainDialog)
-// }
