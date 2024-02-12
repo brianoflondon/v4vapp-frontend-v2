@@ -42,12 +42,8 @@
             t("keychain_not_installed")
           }}</q-tooltip>
         </q-item>
-<<<<<<< Updated upstream
-        <q-item class="justify-center">
-=======
         <!-- HAS Button  -->
         <q-item class="justify-center" v-if="isHAS">
->>>>>>> Stashed changes
           <q-btn
             style="width: 200px"
             :disable="
@@ -149,6 +145,7 @@ if (Platform.is.mobile) {
   console.log("Not running on a mobile device")
 }
 const isKeychain = ref(false)
+const isHAS = ref(false)
 
 const props = defineProps({
   label: {
@@ -197,6 +194,7 @@ watch(qrCodeTextHAS, (newValue) => {
 
 onMounted(async () => {
   isKeychain.value = await useIsHiveKeychainInstalled()
+  isHAS.value = await useIsHAS
 })
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -210,6 +208,4 @@ function adminCheck() {
   }
   return false
 }
-
-
 </script>
