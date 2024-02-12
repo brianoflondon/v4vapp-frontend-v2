@@ -255,44 +255,53 @@ export async function useValidateApi(clientId, signedMessage) {
     message: "Validating...",
     position: "left",
   })
-  try {
-    const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {
-      params: {
-        clientId: clientId,
-      },
-      headers: {
-        "Content-Type": "application/json",
-      },
+  // try {
+  const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {
+    params: {
+      clientId: clientId,
+    },
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  if (validate.status === 422) {
+    Notify.create({
+      message: "422 error from validate",
     })
-    const validateAgain = await fetch(`https://devapi.v4v.app/auth/validate/?clientId=${clientId}`, {
+  }
+
+  const validateAgain = await fetch(
+    `https://devapi.v4v.app/auth/validate/?clientId=${clientId}`,
+    {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(signedMessage),
-    })
-    const responseDataAgain = await validateAgain.json()
-    const responseDataText = JSON.stringify(responseDataAgain)
-    Notify.create({
-      timeout: 0,
-      color: "warning",
-      message: responseDataText,
-    })
-
-
-    const tempMessage = JSON.stringify(validate)
-    if (validate.status === 200) {
-      console.log("Success")
     }
-    Notify.create({
-      timeout: 0,
-      color: "warning",
-      message: tempMessage,
-      position: "left",
-    })
-    return validate
-  } catch (error) {
-    console.error({ error })
-    return error
+  )
+  const responseDataAgain = await validateAgain.json()
+  const responseDataText = JSON.stringify(responseDataAgain)
+  Notify.create({
+    timeout: 0,
+    color: "warning",
+    message: responseDataText,
+  })
+
+  const tempMessage = JSON.stringify(validate)
+  if (validate.status === 200) {
+    console.log("Success")
   }
+  Notify.create({
+    timeout: 0,
+    color: "warning",
+    message: tempMessage,
+    position: "left",
+  })
+  return validate
+  // } catch (error) {
+  //   console.error({ error })
+  //   return error
+  // }
 }
