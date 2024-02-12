@@ -271,11 +271,12 @@ export async function useValidateApi(clientId, signedMessage) {
       },
       body: JSON.stringify(signedMessage),
     })
-    const responseDataAgain = await validate.json()
+    const responseDataAgain = await validateAgain.json()
+    const responseDataText = JSON.stringify(responseDataAgain)
     Notify.create({
       timeout: 0,
-      color: 'warning',
-      message: JSON.stringify(responseDataAgain)
+      color: "warning",
+      message: responseDataText,
     })
 
 
