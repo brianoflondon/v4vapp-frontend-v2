@@ -20,10 +20,10 @@ export default {
   to: 'nach',
   local_currency: 'Landeswährung',
   currency: 'Währung',
-  confirm: 'Confirm',
-  yes: 'Yes',
-  no: 'No',
-  all: 'All',
+  confirm: 'Bestätige',
+  yes: 'Ja',
+  no: 'Nein',
+  all: 'Alles',
   // Dark Mode Selector
   change_light: 'Heller Modus',
   change_dark: 'Dunkler Modus',
@@ -75,8 +75,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Wird verarbeitet',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain ist installiert',
+  keychain_missing: 'Keychain ist nicht installiert',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -151,8 +151,9 @@ export default {
   charge: 'Tarif',
   set_rate: 'Rate einstellen',
   market_rate: 'Marktkurs',
-  sales: 'Sales',
-  history: 'History',
+  sales: 'Verkäufe',
+  history: 'Verlauf',
+  memo_pipe: 'Die Nachricht darf NICHT das Symbol enthalten: "|"',
   // as in charge a customer
   payment: 'Zahlung',
   scan_to_send: 'Scannen Sie diesen Code um zu senden',
@@ -168,19 +169,19 @@ export default {
   memo: 'Notiz',
   calculating_fees: 'Berechnung der Gebühren',
   // Transaction list
-  date: 'Date',
-  paid: 'Paid',
-  pending: 'Pending',
-  date: 'Date',
-  paid_by: 'Paid by',
-  import_hive: 'Import Hive',
-  local_records: 'Local Records',
-  import_from_hive_tooltip: 'Import all past sales from Hive',
-  delete_local_records_tooltip: `Delete all local records. This will erase all pending payments, \n
-    but successful payments can be re- imported from Hive with the \n
-    Import Hive button`,
-  delete_all_pending_message: 'Are you sure you want to delete all pending sales?',
-  delete_one_pending_message: 'Are you sure you want to delete this pending sale?',
-  export_to_csv: 'Export to CSV',
-  export_to_csv_tooltip: 'Export all the currently displayed sales to a CSV file'
+  date: 'Datum',
+  paid: 'Bezahlt',
+  pending: 'Anstehend',
+  date: 'Datum',
+  paid_by: 'Gezahlt über',
+  import_hive: 'Hive-Import',
+  local_records: 'Lokale Einträge',
+  import_from_hive_tooltip: 'Alle bisherigen Verkäufe aus Hive importieren',
+  delete_local_records_tooltip: `Lösche alle lokalen Einträge. Dies löscht alle ausstehenden Zahlungen \n
+    aber erfolgreiche Zahlungen können mit dem \n
+    Import-Button aus Hive-Datei importiert`,
+  delete_all_pending_message: 'Möchten Sie wirklich alle ausstehenden Verkäufe löschen?',
+  delete_one_pending_message: 'Sind Sie sicher, dass Sie diesen ausstehenden Verkauf löschen möchten?',
+  export_to_csv: 'Exportieren in CSV',
+  export_to_csv_tooltip: 'Exportieren Sie alle derzeit angezeigten Verkäufe in eine CSV-Datei'
 };

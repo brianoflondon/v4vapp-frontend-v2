@@ -153,6 +153,7 @@ export default {
   market_rate: 'Market Rate',
   sales: 'Sales',
   history: 'History',
+  memo_pipe: 'Memo must NOT contain the "pipe" symbol: "|"',
   // as in charge a customer
   payment: 'Payment',
   scan_to_send: 'Scan this code to send',
