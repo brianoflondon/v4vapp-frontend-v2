@@ -1,5 +1,5 @@
 import HAS from "hive-auth-wrapper"
-import { serverHiveAccount } from "boot/axios"
+import { api, serverHiveAccount } from "boot/axios"
 
 import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
@@ -38,7 +38,7 @@ export function useCheckExistingHASAuth(username) {
   console.log("Checking existing HAS auth for ", username)
   const existingAuth = storeUser.getUser(username)
   console.log("existingAuth", existingAuth)
-  if (existingAuth) {
+  if (existingAuth && !existingAuth.apiKey) {
     console.log("existingAuth", existingAuth)
     if (existingAuth.authKey && existingAuth.expire > Date.now()) {
       console.log(
@@ -184,11 +184,27 @@ async function resolveAuth(res, auth, challenge_data) {
     console.log("------------------------------------")
     const responseApi = await apiLogin.post(`/token`, formData)
     console.log("responseApi", responseApi)
+    console.log("responseApi.data", responseApi.data)
+    console.log("responseApi.data.expire", responseApi.data.expire)
+    const apiTokenExpire = responseApi.data.expire * 1000
+    const apiTokenExpireDate = new Date(apiTokenExpire)
+    let hasTokenExpire = res.data.expire
+    const hasTokenExpireDate = new Date(hasTokenExpire)
+    console.log("apiTokenExpireDate", apiTokenExpireDate)
+    console.log("hasTokenExpireDate", hasTokenExpireDate)
+
+    // compare res.data.expire and responseApi.data.expire and pick the soonest
+    console.log("res.data.expire", res.data.expire)
+    console.log("responseApi.data.expire", responseApi.data.expire)
+    if (hasTokenExpire > apiTokenExpire) {
+      console.log("HAS expire is greater than API expire")
+      hasTokenExpire = apiTokenExpire
+    }
     storeUser.login(
       auth_payload.account,
       "posting",
       auth_payload.key,
-      res.data.expire,
+      hasTokenExpire,
       res.data.token,
       responseApi.data.access_token
     )
