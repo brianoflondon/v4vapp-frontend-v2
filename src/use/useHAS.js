@@ -135,6 +135,14 @@ export async function useHASLogin(username = "", keyType = "posting") {
 }
 
 // Authentication request approved
+/**
+ * Resolves the authentication process.
+ *
+ * @param {Object} res - The response object.
+ * @param {Object} auth - The authentication object.
+ * @param {Object} challenge_data - The challenge data object.
+ * @returns {Promise<void>} - A promise that resolves when the authentication process is completed.
+ */
 async function resolveAuth(res, auth, challenge_data) {
   console.log("--- resolveAuth ---")
   console.log("res.data", res.data)
@@ -260,7 +268,7 @@ export async function useHASTransfer(username, amount, currency, memo) {
       useHASTransfer(username, amount, currency, memo)
     }
     console.log("pendingTransaction stored")
-    HASLogin(username)
+    useHASLogin(username)
     return
   }
 
