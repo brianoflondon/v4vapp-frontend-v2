@@ -12,7 +12,7 @@ export async function useCheckApiTokenValid(username, apiToken) {
   console.log("useCheckApiTokenValid", username, apiToken)
   if (!apiToken) return false
   apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
-  const resp = await apiLogin.get("/auth/check/")
+  const resp = await apiLogin.get("/auth/check")
   console.log("useCheckApiTokenValid", resp.status, resp.data)
   const respData = resp.data
   const now = new Date()
@@ -29,7 +29,7 @@ export async function useKeepSats(username, apiToken, hasApiToken) {
   if (!apiToken) return null
   apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
   try {
-    const resp = await apiLogin.get("/v1/v4vapp/keepsats/")
+    const resp = await apiLogin.get("/v1/v4vapp/keepsats")
     console.log("useKeepSats", resp.status, resp.data)
     return resp.data
   } catch (error) {
