@@ -52,8 +52,8 @@
             :disable="
               typeof hiveAccObj === 'undefined' ||
               hiveAccObj === '' ||
-              hiveAccObj === null ||
-              isHAS === false
+              hiveAccObj === null // ||
+              // isHAS === false
             "
             label="HAS"
             align="left"

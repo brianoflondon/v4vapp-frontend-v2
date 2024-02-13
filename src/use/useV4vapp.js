@@ -12,7 +12,7 @@ export async function useCheckApiTokenValid(username, apiToken) {
   console.log("useCheckApiTokenValid", username, apiToken)
   if (!apiToken) return false
   apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
-  const resp = await apiLogin.get("/auth/check")
+  const resp = await apiLogin.get("/auth/check/")
   console.log("useCheckApiTokenValid", resp.status, resp.data)
   const respData = resp.data
   const now = new Date()
