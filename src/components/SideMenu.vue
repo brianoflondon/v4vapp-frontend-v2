@@ -18,10 +18,10 @@
     <div class="q-py-lg">
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
-    <div class="q-pa-md text-caption">{{ appName }} - {{ appVersion }}</div>
-    <div class="q-pa-md text-caption">{{ storeUser.currentUser }}</div>
-    <div class="q-pa-md text-caption">{{ api?.defaults?.baseURL }}</div>
-    <div class="q-pa-md text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
+    <div class="q-pa-xs text-caption">{{ appName }} - {{ appVersion }}</div>
+    <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
+    <div class="q-pa-xs text-caption">{{ api?.defaults?.baseURL }}</div>
+    <div class="q-pa-xs text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
   </div>
 </template>
 
