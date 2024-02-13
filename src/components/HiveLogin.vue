@@ -62,6 +62,7 @@
             @click="loginHAS(hiveAccObj?.value)"
           ></q-btn>
         </q-item>
+        HAS: {{ isHAS }}
         <q-item class="justify-center" clickable v-if="displayQRCode">
           <div class="flex column text-center justify-center">
             <div class="row text-center justify-center">
