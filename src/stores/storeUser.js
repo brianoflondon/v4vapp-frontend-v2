@@ -257,11 +257,10 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (this.currentKeepSats === null) {
         console.log("Need to reauthenticate to get keepSatsBalance")
         console.log("check if logged in with HAS or Keychain")
-        console.log(this.getUser(this.currentUser)?.authKey)
         return "💰💰💰"
       }
       console.log("keepSatsBalance", this.currentKeepSats)
-      return this.currentKeepSats?.net_sats.toLocaleString()
+      return this.currentKeepSats?.net_sats
       // return this.currentKeepSats
     },
     savingsSatsBalance() {
@@ -298,10 +297,12 @@ export const useStoreUser = defineStore("useStoreUser", {
         this.currentDetails = await useHiveDetails(this.currentUser)
         this.currentKeepSats = await useKeepSats(
           this.currentUser,
-          this.apiToken
+          this.apiToken,
+          this.token
         )
         this.currentProfile = this.currentDetails?.profile
       }
+      this.expireCheck()
       onOpen()
     },
     /**
@@ -361,6 +362,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
           this.apiTokenSet(hiveAccname)
+          this.expireCheck()
           this.update()
         }
       } catch (err) {
@@ -384,6 +386,21 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       return false
     },
+    expireCheck() {
+      // loop through users and check the expire time and if they
+      // have expired, log them out.
+      console.log("Running the expiry check")
+      for (const user in this.users) {
+        console.log("Checking user", user, this.users[user])
+        if (this.users[user].expire < Date.now()) {
+          console.log("User expired", user)
+          delete this.users[user]
+        }
+      }
+      if (this.users.length === 0 || Object.keys(this.users).length === 0) {
+        this.logoutAll()
+      }
+    },
     /**
      * Logs out the current user.
      * Removes the current user from the list of users and resets the current user details and profile.
@@ -398,6 +415,10 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.currentProfile = null
       this.currentKeepSats = null
     },
+    /**
+     * Logs out all users and resets the current user, details, profile, and keepSats.
+     * @async
+     */
     async logoutAll() {
       this.users = {}
       this.currentUser = null

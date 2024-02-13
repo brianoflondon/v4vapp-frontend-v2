@@ -1,7 +1,7 @@
 // useV4vapp.js
 //
 
-import { apiLogin } from "/src/boot/axios"
+import { apiLogin } from "src/boot/axios"
 
 /**
  * Checks if the API token is valid.
@@ -24,7 +24,7 @@ export async function useCheckApiTokenValid(username, apiToken) {
   return false
 }
 
-export async function useKeepSats(username, apiToken) {
+export async function useKeepSats(username, apiToken, hasApiToken) {
   console.log("useKeepSats", username, apiToken)
   if (!apiToken) return null
   apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`

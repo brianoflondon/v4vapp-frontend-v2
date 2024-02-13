@@ -139,7 +139,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         hiveAccObj.value,
         props.keyType,
         null,
-        validate.data?.expire,
+        validate.data?.expire * 1000,
         null,
         validate.data.access_token
       )
