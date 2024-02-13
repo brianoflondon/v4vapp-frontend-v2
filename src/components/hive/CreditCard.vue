@@ -15,7 +15,7 @@
             <div
               class="div-border col-6 text-right text-h6 credit-card-text embossed-text"
             >
-              {{ tidyNumber(keepSats["net_sats"], 0) }}
+              sats: {{ balances["keepSats"] }}
             </div>
             <div
               class="div-border text-h6 credit-card-text embossed-text"
@@ -107,6 +107,7 @@ import { computed, ref } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { tidyNumber } from "src/use/useUtils"
+import { useCheckApiTokenValid, useKeepSats } from "src/use/useV4vapp"
 
 const storeUser = useStoreUser()
 const q = useQuasar()
@@ -137,6 +138,7 @@ const lightDark = computed(() => {
 })
 
 const hasValidApiToken = computed(() => {
+  console.log("computed hasValidApiToken")
   if (!storeUser.currentUser) {
     return false
   }
@@ -150,6 +152,7 @@ const balances = computed(() => {
       hbd: storeUser.savingsHbdBalance,
       sats: storeUser.savingsSatsBalance,
       totalSats: storeUser.totalSatsBalance,
+      keepSats: storeUser.keepSatsBalance,
     }
   } else {
     return {
@@ -157,6 +160,7 @@ const balances = computed(() => {
       hbd: storeUser.hbdBalance,
       sats: storeUser.satsBalance,
       totalSats: storeUser.totalSatsBalance,
+      keepSats: storeUser.keepSatsBalance,
     }
   }
 })
@@ -185,14 +189,11 @@ const creditCardShading = computed(() => {
 })
 
 async function getKeepSatsBalance() {
-  try {
-    keepSats.value = await storeUser.getKeepSats()
-    console.log("getKeepSatsBalance", keepSats.value)
-    keepSats.value.sats = tidyNumber(keepSats.value.net_sats, 0)
-    console.log("getKeepSatsBalance", keepSats.value)
-  } catch (error) {
-    console.error(error)
-  }
+  const username = storeUser.hiveAccname
+  const apiToken = storeUser.apiToken
+  const answer = await useCheckApiTokenValid(username, apiToken)
+  console.log("useCheckApiTokenValid answer", answer)
+  // const keepSats = await useKeepSats(username, apiToken)
 }
 
 function changeBackground() {
