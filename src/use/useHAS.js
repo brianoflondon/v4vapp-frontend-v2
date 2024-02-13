@@ -17,13 +17,25 @@ export function useHAS() {
 
 let auth_payload = {}
 
-// Login to HAS
-export async function HASLogin(username = "", keyType = "posting") {
-  // Your application information
-  if (username === "") {
-    console.error("username is empty")
-    resolve(false)
+export async function useIsHASAvailable() {
+  try {
+    console.log("useIsHasAvailable running")
+    const status = HAS.status()
+    console.log("status", status)
+    return status.connected
+  } catch (error) {
+    console.error({ error })
+    return false
   }
+}
+
+/**
+ * Checks if there is an existing authentication for the given username.
+ * @param {string} username - The username to check for existing authentication.
+ * @returns {boolean} - Returns true if there is an existing authentication that is not expired, otherwise false.
+ */
+export function useCheckExistingHASAuth(username) {
+  console.log("Checking existing HAS auth for ", username)
   const existingAuth = storeUser.getUser(username)
   console.log("existingAuth", existingAuth)
   if (existingAuth) {
@@ -34,8 +46,29 @@ export async function HASLogin(username = "", keyType = "posting") {
         (existingAuth.expire - Date.now()) / 1000 / 60,
         "min"
       )
-      return
+      return true
     }
+  }
+  return false
+}
+
+/**
+ * Performs a login operation using the Hive Authentication System (HAS).
+ *
+ * @param {string} username - The Hive account name (without the @).
+ * @param {string} keyType - The type of key to use for authentication (default: "posting").
+ * @returns {Promise<boolean>} - A promise that resolves to true if the login is successful, and false otherwise.
+ */
+export async function useHASLogin(username = "", keyType = "posting") {
+  // Your application information
+  if (username === "") {
+    console.error("username is empty")
+    resolve(false)
+  }
+  const existingAuth = useCheckExistingHASAuth(username)
+  if (existingAuth) {
+    console.log("existingAuth", existingAuth)
+    return true
   }
   console.log("username", username)
   const APP_META = {
@@ -102,6 +135,14 @@ export async function HASLogin(username = "", keyType = "posting") {
 }
 
 // Authentication request approved
+/**
+ * Resolves the authentication process.
+ *
+ * @param {Object} res - The response object.
+ * @param {Object} auth - The authentication object.
+ * @param {Object} challenge_data - The challenge data object.
+ * @returns {Promise<void>} - A promise that resolves when the authentication process is completed.
+ */
 async function resolveAuth(res, auth, challenge_data) {
   console.log("--- resolveAuth ---")
   console.log("res.data", res.data)
@@ -135,8 +176,12 @@ async function resolveAuth(res, auth, challenge_data) {
     formData.append("password", passwordString)
 
     console.log("formData", formData)
-
-    console.log("apiLogin", apiLogin)
+    console.log("------------------------------------")
+    console.log("usernameString")
+    console.log(usernameString)
+    console.log("passwordString")
+    console.log(passwordString)
+    console.log("------------------------------------")
     const responseApi = await apiLogin.post(`/token`, formData)
     console.log("responseApi", responseApi)
     storeUser.login(
@@ -199,6 +244,14 @@ function createOp(from, to, amount, memo) {
   ]
 }
 
+/**
+ * Transfers an amount of currency from one user to another using the HAS system.
+ * @param {string} username - The username of the user initiating the transfer.
+ * @param {number} amount - The amount of currency to transfer.
+ * @param {string} currency - The currency to transfer.
+ * @param {string} memo - The memo to include with the transfer.
+ * @returns {Promise} - A promise that resolves when the transfer is successful or rejects with an error.
+ */
 export async function useHASTransfer(username, amount, currency, memo) {
   console.log("useHASTransfer", username, amount, currency, memo)
   amount = parseFloat(amount).toFixed(3)
@@ -215,7 +268,7 @@ export async function useHASTransfer(username, amount, currency, memo) {
       useHASTransfer(username, amount, currency, memo)
     }
     console.log("pendingTransaction stored")
-    HASLogin(username)
+    useHASLogin(username)
     return
   }
 

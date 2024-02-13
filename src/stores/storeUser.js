@@ -3,7 +3,8 @@ import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
-import { api, apiLogin } from "boot/axios"
+import { apiLogin } from "src/boot/axios"
+import { useKeepSats } from "src/use/useV4vapp"
 
 const storeAPIStatus = useStoreAPIStatus()
 
@@ -44,6 +45,7 @@ export class HiveUser {
 
   setApiToken() {
     // Set the token for the user
+    console.log("setApiToken", this.hiveAccname, this.apiToken)
     if (!this.apiToken) return false
     apiLogin.defaults.headers.common[
       "Authorization"
@@ -59,22 +61,6 @@ export class HiveUser {
     apiLogin.defaults.headers.common["Authorization"] = ""
     console.log("apiToken cleared", this.hiveAccname)
     return true
-  }
-
-  /**
-   * Checks if the API token is valid.
-   * @returns {Promise<boolean>} A promise that resolves to true if the API token is valid, otherwise false.
-   */
-  async checkApiTokenValid() {
-    // Check if the user has an API token
-    if (!this.apiToken) return false
-    apiLogin.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${this.apiToken}`
-    const resp = await apiLogin.get("/auth/check/")
-    console.log("checkApiTokenValid", resp.status, resp.data)
-    if (resp.status === 200) return true
-    return false
   }
 
   get hasApiToken() {
@@ -124,6 +110,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     currentUser: useStorage("currentUser", null),
     currentDetails: useStorage("details", null),
     currentProfile: useStorage("profile", null),
+    currentKeepSats: useStorage("keepSats", null),
     localCurrency: useStorage("localCurrency", {
       label: "US Dollar",
       value: "usd",
@@ -166,18 +153,29 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveUser.token) return null
       return hiveUser.token
     },
-    async hasValidApiToken() {
-      console.log("hasApiToken checking if valid")
+    apiToken() {
       if (!this.currentUser) return null
       const hiveUser = this.users[this.currentUser]
       if (!hiveUser.apiToken) return null
-      return await hiveUser.checkApiTokenValid
+      return hiveUser.apiToken
     },
     user() {
       // Return the HiveUser object for the passed user hiveAccname
       if (!this.currentUser) return null
       return this.users[this.currentUser]
     },
+    /**
+     * Represents a Hive User.
+     * @class
+     * @param {string} hiveAccname - The Hive account name.
+     * @param {string} profileName - The profile name.
+     * @param {string} keySelected - The selected key.
+     * @param {number} timestamp - The timestamp.
+     * @param {string} authKey - The authentication key.
+     * @param {number} expire - The expiration time.
+     * @param {string} token - The token.
+     * @param {string} apiToken - The API token.
+     */
     getUser: (state) => {
       return (hiveAccname) => {
         const temp = state.users[hiveAccname]
@@ -228,8 +226,12 @@ export const useStoreUser = defineStore("useStoreUser", {
       ).toFixed(3)
       return tidyNumber(balNum)
     },
+    /**
+     * Calculates the sum of Hive and HBD balances converted into sats.
+     *
+     * @returns {string|number} The total balance in sats, or a string indicating an error.
+     */
     satsBalance() {
-      // Return the sum of Hive and HBD in sats
       if (
         !this.currentDetails ||
         !storeAPIStatus.HBDSatsNumber ||
@@ -249,8 +251,18 @@ export const useStoreUser = defineStore("useStoreUser", {
       const satsTotal = Math.round(
         hiveTotal * storeAPIStatus.hiveSatsNumber
       ).toLocaleString()
-
       return satsTotal
+    },
+    keepSatsBalance() {
+      if (this.currentKeepSats === null) {
+        console.log("Need to reauthenticate to get keepSatsBalance")
+        console.log("check if logged in with HAS or Keychain")
+        console.log(this.getUser(this.currentUser)?.authKey)
+        return "💰💰💰"
+      }
+      console.log("keepSatsBalance", this.currentKeepSats)
+      return this.currentKeepSats?.net_sats.toLocaleString()
+      // return this.currentKeepSats
     },
     savingsSatsBalance() {
       if (this.satsBalance === "💰💰💰") return "💰💰💰"
@@ -284,6 +296,10 @@ export const useStoreUser = defineStore("useStoreUser", {
       const onOpen = async () => {
         if (this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
+        this.currentKeepSats = await useKeepSats(
+          this.currentUser,
+          this.apiToken
+        )
         this.currentProfile = this.currentDetails?.profile
       }
       onOpen()
@@ -335,6 +351,10 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.error(err)
       }
     },
+    /**
+     * Switches the current user to the specified hive account name.
+     * @param {string} hiveAccname - The hive account name to switch to.
+     */
     switchUser(hiveAccname) {
       try {
         console.log("switchUser to ", hiveAccname, " from ", this.currentUser)
@@ -364,6 +384,11 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       return false
     },
+    /**
+     * Logs out the current user.
+     * Removes the current user from the list of users and resets the current user details and profile.
+     * @returns {Promise<void>} A promise that resolves when the logout process is complete.
+     */
     async logout() {
       if (this.currentUser in this.users) {
         delete this.users[this.currentUser]
@@ -371,12 +396,14 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.currentUser = null
       this.currentDetails = null
       this.currentProfile = null
+      this.currentKeepSats = null
     },
     async logoutAll() {
       this.users = {}
       this.currentUser = null
       this.currentDetails = null
       this.currentProfile = null
+      this.currentKeepSats = null
     },
   },
   persist: {

@@ -6,6 +6,7 @@
         icon="perm_identity"
         :label="$t('login_as')"
       >
+        <!-- Hive Account name input -->
         <q-item>
           <HiveInputAcc v-model="hiveAccObj" :prefix="t('pay_to')">
           </HiveInputAcc>
@@ -21,19 +22,21 @@
         <q-item-label class="text-left q-pa-sm">
           {{ $t("login_with") }}:
         </q-item-label>
+        <!-- Hive Keychain Button -->
         <q-item dense class="justify-center">
           <q-btn
             style="width: 200px"
             :disable="
               typeof hiveAccObj === 'undefined' ||
               hiveAccObj === '' ||
-              hiveAccObj === null
+              hiveAccObj === null ||
+              isKeychain === false
             "
             align="left"
             rounded
             :label="t('hive_keychain')"
             icon="img:/keychain/hive-keychain-round.svg"
-            @click="useLoginFlow(hiveAccObj, props)"
+            @click="useKeychainLoginFlow(hiveAccObj, props)"
           />
           <q-tooltip v-if="!hiveAccObj && isKeychain">{{
             t("enter_hive_account")
@@ -42,13 +45,15 @@
             t("keychain_not_installed")
           }}</q-tooltip>
         </q-item>
+        <!-- HAS Button  -->
         <q-item class="justify-center">
           <q-btn
             style="width: 200px"
             :disable="
               typeof hiveAccObj === 'undefined' ||
               hiveAccObj === '' ||
-              hiveAccObj === null
+              hiveAccObj === null ||
+              isHAS === false
             "
             label="HAS"
             align="left"
@@ -110,19 +115,15 @@
  *
  */
 
-import { ref, watch, onMounted } from "vue"
-import { apiLogin } from "boot/axios"
+import { ref, watch, onMounted, computed } from "vue"
 import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import {
-  useGetApiKeychainChallenge,
-  useHiveKeychainLogin,
   useIsHiveKeychainInstalled,
-  useValidateApi,
-  useLoginFlow,
+  useKeychainLoginFlow,
 } from "src/use/useKeychain"
-import { useHAS, HASLogin } from "src/use/useHAS"
+import { useHAS, useHASLogin, useIsHASAvailable } from "src/use/useHAS"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
@@ -143,7 +144,9 @@ if (Platform.is.mobile) {
 } else {
   console.log("Not running on a mobile device")
 }
-const isKeychain = ref(false)
+
+const isHAS = ref(true)
+const isKeychain = ref(true)
 
 const props = defineProps({
   label: {
@@ -174,7 +177,7 @@ async function loginHAS(username) {
       })
       return
     }
-    const answer = await HASLogin(username)
+    const answer = await useHASLogin(username)
     console.log("HAS Login answer: ", answer)
   } catch (error) {
     console.log("error: ", error)
@@ -191,7 +194,9 @@ watch(qrCodeTextHAS, (newValue) => {
 })
 
 onMounted(async () => {
+  console.log("onMounted HiveLogin")
   isKeychain.value = await useIsHiveKeychainInstalled()
+  isHAS.value = await useIsHASAvailable()
 })
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -204,148 +209,5 @@ function adminCheck() {
     return false
   }
   return false
-}
-
-async function loginKeychain(username) {
-  if (adminCheck()) {
-    storeUser.login(username, props.keyType)
-    return
-  }
-  // Fetch the avatar for the user
-  const avatarUrl = useHiveAvatarURL({ hiveAccname: username })
-  // Check for Hive Keychain in the browser
-  isKeychain.value = await useIsHiveKeychainInstalled()
-  let position = "left"
-  if (Platform.is.mobile) {
-    position = "top"
-  }
-  if (!isKeychain.value) {
-    quasar.notify({
-      timeout: 2000,
-      avatar: avatarUrl,
-      color: "warning",
-      message: t("keychain_not_installed"),
-      position: position,
-    })
-    return
-  }
-  // Check for a valid Hive account in the input field
-  if (!username) {
-    quasar.notify({
-      timeout: 2000,
-      avatar: avatarUrl,
-      color: "info",
-      message: t("enter_hive_account"),
-      position: position,
-    })
-    return
-  }
-  // Fetch the challenge message from the server
-  try {
-    const clientId = storeUser.clientId
-    const challenge = await useGetApiKeychainChallenge(username, clientId)
-    var note = quasar.notify({
-      group: false, // required to be updatable
-      timeout: 0, // we want to be in control when it gets dismissed
-      avatar: avatarUrl,
-      message: `${t("login_in_progress")}: @${username}`,
-      caption: `${t("sign_this")}: ${challenge.data.challenge}`,
-      position: position,
-      color: "info",
-    })
-    await delay(300)
-    const signedMessage = await useHiveKeychainLogin({
-      hiveAccname: username,
-      message: challenge.data.challenge,
-      keyType: props.keyType,
-    })
-    if (
-      signedMessage.success &&
-      signedMessage?.data?.message == challenge.data.challenge
-    ) {
-      console.log("now to validate")
-      const validate = await useValidateApi(clientId, signedMessage)
-      // need to store this token in the storeUser store
-      hiveAccObj.value["loggedIn"] = true
-      storeUser.login(
-        username,
-        props.keyType,
-        null,
-        null,
-        null,
-        validate.data.access_token
-      )
-      note({
-        icon: "done", // we add an icon
-        avatar: avatarUrl,
-        html: true,
-        spinner: false, // we reset the spinner setting so the icon can be displayed
-        multiLine: true,
-        message: `${t("login_success")}`,
-        caption: `${signedMessage?.data?.message} <br> ${t("matches")} <br> ${
-          challenge.data.challenge
-        }`,
-        color: "positive",
-        timeout: 1500,
-      })
-    } else if (!signedMessage.success) {
-      hiveAccObj.value["loggedIn"] = false
-      note({
-        icon: "cancel", // we add an icon
-        spinner: false, // we reset the spinner setting so the icon can be displayed
-        message: t("login_failed"),
-        caption: `${signedMessage?.message}`,
-        color: "negative",
-        timeout: 1500,
-      })
-    }
-  } catch (error) {
-    hiveAccObj.value["loggedIn"] = false
-    console.error("error: ", error)
-    note({
-      icon: "cancel", // we add an icon
-      spinner: false, // we reset the spinner setting so the icon can be displayed
-      message: `${error}`,
-      color: "negative",
-      timeout: 1500,
-    })
-  }
-}
-
-// Depreciated, use loginKeychain instead
-async function loginApiKeychain(username) {
-  console.log("loginApiKeychain")
-  try {
-    const clientId = storeUser.clientId
-    console.log("clientId: ", clientId)
-    const challenge = await useGetApiKeychainChallenge(username, clientId)
-    console.log(challenge)
-    const signedMessage = await useHiveKeychainLogin({
-      hiveAccname: username,
-      message: challenge.data.challenge,
-      keyType: props.keyType,
-    })
-    console.log("signedMessage: ", signedMessage)
-    const validate = await useValidateApi(clientId, signedMessage)
-    console.log("validate: ", validate)
-    // need to store this token in the storeUser store
-    hiveAccObj.value["loggedIn"] = true
-    storeUser.login(
-      username,
-      props.keyType,
-      null,
-      null,
-      null,
-      validate.data.access_token
-    )
-    apiLogin.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${validate.data.access_token}`
-    console.log("apiLogin.defaults: ", apiLogin.defaults.headers.common)
-    // const check = await apiLogin.get("/v1/trx_records/")
-    // console.log("check: ", check)
-  } catch (error) {
-    console.log("error: ", error)
-  }
 }
 </script>

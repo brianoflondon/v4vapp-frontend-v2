@@ -96,7 +96,7 @@ async function checkUser() {
       }
     } else {
       console.log("startHASProcess: no user")
-      if (storeUser.user?.authKey) {
+      if (storeUser?.user?.authKey) {
         HASDialog.value.payment.username = storeUser.hiveAccname
         hiveAccObj.value.value = storeUser.hiveAccname
       }

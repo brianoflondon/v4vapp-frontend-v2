@@ -6,7 +6,7 @@
       basic
       style="border-radius: 15px"
     />
-    <div class="stored-sats" v-if="devMode && hasValidApiToken">
+    <div class="stored-sats">
       <div class="credit-card-shading" :style="creditCardShading">
         <div class="div-border items-end flex row">
           <div class="div-border card-spacer row col-12"></div>
@@ -15,7 +15,7 @@
             <div
               class="div-border col-6 text-right text-h6 credit-card-text embossed-text"
             >
-              Logged in to API
+              sats: {{ balances["keepSats"] }}
             </div>
             <div
               class="div-border text-h6 credit-card-text embossed-text"
@@ -104,14 +104,17 @@
 import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { computed, ref } from "vue"
-const storeUser = useStoreUser()
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
+import { tidyNumber } from "src/use/useUtils"
+import { useCheckApiTokenValid, useKeepSats } from "src/use/useV4vapp"
 
+const storeUser = useStoreUser()
 const q = useQuasar()
 const savingsToggle = ref(false)
 
 const devMode = ref(process.env.DEV_API)
+const keepSats = ref({})
 
 const backgroundImage = [
   "sealogo01",
@@ -135,6 +138,7 @@ const lightDark = computed(() => {
 })
 
 const hasValidApiToken = computed(() => {
+  console.log("computed hasValidApiToken")
   if (!storeUser.currentUser) {
     return false
   }
@@ -148,6 +152,7 @@ const balances = computed(() => {
       hbd: storeUser.savingsHbdBalance,
       sats: storeUser.savingsSatsBalance,
       totalSats: storeUser.totalSatsBalance,
+      keepSats: storeUser.keepSatsBalance,
     }
   } else {
     return {
@@ -155,6 +160,7 @@ const balances = computed(() => {
       hbd: storeUser.hbdBalance,
       sats: storeUser.satsBalance,
       totalSats: storeUser.totalSatsBalance,
+      keepSats: storeUser.keepSatsBalance,
     }
   }
 })
@@ -182,8 +188,17 @@ const creditCardShading = computed(() => {
   }
 })
 
+async function getKeepSatsBalance() {
+  const username = storeUser.hiveAccname
+  const apiToken = storeUser.apiToken
+  const answer = await useCheckApiTokenValid(username, apiToken)
+  console.log("useCheckApiTokenValid answer", answer)
+  // const keepSats = await useKeepSats(username, apiToken)
+}
+
 function changeBackground() {
   console.log("changeBackground")
+  getKeepSatsBalance()
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
   console.log(backgroundIndex.value)
 }
