@@ -19,15 +19,16 @@ const myNodePubKey =
 // console.log("DEV_API: ", process.env.DEV_API)
 // console.log("LOCAL_API: ", process.env.LOCAL_API)
 
-
 const useLocal = process.env.LOCAL_API ? true : false
 
 const rootUrl = process.env.DEV_API
-  ? "https://api.v4v.app/v1"
-  : "https://devapi.v4v.app/v1"
+  ? "https://devapi.v4v.app/v1"
+  : "https://api.v4v.app/v1"
 
 const apiURL = useLocal ? "http://127.0.0.1:1818/v1" : rootUrl
-const apiLoginURL = useLocal ? "http://127.0.0.1:1818/" : "https://devapi.v4v.app/"
+const apiLoginURL = useLocal
+  ? "http://127.0.0.1:1818/"
+  : "https://devapi.v4v.app/"
 
 const serverHiveAccount = "v4vapp"
 
