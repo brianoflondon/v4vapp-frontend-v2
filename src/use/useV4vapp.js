@@ -40,11 +40,10 @@ export async function useFetchSatsHistory(username) {
   // if (!apiToken) return null
   console.log("fetchHistory", username)
   const params = {
-    hiveAccname: username,
     age: 3000,
   }
   try {
-    const rawData = await apiLogin.get("/v1/v4vapp/hivetosats/", {
+    const rawData = await apiLogin.get("/v1/v4vapp/hivetosats", {
       params,
     })
     let data = []

@@ -29,7 +29,7 @@ watch(
 )
 
 async function fetchData() {
-  data.value = await useFetchSatsHistory({ username: storeUser.currentUser })
+  data.value = await useFetchSatsHistory({ username: storeUser.hiveAccname })
 }
 
 onMounted(() => {
