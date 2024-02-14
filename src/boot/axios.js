@@ -9,7 +9,7 @@ import axios from "axios"
 // for each client)
 
 function getBooleanEnvVariable(variableName) {
-  const value = process.env[variableName]
+  const value = process.env[VUE_APP_variableName]
   if (value === undefined) {
     return value === false
     throw new Error(`Environment variable ${variableName} is not defined`)
@@ -22,15 +22,13 @@ function getBooleanEnvVariable(variableName) {
 const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
-console.log("process.env.LOCAL_API", process.env.LOCAL_API)
-console.log("process.env.DEV_API", process.env.DEV_API)
-console.log("process.env.SOME_STRANGE_VALUE", process.env.SOME_STRANGE_VALUE)
+console.log("process.env.VUE_APP_LOCAL_API", process.env.VUE_APP_LOCAL_API)
+console.log("process.env.VUE_APP_DEV_API", process.env.VUE_APP_DEV_API)
+console.log("process.env.VUE_APP_SOME_STRANGE_VALUE", process.env.VUE_APP_SOME_STRANGE_VALUE)
 
-console.log("process.env", process.env)
-
-// const useLocal = process.env.LOCAL_API ? true : false
-const useLocal = process.env.LOCAL_API !== "false"
-const useDev = process.env.DEV_API !== "false"
+// const useLocal = process.env.VUE_APP_LOCAL_API ? true : false
+const useLocal = process.env.VUE_APP_LOCAL_API !== "false"
+const useDev = process.env.VUE_APP_DEV_API !== "false"
 
 
 console.log("useLocal", useLocal)
