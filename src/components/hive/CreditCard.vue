@@ -10,21 +10,26 @@
       <div class="credit-card-shading" :style="creditCardShading">
         <div class="div-border items-end flex row">
           <div class="div-border card-spacer row col-12"></div>
-
+          <!-- Sats balance on the face of the credit card -->
           <div class="row col-12">
             <div
+              v-if="nonZeroKeepSats"
               class="div-border col-6 text-right text-h6 credit-card-text embossed-text"
             >
-              sats: {{ balances["keepSats"] }}
+              {{ balances["keepSats"] }}
+              <span>
+                シ
+                <q-tooltip>シ {{ $t("sats") }}</q-tooltip>
+              </span>
             </div>
             <div
               class="div-border text-h6 credit-card-text embossed-text"
             ></div>
           </div>
+          <!-- Sats balance on the face of the credit card -->
         </div>
       </div>
     </div>
-
     <q-img
       :src="creditCardOverlay"
       width="365px"
@@ -61,7 +66,15 @@
             <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
           </div>
         </div>
+        <!-- Table for the balances  -->
         <div class="col-4 text-right">
+          <tr v-if="nonZeroKeepSats">
+            <td class="numeric-cell-lg">{{ balances["keepSats"] }}<br /></td>
+            <td>
+              シ
+              <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
+            </td>
+          </tr>
           <tr>
             <td class="numeric-cell">{{ balances["hive"] }}<br /></td>
             <td>
@@ -76,7 +89,8 @@
               <HbdLogoIcon />
             </td>
           </tr>
-          <tr>
+          <!-- Lower summation of Hive amounts -->
+          <tr v-if="false">
             <td
               class="table-border-top numeric-cell q-pt-xs"
               style="border-top: 1px solid"
@@ -94,7 +108,9 @@
               <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
             </td>
           </tr>
+          <!-- Lower summation of Hive amounts -->
         </div>
+        <!-- Table for the balances  -->
       </div>
     </q-card-section>
   </q-card>
@@ -106,15 +122,11 @@ import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { computed, ref } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
-import { tidyNumber } from "src/use/useUtils"
-import { useCheckApiTokenValid, useKeepSats } from "src/use/useV4vapp"
+import { useCheckApiTokenValid } from "src/use/useV4vapp"
 
 const storeUser = useStoreUser()
 const q = useQuasar()
 const savingsToggle = ref(false)
-
-const devMode = ref(process.env.DEV_API)
-const keepSats = ref({})
 
 const backgroundImage = [
   "sealogo01",
@@ -137,14 +149,9 @@ const lightDark = computed(() => {
   return "light"
 })
 
-const hasValidApiToken = computed(() => {
-  console.log("computed hasValidApiToken")
-  if (!storeUser.currentUser) {
-    return false
-  }
-  return storeUser.hasValidApiToken
+const nonZeroKeepSats = computed(() => {
+  return balances.value.keepSats !== "0"
 })
-
 const balances = computed(() => {
   if (savingsToggle.value) {
     return {
@@ -244,5 +251,10 @@ storeUser.update()
 
 .numeric-cell {
   text-align: right;
+}
+
+.numeric-cell-lg {
+  text-align: right;
+  font-size: 1.5rem;
 }
 </style>

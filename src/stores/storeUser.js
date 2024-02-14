@@ -260,7 +260,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         return "💰💰💰"
       }
       console.log("keepSatsBalance", this.currentKeepSats)
-      return this.currentKeepSats?.net_sats
+      return tidyNumber(this.currentKeepSats?.net_sats, 0)
       // return this.currentKeepSats
     },
     savingsSatsBalance() {
