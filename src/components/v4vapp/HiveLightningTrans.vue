@@ -5,6 +5,11 @@
       row-key="trx_id"
       :visible-columns="['net_hive', 'sats', 'timestamp']"
     ></q-table>
+    <q-btn
+      label="Refresh"
+      @click="fetchData"
+      :disable="data.length === 0"
+    ></q-btn>
   </div>
 </template>
 
