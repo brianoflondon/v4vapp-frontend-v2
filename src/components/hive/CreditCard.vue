@@ -126,7 +126,6 @@ import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { computed, ref } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
-import { useCheckApiTokenValid } from "src/use/useV4vapp"
 
 const storeUser = useStoreUser()
 const q = useQuasar()
@@ -199,19 +198,10 @@ const creditCardShading = computed(() => {
   }
 })
 
-async function getKeepSatsBalance() {
-  const username = storeUser.hiveAccname
-  const apiToken = storeUser.apiToken
-  const answer = await useCheckApiTokenValid(username, apiToken)
-  console.log("useCheckApiTokenValid answer", answer)
-  // const keepSats = await useKeepSats(username, apiToken)
-}
-
 function changeBackground() {
   console.log("changeBackground")
-  getKeepSatsBalance()
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
-  console.log(backgroundIndex.value)
+  storeUser.update()
 }
 
 storeUser.update()

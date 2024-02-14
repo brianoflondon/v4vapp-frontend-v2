@@ -173,9 +173,6 @@
             />
           </div>
         </div>
-        <div>
-          <HiveLightningTrans :username="storeUser.currentUser" />
-        </div>
         <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
         <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
         <!-- Vote Button -->
@@ -187,6 +184,9 @@
         </div>
       </div>
       <!-- Camera Toggle, paste and invoice input -->
+      <div>
+        <HiveLightningTrans />
+      </div>
     </div>
     <AskDetailsDialog
       v-model="dInvoice"

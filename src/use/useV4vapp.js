@@ -24,14 +24,36 @@ export async function useCheckApiTokenValid(username, apiToken) {
   return false
 }
 
-export async function useKeepSats(username, apiToken, hasApiToken) {
-  if (!apiToken) return null
-  apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
+export async function useKeepSats(username, apiToken) {
+  // if (!apiToken) return null
+  // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
   try {
     const resp = await apiLogin.get("/v1/v4vapp/keepsats")
     return resp.data
   } catch (error) {
     console.log("useKeepSats", error)
     return null
+  }
+}
+
+export async function useFetchSatsHistory(username) {
+  // if (!apiToken) return null
+  console.log("fetchHistory", username)
+  const params = {
+    hiveAccname: username,
+    age: 3000,
+  }
+  try {
+    const rawData = await apiLogin.get("/v1/v4vapp/hivetosats/", {
+      params,
+    })
+    let data = []
+    if (Array.isArray(rawData.data) && rawData.data.length > 0) {
+      console.log("First item in rawData.data", rawData.data[0])
+      data = rawData.data[0].transactions
+    }
+    return data
+  } catch (error) {
+    console.error("fetchHistory error", error)
   }
 }

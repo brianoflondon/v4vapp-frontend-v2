@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="data.length !== 0">
     <q-table
       :rows="data"
       row-key="trx_id"
@@ -9,51 +9,33 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue"
+import { ref, onMounted, watch, computed } from "vue"
 import { useI18n } from "vue-i18n"
 import { useStoreUser } from "src/stores/storeUser"
-import { apiLogin } from "boot/axios"
+import { useFetchSatsHistory } from "src/use/useV4vapp"
 
 const storeUser = useStoreUser()
 const data = ref([])
 
-const props = defineProps({
-  username: {
-    type: String,
-    default: "",
-  },
-})
-
 const t = useI18n().t
+
+watch(
+  () => storeUser.currentUser,
+  async (newVal) => {
+    console.log("HiveLightningTrans.vue watch", newVal)
+    fetchData()
+    // data.value = rawData
+  }
+)
+
+async function fetchData() {
+  data.value = await useFetchSatsHistory({ username: storeUser.currentUser })
+}
 
 onMounted(() => {
   console.log("HiveLightningTrans.vue onMounted")
-  console.log("props", props)
-  console.log("storeUser", storeUser)
-  const user = storeUser.getUser(props.username)
-  console.log("user", user)
+  fetchData()
 })
-
-async function fetchHistory(username) {
-  console.log("fetchHistory", username)
-  const params = {
-    hiveAccname: username,
-    age: 72,
-  }
-  try {
-    const rawData = await apiLogin.get("/v1/hivetosats/", {
-      params,
-    })
-    if (Array.isArray(rawData.data) && rawData.data.length > 0) {
-      console.log("First item in rawData.data", rawData.data[0])
-      data.value = rawData.data[0].transactions
-    }
-    console.log("rawData", rawData.data)
-    return rawData
-  } catch (error) {
-    console.error("fetchHistory error", error)
-  }
-}
 </script>
 
 <style lang="scss" scoped></style>
