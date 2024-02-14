@@ -45,12 +45,10 @@ export class HiveUser {
 
   setApiToken() {
     // Set the token for the user
-    console.log("setApiToken", this.hiveAccname, this.apiToken)
     if (!this.apiToken) return false
     apiLogin.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${this.apiToken}`
-    console.log("apiTokenSet successful", this.hiveAccname)
     // need to test if the API token is working
     return true
   }
@@ -59,7 +57,6 @@ export class HiveUser {
     // Clear the token for the user
     this.apiToken = null
     apiLogin.defaults.headers.common["Authorization"] = ""
-    console.log("apiToken cleared", this.hiveAccname)
     return true
   }
 
@@ -241,13 +238,11 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       const hiveBalance = parseFloat(this.currentDetails.balance)
       const hbdBalance = parseFloat(this.currentDetails.hbd_balance)
-      // console.log("hiveBalance", hiveBalance, "hbdBalance", hbdBalance)
       if (isNaN(hiveBalance) || isNaN(hbdBalance)) {
         return "Invalid balance"
       }
       const hiveTotal = hiveBalance + hbdBalance / storeAPIStatus.hiveHBDNumber
-      // console.log("hiveTotal", hiveTotal)
-      // console.log("hbd in Hive", hbdBalance / storeAPIStatus.hiveHBDNumber)
+
       const satsTotal = Math.round(
         hiveTotal * storeAPIStatus.hiveSatsNumber
       ).toLocaleString()
@@ -259,7 +254,6 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.log("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
-      console.log("keepSatsBalance", this.currentKeepSats)
       return tidyNumber(this.currentKeepSats?.net_sats, 0)
       // return this.currentKeepSats
     },
@@ -375,9 +369,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
      */
     apiTokenSet(hiveAccname = this.currentUser) {
-      console.log("Trying to use apiTokenSet", hiveAccname)
       if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
-        console.log("apiTokenSet successful", hiveAccname)
         apiLogin.defaults.headers.common[
           "Authorization"
         ] = `Bearer ${this.users[hiveAccname].apiToken}`
