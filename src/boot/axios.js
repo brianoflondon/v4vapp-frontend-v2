@@ -8,20 +8,31 @@ import axios from "axios"
 // "export default () => {}" function below (which runs individually
 // for each client)
 
+function getBooleanEnvVariable(variableName) {
+  const value = process.env[variableName]
+  if (value === undefined) {
+    return value === false
+    throw new Error(`Environment variable ${variableName} is not defined`)
+  }
+  return value === "true"
+}
+
+
 // My Lightning Node address to prevent self-payment
 const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
 console.log("process.env.LOCAL_API", process.env.LOCAL_API)
 console.log("process.env.DEV_API", process.env.DEV_API)
+console.log("process.env.SOME_STRANGE_VALUE", process.env.SOME_STRANGE_VALUE)
+
+console.log("process.env", process.env)
 
 // const useLocal = process.env.LOCAL_API ? true : false
 const useLocal = process.env.LOCAL_API !== "false"
 const useDev = process.env.DEV_API !== "false"
 
-console.log("process.env.LOCAL_API", process.env.LOCAL_API)
-console.log("process.env.DEV_API", process.env.DEV_API)
-console.log("process.env.SOME_STRANGE_VALUE", process.env.SOME_STRANGE_VALUE)
+
 console.log("useLocal", useLocal)
 console.log("useDev", useDev)
 
