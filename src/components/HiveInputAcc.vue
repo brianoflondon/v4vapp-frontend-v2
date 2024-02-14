@@ -150,7 +150,9 @@ async function updateHiveAccTo(val, fixed) {
     modelValue.value.fixedUser = fixed
     modelValue.value.valid = true
     isValidAccount.value = true
-    simpleHiveInput.value.validate()
+    if (simpleHiveInput.value) {
+      simpleHiveInput.value.validate()
+    }
   }
 }
 

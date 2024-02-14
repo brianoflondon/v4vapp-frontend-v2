@@ -45,12 +45,10 @@ export class HiveUser {
 
   setApiToken() {
     // Set the token for the user
-    console.log("setApiToken", this.hiveAccname, this.apiToken)
     if (!this.apiToken) return false
     apiLogin.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${this.apiToken}`
-    console.log("apiTokenSet successful", this.hiveAccname)
     // need to test if the API token is working
     return true
   }
@@ -59,7 +57,6 @@ export class HiveUser {
     // Clear the token for the user
     this.apiToken = null
     apiLogin.defaults.headers.common["Authorization"] = ""
-    console.log("apiToken cleared", this.hiveAccname)
     return true
   }
 
@@ -241,13 +238,11 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       const hiveBalance = parseFloat(this.currentDetails.balance)
       const hbdBalance = parseFloat(this.currentDetails.hbd_balance)
-      // console.log("hiveBalance", hiveBalance, "hbdBalance", hbdBalance)
       if (isNaN(hiveBalance) || isNaN(hbdBalance)) {
         return "Invalid balance"
       }
       const hiveTotal = hiveBalance + hbdBalance / storeAPIStatus.hiveHBDNumber
-      // console.log("hiveTotal", hiveTotal)
-      // console.log("hbd in Hive", hbdBalance / storeAPIStatus.hiveHBDNumber)
+
       const satsTotal = Math.round(
         hiveTotal * storeAPIStatus.hiveSatsNumber
       ).toLocaleString()
@@ -257,11 +252,9 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (this.currentKeepSats === null) {
         console.log("Need to reauthenticate to get keepSatsBalance")
         console.log("check if logged in with HAS or Keychain")
-        console.log(this.getUser(this.currentUser)?.authKey)
         return "💰💰💰"
       }
-      console.log("keepSatsBalance", this.currentKeepSats)
-      return this.currentKeepSats?.net_sats.toLocaleString()
+      return tidyNumber(this.currentKeepSats?.net_sats, 0)
       // return this.currentKeepSats
     },
     savingsSatsBalance() {
@@ -298,10 +291,12 @@ export const useStoreUser = defineStore("useStoreUser", {
         this.currentDetails = await useHiveDetails(this.currentUser)
         this.currentKeepSats = await useKeepSats(
           this.currentUser,
-          this.apiToken
+          this.apiToken,
+          this.token
         )
         this.currentProfile = this.currentDetails?.profile
       }
+      this.expireCheck()
       onOpen()
     },
     /**
@@ -361,6 +356,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
           this.apiTokenSet(hiveAccname)
+          this.expireCheck()
           this.update()
         }
       } catch (err) {
@@ -373,9 +369,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
      */
     apiTokenSet(hiveAccname = this.currentUser) {
-      console.log("Trying to use apiTokenSet", hiveAccname)
       if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
-        console.log("apiTokenSet successful", hiveAccname)
         apiLogin.defaults.headers.common[
           "Authorization"
         ] = `Bearer ${this.users[hiveAccname].apiToken}`
@@ -383,6 +377,21 @@ export const useStoreUser = defineStore("useStoreUser", {
         return true
       }
       return false
+    },
+    expireCheck() {
+      // loop through users and check the expire time and if they
+      // have expired, log them out.
+      console.log("Running the expiry check")
+      for (const user in this.users) {
+        console.log("Checking user", user, this.users[user])
+        if (this.users[user].expire < Date.now()) {
+          console.log("User expired", user)
+          delete this.users[user]
+        }
+      }
+      if (this.users.length === 0 || Object.keys(this.users).length === 0) {
+        this.logoutAll()
+      }
     },
     /**
      * Logs out the current user.
@@ -398,6 +407,10 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.currentProfile = null
       this.currentKeepSats = null
     },
+    /**
+     * Logs out all users and resets the current user, details, profile, and keepSats.
+     * @async
+     */
     async logoutAll() {
       this.users = {}
       this.currentUser = null

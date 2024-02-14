@@ -18,9 +18,10 @@
     <div class="q-py-lg">
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
-    <div class="q-pa-md text-caption">{{ appName }} - {{ appVersion }}</div>
-    <div class="q-pa-md text-caption">{{ storeUser.currentUser }}</div>
-    <div class="q-pa-md text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
+    <div class="q-pa-xs text-caption">{{ appName }} - {{ appVersion }}</div>
+    <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
+    <div class="q-pa-xs text-caption">{{ api?.defaults?.baseURL }}</div>
+    <div class="q-pa-xs text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
   </div>
 </template>
 
@@ -34,7 +35,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
-import { apiLogin } from "boot/axios"
+import { api, apiLogin } from "boot/axios"
 
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()

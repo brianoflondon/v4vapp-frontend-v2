@@ -20,7 +20,7 @@
           <q-tooltip caption>
             {{ $t("Expires") }}
             <br />
-            HAS:
+            API:
             {{ storeUser.getUser(user.hiveAccname).loginHASExpireHuman }}
             <br />
             Login:

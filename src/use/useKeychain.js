@@ -127,6 +127,11 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
     ) {
       console.log("now to validate")
       const validate = await useValidateApi(clientId, signedMessage)
+      console.log("validate: ", validate)
+      console.log("validate.data: ", validate.data)
+      // convert validate.data.expire to a date
+      const expireDate = new Date(validate.data.expire * 1000)
+      console.log("validate token expires at ", expireDate)
       // need to store this token in the storeUser store
       hiveAccObj["loggedIn"] = true
       hiveAccObj.caption = validate.data.access_token
@@ -134,7 +139,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         hiveAccObj.value,
         props.keyType,
         null,
-        null,
+        validate.data?.expire * 1000,
         null,
         validate.data.access_token
       )

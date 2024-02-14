@@ -8,23 +8,26 @@
     />
     <div class="stored-sats">
       <div class="credit-card-shading" :style="creditCardShading">
-        <div class="div-border items-end flex row">
-          <div class="div-border card-spacer row col-12"></div>
-
+        <div class="items-end flex row">
+          <div class="card-spacer row col-12"></div>
+          <!-- Sats balance on the face of the credit card -->
           <div class="row col-12">
             <div
-              class="div-border col-6 text-right text-h6 credit-card-text embossed-text"
+              v-if="false"
+              class="col-6 text-right text-h6 credit-card-text embossed-text"
             >
-              sats: {{ balances["keepSats"] }}
+              {{ balances["keepSats"] }}
+              <span>
+                シ
+                <q-tooltip>シ {{ $t("sats") }}</q-tooltip>
+              </span>
             </div>
-            <div
-              class="div-border text-h6 credit-card-text embossed-text"
-            ></div>
+            <div class="text-h6 credit-card-text embossed-text"></div>
           </div>
+          <!-- Sats balance on the face of the credit card -->
         </div>
       </div>
     </div>
-
     <q-img
       :src="creditCardOverlay"
       width="365px"
@@ -32,10 +35,10 @@
     />
     <q-card-section
       v-if="storeUser.currentUser"
-      class="credit-card-strip absolute-bottom q-py-xs text-subtitle2 text-left"
+      class="credit-card-strip absolute-bottom q-py-xs q-px-sm text-subtitle2 text-left"
       :style="creditCardStripStyle"
     >
-      <div class="row">
+      <div class="row items-top justify-between">
         <div class="col-8 flex items-center">
           <div class="credit-card-avatar">
             <q-avatar rounded size="xl">
@@ -61,40 +64,57 @@
             <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
           </div>
         </div>
+        <!-- Table for the balances  -->
         <div class="col-4 text-right">
-          <tr>
-            <td class="numeric-cell">{{ balances["hive"] }}<br /></td>
-            <td>
-              <q-icon name="fa-brands fa-hive" />
-            </td>
-          </tr>
-          <tr>
-            <td class="numeric-cell">
-              {{ balances["hbd"] }}
-            </td>
-            <td class="q-pl-sm">
-              <HbdLogoIcon />
-            </td>
-          </tr>
-          <tr>
-            <td
-              class="table-border-top numeric-cell q-pt-xs"
-              style="border-top: 1px solid"
-            >
-              <strong>{{ balances["sats"] }}</strong
-              ><br />
-              <div style="font-size: 0.7rem; line-height: 0.3rem">
-                +<q-icon name="savings"></q-icon>&nbsp;{{
-                  balances["totalSats"]
-                }}
-              </div>
-            </td>
-            <td>
-              シ
-              <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
-            </td>
-          </tr>
+          <div class="row justify-end">
+            <table>
+              <tr v-if="nonZeroKeepSats">
+                <td class="numeric-cell-lg">
+                  {{ balances["keepSats"] }}<br />
+                </td>
+                <td>
+                  シ
+                  <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
+                </td>
+              </tr>
+              <tr>
+                <td class="numeric-cell">{{ balances["hive"] }}<br /></td>
+                <td>
+                  <q-icon name="fa-brands fa-hive" />
+                </td>
+              </tr>
+              <tr>
+                <td class="numeric-cell">
+                  {{ balances["hbd"] }}
+                </td>
+                <td class="q-pl-sm">
+                  <HbdLogoIcon />
+                </td>
+              </tr>
+              <!-- Lower summation of Hive amounts -->
+              <tr v-if="false">
+                <td
+                  class="table-border-top numeric-cell q-pt-xs"
+                  style="border-top: 1px solid"
+                >
+                  <strong>{{ balances["sats"] }}</strong
+                  ><br />
+                  <div style="font-size: 0.7rem; line-height: 0.3rem">
+                    +<q-icon name="savings"></q-icon>&nbsp;{{
+                      balances["totalSats"]
+                    }}
+                  </div>
+                </td>
+                <td>
+                  シ
+                  <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- Lower summation of Hive amounts -->
         </div>
+        <!-- Table for the balances  -->
       </div>
     </q-card-section>
   </q-card>
@@ -106,15 +126,10 @@ import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { computed, ref } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
-import { tidyNumber } from "src/use/useUtils"
-import { useCheckApiTokenValid, useKeepSats } from "src/use/useV4vapp"
 
 const storeUser = useStoreUser()
 const q = useQuasar()
 const savingsToggle = ref(false)
-
-const devMode = ref(process.env.DEV_API)
-const keepSats = ref({})
 
 const backgroundImage = [
   "sealogo01",
@@ -137,14 +152,9 @@ const lightDark = computed(() => {
   return "light"
 })
 
-const hasValidApiToken = computed(() => {
-  console.log("computed hasValidApiToken")
-  if (!storeUser.currentUser) {
-    return false
-  }
-  return storeUser.hasValidApiToken
+const nonZeroKeepSats = computed(() => {
+  return balances.value.keepSats !== "0"
 })
-
 const balances = computed(() => {
   if (savingsToggle.value) {
     return {
@@ -188,19 +198,10 @@ const creditCardShading = computed(() => {
   }
 })
 
-async function getKeepSatsBalance() {
-  const username = storeUser.hiveAccname
-  const apiToken = storeUser.apiToken
-  const answer = await useCheckApiTokenValid(username, apiToken)
-  console.log("useCheckApiTokenValid answer", answer)
-  // const keepSats = await useKeepSats(username, apiToken)
-}
-
 function changeBackground() {
   console.log("changeBackground")
-  getKeepSatsBalance()
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
-  console.log(backgroundIndex.value)
+  storeUser.update()
 }
 
 storeUser.update()
@@ -208,7 +209,7 @@ storeUser.update()
 
 <style lang="scss" scoped>
 .div-border {
-  // border: 1px solid black;
+  border: 1px solid black;
 }
 
 .card-spacer {
@@ -244,5 +245,10 @@ storeUser.update()
 
 .numeric-cell {
   text-align: right;
+}
+
+.numeric-cell-lg {
+  text-align: right;
+  font-size: 1.5rem;
 }
 </style>

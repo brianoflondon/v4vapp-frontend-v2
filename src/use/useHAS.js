@@ -1,5 +1,5 @@
 import HAS from "hive-auth-wrapper"
-import { serverHiveAccount } from "boot/axios"
+import { api, serverHiveAccount } from "boot/axios"
 
 import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
@@ -38,7 +38,7 @@ export function useCheckExistingHASAuth(username) {
   console.log("Checking existing HAS auth for ", username)
   const existingAuth = storeUser.getUser(username)
   console.log("existingAuth", existingAuth)
-  if (existingAuth) {
+  if (existingAuth && !existingAuth.apiKey) {
     console.log("existingAuth", existingAuth)
     if (existingAuth.authKey && existingAuth.expire > Date.now()) {
       console.log(
@@ -175,20 +175,21 @@ async function resolveAuth(res, auth, challenge_data) {
     let passwordString = JSON.stringify(passwordData)
     formData.append("password", passwordString)
 
-    console.log("formData", formData)
-    console.log("------------------------------------")
-    console.log("usernameString")
-    console.log(usernameString)
-    console.log("passwordString")
-    console.log(passwordString)
-    console.log("------------------------------------")
     const responseApi = await apiLogin.post(`/token`, formData)
-    console.log("responseApi", responseApi)
+    const apiTokenExpire = responseApi.data.expire * 1000
+    const apiTokenExpireDate = new Date(apiTokenExpire)
+    let hasTokenExpire = res.data.expire
+    const hasTokenExpireDate = new Date(hasTokenExpire)
+
+    if (hasTokenExpire > apiTokenExpire) {
+      console.log("HAS expire is greater than API expire")
+      hasTokenExpire = apiTokenExpire
+    }
     storeUser.login(
       auth_payload.account,
       "posting",
       auth_payload.key,
-      res.data.expire,
+      hasTokenExpire,
       res.data.token,
       responseApi.data.access_token
     )
@@ -215,18 +216,15 @@ async function resolveAuth(res, auth, challenge_data) {
 
 // Transaction approved
 function resolveTransaction(res) {
-  console.log("resolveTransaction", res)
   resolvedHAS.value = res
 }
 
 function rejectTransaction(err) {
-  console.log("rejectTransaction", err)
   resolvedHAS.value = err
 }
 
 // Authentication request rejected or error occurred
 function reject(err) {
-  console.log("reject", err)
   qrCodeTextHAS.value = null
   expiry.value = 0
   auth_payload = {}
@@ -253,11 +251,9 @@ function createOp(from, to, amount, memo) {
  * @returns {Promise} - A promise that resolves when the transfer is successful or rejects with an error.
  */
 export async function useHASTransfer(username, amount, currency, memo) {
-  console.log("useHASTransfer", username, amount, currency, memo)
   amount = parseFloat(amount).toFixed(3)
   const amountString = `${amount} ${currency}`
   const operation = createOp(username, serverHiveAccount, amountString, memo)
-  console.log("operation", operation)
 
   // Get details for this user
   const user = storeUser.getUser(username)
@@ -272,8 +268,6 @@ export async function useHASTransfer(username, amount, currency, memo) {
     return
   }
 
-  console.log("user", user)
-
   const auth = {
     username: user.hiveAccname, // (required)
     key: user.authKey,
@@ -281,17 +275,13 @@ export async function useHASTransfer(username, amount, currency, memo) {
   }
 
   HAS.broadcast(auth, "active", [operation], (evt) => {
-    console.log("HAS return event", evt)
-    console.log("expires in ", (evt.expire - Date.now()) / 1000, "secs")
     expiry.value = evt.expire / 1000
     resolvedHAS.value = evt
   })
     .then((res) => {
-      console.log("resolved: ", res)
       resolveTransaction(res)
     })
     .catch((err) => {
-      console.log("error: ", err)
       rejectTransaction(err)
     })
 }

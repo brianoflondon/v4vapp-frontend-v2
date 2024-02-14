@@ -1,7 +1,7 @@
 // useV4vapp.js
 //
 
-import { apiLogin } from "/src/boot/axios"
+import { apiLogin } from "src/boot/axios"
 
 /**
  * Checks if the API token is valid.
@@ -25,15 +25,35 @@ export async function useCheckApiTokenValid(username, apiToken) {
 }
 
 export async function useKeepSats(username, apiToken) {
-  console.log("useKeepSats", username, apiToken)
-  if (!apiToken) return null
-  apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
+  // if (!apiToken) return null
+  // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
   try {
-    const resp = await apiLogin.get("/v1/v4vapp/keepsats/")
-    console.log("useKeepSats", resp.status, resp.data)
+    const resp = await apiLogin.get("/v1/v4vapp/keepsats")
     return resp.data
   } catch (error) {
     console.log("useKeepSats", error)
     return null
+  }
+}
+
+export async function useFetchSatsHistory(username) {
+  // if (!apiToken) return null
+  console.log("fetchHistory", username)
+  const params = {
+    age: 3000,
+    successOnly: true,
+  }
+  try {
+    const rawData = await apiLogin.get("/v1/v4vapp/hivetosats", {
+      params,
+    })
+    let data = []
+    if (Array.isArray(rawData.data) && rawData.data.length > 0) {
+      console.log("First item in rawData.data", rawData.data[0])
+      data = rawData.data[0].transactions
+    }
+    return data
+  } catch (error) {
+    console.error("fetchHistory error", error)
   }
 }
