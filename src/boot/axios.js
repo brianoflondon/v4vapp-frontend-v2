@@ -8,14 +8,28 @@ import axios from "axios"
 // "export default () => {}" function below (which runs individually
 // for each client)
 
-
 // My Lightning Node address to prevent self-payment
 const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
+let useLocal = false
 
-const useLocal = false
-const useDev = true
+const isLocalhost =
+  window.location.href.includes("localhost") ||
+  window.location.href.includes("127.0") ||
+  window.location.href.includes("192.168") ||
+  window.location.href.includes("10.0")
+
+console.log("isLocalhost", isLocalhost)
+
+if (process.env.VUE_APP_LOCAL_API === "true" || isLocalhost) {
+  console.log("Using local API")
+  useLocal = process.env.VUE_APP_LOCAL_API !== "false"
+}
+
+const isDev = window.location.href.includes("dev.v4v.app")
+
+const useDev = isDev
 
 const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
 
