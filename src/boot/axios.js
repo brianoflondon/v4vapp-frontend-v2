@@ -1,6 +1,5 @@
 import { boot } from "quasar/wrappers"
 import axios from "axios"
-import { root } from "postcss"
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -13,15 +12,18 @@ import { root } from "postcss"
 const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
-// Set this to false to use the devapi URLs
-// console.log("process.env", process.env)
-// console.log("PROD: ", process.env.PROD)
-// console.log("DEV_API: ", process.env.DEV_API)
-// console.log("LOCAL_API: ", process.env.LOCAL_API)
+console.log("process.env.LOCAL_API", process.env.LOCAL_API)
+console.log("process.env.DEV_API", process.env.DEV_API)
 
-const useLocal = process.env.LOCAL_API ? true : false
+// const useLocal = process.env.LOCAL_API ? true : false
+const useLocal = process.env.LOCAL_API !== "false"
+const useDev = process.env.DEV_API !== "false"
 
-const rootUrl = process.env.DEV_API
+
+console.log("useLocal", useLocal)
+console.log("useDev", useDev)
+
+const rootUrl = useDev
   ? "https://devapi.v4v.app/v1"
   : "https://api.v4v.app/v1"
 
@@ -29,6 +31,11 @@ const apiURL = useLocal ? "http://127.0.0.1:1818/v1" : rootUrl
 const apiLoginURL = useLocal
   ? "http://127.0.0.1:1818/"
   : "https://devapi.v4v.app/"
+
+console.log("useLocal", useLocal)
+console.log("rootUrl", rootUrl)
+console.log("apiURL", apiURL)
+console.log("apiLoginURL", apiLoginURL)
 
 const serverHiveAccount = "v4vapp"
 
