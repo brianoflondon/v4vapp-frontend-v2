@@ -14,10 +14,7 @@
       "sourceMapPathOverrides": {
         "webpack://quasar-project/./src/*": "${webRoot}/*"
       },
-      "env": {
-        "DEV_API": "true",
-        "LOCAL_API": "true",
-      }
+      // ENV set by .env file in project root
     },
     {
       "type": "chrome",
