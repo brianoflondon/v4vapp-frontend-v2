@@ -296,6 +296,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         )
         this.currentProfile = this.currentDetails?.profile
       }
+      this.apiTokenSet()
       this.expireCheck()
       onOpen()
     },

@@ -270,7 +270,7 @@ const cameraOn = ref(false)
 const cameraShow = ref(false)
 const cameraError = ref("")
 
-const currentTab = ref("history")
+const currentTab = ref("wallet")
 
 const t = useI18n().t
 const q = useQuasar()
