@@ -175,27 +175,12 @@ async function resolveAuth(res, auth, challenge_data) {
     let passwordString = JSON.stringify(passwordData)
     formData.append("password", passwordString)
 
-    console.log("formData", formData)
-    console.log("------------------------------------")
-    console.log("usernameString")
-    console.log(usernameString)
-    console.log("passwordString")
-    console.log(passwordString)
-    console.log("------------------------------------")
     const responseApi = await apiLogin.post(`/token`, formData)
-    console.log("responseApi", responseApi)
-    console.log("responseApi.data", responseApi.data)
-    console.log("responseApi.data.expire", responseApi.data.expire)
     const apiTokenExpire = responseApi.data.expire * 1000
     const apiTokenExpireDate = new Date(apiTokenExpire)
     let hasTokenExpire = res.data.expire
     const hasTokenExpireDate = new Date(hasTokenExpire)
-    console.log("apiTokenExpireDate", apiTokenExpireDate)
-    console.log("hasTokenExpireDate", hasTokenExpireDate)
 
-    // compare res.data.expire and responseApi.data.expire and pick the soonest
-    console.log("res.data.expire", res.data.expire)
-    console.log("responseApi.data.expire", responseApi.data.expire)
     if (hasTokenExpire > apiTokenExpire) {
       console.log("HAS expire is greater than API expire")
       hasTokenExpire = apiTokenExpire
@@ -231,18 +216,15 @@ async function resolveAuth(res, auth, challenge_data) {
 
 // Transaction approved
 function resolveTransaction(res) {
-  console.log("resolveTransaction", res)
   resolvedHAS.value = res
 }
 
 function rejectTransaction(err) {
-  console.log("rejectTransaction", err)
   resolvedHAS.value = err
 }
 
 // Authentication request rejected or error occurred
 function reject(err) {
-  console.log("reject", err)
   qrCodeTextHAS.value = null
   expiry.value = 0
   auth_payload = {}
@@ -269,11 +251,9 @@ function createOp(from, to, amount, memo) {
  * @returns {Promise} - A promise that resolves when the transfer is successful or rejects with an error.
  */
 export async function useHASTransfer(username, amount, currency, memo) {
-  console.log("useHASTransfer", username, amount, currency, memo)
   amount = parseFloat(amount).toFixed(3)
   const amountString = `${amount} ${currency}`
   const operation = createOp(username, serverHiveAccount, amountString, memo)
-  console.log("operation", operation)
 
   // Get details for this user
   const user = storeUser.getUser(username)
@@ -288,8 +268,6 @@ export async function useHASTransfer(username, amount, currency, memo) {
     return
   }
 
-  console.log("user", user)
-
   const auth = {
     username: user.hiveAccname, // (required)
     key: user.authKey,
@@ -297,17 +275,13 @@ export async function useHASTransfer(username, amount, currency, memo) {
   }
 
   HAS.broadcast(auth, "active", [operation], (evt) => {
-    console.log("HAS return event", evt)
-    console.log("expires in ", (evt.expire - Date.now()) / 1000, "secs")
     expiry.value = evt.expire / 1000
     resolvedHAS.value = evt
   })
     .then((res) => {
-      console.log("resolved: ", res)
       resolveTransaction(res)
     })
     .catch((err) => {
-      console.log("error: ", err)
       rejectTransaction(err)
     })
 }
