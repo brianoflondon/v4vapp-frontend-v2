@@ -41,6 +41,7 @@ export async function useFetchSatsHistory(username) {
   console.log("fetchHistory", username)
   const params = {
     age: 3000,
+    successOnly: true,
   }
   try {
     const rawData = await apiLogin.get("/v1/v4vapp/hivetosats", {
