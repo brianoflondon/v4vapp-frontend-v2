@@ -1,5 +1,27 @@
 <template>
   <q-page>
+    <div class="flex column text-center items-center q-pa-none">
+      <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
+        <q-tab name="wallet" :label="$t('wallet')" />
+        <q-tab name="history" :label="$t('history')" />
+        <q-tab name="other" :label="$t('other')" />
+      </q-tabs>
+      <q-tab-panels v-model="currentTab">
+        <q-tab-panel v-show="false" name="sales">
+          <div></div>
+        </q-tab-panel>
+        <q-tab-panel name="history">
+          <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+            <div>
+              <HiveLightningTrans />
+            </div>
+          </div>
+        </q-tab-panel>
+        <q-tab-panel name="currency">
+          <div class="flex row pad-max-width full-width q-px-xs q-py-xs"></div>
+        </q-tab-panel>
+      </q-tab-panels>
+    </div>
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
@@ -184,9 +206,6 @@
         </div>
       </div>
       <!-- Camera Toggle, paste and invoice input -->
-      <div>
-        <HiveLightningTrans />
-      </div>
     </div>
     <AskDetailsDialog
       v-model="dInvoice"
@@ -250,6 +269,8 @@ const voteOptions = ref({
 const cameraOn = ref(false)
 const cameraShow = ref(false)
 const cameraError = ref("")
+
+const currentTab = ref("history")
 
 const t = useI18n().t
 const q = useQuasar()
