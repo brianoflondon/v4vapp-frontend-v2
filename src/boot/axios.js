@@ -22,17 +22,20 @@ function getBooleanEnvVariable(variableName) {
 const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
-console.log("process.env.VUE_APP_LOCAL_API", process.env.VUE_APP_LOCAL_API)
-console.log("process.env.VUE_APP_DEV_API", process.env.VUE_APP_DEV_API)
-console.log("process.env.VUE_APP_SOME_STRANGE_VALUE", process.env.VUE_APP_SOME_STRANGE_VALUE)
+// console.log("process.env.VUE_APP_LOCAL_API", process.env.VUE_APP_LOCAL_API)
+// console.log("process.env.VUE_APP_DEV_API", process.env.VUE_APP_DEV_API)
+// console.log("process.env.VUE_APP_SOME_STRANGE_VALUE", process.env.VUE_APP_SOME_STRANGE_VALUE)
 
-// const useLocal = process.env.VUE_APP_LOCAL_API ? true : false
-const useLocal = process.env.VUE_APP_LOCAL_API !== "false"
-const useDev = process.env.VUE_APP_DEV_API !== "false"
+// // const useLocal = process.env.VUE_APP_LOCAL_API ? true : false
+// const useLocal = process.env.VUE_APP_LOCAL_API !== "false"
+// const useDev = process.env.VUE_APP_DEV_API !== "false"
 
 
-console.log("useLocal", useLocal)
-console.log("useDev", useDev)
+// console.log("useLocal", useLocal)
+// console.log("useDev", useDev)
+
+const useLocal = false
+const useDev = true
 
 const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
 
