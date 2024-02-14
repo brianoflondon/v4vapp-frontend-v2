@@ -22,7 +22,6 @@ export default route(function (/* { store, ssrContext } */) {
 
   // Navigation guard to handle @ and . in URLs
   Router.beforeEach((to, from, next) => {
-    console.log("in the router index.js file")
     // Check if the URL contains @ and has a .
     if (to.path.includes("@") && to.path.includes(".")) {
       // Implement logic based on your requirement
