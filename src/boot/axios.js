@@ -19,13 +19,13 @@ console.log("process.env.DEV_API", process.env.DEV_API)
 const useLocal = process.env.LOCAL_API !== "false"
 const useDev = process.env.DEV_API !== "false"
 
-
+console.log("process.env.LOCAL_API", process.env.LOCAL_API)
+console.log("process.env.DEV_API", process.env.DEV_API)
+console.log("process.env.SOME_STRANGE_VALUE", process.env.SOME_STRANGE_VALUE)
 console.log("useLocal", useLocal)
 console.log("useDev", useDev)
 
-const rootUrl = useDev
-  ? "https://devapi.v4v.app/v1"
-  : "https://api.v4v.app/v1"
+const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
 
 const apiURL = useLocal ? "http://127.0.0.1:1818/v1" : rootUrl
 const apiLoginURL = useLocal
