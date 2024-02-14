@@ -30,11 +30,8 @@ onMounted(() => {
   console.log("HiveLightningTrans.vue onMounted")
   console.log("props", props)
   console.log("storeUser", storeUser)
-  // const user = storeUser.getUser(props.username)
-  // if (user.checkApiTokenValid()) {
-  //   console.log("Logged in user", user)
-  //   const ans = fetchHistory(props.username)
-  // }
+  const user = storeUser.getUser(props.username)
+  console.log("user", user)
 })
 
 async function fetchHistory(username) {

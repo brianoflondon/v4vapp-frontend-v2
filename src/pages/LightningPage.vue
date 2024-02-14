@@ -21,6 +21,7 @@
       <div class="progress-screen">
         <ShowProgress v-model="dInvoice" />
       </div>
+      <!-- Camera Toggle, paste and invoice input -->
       <div class="camera-toggle-invoice">
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
@@ -69,10 +70,7 @@
               :hint="invoiceHint"
               hide-bottom-space
             >
-              <!--
-              hide-bottom-space: stops the animation for the hint text
-
-            -->
+              <!-- hide-bottom-space: stops the animation for the hint text-->
             </q-input>
           </div>
           <CountdownBar
@@ -81,6 +79,7 @@
             @message="(val) => (timeMessage = val)"
             @time-left="(val) => checkInvoiceProgress(val)"
           />
+          <!-- Amounts Display -->
           <div v-show="false" class="amounts-display flex justify-evenly">
             <div class="q-pa-xs input-amount-readonly">
               <q-input
@@ -113,6 +112,7 @@
               ></q-input>
             </div>
           </div>
+          <!-- Amounts Display -->
         </div>
         <!-- Payment Buttons -->
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
@@ -186,6 +186,7 @@
           </div>
         </div>
       </div>
+      <!-- Camera Toggle, paste and invoice input -->
     </div>
     <AskDetailsDialog
       v-model="dInvoice"
