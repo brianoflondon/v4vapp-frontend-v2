@@ -187,5 +187,5 @@ export default {
   // Hive to Lightning Transactions
   other: 'Other',
   wallet: 'Wallet',
-  login_to_see_history: 'Login to see your history',
+  login_to_see_history: 'Login to see your history'
 };

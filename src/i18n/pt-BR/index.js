@@ -75,8 +75,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Falhou',
   working: 'Processando',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain está instalado',
+  keychain_missing: 'Instale o app Hive Keychain',
   reload_prices: 'Atualizar preços',
   // Invoice
   invoice: 'Fatura',
@@ -186,5 +186,6 @@ export default {
   export_to_csv_tooltip: 'Export all the currently displayed sales to a CSV file',
   // Hive to Lightning Transactions
   other: 'Other',
-  wallet: 'Wallet'
+  wallet: 'Wallet',
+  login_to_see_history: 'Login to see your history'
 };
