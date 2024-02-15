@@ -289,12 +289,15 @@ export const useStoreUser = defineStore("useStoreUser", {
       const onOpen = async () => {
         if (this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
-        this.currentKeepSats = await useKeepSats(
-          this.currentUser,
-          this.apiToken,
-          this.token
-        )
         this.currentProfile = this.currentDetails?.profile
+        console.log("this.currentUser", this.currentUser)
+        if (this.currentUser && this.apiToken) {
+          this.currentKeepSats = await useKeepSats(
+            this.currentUser,
+            this.apiToken,
+            this.token
+          )
+        }
       }
       this.apiTokenSet()
       this.expireCheck()

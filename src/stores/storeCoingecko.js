@@ -139,7 +139,6 @@ export const useCoingeckoStore = defineStore("coingecko", {
      * @returns {boolean} - True if the cache is valid, false otherwise.
      */
     isCacheValidRates(key) {
-      console.log("coingecko isCacheValidRates", key)
       return (
         this.ratesCache[key] && Date.now() - this.lastFetched[key] < maxCacheAge
       )

@@ -131,6 +131,9 @@ watch(
 )
 
 async function fetchData(newValue = dataDays.value) {
+  if (!storeUser.hiveAccname) {
+    return
+  }
   console.log("HiveLightningTrans.vue fetchData", newValue)
   data.value = await useFetchSatsHistory(storeUser.hiveAccname, newValue.value)
 

@@ -3,7 +3,15 @@
     <div class="flex column text-center items-center q-pa-none">
       <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
         <q-tab name="wallet" :label="$t('wallet')" />
-        <q-tab name="history" :label="$t('history')" />
+        <q-tab
+          name="history"
+          :label="$t('history')"
+          :disable="!storeUser.currentUser"
+        >
+          <q-tooltip v-if="!storeUser.currentUser">{{
+            $t("login_to_see_history")
+          }}</q-tooltip>
+        </q-tab>
         <!-- <q-tab name="other" :label="$t('other')" /> -->
       </q-tabs>
       <q-tab-panels v-model="currentTab">
