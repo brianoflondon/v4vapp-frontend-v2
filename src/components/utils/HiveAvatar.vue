@@ -5,7 +5,6 @@
     :alt="'Hive Avatar for ' + hiveAccname"
     @error="handleImageError"
   />
-  {{ avatarImg }}
 </template>
 
 <script setup>
@@ -46,19 +45,10 @@ const avatarUrl = computed(() => {
 function handleImageError(error) {
   // If the image fails to load, use the blank profile image
   console.error("Error loading Hive avatar", error)
-  avatarImg.value.src = useBlankProfileURL()
-  // wait 10000ms and then try again
-  setTimeout(() => {
-    if (avatarImg.value) {
-      avatarImg.value.src = avatarUrl.value
-    }
-    console.log(
-      "Trying again to load Hive avatar",
-      tryAgain,
-      avatarImg.value.src
-    )
-    tryAgain++
-  }, 10000)
+  if (avatarImg.value) {
+    avatarImg.value.src = useBlankProfileURL()
+  }
+  
 }
 </script>
 
