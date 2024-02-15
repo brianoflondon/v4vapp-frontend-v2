@@ -44,8 +44,8 @@ const props = defineProps({
 
 function handleImageError(error) {
   // If the image fails to load, use the blank profile image
-  avatarImg.value.src = useBlankProfileURL()
   console.error("Error loading Hive avatar", error)
+  avatarImg.value.src = useBlankProfileURL()
 }
 </script>
 

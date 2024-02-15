@@ -1,5 +1,5 @@
 <template>
-  <div v-if="data.length !== 0">
+  <div>
     <q-table
       class="q-pa-xs"
       dense
@@ -26,23 +26,24 @@
           </a>
         </q-td>
       </template>
-      <template v-slot:bottom-row>
+      <template v-slot:bottom-row v-if="data.length > 0">
         <q-tr class="text-bold">
           <q-td>Total</q-td>
           <q-td class="text-right">
-            {{ tidyNumber(totals.totalHive,3) }}
+            {{ tidyNumber(totals.totalHive, 3) }}
           </q-td>
           <q-td class="text-right">
-            {{ tidyNumber(totals.totalSats,0) }}
+            {{ tidyNumber(totals.totalSats, 0) }}
           </q-td>
           <q-td colspan="1"></q-td>
         </q-tr>
       </template>
     </q-table>
-    <div class="row justify-evenly">
-      <div class="q-pa-xs">
+    <div class="row justify-evenly q-pt-md">
+      <div>
         <q-btn
           label="Refresh"
+          rounded
           @click="fetchData(dataDays)"
           :disable="data.length === 0"
         ></q-btn>
@@ -134,11 +135,13 @@ async function fetchData(newValue = dataDays.value) {
   data.value = await useFetchSatsHistory(storeUser.hiveAccname, newValue.value)
 
   // calculate totals for hive and sats
-  totals.value.totalHive = 0
-  totals.value.totalSats = 0
-  for (let i = 0; i < data.value.length; i++) {
-    totals.value.totalHive += data.value[i].net_hive
-    totals.value.totalSats += data.value[i].sats
+  if (data.value) {
+    totals.value.totalHive = 0
+    totals.value.totalSats = 0
+    for (let i = 0; i < data.value.length; i++) {
+      totals.value.totalHive += data.value[i].net_hive
+      totals.value.totalSats += data.value[i].sats
+    }
   }
 }
 
