@@ -1,13 +1,7 @@
 <template>
   <img
     ref="avatarImg"
-    :src="
-      useHiveAvatarURL({
-        hiveAccname: hiveAccname,
-        size: size,
-        reason: 'HiveAvatarComponent',
-      })
-    "
+    :src="avatarUrl"
     :alt="'Hive Avatar for ' + hiveAccname"
     @error="handleImageError"
   />
@@ -23,6 +17,7 @@
  * @props {string} size - Default: small - small, medium, large size of the avatar
  */
 import { useBlankProfileURL, useHiveAvatarURL } from "src/use/useHive"
+import { computed } from "vue"
 import { ref } from "vue"
 
 const avatarImg = ref(null)
@@ -36,16 +31,34 @@ const props = defineProps({
     type: String,
     default: "small",
   },
-  qImg: {
-    type: Boolean,
-    default: true,
-  },
+})
+
+let tryAgain = 0
+
+const avatarUrl = computed(() => {
+  return useHiveAvatarURL({
+    hiveAccname: props.hiveAccname,
+    size: props.size,
+    reason: "HiveAvatarComponent-" + tryAgain,
+  })
 })
 
 function handleImageError(error) {
   // If the image fails to load, use the blank profile image
   console.error("Error loading Hive avatar", error)
   avatarImg.value.src = useBlankProfileURL()
+  // wait 10000ms and then try again
+  setTimeout(() => {
+    if (avatarImg.value) {
+      avatarImg.value.src = avatarUrl.value
+    }
+    console.log(
+      "Trying again to load Hive avatar",
+      tryAgain,
+      avatarImg.value.src
+    )
+    tryAgain++
+  }, 10000)
 }
 </script>
 
