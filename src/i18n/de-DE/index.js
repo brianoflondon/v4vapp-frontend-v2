@@ -75,8 +75,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Wird verarbeitet',
-  keychain_installed: 'Keychain ist installiert',
-  keychain_missing: 'Keychain ist nicht installiert',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -183,5 +183,8 @@ export default {
   delete_all_pending_message: 'Möchten Sie wirklich alle ausstehenden Verkäufe löschen?',
   delete_one_pending_message: 'Sind Sie sicher, dass Sie diesen ausstehenden Verkauf löschen möchten?',
   export_to_csv: 'Exportieren in CSV',
-  export_to_csv_tooltip: 'Exportieren Sie alle derzeit angezeigten Verkäufe in eine CSV-Datei'
+  export_to_csv_tooltip: 'Exportieren Sie alle derzeit angezeigten Verkäufe in eine CSV-Datei',
+  // Hive to Lightning Transactions
+  other: 'Other',
+  wallet: 'Wallet'
 };
