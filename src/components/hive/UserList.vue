@@ -30,13 +30,13 @@
             {{ storeUser.getUser(user.hiveAccname).hasApiToken }}
           </q-tooltip>
         </q-item-section>
-        <q-item-section
+        <!-- <q-item-section
           side
           top
           v-if="storeUser.getUser(user.hiveAccname).hasApiToken"
         >
           <q-icon name="star" color="yellow" />
-        </q-item-section>
+        </q-item-section> -->
       </q-item>
     </q-list>
   </div>

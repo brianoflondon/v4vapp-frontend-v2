@@ -36,11 +36,13 @@ export async function useKeepSats(username, apiToken) {
   }
 }
 
-export async function useFetchSatsHistory(username) {
+export async function useFetchSatsHistory(username, days = 7 * 4) {
   // if (!apiToken) return null
-  console.log("fetchHistory", username)
+  console.log("fetchHistory username", username)
+  console.log("fetchHistory days", days)
   const params = {
-    age: 3000,
+    // hours to look back
+    age: days * 24,
     successOnly: true,
   }
   try {
@@ -49,7 +51,6 @@ export async function useFetchSatsHistory(username) {
     })
     let data = []
     if (Array.isArray(rawData.data) && rawData.data.length > 0) {
-      console.log("First item in rawData.data", rawData.data[0])
       data = rawData.data[0].transactions
     }
     return data

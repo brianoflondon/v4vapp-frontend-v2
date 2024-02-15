@@ -183,5 +183,9 @@ export default {
   delete_all_pending_message: 'Are you sure you want to delete all pending sales?',
   delete_one_pending_message: 'Are you sure you want to delete this pending sale?',
   export_to_csv: 'Export to CSV',
-  export_to_csv_tooltip: 'Export all the currently displayed sales to a CSV file'
+  export_to_csv_tooltip: 'Export all the currently displayed sales to a CSV file',
+  // Hive to Lightning Transactions
+  other: 'Other',
+  wallet: 'Wallet',
+  
 };

@@ -296,6 +296,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         )
         this.currentProfile = this.currentDetails?.profile
       }
+      this.apiTokenSet()
       this.expireCheck()
       onOpen()
     },
@@ -381,9 +382,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     expireCheck() {
       // loop through users and check the expire time and if they
       // have expired, log them out.
-      console.log("Running the expiry check")
       for (const user in this.users) {
-        console.log("Checking user", user, this.users[user])
         if (this.users[user].expire < Date.now()) {
           console.log("User expired", user)
           delete this.users[user]

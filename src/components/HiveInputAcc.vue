@@ -109,7 +109,9 @@ function clearInput() {
   modelValue.value.caption = props.label
   simpleInput.value = ""
   isValidAccount.value = false
-  simpleHiveInput.value.validate()
+  if (simpleHiveInput.value) {
+    simpleHiveInput.value.validate()
+  }
   avatarName.value = ""
 }
 
