@@ -32,11 +32,10 @@ const isDev = window.location.href.includes("dev.v4v.app")
 const useDev = isDev
 
 const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
+const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 
 const apiURL = useLocal ? "http://127.0.0.1:1818/v1" : rootUrl
-const apiLoginURL = useLocal
-  ? "http://127.0.0.1:1818/"
-  : "https://devapi.v4v.app/"
+const apiLoginURL = useLocal ? "http://127.0.0.1:1818/" : rootLoginUrl
 
 console.log("useLocal", useLocal)
 console.log("rootUrl", rootUrl)
