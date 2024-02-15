@@ -1,23 +1,25 @@
 <template>
   <!-- List header and search filter -->
-  <div class="list-trans-header q-pb-md full-width row items-center bordered-div">
+  <div
+    class="list-trans-header q-pb-md full-width row items-center bordered-div"
+  >
     <div class="col-grow bordered-div">
       <q-input dense v-model="searchFilter" clearable label="Search"></q-input>
     </div>
     <div class="q-pl-lg bordered-div">
       <q-btn-toggle
-      v-model="paidFilter"
-      dense
-      :options="[
-        { label: '', value: 'all', icon: 'fa-solid fa-dollar-sign' },
-        { label: '', value: 'paid', icon: 'fa-solid fa-check' },
-        { label: '', value: 'pending', icon: 'fa-solid fa-clock' },
-      ]"
-        >
+        v-model="paidFilter"
+        dense
+        :options="[
+          { label: '', value: 'all', icon: 'fa-solid fa-dollar-sign' },
+          { label: '', value: 'paid', icon: 'fa-solid fa-check' },
+          { label: '', value: 'pending', icon: 'fa-solid fa-clock' },
+        ]"
+      >
         <q-tooltip>
-          <q-icon name="fa-solid fa-dollar-sign" /> {{ $t("all") }}<br>
-          <q-icon name="fa-solid fa-check" /> {{ $t("paid") }}<br>
-          <q-icon name="fa-solid fa-clock" /> {{ $t("pending") }}<br>
+          <q-icon name="fa-solid fa-dollar-sign" /> {{ $t("all") }}<br />
+          <q-icon name="fa-solid fa-check" /> {{ $t("paid") }}<br />
+          <q-icon name="fa-solid fa-clock" /> {{ $t("pending") }}<br />
         </q-tooltip>
       </q-btn-toggle>
     </div>
@@ -111,6 +113,7 @@
           <!-- End of main table  -->
           <!-- Expanded row details  -->
           <q-tr v-if="props.expand">
+            
             <q-td colspan="100%">
               <div class="fit row justify-start items-start content-start">
                 <div>
@@ -256,7 +259,11 @@
 import { ref, onMounted, computed, watch } from "vue"
 import { useGetHiveTransactionHistory, useGenerateTxUrl } from "src/use/useHive"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { formatDateTimeLocale, formatTimeDifference } from "src/use/useUtils"
+import {
+  formatDateTimeLocale,
+  formatTimeDifference,
+  formatPrettyDate,
+} from "src/use/useUtils"
 import { useStoreSales } from "src/stores/storeSales"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
@@ -698,6 +705,8 @@ const filteredDataHive = computed(() => {
 })
 
 function prettyDate(row) {
+  return formatPrettyDate(row.timestampUnix)
+
   const timeDiff = Date.now() - row.timestampUnix
   // check if timediff is less than one day
   if (timeDiff < 86400000) {

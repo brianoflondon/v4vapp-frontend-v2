@@ -1,15 +1,67 @@
 <template>
   <div v-if="data.length !== 0">
     <q-table
+      class="q-pa-xs"
+      dense
       :rows="data"
       row-key="trx_id"
-      :visible-columns="['net_hive', 'sats', 'timestamp']"
-    ></q-table>
-    <q-btn
-      label="Refresh"
-      @click="fetchData"
-      :disable="data.length === 0"
-    ></q-btn>
+      :columns="columns"
+      :visible-columns="['net_hive', 'sats', 'timestamp', 'link']"
+    >
+      <template v-slot:body-cell-link="props">
+        <q-td :props="props">
+          <a
+            :href="useGenerateTxUrl(props.row.answer_trx_id)"
+            target="_blank"
+            class="custom-link"
+          >
+            <q-btn
+              size="xs"
+              text-color="inherit"
+              flat
+              dense
+              icon="open_in_new"
+              name="open_in_new"
+            />
+          </a>
+        </q-td>
+      </template>
+      <template v-slot:bottom-row>
+        <q-tr class="text-bold">
+          <q-td>Total</q-td>
+          <q-td class="text-right">
+            {{ tidyNumber(totals.totalHive,3) }}
+          </q-td>
+          <q-td class="text-right">
+            {{ tidyNumber(totals.totalSats,0) }}
+          </q-td>
+          <q-td colspan="1"></q-td>
+        </q-tr>
+      </template>
+    </q-table>
+    <div class="row justify-evenly">
+      <div class="q-pa-xs">
+        <q-btn
+          label="Refresh"
+          @click="fetchData(dataDays)"
+          :disable="data.length === 0"
+        ></q-btn>
+      </div>
+      <div>
+        <q-select
+          v-model="dataDays"
+          :options="[
+            { label: '7 days', value: 7 },
+            { label: '30 days', value: 30 },
+            { label: '90 days', value: 90 },
+            { label: '365 days', value: 365 },
+          ]"
+          label="Days"
+          dense
+          @update:model-value="fetchData($event)"
+        ></q-select>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -18,11 +70,55 @@ import { ref, onMounted, watch, computed } from "vue"
 import { useI18n } from "vue-i18n"
 import { useStoreUser } from "src/stores/storeUser"
 import { useFetchSatsHistory } from "src/use/useV4vapp"
+import { useGenerateTxUrl } from "src/use/useHive"
+
+import { formatPrettyDate, tidyNumber } from "src/use/useUtils"
 
 const storeUser = useStoreUser()
 const data = ref([])
+const dataDays = ref({ label: "7 days", value: 7 })
+const totals = ref({ totalHive: 0, totalSats: 0 })
 
 const t = useI18n().t
+
+const columns = computed(() => {
+  return [
+    {
+      name: "timestamp",
+      required: true,
+      sortable: true,
+      label: t("date"),
+      align: "left",
+      field: "timestamp",
+      format: (val) => formatPrettyDate(val),
+    },
+    {
+      name: "net_hive",
+      required: true,
+      sortable: true,
+      label: t("hive"),
+      align: "right",
+      field: "net_hive",
+      format: (val) => tidyNumber(val, 3),
+    },
+    {
+      name: "sats",
+      required: true,
+      sortable: true,
+      label: "Sats シ",
+      align: "right",
+      field: "sats",
+      format: (val) => tidyNumber(val, 0),
+    },
+    {
+      name: "link",
+      required: true,
+      align: "center",
+      field: "trx_id",
+      format: (val) => val,
+    },
+  ]
+})
 
 watch(
   () => storeUser.currentUser,
@@ -33,8 +129,15 @@ watch(
   }
 )
 
-async function fetchData() {
-  data.value = await useFetchSatsHistory({ username: storeUser.hiveAccname })
+async function fetchData(newValue = dataDays.value) {
+  console.log("HiveLightningTrans.vue fetchData", newValue)
+  data.value = await useFetchSatsHistory(storeUser.hiveAccname, newValue.value)
+
+  // calculate totals for hive and sats
+  for (let i = 0; i < data.value.length; i++) {
+    totals.value.totalHive += data.value[i].net_hive
+    totals.value.totalSats += data.value[i].sats
+  }
 }
 
 onMounted(() => {
