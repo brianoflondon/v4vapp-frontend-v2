@@ -134,6 +134,8 @@ async function fetchData(newValue = dataDays.value) {
   data.value = await useFetchSatsHistory(storeUser.hiveAccname, newValue.value)
 
   // calculate totals for hive and sats
+  totals.value.totalHive = 0
+  totals.value.totalSats = 0
   for (let i = 0; i < data.value.length; i++) {
     totals.value.totalHive += data.value[i].net_hive
     totals.value.totalSats += data.value[i].sats
