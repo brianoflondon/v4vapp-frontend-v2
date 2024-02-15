@@ -186,6 +186,5 @@ export default {
   export_to_csv_tooltip: 'Export all the currently displayed sales to a CSV file',
   // Hive to Lightning Transactions
   other: 'Other',
-  wallet: 'Wallet',
-  
+  wallet: 'Wallet'
 };
