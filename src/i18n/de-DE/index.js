@@ -75,8 +75,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Wird verarbeitet',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain ist installiert',
+  keychain_missing: 'Keychain ist nicht installiert',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -172,7 +172,7 @@ export default {
   date: 'Datum',
   paid: 'Bezahlt',
   pending: 'Anstehend',
-  date: 'Datum',
+  date: 'Date',
   paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',
@@ -186,5 +186,6 @@ export default {
   export_to_csv_tooltip: 'Exportieren Sie alle derzeit angezeigten Verkäufe in eine CSV-Datei',
   // Hive to Lightning Transactions
   other: 'Other',
-  wallet: 'Wallet'
+  wallet: 'Wallet',
+  login_to_see_history: 'Login to see your history'
 };
