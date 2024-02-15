@@ -4,7 +4,7 @@
       <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
         <q-tab name="wallet" :label="$t('wallet')" />
         <q-tab name="history" :label="$t('history')" />
-        <q-tab name="other" :label="$t('other')" />
+        <!-- <q-tab name="other" :label="$t('other')" /> -->
       </q-tabs>
       <q-tab-panels v-model="currentTab">
         <q-tab-panel v-show="false" name="sales">
