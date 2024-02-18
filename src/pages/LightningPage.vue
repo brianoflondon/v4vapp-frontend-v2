@@ -19,11 +19,13 @@
           <div></div>
         </q-tab-panel>
         <q-tab-panel name="history">
-          <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
-            <div>
-              <HiveLightningTrans />
+          <q-slide-transition appear :duration="500" disapear>
+            <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+              <div>
+                <HiveLightningTrans />
+              </div>
             </div>
-          </div>
+          </q-slide-transition>
         </q-tab-panel>
         <q-tab-panel name="currency">
           <div class="flex row pad-max-width full-width q-px-xs q-py-xs"></div>

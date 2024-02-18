@@ -6,9 +6,31 @@
  * quasar.config.js > pwa > workboxMode is set to "injectManifest"
  */
 
-import { clientsClaim } from 'workbox-core'
-import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching'
-import { registerRoute, NavigationRoute } from 'workbox-routing'
+import { clientsClaim } from "workbox-core"
+import {
+  precacheAndRoute,
+  cleanupOutdatedCaches,
+  createHandlerBoundToURL,
+} from "workbox-precaching"
+import { registerRoute, NavigationRoute } from "workbox-routing"
+
+console.log("Custom service worker!")
+
+// Your custom service worker code goes here.
+// This file is set in quasar.conf.js > pwa > workboxPluginMode > swSrc
+self.addEventListener("fetch", (event) => {
+  console.log("Fetch event for ", event.request.url)
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      // Cache hit - return response
+      if (response) {
+        return response
+      }
+      return fetch(event.request)
+    })
+  )
+})
+
 
 self.skipWaiting()
 clientsClaim()
@@ -20,7 +42,7 @@ cleanupOutdatedCaches()
 
 // Non-SSR fallback to index.html
 // Production SSR fallback to offline.html (except for dev)
-if (process.env.MODE !== 'ssr' || process.env.PROD) {
+if (process.env.MODE !== "ssr" || process.env.PROD) {
   registerRoute(
     new NavigationRoute(
       createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML),

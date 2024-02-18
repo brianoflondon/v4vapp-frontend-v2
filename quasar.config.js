@@ -49,7 +49,7 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
-      env: require('dotenv').config().parsed,
+      env: require("dotenv").config().parsed,
       target: {
         browser: ["es2019", "edge88", "firefox78", "chrome87", "safari13.1"],
         node: "node18",
@@ -74,11 +74,12 @@ module.exports = configure(function (/* ctx */) {
       // extendViteConf (viteConf) {},
 
       // added to use the new defineModel macro in Vue 3.3.0
-      viteVuePluginOptions: {
-        script: {
-          defineModel: true,
-        },
-      },
+      // removed 2024-02-18
+      // viteVuePluginOptions: {
+      //   script: {
+      //     defineModel: true,
+      //   },
+      // },
 
       vitePlugins: [
         [
@@ -170,8 +171,9 @@ module.exports = configure(function (/* ctx */) {
       manifestFilename: "manifest.json",
       useCredentialsForManifestTag: false,
       manifest: {
-        name: "V4V.app Hive Lightning Bridge",
+        name: "V4V.app Name",
         short_name: "V4V.app",
+        description: "V4V.app Hive Lightning Bridge",
       },
       // useFilenameHashes: true,
       // extendGenerateSWOptions (cfg) {}
@@ -212,8 +214,7 @@ module.exports = configure(function (/* ctx */) {
 
       builder: {
         // https://www.electron.build/configuration/configuration
-
-        appId: "v4vapp-frontend-v2",
+        // appId: "V4V.app",
       },
     },
 
