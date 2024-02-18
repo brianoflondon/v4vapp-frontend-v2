@@ -2,6 +2,7 @@
 //
 
 import { apiLogin } from "src/boot/axios"
+import { checkCache, putInCache } from "src/use/useUtils"
 
 /**
  * Checks if the API token is valid.
@@ -40,19 +41,31 @@ export async function useFetchSatsHistory(username, days = 7 * 4) {
   // if (!apiToken) return null
   console.log("fetchHistory username", username)
   console.log("fetchHistory days", days)
+  const expiryTimeInMinutes = 1
   const params = {
     // hours to look back
     age: days * 24,
     successOnly: true,
   }
   try {
-    const rawData = await apiLogin.get("/v1/v4vapp/hivetosats", {
+    // check cache first
+    const cacheKey = `satsHistory-${username}-${days}`
+    let data = await checkCache(cacheKey)
+    if (data) {
+      console.log("useFetchSatsHistory: Cache hit", username, days)
+      return data
+    }
+
+    const response = await apiLogin.get("/v1/v4vapp/hivetosats", {
       params,
     })
-    let data = []
-    if (Array.isArray(rawData.data) && rawData.data.length > 0) {
-      data = rawData.data[0].transactions
+    if (Array.isArray(response.data) && response.data.length > 0) {
+      data = response.data[0].transactions
     }
+
+    // Store the data and timestamp in the cache
+    await putInCache(cacheKey, data, expiryTimeInMinutes)
+
     return data
   } catch (error) {
     console.error("fetchHistory error", error)

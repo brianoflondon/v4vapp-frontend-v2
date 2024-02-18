@@ -244,3 +244,33 @@ export function generateUUID() {
     return v.toString(16)
   })
 }
+
+
+export async function checkCache(key) {
+  const cache = await caches.open("v4vapp")
+  const cachedResponse = await cache.match(key)
+  const cachedTimestamp = await cache.match(`${key}-timestamp`)
+
+  if (cachedResponse && cachedTimestamp) {
+    const expiryTime = await cachedTimestamp.text()
+    if (Date.now() > expiryTime) {
+      // The item is expired
+      await cache.delete(key)
+      await cache.delete(`${key}-timestamp`)
+      return null
+    } else {
+      console.log("Cache hit")
+      const data = await cachedResponse.json()
+      return data
+    }
+  }
+  return null
+}
+
+export async function putInCache(key, data, expiryTimeInMinutes) {
+  const cache = await caches.open("v4vapp")
+  const expiryTime = Date.now() + expiryTimeInMinutes * 60 * 1000
+  cache.put(key, new Response(JSON.stringify(data)))
+  cache.put(`${key}-timestamp`, new Response(expiryTime.toString()))
+}
+
