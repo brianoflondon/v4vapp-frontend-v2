@@ -22,6 +22,8 @@ const isLocalhost =
 
 console.log("isLocalhost", isLocalhost)
 
+console.log("process.env.VUE_APP_LOCAL_API", process.env.VUE_APP_LOCAL_API)
+
 if (process.env.VUE_APP_LOCAL_API === "true" || isLocalhost) {
   console.log("Using local API")
   useLocal = process.env.VUE_APP_LOCAL_API !== "false"

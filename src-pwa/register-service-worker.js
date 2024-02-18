@@ -40,3 +40,5 @@ register(process.env.SERVICE_WORKER_FILE, {
     console.error("Error during service worker registration:", err)
   },
 })
+
+

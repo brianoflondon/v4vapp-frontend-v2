@@ -175,6 +175,11 @@ module.exports = configure(function (/* ctx */) {
         short_name: "V4V.app",
         description: "V4V.app Hive Lightning Bridge",
       },
+      // should mean the service worker updates need to be manually triggered
+      // extendGenerateSWOptions(cfg) {
+      //   cfg.skipWaiting = false
+      //   cfg.clientsClaim = false
+      // },
       // useFilenameHashes: true,
       // extendGenerateSWOptions (cfg) {}
       // extendInjectManifestOptions (cfg) {},
