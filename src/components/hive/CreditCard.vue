@@ -204,7 +204,6 @@ function changeBackground() {
   storeUser.update()
 }
 
-storeUser.update()
 </script>
 
 <style lang="scss" scoped>

@@ -86,7 +86,6 @@ const votedFor = ref({
 })
 const proxy = ref(false)
 
-storeUser.update()
 const modelValue = defineModel({
   hiveUser: {
     type: String,
