@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="hivetosats-table">
     <q-table
       class="q-pa-xs"
       dense
       :rows="data"
       row-key="trx_id"
       :columns="columns"
-      :visible-columns="['net_hive', 'sats', 'timestamp', 'link']"
+      :visible-columns="['net_hive', 'sats', 'timestamp', 'link', 'reason']"
     >
       <template v-slot:body-cell-link="props">
         <q-td :props="props">
@@ -52,6 +52,7 @@
         <q-select
           v-model="dataDays"
           :options="[
+            { label: '3 days', value: 3 },
             { label: '7 days', value: 7 },
             { label: '30 days', value: 30 },
             { label: '90 days', value: 90 },
@@ -64,13 +65,33 @@
       </div>
     </div>
   </div>
+  <div class="keepsats-table">
+    <q-table
+      class="q-pa-xs"
+      dense
+      :rows="keepSatsData"
+      :columns="keepSatsColumns"
+      row-key="unique_id"
+      :visible-columns="['timestamp', 'sats', 'reason']"
+    >
+      <template v-slot:bottom-row v-if="data.length > 0">
+        <q-tr class="text-bold">
+          <q-td>Total</q-td>
+          <q-td class="text-right">
+            {{ tidyNumber(keepSatsTotal, 0) }}
+          </q-td>
+          <q-td colspan="1"></q-td>
+        </q-tr>
+      </template>
+    </q-table>
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
 import { useI18n } from "vue-i18n"
 import { useStoreUser } from "src/stores/storeUser"
-import { useFetchSatsHistory } from "src/use/useV4vapp"
+import { useFetchSatsHistory, useKeepSats } from "src/use/useV4vapp"
 import { useGenerateTxUrl } from "src/use/useHive"
 
 import { formatPrettyDate, tidyNumber } from "src/use/useUtils"
@@ -118,6 +139,47 @@ const columns = computed(() => {
       field: "trx_id",
       format: (val) => val,
     },
+    {
+      name: "reason",
+      required: true,
+      label: t("reason"),
+      align: "left",
+      field: "reason",
+      format: (val) => val,
+    },
+  ]
+})
+
+const keepSatsData = ref([])
+const keepSatsTotal = ref(0)
+const keepSatsColumns = computed(() => {
+  return [
+    {
+      name: "timestamp",
+      required: true,
+      sortable: true,
+      label: t("date"),
+      align: "left",
+      field: "timestamp",
+      format: (val) => formatPrettyDate(val),
+    },
+    {
+      name: "sats",
+      required: true,
+      sortable: true,
+      label: "Sats シ",
+      align: "right",
+      field: "sats",
+      format: (val) => tidyNumber(val, 0),
+    },
+    {
+      name: "reason",
+      required: true,
+      label: t("reason"),
+      align: "left",
+      field: "reason",
+      format: (val) => val,
+    },
   ]
 })
 
@@ -135,7 +197,31 @@ async function fetchData(newValue = dataDays.value) {
     return
   }
   console.log("HiveLightningTrans.vue fetchData", newValue)
-  data.value = await useFetchSatsHistory(storeUser.hiveAccname, newValue.value)
+  const [satsHistory, keepSats] = await Promise.all([
+    useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
+    useKeepSats(),
+  ])
+
+  if (keepSats.all_transactions) {
+    console.log(keepSats)
+    const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
+    console.log(oldTimestamp)
+    keepSatsData.value = keepSats.all_transactions.filter(
+      (trx) => trx.reason !== "Fees" && trx.timestamp > oldTimestamp
+    )
+
+    const tempTotal = keepSats.all_transactions.filter(
+      (trx) => trx.timestamp > oldTimestamp
+    )
+    keepSatsTotal.value = 0
+    for (let i = 0; i < tempTotal.length; i++) {
+      keepSatsTotal.value += tempTotal[i].msats
+    }
+
+    keepSatsTotal.value = keepSatsTotal.value / 1000
+  }
+
+  data.value = satsHistory
 
   // calculate totals for hive and sats
   if (data.value) {

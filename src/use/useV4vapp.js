@@ -28,6 +28,7 @@ export async function useCheckApiTokenValid(username, apiToken) {
 export async function useKeepSats(username, apiToken) {
   // if (!apiToken) return null
   // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
+  const expiryTimeInMinutes = 1
   try {
     const resp = await apiLogin.get("/v1/v4vapp/keepsats")
     return resp.data
