@@ -131,6 +131,9 @@ const storeUser = useStoreUser()
 const q = useQuasar()
 const savingsToggle = ref(false)
 
+// emit balances to the parent component
+const emit = defineEmits(["balances"])
+
 const backgroundImage = [
   "sealogo01",
   "sealogo02",
@@ -153,9 +156,11 @@ const lightDark = computed(() => {
 })
 
 const nonZeroKeepSats = computed(() => {
+  emit("balances", balances.value)
   return balances.value.keepSats !== "0"
 })
 const balances = computed(() => {
+  console.log("emitBalances")
   if (savingsToggle.value) {
     return {
       hive: storeUser.savingsHiveBalance,
@@ -202,8 +207,8 @@ function changeBackground() {
   console.log("changeBackground")
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
   storeUser.update()
+  emit("balances", balances.value)
 }
-
 </script>
 
 <style lang="scss" scoped>

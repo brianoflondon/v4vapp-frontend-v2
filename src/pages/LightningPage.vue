@@ -148,6 +148,23 @@
         </div>
         <!-- Payment Buttons -->
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
+          <div class="row justify-center q-pa-sm" v-if="enoughKeepSats">
+            <div class="pay-with-sats-button">
+              <q-btn
+                class="payment-button-sats"
+                @click="payInvoice('payWithSats', 'HiveKeychain')"
+                :loading="storeApiStatus.payInvoice"
+                :disable="storeApiStatus.payInvoice"
+                icon="fa-brands fa-btc"
+                :label="payWithSatsButton"
+                :color="buttonColor.buttonColor"
+                :text-color="buttonColor.textColor"
+                size="md"
+                rounded
+              />
+            </div>
+          </div>
+
           <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
             <q-btn
               class="payment-button-hbd"
@@ -286,6 +303,25 @@ const t = useI18n().t
 const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
+
+const payWithSatsButton = computed(() => {
+  return (
+    "Pay " +
+    tidyNumber(CurrencyCalc.value.sats, 0) +
+    " from " +
+    storeUser.keepSatsBalance +
+    " シ"
+  )
+})
+
+const enoughKeepSats = computed(() => {
+  console.log(storeUser.keepSatsBalanceNum)
+  console.log(CurrencyCalc.value.sats)
+  if (storeUser.keepSatsBalanceNum >= CurrencyCalc.value.sats) {
+    return true
+  }
+  return false
+})
 
 const KeychainDialog = ref({ show: false })
 const HASDialog = ref({ show: false })
@@ -610,20 +646,36 @@ function toggleCamera() {
   cameraShow.value = cameraOn.value
 }
 
+/**
+ * Pay the invoice using the specified currency and method.
+ *
+ * @param {string} currency - The currency to use for payment.
+ * @param {string} method - The payment method to use.
+ * @returns {Promise} - A promise that resolves when the payment is completed.
+ */
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
   // Add 6 Hive to the amount to cover the fee or 2 HBD
   console.log("payInvoice currency ", currency, "method ", method)
+  const payWithSats = currency === "payWithSats"
   let amountNum = 0
   if (currency == "HIVE") {
     amountNum = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
     amountNum = parseFloat(HBD.value) + 1 + 0.002 * parseFloat(Hive.value)
+  } else if (payWithSats) {
+    amountNum = 0.001
+    currency = "HIVE"
   }
   CurrencyCalc.value.amount = amountNum
   CurrencyCalc.value.currency = currency.toLowerCase()
   let amount = amountNum.toFixed(3)
-  const memo = `${dInvoice.value.paymentRequest}`
+
+  // if payWithSats is true add #paywithsats to the end of the memo
+  let memo = `${dInvoice.value.paymentRequest}`
+  if (payWithSats) {
+    memo += " #paywithsats"
+  }
   dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
   let username = null

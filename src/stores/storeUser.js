@@ -257,6 +257,14 @@ export const useStoreUser = defineStore("useStoreUser", {
       return tidyNumber(this.currentKeepSats?.net_sats, 0)
       // return this.currentKeepSats
     },
+    keepSatsBalanceNum() {
+      if (this.currentKeepSats === null) {
+        console.log("Need to reauthenticate to get keepSatsBalance")
+        console.log("check if logged in with HAS or Keychain")
+        return "💰💰💰"
+      }
+      return this.currentKeepSats?.net_sats
+    },
     savingsSatsBalance() {
       if (this.satsBalance === "💰💰💰") return "💰💰💰"
       const savingsHiveBalance = parseFloat(this.currentDetails.savings_balance)

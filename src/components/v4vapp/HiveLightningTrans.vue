@@ -1,5 +1,30 @@
 <template>
-  <div class="hivetosats-table">
+  <div class="refresh-days-button-select row justify-evenly q-py-sm">
+    <div class="refresh-button">
+      <q-btn
+        label="Refresh"
+        rounded
+        @click="fetchData(dataDays)"
+        :disable="data.length === 0"
+      ></q-btn>
+    </div>
+    <div class="days-select">
+      <q-select
+        v-model="dataDays"
+        :options="[
+          { label: '3 days', value: 3 },
+          { label: '7 days', value: 7 },
+          { label: '30 days', value: 30 },
+          { label: '90 days', value: 90 },
+          { label: '365 days', value: 365 },
+        ]"
+        label="Days"
+        dense
+        @update:model-value="fetchData($event)"
+      ></q-select>
+    </div>
+  </div>
+  <div class="hivetosats-table q-pa-sm">
     <q-table
       class="q-pa-xs"
       dense
@@ -39,33 +64,8 @@
         </q-tr>
       </template>
     </q-table>
-    <div class="row justify-evenly q-pt-md">
-      <div>
-        <q-btn
-          label="Refresh"
-          rounded
-          @click="fetchData(dataDays)"
-          :disable="data.length === 0"
-        ></q-btn>
-      </div>
-      <div>
-        <q-select
-          v-model="dataDays"
-          :options="[
-            { label: '3 days', value: 3 },
-            { label: '7 days', value: 7 },
-            { label: '30 days', value: 30 },
-            { label: '90 days', value: 90 },
-            { label: '365 days', value: 365 },
-          ]"
-          label="Days"
-          dense
-          @update:model-value="fetchData($event)"
-        ></q-select>
-      </div>
-    </div>
   </div>
-  <div class="keepsats-table">
+  <div class="keepsats-table q-pa-sm">
     <q-table
       class="q-pa-xs"
       dense
