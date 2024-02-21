@@ -1,34 +1,28 @@
 <template>
   <q-page>
     <div class="flex column text-center items-center q-pa-none">
-      <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
+      <q-tabs v-model="currentTab" align="justify" dense animated>
         <q-tab name="wallet" :label="$t('wallet')" />
         <q-tab
           name="deposit"
           :label="$t('deposit')"
           :disable="!storeUser.currentUser"
         >
-          <q-tooltip>{{
-            $t("deposit_sats_on_v4vapp")
-          }}</q-tooltip>
+          <q-tooltip>{{ $t("deposit_sats_on_v4vapp") }}</q-tooltip>
         </q-tab>
         <q-tab
           name="history"
           :label="$t('history')"
           :disable="!storeUser.currentUser"
         >
-          <q-tooltip>{{
-            $t("login_to_see_history")
-          }}</q-tooltip>
+          <q-tooltip>{{ $t("login_to_see_history") }}</q-tooltip>
         </q-tab>
         <!-- <q-tab name="other" :label="$t('other')" /> -->
       </q-tabs>
+      <!-- Q-tab-panels -->
       <q-tab-panels v-model="currentTab">
-        <q-tab-panel v-show="false" name="sales">
-          <div></div>
-        </q-tab-panel>
         <q-tab-panel name="history">
-          <q-slide-transition appear :duration="500" disappear>
+          <q-slide-transition appear disappear :duration="1500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
               <div>
                 <HiveLightningTrans />
@@ -36,11 +30,21 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
-        <q-tab-panel name="currency">
-          <div class="flex row pad-max-width full-width q-px-xs q-py-xs"></div>
+        <q-tab-panel name="deposit">
+          <q-slide-transition appear disappear :duration="500">
+            <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+              <DepositKeepsats />
+            </div>
+          </q-slide-transition>
+        </q-tab-panel>
+        <q-tab-panel v-show="true" name="wallet">
+          <q-slide-transition appear disappear :duration="500">
+          </q-slide-transition>
         </q-tab-panel>
       </q-tab-panels>
+      <!-- End Q-tab-panels -->
     </div>
+    <!-- Main page content for wallet with credit card and invoice entry -->
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
@@ -243,6 +247,7 @@
       </div>
       <!-- Camera Toggle, paste and invoice input -->
     </div>
+    <!-- End Main page content for wallet with credit card and invoice entry -->
     <AskDetailsDialog
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
@@ -271,7 +276,7 @@
 import { computed, ref, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader"
+import { QrcodeStream } from "vue-qrcode-reader"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
@@ -289,6 +294,7 @@ import ExplanationBox from "components/utils/ExplanationBox.vue"
 import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HiveLightningTrans from "src/components/v4vapp/HiveLightningTrans.vue"
+import DepositKeepsats from "src/components/hive/DepositKeepsats.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
