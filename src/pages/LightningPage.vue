@@ -235,6 +235,7 @@
             />
           </div>
         </div>
+        <!-- End Payment Buttons -->
         <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
         <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
         <!-- Vote Button -->

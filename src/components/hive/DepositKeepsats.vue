@@ -15,6 +15,86 @@
         ]"
       />
     </div>
+    <div>
+        <div class="payment-buttons column q-pt-sm" v-show="true">
+          <div class="row justify-center q-pa-sm" v-if="true">
+            <div class="pay-with-sats-button">
+              <q-btn
+                class="payment-button-sats"
+                @click="payInvoice('payWithSats', 'HiveKeychain')"
+                :loading="storeApiStatus.payInvoice"
+                :disable="storeApiStatus.payInvoice"
+                icon="fa-brands fa-btc"
+                :label="payWithSatsButton"
+                :color="buttonColor.buttonColor"
+                :text-color="buttonColor.textColor"
+                size="md"
+                rounded
+              />
+            </div>
+          </div>
+
+          <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
+            <q-btn
+              class="payment-button-hbd"
+              @click="payInvoice('HBD', 'HiveKeychain')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:/keychain/hive-keychain-round.svg"
+              icon-right="img:/avatars/hbd_logo.svg"
+              :label="HBD"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+            <q-btn
+              class="payment-button-hive"
+              @click="payInvoice('HIVE', 'HiveKeychain')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:/keychain/hive-keychain-round.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              :label="Hive"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+          </div>
+          <div class="has-buttons row flex-center q-gutter-lg">
+            <q-btn
+              class="payment-button-hbd"
+              @click="payInvoice('HBD', 'HAS')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:/has/hive-auth-logo.svg"
+              icon-right="img:/avatars/hbd_logo.svg"
+              :label="HBD"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+            <q-btn
+              class="payment-button-hive"
+              @click="payInvoice('HIVE', 'HAS')"
+              :loading="storeApiStatus.payInvoice"
+              :disable="storeApiStatus.payInvoice"
+              icon="img:/has/hive-auth-logo.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              :label="Hive"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+          </div>
+        </div>
+
+
+    </div>
+
     <div class="address-qr-code q-pa-sm">
       <CreateQRCode
         :qr-text="lightningAddressPrefix"
