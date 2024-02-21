@@ -4,11 +4,20 @@
       <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
         <q-tab name="wallet" :label="$t('wallet')" />
         <q-tab
+          name="deposit"
+          :label="$t('deposit')"
+          :disable="!storeUser.currentUser"
+        >
+          <q-tooltip>{{
+            $t("deposit_sats_on_v4vapp")
+          }}</q-tooltip>
+        </q-tab>
+        <q-tab
           name="history"
           :label="$t('history')"
           :disable="!storeUser.currentUser"
         >
-          <q-tooltip v-if="!storeUser.currentUser">{{
+          <q-tooltip>{{
             $t("login_to_see_history")
           }}</q-tooltip>
         </q-tab>
@@ -19,7 +28,7 @@
           <div></div>
         </q-tab-panel>
         <q-tab-panel name="history">
-          <q-slide-transition appear :duration="500" disapear>
+          <q-slide-transition appear :duration="500" disappear>
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
               <div>
                 <HiveLightningTrans />

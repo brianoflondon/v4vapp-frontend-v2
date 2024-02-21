@@ -1,89 +1,107 @@
 <template>
-  <div class="refresh-days-button-select row justify-evenly q-py-sm">
-    <div class="refresh-button">
-      <q-btn
-        label="Refresh"
-        rounded
-        @click="fetchData(dataDays)"
-        :disable="data.length === 0"
-      ></q-btn>
-    </div>
-    <div class="days-select">
-      <q-select
-        v-model="dataDays"
-        :options="[
-          { label: '3 days', value: 3 },
-          { label: '7 days', value: 7 },
-          { label: '30 days', value: 30 },
-          { label: '90 days', value: 90 },
-          { label: '365 days', value: 365 },
-        ]"
-        label="Days"
-        dense
-        @update:model-value="fetchData($event)"
-      ></q-select>
-    </div>
-  </div>
-  <div class="hivetosats-table q-pa-sm">
-    <q-table
-      class="q-pa-xs"
-      dense
-      :rows="data"
-      row-key="trx_id"
-      :columns="columns"
-      :visible-columns="['net_hive', 'sats', 'timestamp', 'link', 'reason']"
-    >
-      <template v-slot:body-cell-link="props">
-        <q-td :props="props">
-          <a
-            :href="useGenerateTxUrl(props.row.answer_trx_id)"
-            target="_blank"
-            class="custom-link"
+  <!-- Refresh button and days select  -->
+  <div class="row wrap justify-center">
+
+    <div class="col-auto bordered-div">
+      <div class="refresh-days-button-select row justify-evenly q-py-sm">
+        <div class="refresh-button q-px-sm">
+          <q-btn
+            label="Refresh"
+            rounded
+            @click="fetchData(dataDays)"
+            :disable="data.length === 0"
+          ></q-btn>
+        </div>
+        <div class="days-select q-px-sm">
+          <q-select
+            v-model="dataDays"
+            :options="[
+              { label: '3 days', value: 3 },
+              { label: '7 days', value: 7 },
+              { label: '30 days', value: 30 },
+              { label: '90 days', value: 90 },
+              { label: '365 days', value: 365 },
+            ]"
+            label="Days"
+            dense
+            @update:model-value="fetchData($event)"
+          ></q-select>
+        </div>
+      </div>
+      <!--End  Refresh button and days select  -->
+      <div class="transaction-data-tables row">
+        <!-- Hive to Sats Table -->
+        <div class="hivetosats-table q-pa-sm">
+          <q-table
+            class="q-pa-xs"
+            dense
+            :rows="data"
+            row-key="trx_id"
+            :columns="columns"
+            :visible-columns="['net_hive', 'sats', 'timestamp', 'link', 'reason']"
           >
-            <q-btn
-              size="xs"
-              text-color="inherit"
-              flat
-              dense
-              icon="open_in_new"
-              name="open_in_new"
-            />
-          </a>
-        </q-td>
-      </template>
-      <template v-slot:bottom-row v-if="data.length > 0">
-        <q-tr class="text-bold">
-          <q-td>Total</q-td>
-          <q-td class="text-right">
-            {{ tidyNumber(totals.totalHive, 3) }}
-          </q-td>
-          <q-td class="text-right">
-            {{ tidyNumber(totals.totalSats, 0) }}
-          </q-td>
-          <q-td colspan="1"></q-td>
-        </q-tr>
-      </template>
-    </q-table>
-  </div>
-  <div class="keepsats-table q-pa-sm">
-    <q-table
-      class="q-pa-xs"
-      dense
-      :rows="keepSatsData"
-      :columns="keepSatsColumns"
-      row-key="unique_id"
-      :visible-columns="['timestamp', 'sats', 'reason']"
-    >
-      <template v-slot:bottom-row v-if="data.length > 0">
-        <q-tr class="text-bold">
-          <q-td>Total</q-td>
-          <q-td class="text-right">
-            {{ tidyNumber(keepSatsTotal, 0) }}
-          </q-td>
-          <q-td colspan="1"></q-td>
-        </q-tr>
-      </template>
-    </q-table>
+            <template v-slot:body-cell-link="props">
+              <q-td :props="props">
+                <a
+                  :href="useGenerateTxUrl(props.row.answer_trx_id)"
+                  target="_blank"
+                  class="custom-link"
+                >
+                  <q-btn
+                    size="xs"
+                    text-color="inherit"
+                    flat
+                    dense
+                    icon="open_in_new"
+                    name="open_in_new"
+                  />
+                </a>
+              </q-td>
+            </template>
+            <template v-slot:bottom-row v-if="data.length > 0">
+              <q-tr class="text-bold">
+                <q-td>Total</q-td>
+                <q-td class="text-right">
+                  {{ tidyNumber(totals.totalHive, 3) }}
+                </q-td>
+                <q-td class="text-right">
+                  {{ tidyNumber(totals.totalSats, 0) }}
+                </q-td>
+                <q-td colspan="1"></q-td>
+              </q-tr>
+            </template>
+          </q-table>
+        </div>
+        <!-- End Hive to Sats Table -->
+      </div>
+    </div>
+    <div class="col-auto bordered-div">
+      <!-- Keep Sats Table -->
+      <div class="keepsats-table q-pa-sm">
+        <q-table
+          class="q-pa-xs"
+          dense
+          :rows="keepSatsData"
+          :columns="keepSatsColumns"
+          row-key="unique_id"
+          :visible-columns="['timestamp', 'sats', 'reason']"
+        >
+          <template v-slot:bottom-row v-if="data.length > 0">
+            <q-tr class="text-bold">
+              <q-td>Total</q-td>
+              <q-td class="text-right">
+                {{ tidyNumber(keepSatsTotal, 0) }}
+              </q-td>
+              <q-td colspan="1"></q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </div>
+      <!-- End Keep Sats Table -->
+    </div>
+
+
+
   </div>
 </template>
 
@@ -240,4 +258,8 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.bordered-div {
+  border: 1px solid #e0e0e0;
+}
+</style>
