@@ -37,10 +37,6 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
-        <q-tab-panel v-show="true" name="wallet">
-          <q-slide-transition appear disappear :duration="500">
-          </q-slide-transition>
-        </q-tab-panel>
       </q-tab-panels>
       <!-- End Q-tab-panels -->
     </div>

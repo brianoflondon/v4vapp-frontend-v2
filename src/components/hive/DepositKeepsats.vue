@@ -1,5 +1,6 @@
 <template>
   <div class="q-pa-sm col justify-evenly">
+
     <div class="toggle pad-max-width">
       <q-btn-toggle
         spread
@@ -13,11 +14,12 @@
           { label: 'HBD', value: 'hbd' },
           { label: 'Hive', value: 'hive' },
         ]"
+        @update:model-value="(val) => updateDestination(val)"
       />
     </div>
     <div class="address-qr-code q-pa-sm">
       <CreateQRCode
-        :qr-text="lightningAddressPrefix"
+        :qr-text="qrCodeText"
         :loading="loading"
         :hive-accname="storeUser.currentUser"
         :width="300"
@@ -42,7 +44,7 @@
 </template>
 
 <script setup>
-import { computed, watch, ref } from "vue"
+import { computed, watch, ref, onMounted } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useQuasar, copyToClipboard } from "quasar"
@@ -54,6 +56,8 @@ const quasar = useQuasar()
 const storeUser = useStoreUser()
 const loading = ref(false)
 const destination = ref("sats")
+const qrCode = ref("") // QrCode object emitted from CreateQRCode
+const qrCodeText = ref("")
 
 const lightningAddressPrefix = computed(() => {
   if (!storeUser.currentUser) {
@@ -75,11 +79,24 @@ const lightningAddress = computed(() => {
   return address
 })
 
+onMounted(() => {
+  updateDestination(destination.value)
+})
+
 watch(storeUser, async (val) => {
   loading.value = true
   await new Promise((resolve) => setTimeout(resolve, 100))
   loading.value = false
 })
+
+function updateDestination(val) {
+  console.log(val)
+  if (val === "sats") {
+    qrCodeText.value = lightningAddressPrefix.value
+  } else {
+    qrCodeText.value = storeUser.currentUser
+  }
+}
 
 function copyText() {
   copyToClipboard(lightningAddress.value)
