@@ -46,7 +46,7 @@
       <!-- End of Toggle -->
       <!-- Amount input -->
       <q-slide-transition appear disappear :duration="500">
-        <div class="explanation-box" v-if="destination != 'sats'">
+        <div class="explanation-box" v-show="destination != 'sats'">
           <q-input
             class="amount-display"
             v-model="amount"
@@ -129,6 +129,7 @@
 <script setup>
 import { computed, watch, ref, onMounted } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useQuasar, copyToClipboard } from "quasar"
 import { useI18n } from "vue-i18n"
@@ -140,12 +141,13 @@ import { useGenerateHiveTransferOp } from "src/use/useHive"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { serverHiveAccount } from "src/boot/axios"
 import { encodeOp } from "hive-uri"
-import { store } from "quasar/wrappers"
+
 const t = useI18n().t
 const q = useQuasar()
 
 const HASDialog = ref({ show: false })
 const storeUser = useStoreUser()
+const storeApiStatus = useStoreAPIStatus()
 const loading = ref(false)
 const destination = ref("sats")
 const qrCode = ref("") // QrCode object emitted from CreateQRCode
@@ -209,7 +211,6 @@ watch(storeUser, async (val) => {
 })
 
 function updateDestination(val) {
-  console.log(val)
 }
 
 function copyText() {
@@ -231,6 +232,14 @@ async function makePayment(method) {
 
   const memo = `${storeUser.currentUser} Deposit to #SATS`
   if (method === "HiveKeychain") {
+    if (!storeApiStatus.isKeychainIn) {
+      q.notify({
+        message: t("keychain_not_installed"),
+        color: "negative",
+        icon: "error",
+      })
+      return
+    }
     const result = await useHiveKeychainTransfer(
       storeUser.currentUser,
       fixedAmount,
