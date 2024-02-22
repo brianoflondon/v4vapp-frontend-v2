@@ -74,7 +74,6 @@
         :width="300"
         :height="300"
         :color="dotColor"
-        no-link
         @qr-code="(val) => (qrCode = val)"
       />
     </div>
