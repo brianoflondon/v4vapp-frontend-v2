@@ -45,26 +45,28 @@
       </q-btn-toggle>
       <!-- End of Toggle -->
       <!-- Amount input -->
-      <div class="explanation-box" v-if="destination != 'sats'">
-        <q-input
-          class="amount-display"
-          v-model="amount"
-          inputmode="decimal"
-          pattern="\d*"
-          :label="$t('amount')"
-          stack-label
-          clearable
-          debounce="20"
-          @keyup.enter="enterPressed()"
-          @keyup.esc="clearAmount(false)"
-          :input-style="{ 'text-align': 'right' }"
-          :rules="[(val) => !!val || t('no_amount')]"
-        >
-        </q-input>
-      </div>
+      <q-slide-transition appear disappear :duration="500">
+        <div class="explanation-box" v-if="destination != 'sats'">
+          <q-input
+            class="amount-display"
+            v-model="amount"
+            inputmode="decimal"
+            pattern="\d*"
+            :label="$t('amount')"
+            stack-label
+            clearable
+            debounce="20"
+            @keyup.enter="enterPressed()"
+            @keyup.esc="clearAmount(false)"
+            :input-style="{ 'text-align': 'right' }"
+            :rules="[(val) => !!val || t('no_amount')]"
+          >
+          </q-input>
+        </div>
+      </q-slide-transition>
       <!-- End of Amount input -->
     </div>
-    <div class="address-qr-code q-pa-sm" v-if="destination === 'sats'">
+    <div class="address-qr-code q-pa-sm" @click="makePayment">
       <CreateQRCode
         :qr-text="destination === 'sats' ? qrCodeSats : qrCodeHive"
         :loading="loading"
@@ -72,13 +74,11 @@
         :width="300"
         :height="300"
         :color="dotColor"
+        no-link
         @qr-code="(val) => (qrCode = val)"
       />
     </div>
-    <div v-else>
-      <CreateHASQRCode :qrText="qrCodeHive" :width="300" :height="300" />
-    </div>
-    <div class="address-copy-button q-pa-sm">
+    <div class="address-copy-button q-pa-sm" v-if="destination === 'sats'">
       <q-btn
         spread
         :label="lightningAddress"
@@ -91,36 +91,66 @@
         ><q-tooltip>{{ $t("copy_qrcode") }}</q-tooltip>
       </q-btn>
     </div>
+    <div class="row justify-evenly" v-else>
+      <div>
+        <q-btn
+          class="payment-button-hive"
+          @click="makePayment('HiveKeychain')"
+          :loading="false"
+          :disable="false"
+          icon="img:/keychain/hive-keychain-round.svg"
+          icon-right="img:avatars/hive_logo_dark.svg"
+          label="Keychain"
+          :color="buttonColor.buttonColor"
+          :text-color="buttonColor.textColor"
+          size="md"
+          rounded
+        />
+      </div>
+      <div>
+        <q-btn
+          class="payment-button-hive"
+          @click="makePayment('HAS')"
+          :loading="false"
+          :disable="false"
+          icon="img:/has/hive-auth-logo.svg"
+          icon-right="img:avatars/hive_logo_dark.svg"
+          label="HAS"
+          :color="buttonColor.buttonColor"
+          :text-color="buttonColor.textColor"
+          size="md"
+          rounded
+        />
+      </div>
+    </div>
   </div>
+  <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
 </template>
 
 <script setup>
 import { computed, watch, ref, onMounted } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
-import CreateHASQRCode from "components/qrcode/CreateHASQRCode.vue"
 import { useQuasar, copyToClipboard } from "quasar"
 import { useI18n } from "vue-i18n"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { QRLightningHiveColor } from "src/use/useUtils"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
+import AskHASDialog from "src/components/hive/AskHASDialog.vue"
 import { useGenerateHiveTransferOp } from "src/use/useHive"
+import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { serverHiveAccount } from "src/boot/axios"
 import { encodeOp } from "hive-uri"
+import { store } from "quasar/wrappers"
 const t = useI18n().t
-const quasar = useQuasar()
+const q = useQuasar()
 
+const HASDialog = ref({ show: false })
 const storeUser = useStoreUser()
 const loading = ref(false)
 const destination = ref("sats")
 const qrCode = ref("") // QrCode object emitted from CreateQRCode
-const qrCodeText = ref("")
 
-const qrCodeTexts = ref({
-  sats: "",
-  hbd: "",
-  hive: "",
-})
 const bech32 = ref("")
 const amount = ref(10)
 
@@ -191,6 +221,96 @@ function copyText() {
     icon: "check_circle",
   })
 }
+
+async function makePayment(method) {
+  console.log("makePayment")
+  if (destination.value === "sats") {
+    return
+  }
+
+  const fixedAmount = parseFloat(amount.value).toFixed(3)
+
+  const memo = `${storeUser.currentUser} Deposit to #SATS`
+  if (method === "HiveKeychain") {
+    const result = await useHiveKeychainTransfer(
+      storeUser.currentUser,
+      fixedAmount,
+      destination.value.toUpperCase(),
+      memo
+    )
+    console.log("pay result", result)
+    if (result.success) {
+      q.notify({
+        avatar: "/site-logo/v4vapp-logo.svg",
+        message: result.message,
+        color: "positive",
+        icon: "check_circle",
+      })
+    } else {
+      q.notify({
+        message: result.message,
+        color: "negative",
+        icon: "error",
+      })
+    }
+  }
+  if (method === "HAS") {
+    HASDialog.value.show = true
+    HASDialog.value.payment = {
+      username: storeUser.currentUser,
+      amount: fixedAmount,
+      currency: destination.value.toUpperCase(),
+      memo: memo,
+    }
+  }
+}
+
+watch(
+  HASDialog,
+  async (value) => {
+    if (value) {
+      if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_nack") {
+        const message = `${t("rejected_payment")}`
+        q.notify({
+          color: "negative",
+          avatar: "/site-logo/v4vapp-logo.svg",
+          timeout: 5000,
+          message: message,
+          position: "top",
+        })
+      }
+      if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_ack") {
+        const message = `${t("payment_sent")}`
+        q.notify({
+          avatar: "/site-logo/v4vapp-logo.svg",
+          color: "positive",
+          group: false,
+          timeout: 3000,
+          message: message,
+          position: "top",
+        })
+      }
+    }
+  },
+  { deep: true }
+)
+
+const buttonColors = {
+  // dark mode is true, light mode is false
+  true: {
+    buttonColor: "grey-10",
+    textColor: "white-4",
+  },
+  false: {
+    buttonColor: "grey-6",
+    textColor: "grey-9",
+  },
+}
+
+const buttonColor = computed(() => {
+  const colours = buttonColors[q.dark.isActive]
+  return colours
+})
 </script>
 
 <style lang="scss" scoped>

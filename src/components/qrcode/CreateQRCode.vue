@@ -64,6 +64,10 @@ const props = defineProps({
     type: String,
     default: "#1976D2",
   },
+  noLink: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const avatarUrl = ref("")
@@ -159,6 +163,10 @@ async function newQRCode() {
 }
 
 function openLinkInNewWindow() {
+  console.log('No Link: ', props.noLink)
+  if (props.noLink) {
+    return
+  }
   const url = qrTextPage.value
   window.open(url, "_blank")
 }
