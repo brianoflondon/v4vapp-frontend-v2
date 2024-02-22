@@ -43,10 +43,30 @@
           </div>
         </template>
       </q-btn-toggle>
+      <!-- End of Toggle -->
+      <!-- Amount input -->
+      <div class="explanation-box" v-if="destination != 'sats'">
+        <q-input
+          class="amount-display"
+          v-model="amount"
+          inputmode="decimal"
+          pattern="\d*"
+          :label="$t('amount')"
+          stack-label
+          clearable
+          debounce="20"
+          @keyup.enter="enterPressed()"
+          @keyup.esc="clearAmount(false)"
+          :input-style="{ 'text-align': 'right' }"
+          :rules="[(val) => !!val || t('no_amount')]"
+        >
+        </q-input>
+      </div>
+      <!-- End of Amount input -->
     </div>
-    <div class="address-qr-code q-pa-sm">
+    <div class="address-qr-code q-pa-sm" v-if="destination === 'sats'">
       <CreateQRCode
-        :qr-text="qrCodeTexts[destination]"
+        :qr-text="destination === 'sats' ? qrCodeSats : qrCodeHive"
         :loading="loading"
         :hive-accname="storeUser.currentUser"
         :width="300"
@@ -54,6 +74,9 @@
         :color="dotColor"
         @qr-code="(val) => (qrCode = val)"
       />
+    </div>
+    <div v-else>
+      <CreateHASQRCode :qrText="qrCodeHive" :width="300" :height="300" />
     </div>
     <div class="address-copy-button q-pa-sm">
       <q-btn
@@ -75,11 +98,15 @@
 import { computed, watch, ref, onMounted } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
+import CreateHASQRCode from "components/qrcode/CreateHASQRCode.vue"
 import { useQuasar, copyToClipboard } from "quasar"
 import { useI18n } from "vue-i18n"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { QRLightningHiveColor } from "src/use/useUtils"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
+import { useGenerateHiveTransferOp } from "src/use/useHive"
+import { serverHiveAccount } from "src/boot/axios"
+import { encodeOp } from "hive-uri"
 const t = useI18n().t
 const quasar = useQuasar()
 
@@ -88,12 +115,14 @@ const loading = ref(false)
 const destination = ref("sats")
 const qrCode = ref("") // QrCode object emitted from CreateQRCode
 const qrCodeText = ref("")
+
 const qrCodeTexts = ref({
   sats: "",
   hbd: "",
   hive: "",
 })
 const bech32 = ref("")
+const amount = ref(10)
 
 const dotColor = computed(() => {
   let isLightning = destination.value === "sats"
@@ -120,17 +149,27 @@ const lightningAddress = computed(() => {
   return address
 })
 
+const qrCodeHive = computed(() => {
+  const op = useGenerateHiveTransferOp(
+    storeUser.currentUser,
+    serverHiveAccount,
+    parseFloat(amount.value),
+    destination.value,
+    `${storeUser.currentUser} Deposit to #SATS`
+  )
+  return encodeOp(op)
+})
+
+const qrCodeSats = computed(() => {
+  return bech32.value
+})
+
 onMounted(async () => {
   updateDestination(destination.value)
   loading.value = true
   //   qrCodeText.value['sats'] = lightningAddress.value
-  const bech32Data = await storeUser.bech32Address('sats')
+  const bech32Data = await storeUser.bech32Address("sats")
   bech32.value = bech32Data.prefix
-  qrCodeTexts.value = {
-    sats: bech32.value,
-    hbd: "HBD",
-    hive: "HIVE",
-  }
   loading.value = false
 })
 
@@ -157,5 +196,9 @@ function copyText() {
 <style lang="scss" scoped>
 .explanation-box {
   max-width: 300px;
+}
+
+.amount-display {
+  font-size: 2rem;
 }
 </style>
