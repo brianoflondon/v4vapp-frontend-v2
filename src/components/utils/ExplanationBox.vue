@@ -24,20 +24,15 @@ const textHere = ref("")
 const props = defineProps({
   title: {
     type: String,
-    required: true,
     default: "",
   },
   text: {
     type: String,
-    required: true,
     default: "",
   },
 })
 
 onMounted(() => {
-  console.log("ExplanationBox mounted")
-  console.log(props.title)
-  console.log(props.text)
   if (props.title === "") {
     titleHere.value = t("explanation_title")
   } else {

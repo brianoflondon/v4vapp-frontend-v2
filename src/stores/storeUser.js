@@ -3,7 +3,7 @@ import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
-import { apiLogin } from "src/boot/axios"
+import { apiLogin, api } from "src/boot/axios"
 import { useKeepSats } from "src/use/useV4vapp"
 
 const storeAPIStatus = useStoreAPIStatus()
@@ -427,6 +427,24 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.currentDetails = null
       this.currentProfile = null
       this.currentKeepSats = null
+    },
+    async bech32Address(currency = "hive") {
+      const getBech32 = async (currency) => {
+        const params = { currency: currency, no_image: false, json: true }
+        //http://localhost:1818/v1/lnurlp/bech32/v4vapp.dev?no_image=false&json=true&currency=sats
+        const url = `/lnurlp/bech32/${this.currentUser}`
+        try {
+          const res = await api.get(url, { params })
+          console.log(res.data)
+          return res.data
+        } catch (err) {
+          console.error(err)
+          return `${this.currentUser}@${currency}.v4v.app`
+        }
+      }
+      const answer = await getBech32(currency)
+      if (answer) return answer
+      return null
     },
   },
   persist: {

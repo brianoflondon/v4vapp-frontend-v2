@@ -1,6 +1,8 @@
 <template>
   <div class="q-pa-sm col justify-evenly">
-
+    <div class="explanation-box text-justify q-pa-sm">
+      <ExplanationBox title="KeepSats on V4V.app" text="How to do it" />
+    </div>
     <div class="toggle pad-max-width">
       <q-btn-toggle
         spread
@@ -10,20 +12,46 @@
         glossy
         toggle-color="primary"
         :options="[
-          { label: 'sats', value: 'sats' },
-          { label: 'HBD', value: 'hbd' },
-          { label: 'Hive', value: 'hive' },
+          { label: '', value: 'sats', slot: 'lightning' },
+          { label: '', value: 'hbd', slot: 'hbd' },
+          { label: '', value: 'hive', slot: 'hive' },
         ]"
         @update:model-value="(val) => updateDestination(val)"
-      />
+      >
+        <template #lightning>
+          <div class="row items-center q-pa-none" style="font-size: 1.2rem">
+            <div><i class="fa-sharp fa-solid fa-bolt" /></div>
+            <div><i class="fa-brands fa-btc" /></div>
+          </div>
+        </template>
+        <!-- HBD Button -->
+        <template #hbd>
+          <div class="column items-center q-pa-none" style="font-size: 1.2rem">
+            <div><HbdLogoIcon /></div>
+            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+              HBD
+            </div>
+          </div>
+        </template>
+        <!-- Hive Button -->
+        <template #hive>
+          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
+            <div><i class="fa-brands fa-hive" /></div>
+            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+              Hive
+            </div>
+          </div>
+        </template>
+      </q-btn-toggle>
     </div>
     <div class="address-qr-code q-pa-sm">
       <CreateQRCode
-        :qr-text="qrCodeText"
+        :qr-text="qrCodeTexts[destination]"
         :loading="loading"
         :hive-accname="storeUser.currentUser"
         :width="300"
         :height="300"
+        :color="dotColor"
         @qr-code="(val) => (qrCode = val)"
       />
     </div>
@@ -49,7 +77,9 @@ import { useStoreUser } from "src/stores/storeUser"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useQuasar, copyToClipboard } from "quasar"
 import { useI18n } from "vue-i18n"
-
+import ExplanationBox from "src/components/utils/ExplanationBox.vue"
+import { QRLightningHiveColor } from "src/use/useUtils"
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 const t = useI18n().t
 const quasar = useQuasar()
 
@@ -58,6 +88,17 @@ const loading = ref(false)
 const destination = ref("sats")
 const qrCode = ref("") // QrCode object emitted from CreateQRCode
 const qrCodeText = ref("")
+const qrCodeTexts = ref({
+  sats: "",
+  hbd: "",
+  hive: "",
+})
+const bech32 = ref("")
+
+const dotColor = computed(() => {
+  let isLightning = destination.value === "sats"
+  return QRLightningHiveColor(isLightning, loading.value)
+})
 
 const lightningAddressPrefix = computed(() => {
   if (!storeUser.currentUser) {
@@ -79,8 +120,18 @@ const lightningAddress = computed(() => {
   return address
 })
 
-onMounted(() => {
+onMounted(async () => {
   updateDestination(destination.value)
+  loading.value = true
+  //   qrCodeText.value['sats'] = lightningAddress.value
+  const bech32Data = await storeUser.bech32Address('sats')
+  bech32.value = bech32Data.prefix
+  qrCodeTexts.value = {
+    sats: bech32.value,
+    hbd: "HBD",
+    hive: "HIVE",
+  }
+  loading.value = false
 })
 
 watch(storeUser, async (val) => {
@@ -91,11 +142,6 @@ watch(storeUser, async (val) => {
 
 function updateDestination(val) {
   console.log(val)
-  if (val === "sats") {
-    qrCodeText.value = lightningAddressPrefix.value
-  } else {
-    qrCodeText.value = storeUser.currentUser
-  }
 }
 
 function copyText() {
@@ -108,4 +154,8 @@ function copyText() {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.explanation-box {
+  max-width: 300px;
+}
+</style>

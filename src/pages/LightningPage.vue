@@ -327,8 +327,6 @@ const payWithSatsButton = computed(() => {
 })
 
 const enoughKeepSats = computed(() => {
-  console.log(storeUser.keepSatsBalanceNum)
-  console.log(CurrencyCalc.value.sats)
   if (storeUser.keepSatsBalanceNum >= CurrencyCalc.value.sats) {
     return true
   }

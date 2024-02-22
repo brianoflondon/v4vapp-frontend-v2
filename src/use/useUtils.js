@@ -4,6 +4,7 @@
 //
 // ----------------------------------------------------------------------------
 
+import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
 
 /**
@@ -245,7 +246,6 @@ export function generateUUID() {
   })
 }
 
-
 /**
  * Checks the cache for a given key and returns the cached data if it exists and is not expired.
  * If the cached data is expired, it will be deleted from the cache.
@@ -253,7 +253,6 @@ export function generateUUID() {
  * @returns {Promise<Object|null>} - The cached data if it exists and is not expired, otherwise null.
  */
 export async function checkCache(key) {
-
   const cache = await caches.open("v4vapp")
   const cachedResponse = await cache.match(key)
   const cachedTimestamp = await cache.match(`${key}-timestamp`)
@@ -285,24 +284,22 @@ export async function putInCache(key, data, expiryTimeInMinutes) {
   cache.put(`${key}-timestamp`, new Response(expiryTime.toString()))
 }
 
-
 /**
  * Calculates the color for a QR code based on the given parameters.
  *
- * @param {boolean} isDark - Indicates whether the QR code should be displayed in dark mode.
  * @param {boolean} isLightning - Indicates whether the QR code is related to lightning.
  * @param {boolean} loading - Indicates whether the QR code is still loading.
  * @returns {string} The color code for the QR code.
  */
-export function QRLightningHiveColor(isDark, isLightning, loading) {
-  console.log("QRLightningHiveColor", isDark, isLightning, loading)
+export function QRLightningHiveColor(isLightning, loading) {
+  const q = useQuasar()
   if (loading) {
-    return isDark ? "#992AC7" : "#2F0D3D"
+    return q.dark.isActive ? "#992AC7" : "#2F0D3D"
   }
 
   if (isLightning) {
-    return isDark ? "#18D231" : "#0A5614"
+    return q.dark.isActive ? "#18D231" : "#0A5614"
   }
 
-  return isDark ? "#1976D2" : "#0E4377"
+  return q.dark.isActive ? "#1976D2" : "#0E4377"
 }

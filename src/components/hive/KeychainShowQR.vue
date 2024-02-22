@@ -254,8 +254,11 @@ const maxUseableWidth = computed(() => {
 })
 
 const dotColor = computed(() => {
+  let lightning = true
+  if (showLightning.value === null || !showLightning.value) {
+    lightning = false
+  }
   return QRLightningHiveColor(
-    q.dark.isActive,
     showLightning.value,
     KeychainDialog.value.loading
   )

@@ -160,7 +160,6 @@ const nonZeroKeepSats = computed(() => {
   return balances.value.keepSats !== "0"
 })
 const balances = computed(() => {
-  console.log("emitBalances")
   if (savingsToggle.value) {
     return {
       hive: storeUser.savingsHiveBalance,
