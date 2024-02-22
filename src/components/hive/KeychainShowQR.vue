@@ -180,7 +180,7 @@ import {
 import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
-import { tidyNumber } from "src/use/useUtils"
+import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
 import { encodeOp, Parameters } from "hive-uri"
 
 const hiveCheckTime = 5 // seconds between each check
@@ -254,17 +254,11 @@ const maxUseableWidth = computed(() => {
 })
 
 const dotColor = computed(() => {
-  if (q.dark.isActive) {
-    if (showLightning.value === null || KeychainDialog.value.loading) {
-      return "#1976D2"
-    }
-    return "#18D231"
-  } else {
-    if (showLightning.value === null || KeychainDialog.value.loading) {
-      return "#1976D2"
-    }
-    return "#18D231"
-  }
+  return QRLightningHiveColor(
+    q.dark.isActive,
+    showLightning.value,
+    KeychainDialog.value.loading
+  )
 })
 
 onBeforeMount(() => {
