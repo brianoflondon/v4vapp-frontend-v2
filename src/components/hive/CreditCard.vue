@@ -151,12 +151,10 @@ const maxValue = backgroundImage.length
 const backgroundIndex = ref(Math.floor(Math.random() * maxValue))
 
 onMounted(() => {
-  console.log("CreditCard.vue mounted")
   scheduleUpdate()
 })
 
 async function scheduleUpdate() {
-  console.log("Updating Sats balance")
   await storeUser.update()
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 2 * 60 * 1000)

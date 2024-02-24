@@ -299,7 +299,6 @@ export const useStoreUser = defineStore("useStoreUser", {
         this.currentDetails = await useHiveDetails(this.currentUser)
         await this.updateSatsBalance()
         this.currentProfile = this.currentDetails?.profile
-        console.log("this.currentUser", this.currentUser)
       }
       this.apiTokenSet()
       this.expireCheck()
