@@ -149,6 +149,10 @@ const backgroundImage = [
   "dolphins",
 ]
 
+
+/**
+ * ConfettiExplosion component
+ */
 const visible = ref(false)
 const explode = async () => {
   visible.value = false

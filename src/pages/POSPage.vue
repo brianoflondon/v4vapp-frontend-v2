@@ -1,5 +1,8 @@
 <template>
   <q-page>
+    <div>
+      <ConfettiExplosion v-if="visible" />
+    </div>
     <div class="flex column text-center items-center q-pa-none">
       <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
         <q-route-tab
@@ -224,7 +227,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue"
+import { ref, onMounted, watch, computed, nextTick } from "vue"
 import { tidyNumber, useUsernameFromRouteParam } from "src/use/useUtils"
 import { useQuasar } from "quasar"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
@@ -239,6 +242,7 @@ import PosHeader from "src/components/hive/PosHeader.vue"
 import HiveInputAcc from "src/components/HiveInputAcc.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
 import ListTransactions from "src/components/hive/ListTransactions.vue"
+import ConfettiExplosion from "vue-confetti-explosion"
 
 const route = useRoute()
 const q = useQuasar()
@@ -289,6 +293,16 @@ function resetCurrencyOptions(localCurrency) {
     }
     currencyOptions.value.unshift(localCurrencyOpt) // Add to the beginning
   }
+}
+
+/**
+ * ConfettiExplosion component
+ */
+const visible = ref(false)
+const explode = async () => {
+  visible.value = false
+  await nextTick()
+  visible.value = true
 }
 
 watch(route, (to, from) => {
@@ -580,6 +594,9 @@ watch(
   (paid) => {
     if (paid) {
       clearAmount(true)
+      setTimeout(() => {
+        explode()
+      }, 5300)
     } else {
     }
   }
