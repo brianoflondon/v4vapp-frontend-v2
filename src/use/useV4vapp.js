@@ -25,12 +25,17 @@ export async function useCheckApiTokenValid(username, apiToken) {
   return false
 }
 
-export async function useKeepSats(username, apiToken) {
+export async function useKeepSats(useCache = true) {
   // if (!apiToken) return null
   // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
   const expiryTimeInMinutes = 1
   try {
-    const resp = await apiLogin.get("/v1/v4vapp/keepsats")
+    const params = {
+      useCache: useCache,
+    }
+    const resp = await apiLogin.get("/v1/v4vapp/keepsats", {
+      params,
+    })
     return resp.data
   } catch (error) {
     console.log("useKeepSats", error)

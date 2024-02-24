@@ -297,19 +297,30 @@ export const useStoreUser = defineStore("useStoreUser", {
       const onOpen = async () => {
         if (this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
+        await this.updateSatsBalance()
         this.currentProfile = this.currentDetails?.profile
         console.log("this.currentUser", this.currentUser)
-        if (this.currentUser && this.apiToken) {
-          this.currentKeepSats = await useKeepSats(
-            this.currentUser,
-            this.apiToken,
-            this.token
-          )
-        }
       }
       this.apiTokenSet()
       this.expireCheck()
       onOpen()
+    },
+    async updateSatsBalance(useCache = true) {
+      if (this.currentUser && this.apiToken) {
+        const currentSatsBalance = this.currentKeepSats?.net_sats
+        try {
+          this.currentKeepSats = await useKeepSats(
+            useCache
+          )
+          if (currentSatsBalance !== this.currentKeepSats.net_sats) {
+            return true
+          }
+          return false
+        } catch (err) {
+          console.error(err)
+          return null
+        }
+      }
     },
     /**
      * Logs in a user with the provided credentials.

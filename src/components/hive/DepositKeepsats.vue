@@ -141,6 +141,8 @@ import { useGenerateHiveTransferOp } from "src/use/useHive"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { serverHiveAccount } from "src/boot/axios"
 import { encodeOp } from "hive-uri"
+import { timeout } from "workbox-core/_private"
+import { store } from "quasar/wrappers"
 
 const t = useI18n().t
 const q = useQuasar()
@@ -210,8 +212,7 @@ watch(storeUser, async (val) => {
   loading.value = false
 })
 
-function updateDestination(val) {
-}
+function updateDestination(val) {}
 
 function copyText() {
   copyToClipboard(lightningAddress.value)
@@ -230,7 +231,8 @@ async function makePayment(method) {
 
   const fixedAmount = parseFloat(amount.value).toFixed(3)
 
-  const memo = `${storeUser.currentUser} Deposit to #SATS`
+  // Adds encryption to the memo 2024-02-23
+  const memo = `#${storeUser.currentUser} Deposit to #SATS`
   if (method === "HiveKeychain") {
     if (!storeApiStatus.isKeychainIn) {
       q.notify({
@@ -254,6 +256,7 @@ async function makePayment(method) {
         color: "positive",
         icon: "check_circle",
       })
+      checkForSats()
     } else {
       q.notify({
         message: result.message,
@@ -297,11 +300,40 @@ watch(
           message: message,
           position: "top",
         })
+        checkForSats()
       }
     }
   },
   { deep: true }
 )
+async function checkForSats(oldNetSats = 0, count = 0) {
+  console.log("checkForSats", oldNetSats, count)
+  let currentSatsBalance = 0
+  if (oldNetSats === 0) {
+    currentSatsBalance = storeUser.currentKeepSats.net_sats
+  } else {
+    currentSatsBalance = oldNetSats
+  }
+  console.log("currentSatsBalance", currentSatsBalance)
+  const change = await storeUser.updateSatsBalance(false)
+  console.log("change", change)
+  if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
+    q.notify({
+      message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,
+      color: "positive",
+      icon: "check_circle",
+    })
+    // quit checking
+    return
+  }
+
+  if (count > 10) {
+    return
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 1000 * 5))
+  return checkForSats(currentSatsBalance, count + 1)
+}
 
 const buttonColors = {
   // dark mode is true, light mode is false

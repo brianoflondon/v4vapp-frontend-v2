@@ -66,8 +66,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, computed, ref } from "vue"
-import DarkSelector from "components/utils/DarkSelector.vue"
+import { onMounted, onUnmounted, computed } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"

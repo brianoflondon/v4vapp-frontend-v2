@@ -123,7 +123,7 @@
 <script setup>
 import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { computed, ref } from "vue"
+import { computed, ref, onMounted } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 
@@ -144,9 +144,23 @@ const backgroundImage = [
   "dolphins",
 ]
 
+let timeoutId = null
+
 const maxValue = backgroundImage.length
 // generate random number between 0 and 1
 const backgroundIndex = ref(Math.floor(Math.random() * maxValue))
+
+onMounted(() => {
+  console.log("CreditCard.vue mounted")
+  scheduleUpdate()
+})
+
+async function scheduleUpdate() {
+  console.log("Updating Sats balance")
+  await storeUser.update()
+  // Schedule the next update after 5 minutes
+  timeoutId = setTimeout(scheduleUpdate, 2 * 60 * 1000)
+}
 
 const lightDark = computed(() => {
   if (q.dark.isActive) {

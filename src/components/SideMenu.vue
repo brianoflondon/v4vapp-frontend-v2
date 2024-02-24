@@ -18,10 +18,13 @@
     <div class="q-py-lg">
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
-    <div class="q-pa-xs text-caption">{{ appName }} - {{ appVersion }}</div>
-    <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
-    <div class="q-pa-xs text-caption">{{ api?.defaults?.baseURL }}</div>
-    <div class="q-pa-xs text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
+    <div>
+      <div class="q-pa-xs text-caption">{{ appName }} - {{ appVersion }}</div>
+      <div class="q-pa-xs text-caption">{{ serverHiveAccount }}</div>
+      <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
+      <div class="q-pa-xs text-caption">{{ api?.defaults?.baseURL }}</div>
+      <div class="q-pa-xs text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
+    </div>
   </div>
 </template>
 
@@ -35,7 +38,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
-import { api, apiLogin } from "boot/axios"
+import { api, apiLogin, serverHiveAccount } from "boot/axios"
 
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()
@@ -94,15 +97,7 @@ onMounted(() => {
   // only do this if dev. is in the hostname
   // if window location is not v4v.app
   console.log("window.location.hostname", window.location.hostname)
-  if (!window.location.hostname !== "v4v.app") {
-    fetchCommitMessage()
-  }
 })
-
-const fetchCommitMessage = async () => {
-  const response = await fetch("/messages/commit_message.txt")
-  commitMessage.value = await response.text()
-}
 </script>
 
 <style lang="scss" scoped></style>

@@ -682,7 +682,8 @@ async function payInvoice(currency, method) {
   let amount = amountNum.toFixed(3)
 
   // if payWithSats is true add #paywithsats to the end of the memo
-  let memo = `${dInvoice.value.paymentRequest}`
+  // adds encryption to the memo 2024-02-23
+  let memo = `#${dInvoice.value.paymentRequest}`
   if (payWithSats) {
     memo += " #paywithsats"
   }
