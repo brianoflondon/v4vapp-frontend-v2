@@ -123,9 +123,10 @@
 <script setup>
 import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { computed, ref, onMounted } from "vue"
+import { computed, ref, onMounted, watch } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
+import { tidyNumber } from "src/use/useUtils"
 
 const storeUser = useStoreUser()
 const q = useQuasar()
@@ -154,10 +155,35 @@ onMounted(() => {
   scheduleUpdate()
 })
 
+watch(
+  () => storeUser.keepSatsBalanceNum,
+  (newVal, oldVal) => {
+    // This function will be called whenever `storeUser.keepSatsBalance` changes
+    console.log(
+      "keepSatsBalance changed from",
+      oldVal,
+      "to",
+      newVal,
+      "delta:",
+      newVal - oldVal
+    )
+    const satsChange = tidyNumber(newVal - oldVal, 0)
+    if (oldVal !== undefined && satsChange !== 0) {
+      q.notify({
+        message: `KeepSats Balance changed by ${satsChange} sats`,
+        color: "primary",
+        position: "top",
+        icon: "savings",
+        timeout: 5000,
+      })
+    }
+    // You can add your own code here to do something when `storeUser.keepSatsBalance` changes
+  }
+)
 async function scheduleUpdate() {
   await storeUser.update()
   // Schedule the next update after 5 minutes
-  timeoutId = setTimeout(scheduleUpdate, 2 * 60 * 1000)
+  timeoutId = setTimeout(scheduleUpdate, 5 * 60 * 1000)
 }
 
 const lightDark = computed(() => {
