@@ -27,6 +27,7 @@
     "quasar": "^2.14.4",
     "uuid": "^9.0.0",
     "vue": "^3.3.8",
+    "vue-confetti-explosion": "^1.0.2",
     "vue-i18n": "^9.7.1",
     "vue-qrcode-reader": "^5.4.1",
     "vue-router": "^4.2.5"

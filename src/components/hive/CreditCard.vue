@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <ConfettiExplosion v-if="visible" />
+  </div>
   <q-card @click="changeBackground" class="credit-card-background q-ma-xs">
     <q-img
       :src="creditCardBackground"
@@ -123,10 +126,11 @@
 <script setup>
 import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { computed, ref, onMounted, watch } from "vue"
+import { nextTick, computed, ref, onMounted, watch } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { tidyNumber } from "src/use/useUtils"
+import ConfettiExplosion from "vue-confetti-explosion"
 
 const storeUser = useStoreUser()
 const q = useQuasar()
@@ -144,6 +148,13 @@ const backgroundImage = [
   "lightning04",
   "dolphins",
 ]
+
+const visible = ref(false)
+const explode = async () => {
+  visible.value = false
+  await nextTick()
+  visible.value = true
+}
 
 let timeoutId = null
 
@@ -169,6 +180,7 @@ watch(
     )
     const satsChange = tidyNumber(newVal - oldVal, 0)
     if (oldVal !== undefined && satsChange !== 0) {
+      explode()
       q.notify({
         message: `KeepSats Balance changed by ${satsChange} sats`,
         color: "primary",
@@ -180,6 +192,7 @@ watch(
     // You can add your own code here to do something when `storeUser.keepSatsBalance` changes
   }
 )
+
 async function scheduleUpdate() {
   await storeUser.update()
   // Schedule the next update after 5 minutes
