@@ -220,15 +220,15 @@ async function fetchData(newValue = dataDays.value) {
     useKeepSats(),
   ])
 
-  if (keepSats.all_transactions) {
+  if (keepSats.summary_transactions) {
     console.log(keepSats)
     const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
     console.log(oldTimestamp)
-    keepSatsData.value = keepSats.all_transactions.filter(
+    keepSatsData.value = keepSats.summary_transactions.filter(
       (trx) => trx.reason !== "Fees" && trx.timestamp > oldTimestamp
     )
 
-    const tempTotal = keepSats.all_transactions.filter(
+    const tempTotal = keepSats.summary_transactions.filter(
       (trx) => trx.timestamp > oldTimestamp
     )
     keepSatsTotal.value = 0
