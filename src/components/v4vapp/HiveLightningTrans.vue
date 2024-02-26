@@ -1,8 +1,7 @@
 <template>
   <!-- Refresh button and days select  -->
   <div class="row wrap justify-center">
-
-    <div class="col-auto bordered-div">
+    <div class="col-auto">
       <div class="refresh-days-button-select row justify-evenly q-py-sm">
         <div class="refresh-button q-px-sm">
           <q-btn
@@ -38,7 +37,13 @@
             :rows="data"
             row-key="trx_id"
             :columns="columns"
-            :visible-columns="['net_hive', 'sats', 'timestamp', 'link', 'reason']"
+            :visible-columns="[
+              'net_hive',
+              'sats',
+              'timestamp',
+              'link',
+              'reason',
+            ]"
           >
             <template v-slot:body-cell-link="props">
               <q-td :props="props">
@@ -75,7 +80,7 @@
         <!-- End Hive to Sats Table -->
       </div>
     </div>
-    <div class="col-auto bordered-div">
+    <div class="col-auto">
       <!-- Keep Sats Table -->
       <div class="keepsats-table q-pa-sm">
         <q-table
@@ -83,9 +88,59 @@
           dense
           :rows="keepSatsData"
           :columns="keepSatsColumns"
-          row-key="unique_id"
-          :visible-columns="['timestamp', 'sats', 'reason']"
+          v-model:expanded="rowsExpanded"
+          row-key="group_id"
+          :visible-columns="['timestamp', 'sats', 'hive', 'reason', 'expand']"
         >
+          <!-- Expansion icon header of the table -->
+          <template v-slot:header-cell-expand="props">
+            <q-th :props="props" style="text-align: right">
+              <q-btn
+                round
+                flat
+                dense
+                :icon="
+                  rowsExpanded.length === 0 ? 'expand_more' : 'expand_less'
+                "
+                @click="expandAll"
+              ></q-btn>
+            </q-th>
+          </template>
+          <!-- End Expansion icon header of the table -->
+
+          <template #body="props">
+            <q-tr :props="props">
+              <q-td :props="props" style="text-align: left" key="timestamp">
+                {{ formatPrettyDate(props.row.timestamp) }}
+              </q-td>
+              <q-td :props="props" style="text-align: left" key="reason">
+                {{ props.row.reason }}
+              </q-td>
+              <q-td :props="props" style="text-align: right" key="hive">
+                {{ tidyNumber(props.row.hive, 0) }}
+              </q-td>
+              <q-td :props="props" style="text-align: right" key="sats">
+                {{ tidyNumber(props.row.sats, 0) }}
+              </q-td>
+              <q-td :props="props" key="expand" style="text-align: right">
+                <q-btn
+                  round
+                  size="sm"
+                  flat
+                  dense
+                  :icon="props.expand ? 'expand_less' : 'expand_more'"
+                  @click="props.expand = !props.expand"
+                ></q-btn>
+              </q-td>
+            </q-tr>
+            <q-tr v-if="props.expand">
+              <q-td :colspan="5">
+                <KeepSatsDetail :tableData="props.row.details" />
+              </q-td>
+            </q-tr>
+          </template>
+
+          <!-- Show total for this age range at the bottom -->
           <template v-slot:bottom-row v-if="data.length > 0">
             <q-tr class="text-bold">
               <q-td>Total</q-td>
@@ -95,13 +150,11 @@
               <q-td colspan="1"></q-td>
             </q-tr>
           </template>
+          <!-- End Show total for this age range at the bottom -->
         </q-table>
       </div>
       <!-- End Keep Sats Table -->
     </div>
-
-
-
   </div>
 </template>
 
@@ -111,7 +164,7 @@ import { useI18n } from "vue-i18n"
 import { useStoreUser } from "src/stores/storeUser"
 import { useFetchSatsHistory, useKeepSats } from "src/use/useV4vapp"
 import { useGenerateTxUrl } from "src/use/useHive"
-
+import KeepSatsDetail from "src/components/v4vapp/KeepSatsDetail.vue"
 import { formatPrettyDate, tidyNumber } from "src/use/useUtils"
 
 const storeUser = useStoreUser()
@@ -120,6 +173,8 @@ const dataDays = ref({ label: "7 days", value: 7 })
 const totals = ref({ totalHive: 0, totalSats: 0 })
 
 const t = useI18n().t
+
+const rowsExpanded = ref([])
 
 const columns = computed(() => {
   return [
@@ -131,6 +186,14 @@ const columns = computed(() => {
       align: "left",
       field: "timestamp",
       format: (val) => formatPrettyDate(val),
+    },
+    {
+      name: "reason",
+      required: true,
+      label: t("reason"),
+      align: "left",
+      field: "reason",
+      format: (val) => val,
     },
     {
       name: "net_hive",
@@ -157,14 +220,6 @@ const columns = computed(() => {
       field: "trx_id",
       format: (val) => val,
     },
-    {
-      name: "reason",
-      required: true,
-      label: t("reason"),
-      align: "left",
-      field: "reason",
-      format: (val) => val,
-    },
   ]
 })
 
@@ -182,6 +237,23 @@ const keepSatsColumns = computed(() => {
       format: (val) => formatPrettyDate(val),
     },
     {
+      name: "reason",
+      required: true,
+      label: t("reason"),
+      align: "left",
+      field: "reason",
+      format: (val) => val,
+    },
+    {
+      name: "hive",
+      required: true,
+      sortable: true,
+      label: "Hive",
+      align: "right",
+      field: "hive",
+      format: (val) => tidyNumber(val, 3),
+    },
+    {
       name: "sats",
       required: true,
       sortable: true,
@@ -191,12 +263,8 @@ const keepSatsColumns = computed(() => {
       format: (val) => tidyNumber(val, 0),
     },
     {
-      name: "reason",
-      required: true,
-      label: t("reason"),
-      align: "left",
-      field: "reason",
-      format: (val) => val,
+      name: "expand",
+      field: "expand",
     },
   ]
 })
@@ -256,6 +324,21 @@ onMounted(() => {
   console.log("HiveLightningTrans.vue onMounted")
   fetchData()
 })
+
+/**
+ * Toggles the expansion of all rows in the table.
+ *
+ * If no rows are currently expanded, it expands all rows by setting `rowsExpanded.value` to an array of all checkCodes.
+ * If there are any expanded rows, it collapses all rows by setting `rowsExpanded.value` to an empty array.
+ */
+function expandAll() {
+  console.log("HiveLightningTrans.vue expandAll", rowsExpanded.value.length)
+  if (rowsExpanded.value.length === 0) {
+    rowsExpanded.value = keepSatsData.value.map((row) => row.group_id)
+  } else {
+    rowsExpanded.value = []
+  }
+}
 </script>
 
 <style lang="scss" scoped>
