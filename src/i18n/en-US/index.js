@@ -189,5 +189,5 @@ export default {
   wallet: 'Wallet',
   login_to_see_history: 'Login to see your history',
   reason: 'Reason',
-
+  deposit: 'Deposit',
 };

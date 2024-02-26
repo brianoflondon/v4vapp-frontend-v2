@@ -15,16 +15,6 @@
           <div class="card-spacer row col-12"></div>
           <!-- Sats balance on the face of the credit card -->
           <div class="row col-12">
-            <div
-              v-if="false"
-              class="col-6 text-right text-h6 credit-card-text embossed-text"
-            >
-              {{ balances["keepSats"] }}
-              <span>
-                シ
-                <q-tooltip>シ {{ $t("sats") }}</q-tooltip>
-              </span>
-            </div>
             <div class="text-h6 credit-card-text embossed-text"></div>
           </div>
           <!-- Sats balance on the face of the credit card -->
@@ -216,6 +206,12 @@ const lightDark = computed(() => {
 })
 
 const nonZeroKeepSats = computed(() => {
+  if (storeUser.currentKeepSats) {
+    if (storeUser.currentKeepSats !== "0") {
+      return true
+    }
+  }
+  return false
   emit("balances", balances.value)
   return balances.value.keepSats !== "0"
 })
@@ -268,7 +264,7 @@ function changeBackground() {
   console.log("changeBackground")
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
   storeUser.update()
-  emit("balances", balances.value)
+  explode()
 }
 </script>
 

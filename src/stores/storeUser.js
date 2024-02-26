@@ -336,8 +336,10 @@ export const useStoreUser = defineStore("useStoreUser", {
         try {
           this.currentKeepSats = await useKeepSats(useCache)
           console.log("currentKeepSats", this.currentKeepSats)
-          if (currentSatsBalance !== this.currentKeepSats.net_sats) {
-            return true
+          if (this.currentKeepSats) {
+            if (currentSatsBalance !== this.currentKeepSats.net_sats) {
+              return true
+            }
           }
           return false
         } catch (err) {

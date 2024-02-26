@@ -1,9 +1,9 @@
 <template>
   <div class="q-pa-sm col justify-evenly">
-    <div class="explanation-box text-justify q-pa-sm">
+    <div class="text-justify q-pa-sm">
       <ExplanationBox title="KeepSats on V4V.app" text="How to do it" />
     </div>
-    <div class="toggle pad-max-width">
+    <div class="destination-toggle pad-max-width">
       <q-btn-toggle
         spread
         v-model="destination"
@@ -46,7 +46,7 @@
       <!-- End of Toggle -->
       <!-- Amount input -->
       <q-slide-transition appear disappear :duration="500">
-        <div class="explanation-box" v-show="destination != 'sats'">
+        <div class="amount-input" v-show="destination != 'sats'">
           <q-input
             class="amount-display"
             v-model="amount"
@@ -56,8 +56,7 @@
             stack-label
             clearable
             debounce="20"
-            @keyup.enter="enterPressed()"
-            @keyup.esc="clearAmount(false)"
+            @update:model-value="(val) => updateAmount(val)"
             :input-style="{ 'text-align': 'right' }"
             :rules="[(val) => !!val || t('no_amount')]"
           >
@@ -66,61 +65,79 @@
       </q-slide-transition>
       <!-- End of Amount input -->
     </div>
-    <div class="address-qr-code q-pa-sm" @click="makePayment">
-      <CreateQRCode
-        :qr-text="destination === 'sats' ? qrCodeSats : qrCodeHive"
-        :loading="loading"
-        :hive-accname="storeUser.currentUser"
-        :width="300"
-        :height="300"
-        :color="dotColor"
-        @qr-code="(val) => (qrCode = val)"
-      />
-    </div>
-    <div class="address-copy-button q-pa-sm" v-if="destination === 'sats'">
-      <q-btn
-        spread
-        :label="lightningAddress"
-        icon="content_copy"
-        @click="copyText"
-        name="amount"
-        rounded
-        color="primary"
-        style="text-transform: lowercase"
-        ><q-tooltip>{{ $t("copy_qrcode") }}</q-tooltip>
-      </q-btn>
-    </div>
-    <div class="row justify-evenly" v-else>
+    <div
+      class="row justify-center address-qr-code q-pa-sm"
+      @click="makePayment"
+    >
       <div>
-        <q-btn
-          class="payment-button-hive"
-          @click="makePayment('HiveKeychain')"
-          :loading="false"
-          :disable="false"
-          icon="img:/keychain/hive-keychain-round.svg"
-          icon-right="img:avatars/hive_logo_dark.svg"
-          label="Keychain"
-          :color="buttonColor.buttonColor"
-          :text-color="buttonColor.textColor"
-          size="md"
-          rounded
+        <CreateQRCode
+          :qr-text="destination === 'sats' ? qrCodeSats : qrCodeHive"
+          :loading="loading"
+          :hive-accname="storeUser.currentUser"
+          :width="300"
+          :height="300"
+          :color="dotColor"
+          @qr-code="(val) => (qrCode = val)"
         />
       </div>
-      <div>
+    </div>
+    <div class="pay-buttons-lightning-address-copy">
+      <div
+        class="lightning-address-copy_button q-pa-sm"
+        v-if="destination === 'sats'"
+      >
         <q-btn
-          class="payment-button-hive"
-          @click="makePayment('HAS')"
-          :loading="false"
-          :disable="false"
-          icon="img:/has/hive-auth-logo.svg"
-          icon-right="img:avatars/hive_logo_dark.svg"
-          label="HAS"
-          :color="buttonColor.buttonColor"
-          :text-color="buttonColor.textColor"
-          size="md"
+          spread
+          :label="lightningAddress"
+          icon="content_copy"
+          @click="copyText"
+          name="amount"
           rounded
-        />
+          color="primary"
+          style="text-transform: lowercase"
+        >
+        </q-btn>
+        <!-- Important that tooltip is not in the button -->
+        <q-tooltip>{{ $t("copy_qrcode") }}</q-tooltip>
       </div>
+      <div class="payment-buttons row justify-evenly" v-else>
+        <div>
+          <q-btn
+            class="payment-button-hive"
+            @click="makePayment('HiveKeychain')"
+            :loading="false"
+            :disable="false"
+            icon="img:/keychain/hive-keychain-round.svg"
+            icon-right="img:avatars/hive_logo_dark.svg"
+            label="Keychain"
+            :color="buttonColor.buttonColor"
+            :text-color="buttonColor.textColor"
+            size="md"
+            rounded
+          />
+        </div>
+        <div>
+          <q-btn
+            class="payment-button-hive"
+            @click="makePayment('HAS')"
+            :loading="false"
+            :disable="false"
+            icon="img:/has/hive-auth-logo.svg"
+            icon-right="img:avatars/hive_logo_dark.svg"
+            label="HAS"
+            :color="buttonColor.buttonColor"
+            :text-color="buttonColor.textColor"
+            size="md"
+            rounded
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      v-if="destination !== 'sats'"
+      class="alternate-currency-display q-pt-sm q-pb-none"
+    >
+      <AlternateCurrency v-model="CurrencyCalc" />
     </div>
   </div>
   <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
@@ -141,6 +158,7 @@ import { useGenerateHiveTransferOp } from "src/use/useHive"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { serverHiveAccount } from "src/boot/axios"
 import { encodeOp } from "hive-uri"
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 
 const t = useI18n().t
 const q = useQuasar()
@@ -154,6 +172,8 @@ const qrCode = ref("") // QrCode object emitted from CreateQRCode
 
 const bech32 = ref("")
 const amount = ref(10)
+
+const CurrencyCalc = ref({})
 
 const dotColor = computed(() => {
   let isLightning = destination.value === "sats"
@@ -207,10 +227,39 @@ watch(storeUser, (val) => {
 })
 
 async function updateDestination() {
+  CurrencyCalc.value = {
+    amount: parseFloat(amount.value),
+    currency: destination.value,
+  }
+  updateAmount(amount.value)
   loading.value = true
   const bech32Data = await storeUser.bech32Address("sats")
   bech32.value = bech32Data.prefix
   loading.value = false
+}
+
+function updateAmount(val) {
+  // console.log(calcFees(val).sats)
+  amount.value = val
+}
+
+// Calculates the fees charged in the same currency Hive/HBD as
+// the amount being sent.
+function calcFees(amount) {
+  const { currencyToSend, amountToSend } = {
+    currencyToSend: destination.value,
+    amountToSend: amount,
+  }
+  const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeApiStatus
+
+  const exchangeRate = currencyToSend === "HBD" ? HBDSatsNumber : hiveSatsNumber
+  const rawSats = parseFloat(amountToSend) * exchangeRate
+
+  const fee =
+    rawSats * apiStatus.config.conv_fee_percent + apiStatus.config.conv_fee_sats
+
+  console.log("fee", fee, exchangeRate)
+  return { currency: fee / exchangeRate, sats: fee }
 }
 
 function copyText() {

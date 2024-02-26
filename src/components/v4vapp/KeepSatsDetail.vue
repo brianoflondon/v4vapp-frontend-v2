@@ -11,20 +11,25 @@
   >
     <template v-slot:body-cell-link="props">
       <q-td :props="props">
-        <a
-          :href="useGenerateTxUrl(props.row.trx_id)"
-          target="_blank"
-          class="custom-link"
-        >
-          <q-btn
-            size="xs"
-            text-color="inherit"
-            flat
-            dense
-            icon="open_in_new"
-            name="open_in_new"
-          />
-        </a>
+        <div v-if="props.row.trx_id">
+          <a
+            :href="useGenerateTxUrl(props.row.trx_id)"
+            target="_blank"
+            class="custom-link"
+          >
+            <q-btn
+              size="xs"
+              text-color="inherit"
+              flat
+              dense
+              icon="open_in_new"
+              name="open_in_new"
+            />
+          </a>
+        </div>
+        <div v-else>
+          <i class="fa-sharp fa-solid fa-bolt" />
+        </div>
       </q-td>
     </template>
 
