@@ -76,8 +76,14 @@
                   {{ balances["keepSats"] }}<br />
                 </td>
                 <td>
-                  シ
-                  <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
+                  <div v-if="!balances['bitcoinDisplay']">
+                    <span>シ</span>
+                    <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
+                  </div>
+                  <div v-else>
+                    <span><i class="fa-brands fa-btc" /></span>
+                    <q-tooltip>Bitcoin</q-tooltip>
+                  </div>
                 </td>
               </tr>
               <tr>
@@ -148,7 +154,6 @@ const backgroundImage = [
   "lightning04",
   "dolphins",
 ]
-
 
 /**
  * ConfettiExplosion component
@@ -222,6 +227,7 @@ const balances = computed(() => {
       sats: storeUser.savingsSatsBalance,
       totalSats: storeUser.totalSatsBalance,
       keepSats: storeUser.keepSatsBalance,
+      bitcoinDisplay: storeUser.bitcoinDisplay,
     }
   } else {
     return {
@@ -230,6 +236,7 @@ const balances = computed(() => {
       sats: storeUser.satsBalance,
       totalSats: storeUser.totalSatsBalance,
       keepSats: storeUser.keepSatsBalance,
+      bitcoinDisplay: storeUser.bitcoinDisplay,
     }
   }
 })

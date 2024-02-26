@@ -141,8 +141,6 @@ import { useGenerateHiveTransferOp } from "src/use/useHive"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { serverHiveAccount } from "src/boot/axios"
 import { encodeOp } from "hive-uri"
-import { timeout } from "workbox-core/_private"
-import { store } from "quasar/wrappers"
 
 const t = useI18n().t
 const q = useQuasar()
@@ -198,21 +196,22 @@ const qrCodeSats = computed(() => {
 })
 
 onMounted(async () => {
-  updateDestination(destination.value)
+  updateDestination()
+})
+
+watch(storeUser, (val) => {
+  console.log("storeUser changed DepositKeepSats", val)
+  if (val) {
+    updateDestination()
+  }
+})
+
+async function updateDestination() {
   loading.value = true
-  //   qrCodeText.value['sats'] = lightningAddress.value
   const bech32Data = await storeUser.bech32Address("sats")
   bech32.value = bech32Data.prefix
   loading.value = false
-})
-
-watch(storeUser, async (val) => {
-  loading.value = true
-  await new Promise((resolve) => setTimeout(resolve, 100))
-  loading.value = false
-})
-
-function updateDestination(val) {}
+}
 
 function copyText() {
   copyToClipboard(lightningAddress.value)
