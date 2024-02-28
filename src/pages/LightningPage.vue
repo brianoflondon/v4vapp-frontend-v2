@@ -13,7 +13,10 @@
         <q-tab
           name="withdraw"
           :label="$t('withdraw')"
-          :disable="!storeUser.currentUser"
+          :disable="
+            !storeUser.currentUser ||
+            storeUser?.keepSatsBalanceNum < storeApiStatus?.minMax?.sats?.min
+          "
         >
           <q-tooltip>{{ $t("withdraw_sats_from_v4vapp") }}</q-tooltip>
         </q-tab>
@@ -50,7 +53,7 @@
               <WithdrawKeepsats />
             </div>
           </q-slide-transition>
-          </q-tab-panel>
+        </q-tab-panel>
       </q-tab-panels>
       <!-- End Q-tab-panels -->
     </div>

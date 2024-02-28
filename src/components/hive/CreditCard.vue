@@ -166,7 +166,7 @@ onMounted(() => {
 })
 
 watch(
-  () => storeUser.keepSatsBalanceNum,
+  () => storeUser.keepSatsBalanceNumDisplay,
   (newVal, oldVal) => {
     // This function will be called whenever `storeUser.keepSatsBalance` changes
     console.log(

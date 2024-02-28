@@ -280,7 +280,13 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       return tidyNumber(this.currentKeepSats?.net_sats, 0)
     },
-    keepSatsBalanceNum() {
+    /**
+     * Retrieves the balance of keepSats and returns it as a formatted number or string.
+     * If the currentKeepSats is null, it logs a message and returns "💰💰💰".
+     * Otherwise, it returns the balance as is.
+     * @returns {number|string} The balance of keepSats as a formatted number or string.
+     */
+    keepSatsBalanceNumDisplay() {
       if (this.currentKeepSats === null) {
         console.log("Need to reauthenticate to get keepSatsBalance")
         console.log("check if logged in with HAS or Keychain")
@@ -288,6 +294,14 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
       if (this.currentKeepSats?.net_sats > 1000000) {
         return this.currentKeepSats?.net_sats / 100000000
+      }
+      return this.currentKeepSats?.net_sats
+    },
+    keepSatsBalanceNum() {
+      if (this.currentKeepSats === null) {
+        console.log("Need to reauthenticate to get keepSatsBalance")
+        console.log("check if logged in with HAS or Keychain")
+        return "💰💰💰"
       }
       return this.currentKeepSats?.net_sats
     },

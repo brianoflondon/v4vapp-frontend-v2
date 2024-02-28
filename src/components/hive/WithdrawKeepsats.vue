@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-sm col justify-evenly">
+  <div class="q-pa-sm col justify-evenly" v-if="storeUser.keepSatsBalanceNum > storeAPIStatus.minMax.sats.min">
     <div class="explanation-box text-justify q-pa-sm">
       <ExplanationBox title="Withdraw Sats to Hive" text="How to do it" />
     </div>
@@ -49,7 +49,11 @@
         >
         </q-input>
       </div>
-      <div class="amount-slider">
+      <div
+        class="amount-slider"
+
+      >
+        {{ storeUser.keepSatsBalanceNum }}
         <q-slider
           v-model="amount"
           color="primary"
@@ -110,7 +114,6 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useQuasar } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-
 
 const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
