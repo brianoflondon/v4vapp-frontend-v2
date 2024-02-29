@@ -53,7 +53,6 @@
         </q-input>
       </div>
       <div class="amount-slider">
-        {{ storeUser.keepSatsBalanceNum }}
         <q-slider
           v-model="amount"
           color="primary"
@@ -105,20 +104,23 @@
       </div>
     </div>
   </div>
+  <AlternateCurrency v-model="CurrencyCalc" />
   <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
-import ExplanationBox from "src/components/utils/ExplanationBox.vue"
-import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
+import { ref, computed, watch } from "vue"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { useQuasar } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import ExplanationBox from "src/components/utils/ExplanationBox.vue"
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import AskHASDialog from "src/components/hive/AskHASDialog.vue"
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 
 const HASDialog = ref({ show: false })
+const CurrencyCalc = ref({ amount: 1000, currency: "sats" })
 
 const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
@@ -147,6 +149,10 @@ const buttonColor = computed(() => {
 function updateDestination(val) {
   destination.value = val
 }
+
+watch(amount, (val) => {
+  CurrencyCalc.value.amount = val
+})
 
 async function makePayment(method) {
   console.log("makePayment")
