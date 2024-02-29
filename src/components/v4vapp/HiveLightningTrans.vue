@@ -65,7 +65,7 @@
             </template>
             <template v-slot:bottom-row v-if="data.length > 0">
               <q-tr class="text-bold">
-                <q-td>Total</q-td>
+                <q-td colspan="2" class="text-left">Total</q-td>
                 <q-td class="text-right">
                   {{ tidyNumber(totals.totalHive, 3) }}
                 </q-td>
@@ -117,7 +117,7 @@
                 {{ props.row.reason }}
               </q-td>
               <q-td :props="props" style="text-align: right" key="hive">
-                {{ tidyNumber(props.row.hive, 0) }}
+                {{ tidyNumber(props.row.hive, 3) }}
               </q-td>
               <q-td :props="props" style="text-align: right" key="sats">
                 {{ tidyNumber(props.row.sats, 0) }}
@@ -143,7 +143,10 @@
           <!-- Show total for this age range at the bottom -->
           <template v-slot:bottom-row v-if="data.length > 0">
             <q-tr class="text-bold">
-              <q-td>Total</q-td>
+              <q-td class="text-left" colspan="2">Total</q-td>
+              <q-td class="text-right">
+                {{ tidyNumber(keepHiveTotal, 3) }}
+              </q-td>
               <q-td class="text-right">
                 {{ tidyNumber(keepSatsTotal, 0) }}
               </q-td>
@@ -225,6 +228,7 @@ const columns = computed(() => {
 
 const keepSatsData = ref([])
 const keepSatsTotal = ref(0)
+const keepHiveTotal = ref(0)
 const keepSatsColumns = computed(() => {
   return [
     {
@@ -300,8 +304,10 @@ async function fetchData(newValue = dataDays.value) {
       (trx) => trx.timestamp > oldTimestamp
     )
     keepSatsTotal.value = 0
+    keepHiveTotal.value = 0
     for (let i = 0; i < tempTotal.length; i++) {
       keepSatsTotal.value += tempTotal[i].msats
+      keepHiveTotal.value += tempTotal[i].hive
     }
 
     keepSatsTotal.value = keepSatsTotal.value / 1000

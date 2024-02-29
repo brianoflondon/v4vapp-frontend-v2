@@ -11,14 +11,14 @@
           <q-tooltip>{{ $t("deposit_sats_on_v4vapp") }}</q-tooltip>
         </q-tab>
         <q-tab
-          name="withdraw"
-          :label="$t('withdraw')"
+          name="convert"
+          :label="$t('convert')"
           :disable="
             !storeUser.currentUser ||
             storeUser?.keepSatsBalanceNum < storeApiStatus?.minMax?.sats?.min
           "
         >
-          <q-tooltip>{{ $t("withdraw_sats_from_v4vapp") }}</q-tooltip>
+          <q-tooltip>{{ $t("convert_sats_from_v4vapp") }}</q-tooltip>
         </q-tab>
         <q-tab
           name="history"
@@ -47,10 +47,10 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
-        <q-tab-panel name="withdraw">
+        <q-tab-panel name="convert">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
-              <WithdrawKeepsats />
+              <ConvertKeepsats />
             </div>
           </q-slide-transition>
         </q-tab-panel>
@@ -309,7 +309,7 @@ import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HiveLightningTrans from "src/components/v4vapp/HiveLightningTrans.vue"
 import DepositKeepsats from "src/components/hive/DepositKeepsats.vue"
-import WithdrawKeepsats from "src/components/hive/WithdrawKeepsats.vue"
+import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)

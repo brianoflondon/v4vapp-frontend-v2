@@ -1,7 +1,10 @@
 <template>
-  <div class="q-pa-sm col justify-evenly" v-if="storeUser.keepSatsBalanceNum > storeAPIStatus.minMax.sats.min">
+  <div
+    class="q-pa-sm col justify-evenly"
+    v-if="storeUser.keepSatsBalanceNum > storeAPIStatus.minMax.sats.min"
+  >
     <div class="explanation-box text-justify q-pa-sm">
-      <ExplanationBox title="Withdraw Sats to Hive" text="How to do it" />
+      <ExplanationBox title="Convert Sats to Hive" text="How to do it" />
     </div>
     <div v-if="true" class="toggle pad-max-width">
       <q-btn-toggle
@@ -49,10 +52,7 @@
         >
         </q-input>
       </div>
-      <div
-        class="amount-slider"
-
-      >
+      <div class="amount-slider">
         {{ storeUser.keepSatsBalanceNum }}
         <q-slider
           v-model="amount"
@@ -105,15 +105,20 @@
       </div>
     </div>
   </div>
+  <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
 </template>
 
 <script setup>
 import { ref, computed } from "vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
+import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { useQuasar } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import AskHASDialog from "src/components/hive/AskHASDialog.vue"
+
+const HASDialog = ref({ show: false })
 
 const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
@@ -141,6 +146,84 @@ const buttonColor = computed(() => {
 
 function updateDestination(val) {
   destination.value = val
+}
+
+async function makePayment(method) {
+  console.log("makePayment")
+
+  const fixedAmount = parseFloat(amount.value).toFixed(0)
+  // Adds encryption to the memo 2024-02-23
+  const memo = `#${fixedAmount} #convertkeepsats #v4vapp`
+  if (method === "HiveKeychain") {
+    if (!storeAPIStatus.isKeychainIn) {
+      q.notify({
+        message: t("keychain_not_installed"),
+        color: "negative",
+        icon: "error",
+      })
+      return
+    }
+    const result = await useHiveKeychainTransfer(
+      storeUser.currentUser,
+      0.001,
+      destination.value.toUpperCase(),
+      memo
+    )
+    console.log("pay result", result)
+    if (result.success) {
+      q.notify({
+        avatar: "/site-logo/v4vapp-logo.svg",
+        message: result.message,
+        color: "positive",
+        icon: "check_circle",
+      })
+      checkForSats()
+    } else {
+      q.notify({
+        message: result.message,
+        color: "negative",
+        icon: "error",
+      })
+    }
+  }
+  if (method === "HAS") {
+    HASDialog.value.show = true
+    HASDialog.value.payment = {
+      username: storeUser.currentUser,
+      amount: 0.001,
+      currency: destination.value.toUpperCase(),
+      memo: memo,
+    }
+  }
+}
+
+async function checkForSats(oldNetSats = 0, count = 0) {
+  console.log("checkForSats", oldNetSats, count)
+  let currentSatsBalance = 0
+  if (oldNetSats === 0) {
+    currentSatsBalance = storeUser.currentKeepSats.net_sats
+  } else {
+    currentSatsBalance = oldNetSats
+  }
+  console.log("currentSatsBalance", currentSatsBalance)
+  const change = await storeUser.updateSatsBalance(false)
+  console.log("change", change)
+  if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
+    q.notify({
+      message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,
+      color: "positive",
+      icon: "check_circle",
+    })
+    // quit checking
+    return
+  }
+
+  if (count > 10) {
+    return
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 1000 * 5))
+  return checkForSats(currentSatsBalance, count + 1)
 }
 </script>
 
