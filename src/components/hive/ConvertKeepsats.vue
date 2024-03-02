@@ -45,7 +45,7 @@
           v-model="amount"
           inputmode="decimal"
           pattern="\d*"
-          :label="$t('amount')"
+          :label="$t('amount') + ` (sats)`"
           stack-label
           debounce="20"
           :input-style="{ 'text-align': 'right' }"
@@ -57,7 +57,7 @@
           v-model="amount"
           color="primary"
           :min="storeAPIStatus.minMax.sats.min"
-          :max="storeUser.keepSatsBalanceNum"
+          :max="Math.min(storeUser.keepSatsBalanceNum, storeAPIStatus.minMax.sats.max)"
           label
           label-always
           snap

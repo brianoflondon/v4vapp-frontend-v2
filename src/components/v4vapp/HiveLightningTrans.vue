@@ -133,11 +133,13 @@
                 ></q-btn>
               </q-td>
             </q-tr>
+            <!-- Expansion Item -->
             <q-tr v-if="props.expand">
               <q-td :colspan="5">
                 <KeepSatsDetail :tableData="props.row.details" />
               </q-td>
             </q-tr>
+            <!-- End Expansion Item -->
           </template>
 
           <!-- Show total for this age range at the bottom -->

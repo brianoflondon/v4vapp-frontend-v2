@@ -6,10 +6,11 @@
     key="unique_id"
     :rows="tableData"
     :columns="columns"
+
     row-key="trx_id"
     :visible-columns="['reason', 'hive', 'msats', 'link']"
   >
-    <template v-slot:body-cell-link="props">
+    <!-- <template v-slot:body-cell-link="props">
       <q-td :props="props">
         <div v-if="props.row.trx_id">
           <a
@@ -31,6 +32,45 @@
           <i class="fa-sharp fa-solid fa-bolt" />
         </div>
       </q-td>
+    </template> -->
+    <template v-slot:body="props">
+      <q-tr :props="props.row" class="no-divider">
+        <q-td class="text-left">
+          {{ props.row.reason }}
+        </q-td>
+        <q-td class="text-right">
+          {{ tidyNumber(props.row.hive, 3) }}
+        </q-td>
+        <q-td class="text-right">
+          {{ tidyNumber(props.row.msats / 1000, 1) }}
+        </q-td>
+        <q-td>
+          <div v-if="props.row.trx_id">
+            <a
+              :href="useGenerateTxUrl(props.row.trx_id)"
+              target="_blank"
+              class="custom-link"
+            >
+              <q-btn
+                size="xs"
+                text-color="inherit"
+                flat
+                dense
+                icon="open_in_new"
+                name="open_in_new"
+              />
+            </a>
+          </div>
+          <div v-else>
+            <i class="fa-sharp fa-solid fa-bolt" />
+          </div>
+        </q-td>
+      </q-tr>
+      <q-tr v-if="props.row.memo" :props="props.row" class="no-divider">
+        <q-td colspan="4" class="text-left">
+          {{ props.row.memo }}
+        </q-td>
+      </q-tr>
     </template>
 
     <template v-slot:bottom-row>
@@ -100,4 +140,8 @@ const columns = computed(() => [
 ])
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.no-divider {
+  border: none;
+}
+</style>

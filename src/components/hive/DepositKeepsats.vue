@@ -46,21 +46,37 @@
       <!-- End of Toggle -->
       <!-- Amount input -->
       <q-slide-transition appear disappear :duration="500">
-        <div class="amount-input" v-show="destination != 'sats'">
-          <q-input
-            class="amount-display"
-            v-model="amount"
-            inputmode="decimal"
-            pattern="\d*"
-            :label="$t('amount')"
-            stack-label
-            clearable
-            debounce="20"
-            @update:model-value="(val) => updateAmount(val)"
-            :input-style="{ 'text-align': 'right' }"
-            :rules="[(val) => !!val || t('no_amount')]"
-          >
-          </q-input>
+        <div v-if="destination != 'sats'">
+          <div class="amount-input">
+            <q-input
+              class="amount-display"
+              v-model="amount"
+              inputmode="decimal"
+              pattern="\d*"
+              :label="$t('amount')"
+              stack-label
+              clearable
+              debounce="20"
+              @update:model-value="(val) => updateAmount(val)"
+              :input-style="{ 'text-align': 'right' }"
+              :rules="[(val) => !!val || t('no_amount')]"
+            >
+            </q-input>
+          </div>
+          <div class="amount-slider">
+            <q-slider
+              v-model="amount"
+              color="primary"
+              :min="sliderMinMax.min"
+              :max="sliderMinMax.max"
+              label
+              label-always
+              snap
+              markers
+              :step="sliderMinMax.step"
+              :label-value="`${amount}`"
+            />
+          </div>
         </div>
       </q-slide-transition>
       <!-- End of Amount input -->
@@ -171,7 +187,7 @@ const destination = ref("sats")
 const qrCode = ref("") // QrCode object emitted from CreateQRCode
 
 const bech32 = ref("")
-const amount = ref(10)
+const amount = ref(1)
 
 const CurrencyCalc = ref({})
 
@@ -179,6 +195,30 @@ const dotColor = computed(() => {
   let isLightning = destination.value === "sats"
   return QRLightningHiveColor(isLightning, loading.value)
 })
+
+const sliderMinMax = computed(() => {
+  if (storeApiStatus.minMax) {
+    let min = storeApiStatus.minMax[destination.value.toUpperCase()].min
+    let max = storeApiStatus.minMax[destination.value.toUpperCase()].max
+
+    min = Math.min(min, storeUser.balancesNum[destination.value.toLowerCase()])
+    max = Math.min(max, storeUser.balancesNum[destination.value.toLowerCase()])
+    const diff = max - min
+
+    // Divide the difference by 100 to get the initial step size
+    let step = diff / 100
+
+    // Calculate the power of 10 for the step size
+    const power = Math.floor(Math.log10(step))
+
+    // Round the step size to the nearest power of 10
+    step = Math.pow(10, power)
+    console.log("min", min, "max", max, "step", step)
+    return { min: min, max: max, step: step }
+  }
+  return { min: 1, max: 400, step: 1 }
+})
+
 
 const lightningAddressPrefix = computed(() => {
   if (!storeUser.currentUser) {
