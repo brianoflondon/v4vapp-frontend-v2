@@ -194,6 +194,5 @@ export default {
   convert: 'Convert',
   convert_sats_to_hive: 'Convert sats to Hive',
   deposit_sats_on_v4vapp: 'Deposit sats on v4v.app',
-  convert_sats_from_v4vapp: 'Convert sats to Hive',
-
+  convert_sats_from_v4vapp: 'Convert sats to Hive'
 };
