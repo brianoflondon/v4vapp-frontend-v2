@@ -18,7 +18,7 @@
     <div class="q-py-lg">
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
-    <div>
+    <div v-if="isDev || isLocalhost">
       <div class="q-pa-xs text-caption">{{ appName }} - {{ appVersion }}</div>
       <div class="q-pa-xs text-caption">{{ serverHiveAccount }}</div>
       <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
@@ -45,8 +45,8 @@ const storeUser = useStoreUser()
 // const rightDrawerOpen = defineModel(false)
 
 const hiveAccObj = ref()
-const commitMessage = ref()
-
+const isDev = ref()
+const isLocalhost = ref()
 const t = useI18n().t
 const linkList = ref([
   {
@@ -96,7 +96,12 @@ watch(storeUser, async (val) => {
 onMounted(() => {
   // only do this if dev. is in the hostname
   // if window location is not v4v.app
-  console.log("window.location.hostname", window.location.hostname)
+  isDev.value = window.location.href.includes("dev.v4v.app")
+  isLocalhost.value =
+    window.location.href.includes("localhost") ||
+    window.location.href.includes("127.0") ||
+    window.location.href.includes("192.168") ||
+    window.location.href.includes("10.0")
 })
 </script>
 

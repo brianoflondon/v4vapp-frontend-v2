@@ -36,23 +36,29 @@ const isPWA =
 const isIphone = /iPhone/.test(window.navigator.userAgent)
 
 onMounted(() => {
-  console.log('checking PWA and iPhone')
-  console.log("isPWA: ", isPWA)
-  console.log("isIphone: ", isIphone)
-  if (isPWA && isIphone) {
-    console.log("iPhone PWA")
-    // Add extra space to the bottom of the screen
-  } else {
-    console.log("Not iPhone PWA")
-    // Do nothing
+  const isDev = window.location.href.includes("dev.v4v.app")
+  const isLocalhost =
+    window.location.href.includes("localhost") ||
+    window.location.href.includes("127.0") ||
+    window.location.href.includes("192.168") ||
+    window.location.href.includes("10.0")
+  if (isDev || isLocalhost) {
+    console.log("checking PWA and iPhone")
+    console.log("isPWA: ", isPWA)
+    console.log("isIphone: ", isIphone)
+    if (isPWA && isIphone) {
+      console.log("iPhone PWA")
+      // Add extra space to the bottom of the screen
+    } else {
+      console.log("Not iPhone PWA")
+      // Do nothing
+    }
+    q.notify({
+      message: `isPWA: ${isPWA}, isIphone: ${isIphone}`,
+      color: "primary",
+      position: "top",
+      timeout: 2000,
+    })
   }
-
-  q.notify({
-    message: `isPWA: ${isPWA}, isIphone: ${isIphone}`,
-    color: "primary",
-    position: "top",
-    timeout: 2000,
-  })
 })
-
 </script>
