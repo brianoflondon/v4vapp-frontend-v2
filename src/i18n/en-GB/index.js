@@ -187,5 +187,12 @@ export default {
   // Hive to Lightning Transactions
   other: 'Other',
   wallet: 'Wallet',
-  login_to_see_history: 'Login to see your history'
+  login_to_see_history: 'Login to see your history',
+  reason: 'Reason',
+  deposit: 'Deposit',
+  withdraw: 'Withdraw',
+  convert: 'Convert',
+  convert_sats_to_hive: 'Convert sats to Hive',
+  deposit_sats_on_v4vapp: 'Deposit sats on v4v.app',
+  convert_sats_from_v4vapp: 'Convert sats to Hive'
 };
