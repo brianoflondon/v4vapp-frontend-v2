@@ -908,15 +908,13 @@ async function checkHiveTransaction(username, trx_id, notif) {
     dInvoice.value.progress.push(memo)
 
     // check if the transaction contains the string "Your Lightning Invoice of 1234 sats has been paid"
-    let regex = /Your Lightning Invoice of (\d+) sats has been paid/
+
+    let regex = /(Deducting|Your Lightning Invoice of) ([\d,]+).*/
+
     let match = transaction_found?.op[1].memo.match(regex)
-    if (!match) {
-      regex = /Deducting (\d+) from existing balance/
-      match = transaction_found?.op[1].memo.match(regex)
-    }
     if (match) {
+      let satsPaid = match[2].replace(',', '');
       await storeUser.updateSatsBalance(false)
-      const satsPaid = match[1]
       memo = `${t("transfer")}: ${t("paid")}: ${satsPaid} sats`
       dInvoice.value.progress.push(memo)
       notif({

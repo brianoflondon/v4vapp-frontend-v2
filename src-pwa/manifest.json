@@ -31,17 +31,17 @@
   ],
   "screenshots": [
     {
-      "src": "/public/icons/screenshot-landscape.png",
+      "src": "icons/screenshot-landscape.png",
       "sizes": "1726x818",
       "type": "image/png"
     },
     {
-      "src": "/public/icons/screenshot-portrait.png",
+      "src": "icons/screenshot-portrait.png",
       "sizes": "790x1662",
       "type": "image/png"
     },
     {
-      "src": "/public/icons/screenshot-desktop-wide.png",
+      "src": "icons/screenshot-desktop-wide.png",
       "sizes": "2080x1398",
       "type": "image/png",
       "form_factor": "wide"

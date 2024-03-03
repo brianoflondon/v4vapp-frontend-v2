@@ -32,7 +32,7 @@ if (process.env.VUE_APP_LOCAL_API === "true" || isLocalhost) {
 
 const isDev = window.location.href.includes("dev.v4v.app")
 
-const useDev = isDev
+const useDev = isDev || process.env.VUE_APP_DEV_API === "true"
 
 const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
 const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
@@ -40,13 +40,12 @@ const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 const apiURL = useLocal ? "http://localhost:1818/v1" : rootUrl
 const apiLoginURL = useLocal ? "http://localhost:1818/" : rootLoginUrl
 
-const serverHiveAccount = useLocal ? "hivehydra" :  "v4vapp"
+const serverHiveAccount = useLocal ? "hivehydra" : "v4vapp"
 
 console.log("useLocal", useLocal)
 console.log("rootUrl", rootUrl)
 console.log("apiURL", apiURL)
 console.log("apiLoginURL", apiLoginURL)
-
 
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({ baseURL: apiLoginURL })
