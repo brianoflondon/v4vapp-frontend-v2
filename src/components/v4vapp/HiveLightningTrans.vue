@@ -8,7 +8,6 @@
             label="Refresh"
             rounded
             @click="fetchData(dataDays)"
-            :disable="data.length === 0"
           ></q-btn>
         </div>
         <div class="days-select q-px-sm">

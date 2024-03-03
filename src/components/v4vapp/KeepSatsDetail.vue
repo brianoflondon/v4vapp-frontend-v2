@@ -66,11 +66,27 @@
           </div>
         </q-td>
       </q-tr>
+      <!-- Expansion item showing the text memo -->
       <q-tr v-if="props.row.memo" :props="props.row" class="no-divider">
-        <q-td colspan="4" class="text-left">
+        <q-td colspan="4" class="text-left text-wrap max-width-cell">
           {{ props.row.memo }}
+          <q-tooltip class="fixed-width-tooltip">
+            <template v-slot:activator="{ on, attrs }">
+              <q-btn
+                dense
+                flat
+                round
+                icon="info"
+                class="q-mr-sm"
+                v-bind="attrs"
+                v-on="on"
+              />
+            </template>
+            <div class="text-wrap fixed-width-tooltip">{{ props.row.memo }}</div>
+          </q-tooltip>
         </q-td>
       </q-tr>
+      <!-- End of Expansion item showing the text memo -->
     </template>
 
     <template v-slot:bottom-row>
@@ -143,5 +159,15 @@ const columns = computed(() => [
 <style lang="scss" scoped>
 .no-divider {
   border: none;
+}
+
+.max-width-cell {
+  max-width: 200px;  /* Adjust as needed */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fixed-width-tooltip {
+  max-width: 200px;
 }
 </style>
