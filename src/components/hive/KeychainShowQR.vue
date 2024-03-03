@@ -314,7 +314,7 @@ function calcFees() {
   const { currencyToSend, amountToSend } = KeychainDialog.value
   const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeApiStatus
 
-  const exchangeRate = currencyToSend === "HBD" ? HBDSatsNumber : hiveSatsNumber
+  const exchangeRate = currencyToSend === "hbd" ? HBDSatsNumber : hiveSatsNumber
   const rawSats = parseFloat(amountToSend) * exchangeRate
 
   const fee =
