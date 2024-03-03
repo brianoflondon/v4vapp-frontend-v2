@@ -172,7 +172,7 @@ export default {
   date: 'Datum',
   paid: 'Bezahlt',
   pending: 'Anstehend',
-  date: 'Date',
+  date: 'Datum',
   paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',
@@ -185,7 +185,7 @@ export default {
   export_to_csv: 'Exportieren in CSV',
   export_to_csv_tooltip: 'Exportieren Sie alle derzeit angezeigten Verkäufe in eine CSV-Datei',
   // Hive to Lightning Transactions
-  other: 'Other',
+  other: 'Sonstiges',
   wallet: 'Wallet',
-  login_to_see_history: 'Login to see your history'
+  login_to_see_history: 'Anmelden, um den Verlauf zu sehen'
 };
