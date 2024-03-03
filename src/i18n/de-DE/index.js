@@ -172,7 +172,7 @@ export default {
   date: 'Datum',
   paid: 'Bezahlt',
   pending: 'Anstehend',
-  date: 'Datum',
+  date: 'Date',
   paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',
@@ -187,5 +187,12 @@ export default {
   // Hive to Lightning Transactions
   other: 'Sonstiges',
   wallet: 'Wallet',
-  login_to_see_history: 'Anmelden, um den Verlauf zu sehen'
+  login_to_see_history: 'Anmelden, um den Verlauf zu sehen',
+  reason: 'Reason',
+  deposit: 'Deposit',
+  withdraw: 'Withdraw',
+  convert: 'Convert',
+  convert_sats_to_hive: 'Convert sats to Hive',
+  deposit_sats_on_v4vapp: 'Deposit sats on v4v.app',
+  convert_sats_from_v4vapp: 'Convert sats to Hive'
 };
