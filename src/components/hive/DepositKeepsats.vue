@@ -75,6 +75,7 @@
               markers
               :step="sliderMinMax.step"
               :label-value="`${amount}`"
+              @update:model-value="(val) => updateAmount(val)"
             />
           </div>
         </div>
@@ -219,7 +220,6 @@ const sliderMinMax = computed(() => {
   return { min: 1, max: 400, step: 1 }
 })
 
-
 const lightningAddressPrefix = computed(() => {
   if (!storeUser.currentUser) {
     return ""
@@ -281,6 +281,10 @@ async function updateDestination() {
 function updateAmount(val) {
   // console.log(calcFees(val).sats)
   amount.value = val
+  CurrencyCalc.value = {
+    amount: parseFloat(val),
+    currency: destination.value,
+  }
 }
 
 // Calculates the fees charged in the same currency Hive/HBD as
