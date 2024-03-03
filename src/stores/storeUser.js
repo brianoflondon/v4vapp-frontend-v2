@@ -3,7 +3,7 @@ import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
-import { apiLogin } from "src/boot/axios"
+import { apiLogin, api } from "src/boot/axios"
 import { useKeepSats } from "src/use/useV4vapp"
 
 const storeAPIStatus = useStoreAPIStatus()
@@ -201,6 +201,15 @@ export const useStoreUser = defineStore("useStoreUser", {
         return true
       }
     },
+    balancesNum() {
+      if (!this.currentDetails) return null
+      return {
+        hive: parseFloat(this.currentDetails.balance),
+        hbd: parseFloat(this.currentDetails.hbd_balance),
+        keepSats: this.currentKeepSats?.net_sats,
+      }
+    },
+
     hiveBalance() {
       if (!this.currentDetails) return "💰💰💰"
       const balNum = parseFloat(this.currentDetails.balance).toFixed(3)
@@ -248,14 +257,62 @@ export const useStoreUser = defineStore("useStoreUser", {
       ).toLocaleString()
       return satsTotal
     },
+    /**
+     * Checks if the current bitcoin balance is greater than 1000000 net sats.
+     * @returns {boolean} Returns true if the bitcoin balance is greater than 1000000 net sats, otherwise false.
+     */
+    bitcoinDisplay() {
+      if (this.currentKeepSats === null) {
+        return false
+      }
+      if (this.currentKeepSats?.net_sats > 1000000) {
+        return true
+      }
+      return false
+    },
+    /**
+     * Calculates and returns the keepSats balance.
+     * If the currentKeepSats is null, it logs a message and returns "💰💰💰".
+     * If the currentKeepSats.net_sats is greater than 1000000, it converts it to netBitcoin and returns the tidyNumber with 6 decimal places.
+     * Otherwise, it returns the tidyNumber of currentKeepSats.net_sats with 0 decimal places.
+     * @returns {string|number} The keepSats balance.
+     */
     keepSatsBalance() {
       if (this.currentKeepSats === null) {
         console.log("Need to reauthenticate to get keepSatsBalance")
         console.log("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
+      if (this.currentKeepSats?.net_sats > 1000000) {
+        const netBitcoin = this.currentKeepSats?.net_sats / 100000000
+        return tidyNumber(netBitcoin, 3)
+      }
       return tidyNumber(this.currentKeepSats?.net_sats, 0)
-      // return this.currentKeepSats
+    },
+    /**
+     * Retrieves the balance of keepSats and returns it as a formatted number or string.
+     * If the currentKeepSats is null, it logs a message and returns "💰💰💰".
+     * Otherwise, it returns the balance as is.
+     * @returns {number|string} The balance of keepSats as a formatted number or string.
+     */
+    keepSatsBalanceNumDisplay() {
+      if (this.currentKeepSats === null) {
+        console.log("Need to reauthenticate to get keepSatsBalance")
+        console.log("check if logged in with HAS or Keychain")
+        return "💰💰💰"
+      }
+      if (this.currentKeepSats?.net_sats > 1000000) {
+        return this.currentKeepSats?.net_sats / 100000000
+      }
+      return this.currentKeepSats?.net_sats
+    },
+    keepSatsBalanceNum() {
+      if (this.currentKeepSats === null) {
+        console.log("Need to reauthenticate to get keepSatsBalance")
+        console.log("check if logged in with HAS or Keychain")
+        return "💰💰💰"
+      }
+      return this.currentKeepSats?.net_sats
     },
     savingsSatsBalance() {
       if (this.satsBalance === "💰💰💰") return "💰💰💰"
@@ -289,19 +346,30 @@ export const useStoreUser = defineStore("useStoreUser", {
       const onOpen = async () => {
         if (this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
+        await this.updateSatsBalance()
         this.currentProfile = this.currentDetails?.profile
-        console.log("this.currentUser", this.currentUser)
-        if (this.currentUser && this.apiToken) {
-          this.currentKeepSats = await useKeepSats(
-            this.currentUser,
-            this.apiToken,
-            this.token
-          )
-        }
       }
       this.apiTokenSet()
       this.expireCheck()
       onOpen()
+    },
+    async updateSatsBalance(useCache = true) {
+      if (this.currentUser && this.apiToken) {
+        const currentSatsBalance = this.currentKeepSats?.net_sats
+        try {
+          this.currentKeepSats = await useKeepSats(useCache)
+          console.log("currentKeepSats", this.currentKeepSats)
+          if (this.currentKeepSats) {
+            if (currentSatsBalance !== this.currentKeepSats.net_sats) {
+              return true
+            }
+          }
+          return false
+        } catch (err) {
+          console.error(err)
+          return null
+        }
+      }
     },
     /**
      * Logs in a user with the provided credentials.
@@ -419,6 +487,22 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.currentDetails = null
       this.currentProfile = null
       this.currentKeepSats = null
+    },
+    async bech32Address(currency = "hive") {
+      const getBech32 = async (currency) => {
+        const params = { currency: currency, no_image: false, json: true }
+        const url = `/lnurlp/bech32/${this.currentUser}`
+        try {
+          const res = await api.get(url, { params })
+          return res.data
+        } catch (err) {
+          console.error(err)
+          return `${this.currentUser}@${currency}.v4v.app`
+        }
+      }
+      const answer = await getBech32(currency)
+      if (answer) return answer
+      return null
     },
   },
   persist: {

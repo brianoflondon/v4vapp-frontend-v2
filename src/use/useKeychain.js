@@ -184,6 +184,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
 
 /**
  * Performs a transfer using the Hive Keychain SDK.
+ * Always transfer to the serverHiveAccount
  *
  * @param {string} username - The username of the sender.
  * @param {number} amount - The amount to be transferred.
@@ -200,7 +201,9 @@ export async function useHiveKeychainTransfer(
 ) {
   try {
     const keychain = new KeychainSDK(window)
+    console.log("useHiveKeychainTransfer: ", username, amount, currency, memo)
     amount = parseFloat(amount).toFixed(3)
+    console.log("amount: ", amount)
     const formParamsAsObject = {
       data: {
         username: username,

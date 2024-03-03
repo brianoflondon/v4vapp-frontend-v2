@@ -1,8 +1,8 @@
 {
-  "name": "v4vapp-frontend-v2",
-  "version": "1.13.3",
+  "name": "v4vapp",
+  "version": "1.13.4",
   "description": "V4V.app Value 4 Value Hive Lightning Bridge",
-  "productName": "V4V.app",
+  "productName": "V4V App",
   "author": "Brian of London (Dot) <brian@v4v.app>",
   "private": true,
   "scripts": {
@@ -24,9 +24,10 @@
     "qr-code-styling": "^1.6.0-rc.1",
     "qrcode": "^1.5.3",
     "qrcode-reader-vue3": "^3.1.2",
-    "quasar": "^2.14.0",
+    "quasar": "^2.14.4",
     "uuid": "^9.0.0",
     "vue": "^3.3.8",
+    "vue-confetti-explosion": "^1.0.2",
     "vue-i18n": "^9.7.1",
     "vue-qrcode-reader": "^5.4.1",
     "vue-router": "^4.2.5"
@@ -42,7 +43,6 @@
     "eslint-plugin-vue": "^9.0.0",
     "postcss": "^8.4.14",
     "prettier": "^2.5.1",
-    "quasar-app-extension-qnumber": "^1.8.0",
     "workbox-build": "^6.6.0",
     "workbox-cacheable-response": "^6.6.0",
     "workbox-core": "^6.6.0",

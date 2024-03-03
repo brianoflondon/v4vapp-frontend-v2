@@ -337,6 +337,17 @@ export function useGetCheckCode() {
   return "v4v-" + genRandAlphaNum(5)
 }
 
+/**
+ * Generates a Hive transfer operation.
+ *
+ * @param {string} from - The sender's account name.
+ * @param {string} to - The recipient's account name.
+ * @param {number} amountToSend - The amount to transfer.
+ * @param {string} currencyToSend - The currency of the transfer. (hbd or hive)
+ * @param {string} memo - The memo for the transfer.
+ * @param {string|null} checkCode - The check code for the transfer.
+ * @returns {Array} - The Hive transfer operation.
+ */
 export function useGenerateHiveTransferOp(
   from,
   to,

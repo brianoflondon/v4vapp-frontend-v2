@@ -251,6 +251,7 @@ function createOp(from, to, amount, memo) {
  * @returns {Promise} - A promise that resolves when the transfer is successful or rejects with an error.
  */
 export async function useHASTransfer(username, amount, currency, memo) {
+  console.log("useHASTransfer: ", username, amount, currency, memo)
   amount = parseFloat(amount).toFixed(3)
   const amountString = `${amount} ${currency}`
   const operation = createOp(username, serverHiveAccount, amountString, memo)

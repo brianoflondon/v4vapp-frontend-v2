@@ -1,35 +1,63 @@
 <template>
   <q-page>
     <div class="flex column text-center items-center q-pa-none">
-      <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
+      <q-tabs v-model="currentTab" align="justify" dense animated>
         <q-tab name="wallet" :label="$t('wallet')" />
+        <q-tab
+          name="deposit"
+          :label="$t('deposit')"
+          :disable="!storeUser.currentUser"
+        >
+          <q-tooltip>{{ $t("deposit_sats_on_v4vapp") }}</q-tooltip>
+        </q-tab>
+        <q-tab
+          name="convert"
+          :label="$t('convert')"
+          :disable="
+            !storeUser.currentUser ||
+            storeUser?.keepSatsBalanceNum < storeApiStatus?.minMax?.sats?.min
+          "
+        >
+          <q-tooltip>{{ $t("convert_sats_from_v4vapp") }}</q-tooltip>
+        </q-tab>
         <q-tab
           name="history"
           :label="$t('history')"
           :disable="!storeUser.currentUser"
         >
-          <q-tooltip v-if="!storeUser.currentUser">{{
-            $t("login_to_see_history")
-          }}</q-tooltip>
+          <q-tooltip>{{ $t("login_to_see_history") }}</q-tooltip>
         </q-tab>
         <!-- <q-tab name="other" :label="$t('other')" /> -->
       </q-tabs>
+      <!-- Q-tab-panels -->
       <q-tab-panels v-model="currentTab">
-        <q-tab-panel v-show="false" name="sales">
-          <div></div>
-        </q-tab-panel>
         <q-tab-panel name="history">
-          <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
-            <div>
-              <HiveLightningTrans />
+          <q-slide-transition appear disappear :duration="1500">
+            <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+              <div>
+                <HiveLightningTrans />
+              </div>
             </div>
-          </div>
+          </q-slide-transition>
         </q-tab-panel>
-        <q-tab-panel name="currency">
-          <div class="flex row pad-max-width full-width q-px-xs q-py-xs"></div>
+        <q-tab-panel name="deposit">
+          <q-slide-transition appear disappear :duration="500">
+            <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+              <DepositKeepsats />
+            </div>
+          </q-slide-transition>
+        </q-tab-panel>
+        <q-tab-panel name="convert">
+          <q-slide-transition appear disappear :duration="500">
+            <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+              <ConvertKeepsats />
+            </div>
+          </q-slide-transition>
         </q-tab-panel>
       </q-tab-panels>
+      <!-- End Q-tab-panels -->
     </div>
+    <!-- Main page content for wallet with credit card and invoice entry -->
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
@@ -146,6 +174,23 @@
         </div>
         <!-- Payment Buttons -->
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
+          <div class="row justify-center q-pa-sm" v-if="enoughKeepSats">
+            <div class="pay-with-sats-button">
+              <q-btn
+                class="payment-button-sats"
+                @click="payInvoice('payWithSats', 'HiveKeychain')"
+                :loading="storeApiStatus.payInvoice"
+                :disable="storeApiStatus.payInvoice"
+                icon="fa-brands fa-btc"
+                :label="payWithSatsButton"
+                :color="buttonColor.buttonColor"
+                :text-color="buttonColor.textColor"
+                size="md"
+                rounded
+              />
+            </div>
+          </div>
+
           <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
             <q-btn
               class="payment-button-hbd"
@@ -203,6 +248,7 @@
             />
           </div>
         </div>
+        <!-- End Payment Buttons -->
         <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
         <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
         <!-- Vote Button -->
@@ -215,6 +261,7 @@
       </div>
       <!-- Camera Toggle, paste and invoice input -->
     </div>
+    <!-- End Main page content for wallet with credit card and invoice entry -->
     <AskDetailsDialog
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
@@ -243,7 +290,7 @@
 import { computed, ref, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader"
+import { QrcodeStream } from "vue-qrcode-reader"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
 import { useGetHiveTransactionHistory } from "src/use/useHive.js"
 import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
@@ -261,6 +308,8 @@ import ExplanationBox from "components/utils/ExplanationBox.vue"
 import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HiveLightningTrans from "src/components/v4vapp/HiveLightningTrans.vue"
+import DepositKeepsats from "src/components/hive/DepositKeepsats.vue"
+import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -284,6 +333,23 @@ const t = useI18n().t
 const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
+
+const payWithSatsButton = computed(() => {
+  return (
+    "Pay " +
+    tidyNumber(CurrencyCalc.value.sats, 0) +
+    " from " +
+    storeUser.keepSatsBalance +
+    " シ"
+  )
+})
+
+const enoughKeepSats = computed(() => {
+  if (storeUser.keepSatsBalanceNum >= CurrencyCalc.value.sats) {
+    return true
+  }
+  return false
+})
 
 const KeychainDialog = ref({ show: false })
 const HASDialog = ref({ show: false })
@@ -608,20 +674,37 @@ function toggleCamera() {
   cameraShow.value = cameraOn.value
 }
 
+/**
+ * Pay the invoice using the specified currency and method.
+ *
+ * @param {string} currency - The currency to use for payment.
+ * @param {string} method - The payment method to use.
+ * @returns {Promise} - A promise that resolves when the payment is completed.
+ */
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
   // Add 6 Hive to the amount to cover the fee or 2 HBD
   console.log("payInvoice currency ", currency, "method ", method)
+  const payWithSats = currency === "payWithSats"
   let amountNum = 0
   if (currency == "HIVE") {
     amountNum = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
     amountNum = parseFloat(HBD.value) + 1 + 0.002 * parseFloat(Hive.value)
+  } else if (payWithSats) {
+    amountNum = 0.001
+    currency = "HIVE"
   }
   CurrencyCalc.value.amount = amountNum
   CurrencyCalc.value.currency = currency.toLowerCase()
   let amount = amountNum.toFixed(3)
-  const memo = `${dInvoice.value.paymentRequest}`
+
+  // if payWithSats is true add #paywithsats to the end of the memo
+  // adds encryption to the memo 2024-02-23
+  let memo = `#${dInvoice.value.paymentRequest}`
+  if (payWithSats) {
+    memo += " #paywithsats"
+  }
   dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
   let username = null
@@ -827,7 +910,12 @@ async function checkHiveTransaction(username, trx_id, notif) {
     // check if the transaction contains the string "Your Lightning Invoice of 1234 sats has been paid"
     let regex = /Your Lightning Invoice of (\d+) sats has been paid/
     let match = transaction_found?.op[1].memo.match(regex)
+    if (!match) {
+      regex = /Deducting (\d+) from existing balance/
+      match = transaction_found?.op[1].memo.match(regex)
+    }
     if (match) {
+      await storeUser.updateSatsBalance(false)
       const satsPaid = match[1]
       memo = `${t("transfer")}: ${t("paid")}: ${satsPaid} sats`
       dInvoice.value.progress.push(memo)

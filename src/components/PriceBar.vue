@@ -1,6 +1,9 @@
 <template>
   <q-footer elevated>
-    <div class="price-bar q-pa-none shadow-1 no-wrap row">
+    <div
+      :style="paddingBottom"
+      class="price-bar q-pa-none shadow-1 no-wrap row"
+    >
       <span class="price-bar-item btc-price q-pa-xs">
         <i class="fa-brands fa-btc" />&thinsp;
         <strong>${{ storeAPIStatus.bitcoin }}</strong>
@@ -39,7 +42,10 @@
           dense
           @click="storeAPIStatus.update()"
         />
-        <q-tooltip>{{ $t('prices_fetched') }}: {{ storeAPIStatus.lastFetchTime }}</q-tooltip>
+        <q-tooltip
+          >{{ $t("prices_fetched") }}:
+          {{ storeAPIStatus.lastFetchTime }}</q-tooltip
+        >
       </span>
       <span class="price-bar-item keychain-status-indicator q-pa-none">
         <q-btn
@@ -66,8 +72,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, computed, ref } from "vue"
-import DarkSelector from "components/utils/DarkSelector.vue"
+import { onMounted, onUnmounted, computed } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
@@ -102,6 +107,15 @@ async function scheduleUpdate() {
 
 onUnmounted(() => {
   clearTimeout(timeoutId)
+})
+
+const paddingBottom = computed(() => {
+  const isPWA =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone
+  const isIphone = /iPhone/.test(window.navigator.userAgent)
+
+  return isPWA && isIphone ? "padding-bottom: 20px;" : ""
 })
 </script>
 

@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <ConfettiExplosion v-if="visible" />
+  </div>
   <q-card @click="changeBackground" class="credit-card-background q-ma-xs">
     <q-img
       :src="creditCardBackground"
@@ -12,16 +15,6 @@
           <div class="card-spacer row col-12"></div>
           <!-- Sats balance on the face of the credit card -->
           <div class="row col-12">
-            <div
-              v-if="false"
-              class="col-6 text-right text-h6 credit-card-text embossed-text"
-            >
-              {{ balances["keepSats"] }}
-              <span>
-                シ
-                <q-tooltip>シ {{ $t("sats") }}</q-tooltip>
-              </span>
-            </div>
             <div class="text-h6 credit-card-text embossed-text"></div>
           </div>
           <!-- Sats balance on the face of the credit card -->
@@ -73,8 +66,14 @@
                   {{ balances["keepSats"] }}<br />
                 </td>
                 <td>
-                  シ
-                  <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
+                  <div v-if="!balances['bitcoinDisplay']">
+                    <span>シ</span>
+                    <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
+                  </div>
+                  <div v-else>
+                    <span><i class="fa-brands fa-btc" /></span>
+                    <q-tooltip>Bitcoin</q-tooltip>
+                  </div>
                 </td>
               </tr>
               <tr>
@@ -123,13 +122,18 @@
 <script setup>
 import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { computed, ref } from "vue"
+import { nextTick, computed, ref, onMounted, watch } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
+import { tidyNumber } from "src/use/useUtils"
+import ConfettiExplosion from "vue-confetti-explosion"
 
 const storeUser = useStoreUser()
 const q = useQuasar()
 const savingsToggle = ref(false)
+
+// emit balances to the parent component
+const emit = defineEmits(["balances"])
 
 const backgroundImage = [
   "sealogo01",
@@ -141,9 +145,58 @@ const backgroundImage = [
   "dolphins",
 ]
 
+/**
+ * ConfettiExplosion component
+ */
+const visible = ref(false)
+const explode = async () => {
+  visible.value = false
+  await nextTick()
+  visible.value = true
+}
+
+let timeoutId = null
+
 const maxValue = backgroundImage.length
 // generate random number between 0 and 1
 const backgroundIndex = ref(Math.floor(Math.random() * maxValue))
+
+onMounted(() => {
+  scheduleUpdate()
+})
+
+watch(
+  () => storeUser.keepSatsBalanceNumDisplay,
+  (newVal, oldVal) => {
+    // This function will be called whenever `storeUser.keepSatsBalance` changes
+    console.log(
+      "keepSatsBalance changed from",
+      oldVal,
+      "to",
+      newVal,
+      "delta:",
+      newVal - oldVal
+    )
+    const satsChange = tidyNumber(newVal - oldVal, 0)
+    if (oldVal !== undefined && satsChange !== 0) {
+      explode()
+      q.notify({
+        message: `KeepSats Balance changed by ${satsChange} sats`,
+        color: "primary",
+        position: "top",
+        icon: "savings",
+        timeout: 5000,
+      })
+    }
+    // You can add your own code here to do something when `storeUser.keepSatsBalance` changes
+  }
+)
+
+async function scheduleUpdate() {
+  await storeUser.update()
+  // Schedule the next update after 5 minutes
+  timeoutId = setTimeout(scheduleUpdate, 5 * 60 * 1000)
+}
 
 const lightDark = computed(() => {
   if (q.dark.isActive) {
@@ -153,6 +206,13 @@ const lightDark = computed(() => {
 })
 
 const nonZeroKeepSats = computed(() => {
+  if (storeUser.currentKeepSats) {
+    if (storeUser.currentKeepSats !== "0") {
+      return true
+    }
+  }
+  return false
+  emit("balances", balances.value)
   return balances.value.keepSats !== "0"
 })
 const balances = computed(() => {
@@ -163,6 +223,7 @@ const balances = computed(() => {
       sats: storeUser.savingsSatsBalance,
       totalSats: storeUser.totalSatsBalance,
       keepSats: storeUser.keepSatsBalance,
+      bitcoinDisplay: storeUser.bitcoinDisplay,
     }
   } else {
     return {
@@ -171,6 +232,7 @@ const balances = computed(() => {
       sats: storeUser.satsBalance,
       totalSats: storeUser.totalSatsBalance,
       keepSats: storeUser.keepSatsBalance,
+      bitcoinDisplay: storeUser.bitcoinDisplay,
     }
   }
 })
@@ -202,9 +264,8 @@ function changeBackground() {
   console.log("changeBackground")
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
   storeUser.update()
+  explode()
 }
-
-storeUser.update()
 </script>
 
 <style lang="scss" scoped>

@@ -18,10 +18,13 @@
     <div class="q-py-lg">
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
-    <div class="q-pa-xs text-caption">{{ appName }} - {{ appVersion }}</div>
-    <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
-    <div class="q-pa-xs text-caption">{{ api?.defaults?.baseURL }}</div>
-    <div class="q-pa-xs text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
+    <div v-if="isDev || isLocalhost">
+      <div class="q-pa-xs text-caption">{{ appName }} - {{ appVersion }}</div>
+      <div class="q-pa-xs text-caption">{{ serverHiveAccount }}</div>
+      <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
+      <div class="q-pa-xs text-caption">{{ api?.defaults?.baseURL }}</div>
+      <div class="q-pa-xs text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
+    </div>
   </div>
 </template>
 
@@ -35,15 +38,15 @@ import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
-import { api, apiLogin } from "boot/axios"
+import { api, apiLogin, serverHiveAccount } from "boot/axios"
 
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()
 // const rightDrawerOpen = defineModel(false)
 
 const hiveAccObj = ref()
-const commitMessage = ref()
-
+const isDev = ref()
+const isLocalhost = ref()
 const t = useI18n().t
 const linkList = ref([
   {
@@ -93,16 +96,13 @@ watch(storeUser, async (val) => {
 onMounted(() => {
   // only do this if dev. is in the hostname
   // if window location is not v4v.app
-  console.log("window.location.hostname", window.location.hostname)
-  if (!window.location.hostname !== "v4v.app") {
-    fetchCommitMessage()
-  }
+  isDev.value = window.location.href.includes("dev.v4v.app")
+  isLocalhost.value =
+    window.location.href.includes("localhost") ||
+    window.location.href.includes("127.0") ||
+    window.location.href.includes("192.168") ||
+    window.location.href.includes("10.0")
 })
-
-const fetchCommitMessage = async () => {
-  const response = await fetch("/messages/commit_message.txt")
-  commitMessage.value = await response.text()
-}
 </script>
 
 <style lang="scss" scoped></style>

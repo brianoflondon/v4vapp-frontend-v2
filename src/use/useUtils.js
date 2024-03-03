@@ -4,6 +4,7 @@
 //
 // ----------------------------------------------------------------------------
 
+import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
 
 /**
@@ -243,4 +244,62 @@ export function generateUUID() {
       v = c === "x" ? r : (r & 0x3) | 0x8
     return v.toString(16)
   })
+}
+
+/**
+ * Checks the cache for a given key and returns the cached data if it exists and is not expired.
+ * If the cached data is expired, it will be deleted from the cache.
+ * @param {string} key - The key to check in the cache.
+ * @returns {Promise<Object|null>} - The cached data if it exists and is not expired, otherwise null.
+ */
+export async function checkCache(key) {
+  const cache = await caches.open("v4vapp")
+  const cachedResponse = await cache.match(key)
+  const cachedTimestamp = await cache.match(`${key}-timestamp`)
+
+  if (cachedResponse && cachedTimestamp) {
+    const expiryTime = await cachedTimestamp.text()
+    if (Date.now() > expiryTime) {
+      // The item is expired
+      await cache.delete(key)
+      await cache.delete(`${key}-timestamp`)
+      return null
+    } else {
+      console.log("Cache hit")
+      const data = await cachedResponse.json()
+      return data
+    }
+  }
+  return null
+}
+
+export async function putInCache(key, data, expiryTimeInMinutes) {
+  /**
+   * The cache object used for storing data in the "v4vapp" cache.
+   * @type {Cache}
+   */
+  const cache = await caches.open("v4vapp")
+  const expiryTime = Date.now() + expiryTimeInMinutes * 60 * 1000
+  cache.put(key, new Response(JSON.stringify(data)))
+  cache.put(`${key}-timestamp`, new Response(expiryTime.toString()))
+}
+
+/**
+ * Calculates the color for a QR code based on the given parameters.
+ *
+ * @param {boolean} isLightning - Indicates whether the QR code is related to lightning.
+ * @param {boolean} loading - Indicates whether the QR code is still loading.
+ * @returns {string} The color code for the QR code.
+ */
+export function QRLightningHiveColor(isLightning, loading) {
+  const q = useQuasar()
+  if (loading) {
+    return q.dark.isActive ? "#992AC7" : "#2F0D3D"
+  }
+
+  if (isLightning) {
+    return q.dark.isActive ? "#18D231" : "#0A5614"
+  }
+
+  return q.dark.isActive ? "#1976D2" : "#0E4377"
 }

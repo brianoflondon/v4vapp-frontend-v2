@@ -113,7 +113,6 @@
           <!-- End of main table  -->
           <!-- Expanded row details  -->
           <q-tr v-if="props.expand">
-            
             <q-td colspan="100%">
               <div class="fit row justify-start items-start content-start">
                 <div>

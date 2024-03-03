@@ -12,6 +12,7 @@ import axios from "axios"
 const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
+// const myNodePubKey = ""
 let useLocal = false
 
 const isLocalhost =
@@ -21,6 +22,8 @@ const isLocalhost =
   window.location.href.includes("10.0")
 
 console.log("isLocalhost", isLocalhost)
+
+console.log("process.env.VUE_APP_LOCAL_API", process.env.VUE_APP_LOCAL_API)
 
 if (process.env.VUE_APP_LOCAL_API === "true" || isLocalhost) {
   console.log("Using local API")
@@ -34,15 +37,16 @@ const useDev = isDev
 const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
 const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 
-const apiURL = useLocal ? "http://127.0.0.1:1818/v1" : rootUrl
-const apiLoginURL = useLocal ? "http://127.0.0.1:1818/" : rootLoginUrl
+const apiURL = useLocal ? "http://localhost:1818/v1" : rootUrl
+const apiLoginURL = useLocal ? "http://localhost:1818/" : rootLoginUrl
+
+const serverHiveAccount = useLocal ? "hivehydra" :  "v4vapp"
 
 console.log("useLocal", useLocal)
 console.log("rootUrl", rootUrl)
 console.log("apiURL", apiURL)
 console.log("apiLoginURL", apiLoginURL)
 
-const serverHiveAccount = "v4vapp"
 
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({ baseURL: apiLoginURL })
