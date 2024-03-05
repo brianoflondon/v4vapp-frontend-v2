@@ -64,6 +64,15 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
   // Fetch the avatar for the user
   const t = i18n.global.t
   console.log("useKeychainLoginFlow: ", hiveAccObj)
+
+  let userToLogin = hiveAccObj.value
+
+  if (storeUser.currentUser === "v4vapp.dev") {
+    console.log("Admin user, Override userToLogin")
+    console.log("useKeychainLoginFlow: ", storeUser.currentUser)
+    userToLogin = storeUser.currentUser
+  }
+
   // changes to hiveAccObj object DO flow back to the
   // reactive object in the component
   const avatarUrl = useHiveAvatarURL({ hiveAccname: hiveAccObj.value })
@@ -116,8 +125,9 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
       color: "info",
     })
     await delay(300)
+    // This is the function from Hive Keychain SDK
     const signedMessage = await useHiveKeychainLogin({
-      hiveAccname: hiveAccObj.value,
+      hiveAccname: userToLogin,
       message: challenge.data.challenge,
       keyType: props.keyType,
     })

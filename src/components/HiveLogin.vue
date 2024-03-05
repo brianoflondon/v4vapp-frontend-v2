@@ -28,8 +28,8 @@
             style="width: 200px"
             :disable="
               typeof hiveAccObj === 'undefined' ||
-              hiveAccObj === '' ||
-              hiveAccObj === null ||
+              hiveAccObj?.value === '' ||
+              hiveAccObj?.value === null ||
               isKeychain === false
             "
             align="left"
@@ -51,8 +51,8 @@
             style="width: 200px"
             :disable="
               typeof hiveAccObj === 'undefined' ||
-              hiveAccObj === '' ||
-              hiveAccObj === null // ||
+              hiveAccObj?.value === '' ||
+              hiveAccObj?.value === null // ||
               // isHAS === false
             "
             label="HAS"
