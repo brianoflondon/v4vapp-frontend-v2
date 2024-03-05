@@ -74,9 +74,9 @@ export default {
   // Pricebar
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
-  working: 'Wird verarbeitet',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  working: 'Arbeitet',
+  keychain_installed: 'Keychain ist installiert',
+  keychain_missing: 'Keychain fehlt',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
