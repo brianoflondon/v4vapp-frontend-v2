@@ -188,11 +188,11 @@ export default {
   other: 'Sonstiges',
   wallet: 'Wallet',
   login_to_see_history: 'Anmelden, um den Verlauf zu sehen',
-  reason: 'Reason',
-  deposit: 'Deposit',
-  withdraw: 'Withdraw',
-  convert: 'Convert',
-  convert_sats_to_hive: 'Convert sats to Hive',
-  deposit_sats_on_v4vapp: 'Deposit sats on v4v.app',
-  convert_sats_from_v4vapp: 'Convert sats to Hive'
+  reason: 'Anlass',
+  deposit: 'Einlage',
+  withdraw: 'Auszahlen',
+  convert: 'Konvertieren',
+  convert_sats_to_hive: 'Sats in Hive tauschen',
+  deposit_sats_on_v4vapp: 'Sats auf v4v.app einzahlen',
+  convert_sats_from_v4vapp: 'Sats in Hive tauschen'
 };
