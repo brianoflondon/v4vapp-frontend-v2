@@ -42,6 +42,7 @@ export default {
   not_found: 'No encontrado',
   lightning_failed: 'Lightning payment failed',
   Progress: 'Progreso',
+  private_memo: 'Use a Private Hive Transfer Memo (needs a Memo key)',
   // Login
   keychain_not_installed: 'Keychain no está instalada',
   enter_hive_account: 'Por favor, entre su usuario de Hive',
@@ -75,8 +76,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain está instalado',
+  keychain_missing: 'Keychain no se encuentra',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
