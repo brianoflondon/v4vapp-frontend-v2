@@ -42,6 +42,7 @@ export default {
   not_found: 'Not found',
   lightning_failed: 'Lightning payment failed',
   Progress: 'Progress',
+  private_memo: 'Use a Private Hive Transfer Memo (needs a Memo key)',
   // Login
   keychain_not_installed: 'Keychain is not installed',
   enter_hive_account: 'Please enter you Hive Account name',
