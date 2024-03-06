@@ -42,6 +42,7 @@ export default {
   not_found: 'nicht gefunden',
   lightning_failed: 'Lightning-Zahlung fehlgeschlagen',
   Progress: 'In Umsetzung',
+  private_memo: 'Use a Private Hive Transfer Memo (needs a Memo key)',
   // Login
   keychain_not_installed: 'Keychain ist nicht installiert',
   enter_hive_account: 'Bitte geben Sie Ihren Hive-Namen ein',
@@ -76,7 +77,7 @@ export default {
   failure: 'Fehlgeschlagen',
   working: 'Arbeitet',
   keychain_installed: 'Keychain ist installiert',
-  keychain_missing: 'Keychain fehlt',
+  keychain_missing: 'Keychain ist nicht installiert',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -172,7 +173,7 @@ export default {
   date: 'Datum',
   paid: 'Bezahlt',
   pending: 'Anstehend',
-  date: 'Datum',
+  date: 'Date',
   paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',
