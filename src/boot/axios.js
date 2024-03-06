@@ -37,9 +37,21 @@ const useDev = isDev || process.env.VUE_APP_DEV_API === "true"
 const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
 const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 
+let apiURL = rootUrl
+let apiLoginURL = rootLoginUrl
 
-const apiURL = useLocal ? "http://localhost:1818/v1" : rootUrl
-const apiLoginURL = useLocal ? "http://localhost:1818/" : rootLoginUrl
+// make a test call to localhost and if it fails, use the remote server
+if (useLocal) {
+  axios
+    .get("http://localhost:1818/v1")
+    .then((response) => {
+      apiURL = "http://localhost:1818/v1"
+      apiLoginURL = "http://localhost:1818/"
+    })
+    .catch((error) => {
+      console.log("Local API not available", error)
+    })
+}
 
 const serverHiveAccount = useLocal ? "hivehydra" : "v4vapp"
 

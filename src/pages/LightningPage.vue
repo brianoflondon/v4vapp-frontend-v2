@@ -104,7 +104,20 @@
               :label="t('paste')"
               toggle-aria-label="Paste in a Lightning invoice from your clipboard"
             />
+            <div>
+              <q-toggle
+                v-model="privateMemo"
+                icon="lock"
+                size="xl"
+                color="primary"
+                dense
+                flat
+                toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
+              />
+              <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
+            </div>
           </div>
+
           <div class="column flex-center q-pt-sm q-px-sm">
             <q-input
               for="invoice"
@@ -326,6 +339,8 @@ const voteOptions = ref({
 const cameraOn = ref(false)
 const cameraShow = ref(false)
 const cameraError = ref("")
+
+const privateMemo = ref(false)
 
 const currentTab = ref("wallet")
 
@@ -701,7 +716,12 @@ async function payInvoice(currency, method) {
 
   // if payWithSats is true add #paywithsats to the end of the memo
   // adds encryption to the memo 2024-02-23
-  let memo = `#${dInvoice.value.paymentRequest}`
+  // add control for encryption 2024-03-06
+  let memo = `${dInvoice.value.paymentRequest}`
+  if (privateMemo.value) {
+    memo = "#" + memo
+  }
+
   if (payWithSats) {
     memo += " #paywithsats"
   }
@@ -913,7 +933,7 @@ async function checkHiveTransaction(username, trx_id, notif) {
 
     let match = transaction_found?.op[1].memo.match(regex)
     if (match) {
-      let satsPaid = match[2].replace(',', '');
+      let satsPaid = match[2].replace(",", "")
       await storeUser.updateSatsBalance(false)
       memo = `${t("transfer")}: ${t("paid")}: ${satsPaid} sats`
       dInvoice.value.progress.push(memo)

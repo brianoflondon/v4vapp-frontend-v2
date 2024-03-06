@@ -7,6 +7,7 @@
       <ExplanationBox title="Convert Sats to Hive" text="How to do it" />
     </div>
     <div v-if="true" class="toggle pad-max-width">
+      <div class="q-pa-sm">
       <q-btn-toggle
         spread
         v-model="destination"
@@ -39,6 +40,23 @@
           </div>
         </template>
       </q-btn-toggle>
+
+
+      <div>
+        <q-toggle
+          v-model="privateMemo"
+          icon="lock"
+          size="xl"
+          color="primary"
+          dense
+          flat
+          toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
+        />
+        <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
+      </div>
+
+      </div>
+
       <div class="amount-input">
         <q-input
           class="amount-display"
@@ -57,7 +75,12 @@
           v-model="amount"
           color="primary"
           :min="storeAPIStatus.minMax.sats.min"
-          :max="Math.min(storeUser.keepSatsBalanceNum, storeAPIStatus.minMax.sats.max)"
+          :max="
+            Math.min(
+              storeUser.keepSatsBalanceNum,
+              storeAPIStatus.minMax.sats.max
+            )
+          "
           label
           label-always
           snap
@@ -129,6 +152,8 @@ const q = useQuasar()
 const destination = ref("hive")
 const amount = ref(1000)
 
+const privateMemo = ref(false)
+
 const buttonColors = {
   // dark mode is true, light mode is false
   true: {
@@ -159,7 +184,11 @@ async function makePayment(method) {
 
   const fixedAmount = parseFloat(amount.value).toFixed(0)
   // Adds encryption to the memo 2024-02-23
-  const memo = `#${fixedAmount} #convertkeepsats #v4vapp`
+  let memo = `${fixedAmount} #convertkeepsats #v4vapp`
+  if (privateMemo.value) {
+    memo = "#" + memo
+  }
+
   if (method === "HiveKeychain") {
     if (!storeAPIStatus.isKeychainIn) {
       q.notify({
