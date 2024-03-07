@@ -1,5 +1,10 @@
 <template>
   <q-page>
+    <div class="fit row wrap justify-center q-pb-md">
+      <div>
+        <CreditCard />
+      </div>
+    </div>
     <div class="q-pa-sm">
       <div class="row q-pa-sm destinations">
         <div class="col-6 q-px-sm v4vapp-sending-from">
@@ -143,6 +148,7 @@ import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import { api } from "boot/axios"
 import { useI18n } from "vue-i18n"
+import CreditCard from "src/components/hive/CreditCard.vue"
 const t = useI18n().t
 const hiveAccFrom = ref({ label: "", value: "", caption: "" })
 const hiveAccTo = ref({ label: "", value: "", caption: "" })

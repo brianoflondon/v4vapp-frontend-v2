@@ -290,7 +290,7 @@ async function fetchData(newValue = dataDays.value) {
   console.log("HiveLightningTrans.vue fetchData", newValue)
   const [satsHistory, keepSats] = await Promise.all([
     useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
-    useKeepSats(),
+    useKeepSats(false, true),
   ])
 
   if (keepSats.summary_transactions) {

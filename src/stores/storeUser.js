@@ -353,11 +353,17 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.expireCheck()
       onOpen()
     },
+    /**
+     * Updates the sats balance for the current user.
+     * @param {boolean} useCache - Indicates whether to use cached data or not. Default is true.
+     * @returns {Promise<boolean|null>} - A promise that resolves to a boolean indicating whether the sats balance was updated or not,
+     * or null if an error occurred.
+     */
     async updateSatsBalance(useCache = true) {
       if (this.currentUser && this.apiToken) {
         const currentSatsBalance = this.currentKeepSats?.net_sats
         try {
-          this.currentKeepSats = await useKeepSats(useCache)
+          this.currentKeepSats = await useKeepSats(useCache, false)
           console.log("currentKeepSats", this.currentKeepSats)
           if (this.currentKeepSats) {
             if (currentSatsBalance !== this.currentKeepSats.net_sats) {

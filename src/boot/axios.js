@@ -40,18 +40,25 @@ const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 let apiURL = rootUrl
 let apiLoginURL = rootLoginUrl
 
-// make a test call to localhost and if it fails, use the remote server
 if (useLocal) {
-  axios
-    .get("http://localhost:1818/v1")
-    .then((response) => {
-      apiURL = "http://localhost:1818/v1"
-      apiLoginURL = "http://localhost:1818/"
-    })
-    .catch((error) => {
-      console.log("Local API not available", error)
-    })
+  apiURL = "http://localhost:1818/v1"
+  apiLoginURL = "http://localhost:1818/"
 }
+
+// // make a test call to localhost and if it fails, use the remote server
+// if (useLocal) {
+//   axios
+//     .get("http://localhost:1818/v1")
+//     .then((response) => {
+//       console.log("Local API available", response.data)
+//       apiURL = "http://localhost:1818/v1"
+//       apiLoginURL = "http://localhost:1818/"
+
+//     })
+//     .catch((error) => {
+//       console.log("Local API not available", error)
+//     })
+// }
 
 const serverHiveAccount = useLocal ? "hivehydra" : "v4vapp"
 

@@ -25,13 +25,21 @@ export async function useCheckApiTokenValid(username, apiToken) {
   return false
 }
 
-export async function useKeepSats(useCache = true) {
+/**
+ * Fetches the keepsats data from the server.
+ *
+ * @param {boolean} useCache - Flag indicating whether to use cache or not. Default is true.
+ * @param {boolean} transactions - Flag indicating whether to include transactions or not. Default is true.
+ * @returns {Promise} - A promise that resolves to the keepsats data.
+ */
+export async function useKeepSats(useCache = true, transactions=true) {
   // if (!apiToken) return null
   // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
   const expiryTimeInMinutes = 1
   try {
     const params = {
       useCache: useCache,
+      transactions: transactions,
     }
     const resp = await apiLogin.get("/v1/v4vapp/keepsats", {
       params,
