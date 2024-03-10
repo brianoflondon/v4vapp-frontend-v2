@@ -13,6 +13,9 @@ const useHiveAccountRegex =
 const baseURLBlockExplorer = "https://hivehub.dev/tx/"
 
 export function useGenerateTxUrl(txId) {
+  if (!txId) {
+    return null
+  }
   return `${baseURLBlockExplorer}${txId}`
 }
 

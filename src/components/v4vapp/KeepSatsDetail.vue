@@ -62,7 +62,14 @@
             </a>
           </div>
           <div v-else>
-            <i class="fa-sharp fa-solid fa-bolt" />
+            <div v-if="props.row.nobroadcast">
+              <!-- Hive transfer not broadcasted -->
+              -
+            </div>
+            <div v-else>
+              <!-- Lightning payment -->
+              <i class="fa-hive" />
+            </div>
           </div>
         </q-td>
       </q-tr>
