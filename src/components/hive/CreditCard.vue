@@ -48,6 +48,20 @@
           </div>
           <div style="font-size: 0.7rem">
             <q-checkbox
+              v-model="currencyToggle"
+              unchecked-icon="currency_exchange"
+              checked-icon="currency_exchange"
+              :label="
+                storeUser.localCurrency.label +
+                ' ' +
+                storeUser.localCurrency.unit
+              "
+            >
+            </q-checkbox>
+            <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
+          </div>
+          <div style="font-size: 0.7rem">
+            <q-checkbox
               v-model="savingsToggle"
               checked-icon="savings"
               unchecked-icon="savings"
@@ -63,6 +77,9 @@
             <table>
               <tr v-if="nonZeroKeepSats">
                 <td class="numeric-cell-lg">
+                  <span v-if="currencyToggle" style="font-size: 1rem">
+                    {{ storeUser.localCurrency.unit }}
+                  </span>
                   {{ balances["keepSats"] }}<br />
                 </td>
                 <td>
@@ -77,13 +94,21 @@
                 </td>
               </tr>
               <tr>
-                <td class="numeric-cell">{{ balances["hive"] }}<br /></td>
+                <td class="numeric-cell">
+                  <span v-if="currencyToggle">
+                    {{ storeUser.localCurrency.unit }}
+                  </span>
+                  {{ balances["hive"] }}<br />
+                </td>
                 <td>
                   <q-icon name="fa-brands fa-hive" />
                 </td>
               </tr>
               <tr>
                 <td class="numeric-cell">
+                  <span v-if="currencyToggle">
+                    {{ storeUser.localCurrency.unit }}
+                  </span>
                   {{ balances["hbd"] }}
                 </td>
                 <td class="q-pl-sm">
@@ -117,6 +142,7 @@
       </div>
     </q-card-section>
   </q-card>
+
 </template>
 
 <script setup>
@@ -126,14 +152,17 @@ import { nextTick, computed, ref, onMounted, watch } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { tidyNumber } from "src/use/useUtils"
+// import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
 import ConfettiExplosion from "vue-confetti-explosion"
 
 const storeUser = useStoreUser()
 const q = useQuasar()
 const savingsToggle = ref(false)
+const currencyToggle = ref(false)
 
 // emit balances to the parent component
 const emit = defineEmits(["balances"])
+
 
 const backgroundImage = [
   "sealogo01",
@@ -149,7 +178,7 @@ const backgroundImage = [
  * ConfettiExplosion component
  */
 const visible = ref(false)
-const explode = async () => {
+async function explode() {
   visible.value = false
   await nextTick()
   visible.value = true
@@ -161,12 +190,12 @@ const maxValue = backgroundImage.length
 // generate random number between 0 and 1
 const backgroundIndex = ref(Math.floor(Math.random() * maxValue))
 
-onMounted(() => {
+onMounted(async () => {
   scheduleUpdate()
 })
 
 watch(
-  () => storeUser.keepSatsBalanceNumDisplay,
+  () => storeUser.keepSatsBalanceNum,
   (newVal, oldVal) => {
     // This function will be called whenever `storeUser.keepSatsBalance` changes
     console.log(
@@ -212,27 +241,49 @@ const nonZeroKeepSats = computed(() => {
     }
   }
   return false
-  emit("balances", balances.value)
-  return balances.value.keepSats !== "0"
 })
+
 const balances = computed(() => {
-  if (savingsToggle.value) {
-    return {
-      hive: storeUser.savingsHiveBalance,
-      hbd: storeUser.savingsHbdBalance,
-      sats: storeUser.savingsSatsBalance,
-      totalSats: storeUser.totalSatsBalance,
-      keepSats: storeUser.keepSatsBalance,
-      bitcoinDisplay: storeUser.bitcoinDisplay,
+  if (currencyToggle.value) {
+    if (savingsToggle.value) {
+      return {
+        hive: storeUser.savingsHiveBalanceLocal,
+        hbd: storeUser.savingsHbdBalanceLocal,
+        sats: storeUser.savingsSatsBalance,
+        totalSats: storeUser.totalSatsBalance,
+        keepSats: storeUser.keepSatsBalanceLocal,
+        bitcoinDisplay: storeUser.bitcoinDisplay,
+      }
+    } else {
+      return {
+        hive: storeUser.hiveBalanceLocal,
+        hbd: storeUser.hbdBalanceLocal,
+        sats: storeUser.satsBalance,
+        totalSats: storeUser.totalSatsBalance,
+        keepSats: storeUser.keepSatsBalanceLocal,
+        bitcoinDisplay: storeUser.bitcoinDisplay,
+      }
+
     }
   } else {
-    return {
-      hive: storeUser.hiveBalance,
-      hbd: storeUser.hbdBalance,
-      sats: storeUser.satsBalance,
-      totalSats: storeUser.totalSatsBalance,
-      keepSats: storeUser.keepSatsBalance,
-      bitcoinDisplay: storeUser.bitcoinDisplay,
+    if (savingsToggle.value) {
+      return {
+        hive: storeUser.savingsHiveBalance,
+        hbd: storeUser.savingsHbdBalance,
+        sats: storeUser.savingsSatsBalance,
+        totalSats: storeUser.totalSatsBalance,
+        keepSats: storeUser.keepSatsBalance,
+        bitcoinDisplay: storeUser.bitcoinDisplay,
+      }
+    } else {
+      return {
+        hive: storeUser.hiveBalance,
+        hbd: storeUser.hbdBalance,
+        sats: storeUser.satsBalance,
+        totalSats: storeUser.totalSatsBalance,
+        keepSats: storeUser.keepSatsBalance,
+        bitcoinDisplay: storeUser.bitcoinDisplay,
+      }
     }
   }
 })

@@ -2,11 +2,13 @@ import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
+import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
 import { apiLogin, api } from "src/boot/axios"
 import { useKeepSats } from "src/use/useV4vapp"
 
 const storeAPIStatus = useStoreAPIStatus()
+const storeCoingecko = useCoingeckoStore()
 
 export class HiveUser {
   constructor(
@@ -209,21 +211,35 @@ export const useStoreUser = defineStore("useStoreUser", {
         keepSats: this.currentKeepSats?.net_sats,
       }
     },
-
     hiveBalance() {
       if (!this.currentDetails) return "💰💰💰"
       const balNum = parseFloat(this.currentDetails.balance).toFixed(3)
       return tidyNumber(balNum)
+    },
+    hiveBalanceLocal() {
+      if (!this.currentDetails) return "💰💰💰"
+      return this.convertToLocalCurrency(this.currentDetails.balance, "hive")
     },
     savingsHiveBalance() {
       if (!this.currentDetails) return "💰💰💰"
       const balNum = parseFloat(this.currentDetails.savings_balance).toFixed(3)
       return tidyNumber(balNum)
     },
+    savingsHiveBalanceLocal() {
+      if (!this.currentDetails) return "💰💰💰"
+      return this.convertToLocalCurrency(
+        this.currentDetails.savings_balance,
+        "hive"
+      )
+    },
     hbdBalance() {
       if (!this.currentDetails) return "💰💰💰"
       const balNum = parseFloat(this.currentDetails.hbd_balance).toFixed(3)
       return tidyNumber(balNum)
+    },
+    hbdBalanceLocal() {
+      if (!this.currentDetails) return "💰💰💰"
+      return this.convertToLocalCurrency(this.currentDetails.hbd_balance, "hbd")
     },
     savingsHbdBalance() {
       if (!this.currentDetails) return "💰💰💰"
@@ -231,6 +247,13 @@ export const useStoreUser = defineStore("useStoreUser", {
         this.currentDetails.savings_hbd_balance
       ).toFixed(3)
       return tidyNumber(balNum)
+    },
+    savingsHbdBalanceLocal() {
+      if (!this.currentDetails) return "💰💰💰"
+      return this.convertToLocalCurrency(
+        this.currentDetails.savings_hbd_balance,
+        "hbd"
+      )
     },
     /**
      * Calculates the sum of Hive and HBD balances converted into sats.
@@ -288,6 +311,10 @@ export const useStoreUser = defineStore("useStoreUser", {
         return tidyNumber(netBitcoin, 3)
       }
       return tidyNumber(this.currentKeepSats?.net_sats, 0)
+    },
+    keepSatsBalanceLocal() {
+      if (!this.currentKeepSats) return "💰💰💰"
+      return this.convertToLocalCurrency(this.currentKeepSats.net_sats, "sats")
     },
     /**
      * Retrieves the balance of keepSats and returns it as a formatted number or string.
@@ -509,6 +536,62 @@ export const useStoreUser = defineStore("useStoreUser", {
       const answer = await getBech32(currency)
       if (answer) return answer
       return null
+    },
+    /**
+     * Converts the given amount from the specified currency to the storeUser's local currency.
+     * If the localRates structure does not have the storeUser's local currency,
+     * it adds the currency with the fixed rate from the storeUser.
+     *
+     * @param {number} amount - The amount to be converted.
+     * @param {string} currency - The currency of the amount.
+     * @returns {number|string} - The converted amount in the storeUser's local currency, or "💰💰💰" if the conversion is not possible.
+     */
+    convertToLocalCurrency(amount, currency) {
+      /**
+       * Updates the local rates based on the storeUser's local currency.
+       * If the localRates structure does not have the storeUser's local currency,
+       * it adds the currency with the fixed rate from the storeUser.
+       */
+      function updateLocalRates() {
+        // check if the localRates structure has the storeUser.localCurrency.value in it
+        // this is necessary if a user has added their own currency
+        if (!localRates.hive[storeUser.localCurrency.value]) {
+          addCurrency(storeUser.localCurrency.value, storeUser.pos.fixedRate)
+        }
+      }
+
+      function addCurrency(currencySymbol, ratePerUSD) {
+        // Calculate and add the new currency value for hive and hive_dollar
+        localRates.hive[currencySymbol] = localRates.hive.usd * ratePerUSD
+        localRates.hive_dollar[currencySymbol] =
+          localRates.hive_dollar.usd * ratePerUSD
+      }
+
+      currency = currency === "hbd" ? "hive_dollar" : currency
+      let localRates = storeCoingecko.exchangeRates
+      if (!localRates) return "💰💰💰"
+      const cacheKey = `rates-${this.localCurrency.value}`
+      const exchangeRate = storeCoingecko.ratesCache[cacheKey]
+      if (!exchangeRate) return "💰💰💰"
+      updateLocalRates()
+      if (currency === "sats") {
+        const usdBalance = amount / exchangeRate.usd.btc / 100000000
+        let rawBalance = usdBalance * exchangeRate.usd[this.localCurrency.value]
+        return tidyNumber(rawBalance)
+      }
+
+      if (!exchangeRate[currency][this.localCurrency.value]) return "💰💰💰"
+      let rawBalance =
+        parseFloat(amount) * exchangeRate[currency][this.localCurrency.value]
+
+      let adjustRate = 1
+      if (this.pos.fixedRate) {
+        adjustRate =
+          this.pos.fixedRate /
+          exchangeRate.hive_dollar[this.localCurrency.value]
+      }
+
+      return tidyNumber(rawBalance / adjustRate)
     },
   },
   persist: {
