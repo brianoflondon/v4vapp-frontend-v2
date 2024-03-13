@@ -102,6 +102,23 @@ export class HiveUser {
   }
 }
 
+/**
+ * Represents a store for managing user-related data.
+ *
+ * @typedef {Object} StoreUser
+ * @property {Object} state - The state object containing user-related data.
+ * @property {Function} getters - The getter functions for accessing computed properties.
+ * @property {Object} actions - The action functions for performing asynchronous operations.
+ */
+
+/**
+ * Creates and configures a user store.
+ *
+ * @function useStoreUser
+ * @param {string} name - The name of the store.
+ * @param {StoreUser} options - The options for configuring the store.
+ * @returns {Object} The user store object.
+ */
 export const useStoreUser = defineStore("useStoreUser", {
   state: () => ({
     currentUser: useStorage("currentUser", null),

@@ -79,6 +79,13 @@ const linkList = ref([
     icon: "circle",
     link: "/status",
   },
+  {
+    title: "Alby",
+    caption: "Alby",
+    icon: "fa-brands fa-alby",
+    link: "/alby",
+
+  }
 ])
 const hiveUsername = ref("")
 

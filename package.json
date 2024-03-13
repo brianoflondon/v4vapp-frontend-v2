@@ -1,6 +1,6 @@
 {
   "name": "v4vapp",
-  "version": "1.13.10",
+  "version": "1.14.0",
   "description": "V4V.app Value 4 Value Hive Lightning Bridge",
   "productName": "V4V App",
   "author": "Brian of London (Dot) <brian@v4v.app>",
@@ -14,6 +14,8 @@
     "patch": "npm version patch && git push --follow-tags"
   },
   "dependencies": {
+    "@getalby/sdk": "^3.4.0",
+    "@quasar/cli": "^2.4.0",
     "@quasar/extras": "^1.16.8",
     "@vueuse/core": "^10.6.1",
     "axios": "^1.6.2",

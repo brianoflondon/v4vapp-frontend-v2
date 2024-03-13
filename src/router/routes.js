@@ -48,6 +48,7 @@ const routes = [
       { path: "/vote", component: () => import("pages/VoteNow.vue") },
       { path: "/status", component: () => import("pages/StatusPage.vue") },
       { path: "/transfer", component: () => import("pages/HiveTransfer.vue") },
+      { path: "/alby", component: () => import("pages/AlbyPage.vue") },
       {
         path: "/selectdemo",
         component: () => import("pages/demo/HiveSelectDemoPage.vue"),
