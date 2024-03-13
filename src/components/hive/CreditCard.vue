@@ -49,6 +49,7 @@
           <div style="font-size: 0.7rem">
             <q-checkbox
               v-model="currencyToggle"
+              size="sm"
               unchecked-icon="currency_exchange"
               checked-icon="currency_exchange"
               :label="
@@ -60,9 +61,10 @@
             </q-checkbox>
             <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
           </div>
-          <div style="font-size: 0.7rem">
+          <div class="q-px-sm" style="font-size: 0.7rem">
             <q-checkbox
               v-model="savingsToggle"
+              size="sm"
               checked-icon="savings"
               unchecked-icon="savings"
               :label="$t('savings')"
