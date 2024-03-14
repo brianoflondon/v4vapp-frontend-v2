@@ -82,6 +82,7 @@ function emitEvent(currencyType) {
 
 function updateLocalRates() {
   // check if the localRates structure has the storeUser.localCurrency.value in it
+  // this is necessary if a user has added their own currency
   if (!localRates.hive[storeUser.localCurrency.value]) {
     addCurrency(storeUser.localCurrency.value, storeUser.pos.fixedRate)
   }

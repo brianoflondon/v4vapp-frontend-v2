@@ -7,13 +7,12 @@
       />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
     </div>
-    <div></div>
-    <q-list @click="$emit('close-menu')">
-      <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
-    </q-list>
     <div class="q-pa-md">
       <LocalCurrency />
     </div>
+    <q-list @click="$emit('close-menu')">
+      <EssentialLink v-for="link in linkList" :key="link.title" v-bind="link" />
+    </q-list>
     <!-- Explanation what is this page box -->
     <div class="q-py-lg">
       <ExplanationBox class="q-pt-md"></ExplanationBox>
@@ -24,12 +23,13 @@
       <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
       <div class="q-pa-xs text-caption">{{ api?.defaults?.baseURL }}</div>
       <div class="q-pa-xs text-caption">{{ apiLogin?.defaults?.baseURL }}</div>
+      <div class="q-pa-xs text-caption">Wax Version: {{ waxVersion }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue"
+import { ref, watch, onMounted, onBeforeMount } from "vue"
 import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
 import UserList from "components/hive/UserList.vue"
@@ -40,6 +40,8 @@ import { useAppDetails } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { api, apiLogin, serverHiveAccount } from "boot/axios"
 
+import { createWaxFoundation } from "@hive/wax"
+
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()
 // const rightDrawerOpen = defineModel(false)
@@ -48,6 +50,7 @@ const hiveAccObj = ref()
 const isDev = ref()
 const isLocalhost = ref()
 const t = useI18n().t
+const waxVersion = ref("")
 const linkList = ref([
   {
     title: t("lightning"),
@@ -93,16 +96,23 @@ watch(storeUser, async (val) => {
   }
 })
 
-onMounted(() => {
+onBeforeMount(async () => {
+  isDev.value = window.location.href.includes("dev.v4v.app")
   // only do this if dev. is in the hostname
   // if window location is not v4v.app
-  isDev.value = window.location.href.includes("dev.v4v.app")
   isLocalhost.value =
     window.location.href.includes("localhost") ||
     window.location.href.includes("127.0") ||
     window.location.href.includes("192.168") ||
     window.location.href.includes("10.0")
+  const wax = await createWaxFoundation()
+  waxVersion.value = wax.getVersion()
+  console.log("waxVersion", waxVersion.value)
+  console.log("wax", wax)
+  
 })
+
+onMounted(() => {})
 </script>
 
 <style lang="scss" scoped></style>

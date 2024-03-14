@@ -13,9 +13,9 @@
     "vue"
   ],
   "workbench.colorCustomizations": {
-    "activityBar.background": "#063147",
-    "titleBar.activeBackground": "#094464",
-    "titleBar.activeForeground": "#F6FBFE"
+    "activityBar.background": "#fe90008c",
+    "titleBar.activeBackground": "#FE9200",
+    "titleBar.activeForeground": "#010508"
   },
   "cSpell.words": [
     "axios",

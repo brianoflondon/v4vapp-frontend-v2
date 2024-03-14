@@ -32,7 +32,8 @@
       :style="creditCardStripStyle"
     >
       <div class="row items-top justify-between">
-        <div class="col-8 flex items-center">
+        <!-- Name avatar and buttons -->
+        <div class="col-7 flex items-center">
           <div class="credit-card-avatar">
             <q-avatar rounded size="xl">
               <HiveAvatar :hiveAccname="storeUser.hiveAccname" />
@@ -46,9 +47,21 @@
               {{ storeUser.hiveAccname }}@v4v.app
             </div>
           </div>
-          <div style="font-size: 0.7rem">
+          <div style="font-size: 1.2rem">
+            <q-checkbox
+              v-model="currencyToggle"
+              size="sm"
+              unchecked-icon="currency_exchange"
+              checked-icon="currency_exchange"
+              :label="storeUser.localCurrency.unit"
+            >
+            </q-checkbox>
+            <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
+          </div>
+          <div class="q-px-sm" style="font-size: 0.7rem">
             <q-checkbox
               v-model="savingsToggle"
+              size="sm"
               checked-icon="savings"
               unchecked-icon="savings"
               :label="$t('savings')"
@@ -57,12 +70,16 @@
             <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
           </div>
         </div>
+        <!-- End Name avatar and buttons -->
         <!-- Table for the balances  -->
-        <div class="col-4 text-right">
+        <div class="col-5 text-right">
           <div class="row justify-end">
             <table>
               <tr v-if="nonZeroKeepSats">
                 <td class="numeric-cell-lg">
+                  <span v-if="currencyToggle" style="font-size: 1rem">
+                    {{ storeUser.localCurrency.unit }}
+                  </span>
                   {{ balances["keepSats"] }}<br />
                 </td>
                 <td>
@@ -77,13 +94,21 @@
                 </td>
               </tr>
               <tr>
-                <td class="numeric-cell">{{ balances["hive"] }}<br /></td>
+                <td class="numeric-cell">
+                  <span v-if="currencyToggle">
+                    {{ storeUser.localCurrency.unit }}
+                  </span>
+                  {{ balances["hive"] }}<br />
+                </td>
                 <td>
                   <q-icon name="fa-brands fa-hive" />
                 </td>
               </tr>
               <tr>
                 <td class="numeric-cell">
+                  <span v-if="currencyToggle">
+                    {{ storeUser.localCurrency.unit }}
+                  </span>
                   {{ balances["hbd"] }}
                 </td>
                 <td class="q-pl-sm">
@@ -126,11 +151,16 @@ import { nextTick, computed, ref, onMounted, watch } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { tidyNumber } from "src/use/useUtils"
+import { useI18n } from "vue-i18n"
+
+// import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
 import ConfettiExplosion from "vue-confetti-explosion"
 
 const storeUser = useStoreUser()
 const q = useQuasar()
 const savingsToggle = ref(false)
+const currencyToggle = ref(false)
+const t = useI18n().t
 
 // emit balances to the parent component
 const emit = defineEmits(["balances"])
@@ -149,7 +179,7 @@ const backgroundImage = [
  * ConfettiExplosion component
  */
 const visible = ref(false)
-const explode = async () => {
+async function explode() {
   visible.value = false
   await nextTick()
   visible.value = true
@@ -161,14 +191,20 @@ const maxValue = backgroundImage.length
 // generate random number between 0 and 1
 const backgroundIndex = ref(Math.floor(Math.random() * maxValue))
 
-onMounted(() => {
+onMounted(async () => {
   scheduleUpdate()
 })
 
 watch(
-  () => storeUser.keepSatsBalanceNumDisplay,
+  () => storeUser.keepSatsBalanceNum,
   (newVal, oldVal) => {
     // This function will be called whenever `storeUser.keepSatsBalance` changes
+    if (oldVal === "💰💰💰") {
+      oldVal = 0
+    }
+    if (newVal === "💰💰💰") {
+      newVal = 0
+    }
     console.log(
       "keepSatsBalance changed from",
       oldVal,
@@ -178,11 +214,14 @@ watch(
       newVal - oldVal
     )
     const satsChange = tidyNumber(newVal - oldVal, 0)
+    // check if satsChange is a number and not 0
+
     if (oldVal !== undefined && satsChange !== 0) {
+      const color = (newVal - oldVal) > 0 ? "positive" : "negative"
       explode()
       q.notify({
-        message: `KeepSats Balance changed by ${satsChange} sats`,
-        color: "primary",
+        message: `${t('balance_changed')} ${satsChange} sats`,
+        color: color,
         position: "top",
         icon: "savings",
         timeout: 5000,
@@ -212,27 +251,48 @@ const nonZeroKeepSats = computed(() => {
     }
   }
   return false
-  emit("balances", balances.value)
-  return balances.value.keepSats !== "0"
 })
+
 const balances = computed(() => {
-  if (savingsToggle.value) {
-    return {
-      hive: storeUser.savingsHiveBalance,
-      hbd: storeUser.savingsHbdBalance,
-      sats: storeUser.savingsSatsBalance,
-      totalSats: storeUser.totalSatsBalance,
-      keepSats: storeUser.keepSatsBalance,
-      bitcoinDisplay: storeUser.bitcoinDisplay,
+  if (currencyToggle.value) {
+    if (savingsToggle.value) {
+      return {
+        hive: storeUser.savingsHiveBalanceLocal,
+        hbd: storeUser.savingsHbdBalanceLocal,
+        sats: storeUser.savingsSatsBalance,
+        totalSats: storeUser.totalSatsBalance,
+        keepSats: storeUser.keepSatsBalanceLocal,
+        bitcoinDisplay: storeUser.bitcoinDisplay,
+      }
+    } else {
+      return {
+        hive: storeUser.hiveBalanceLocal,
+        hbd: storeUser.hbdBalanceLocal,
+        sats: storeUser.satsBalance,
+        totalSats: storeUser.totalSatsBalance,
+        keepSats: storeUser.keepSatsBalanceLocal,
+        bitcoinDisplay: storeUser.bitcoinDisplay,
+      }
     }
   } else {
-    return {
-      hive: storeUser.hiveBalance,
-      hbd: storeUser.hbdBalance,
-      sats: storeUser.satsBalance,
-      totalSats: storeUser.totalSatsBalance,
-      keepSats: storeUser.keepSatsBalance,
-      bitcoinDisplay: storeUser.bitcoinDisplay,
+    if (savingsToggle.value) {
+      return {
+        hive: storeUser.savingsHiveBalance,
+        hbd: storeUser.savingsHbdBalance,
+        sats: storeUser.savingsSatsBalance,
+        totalSats: storeUser.totalSatsBalance,
+        keepSats: storeUser.keepSatsBalance,
+        bitcoinDisplay: storeUser.bitcoinDisplay,
+      }
+    } else {
+      return {
+        hive: storeUser.hiveBalance,
+        hbd: storeUser.hbdBalance,
+        sats: storeUser.satsBalance,
+        totalSats: storeUser.totalSatsBalance,
+        keepSats: storeUser.keepSatsBalance,
+        bitcoinDisplay: storeUser.bitcoinDisplay,
+      }
     }
   }
 })
@@ -261,11 +321,18 @@ const creditCardShading = computed(() => {
 })
 
 function changeBackground() {
-  console.log("changeBackground")
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
   storeUser.update()
   explode()
 }
+
+watch(
+  [() => storeUser.localCurrency, () => storeUser.pos.fixedRate],
+  () => {
+    storeUser.update()
+  }
+)
+
 </script>
 
 <style lang="scss" scoped>
