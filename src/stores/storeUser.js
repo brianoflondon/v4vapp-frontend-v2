@@ -552,11 +552,17 @@ export const useStoreUser = defineStore("useStoreUser", {
        * If the localRates structure does not have the storeUser's local currency,
        * it adds the currency with the fixed rate from the storeUser.
        */
+      if (!this.localCurrency.value) return "💰💰💰"
+      console.log("localCurrency", this.localCurrency)
       function updateLocalRates() {
         // check if the localRates structure has the storeUser.localCurrency.value in it
         // this is necessary if a user has added their own currency
-        if (!localRates.hive[this.localCurrency.value]) {
-          addCurrency(this.localCurrency.value, this.pos.fixedRate)
+        try {
+          if (!localRates.hive[this.localCurrency.value]) {
+            addCurrency(this.localCurrency.value, this.pos.fixedRate)
+          }
+        } catch (err) {
+          // do nothing
         }
       }
 
@@ -566,7 +572,6 @@ export const useStoreUser = defineStore("useStoreUser", {
         localRates.hive_dollar[currencySymbol] =
           localRates.hive_dollar.usd * ratePerUSD
       }
-      if (!this.localCurrency) return "💰💰💰"
       currency = currency === "hbd" ? "hive_dollar" : currency
       let localRates = storeCoingecko.exchangeRates
       if (!localRates) return "💰💰💰"
