@@ -567,7 +567,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         localRates.hive_dollar[currencySymbol] =
           localRates.hive_dollar.usd * ratePerUSD
       }
-
+      if (!this.localCurrency) return "💰💰💰"
       currency = currency === "hbd" ? "hive_dollar" : currency
       let localRates = storeCoingecko.exchangeRates
       if (!localRates) return "💰💰💰"
