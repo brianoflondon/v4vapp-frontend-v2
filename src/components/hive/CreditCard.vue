@@ -32,7 +32,8 @@
       :style="creditCardStripStyle"
     >
       <div class="row items-top justify-between">
-        <div class="col-8 flex items-center">
+        <!-- Name avatar and buttons -->
+        <div class="col-7 flex items-center">
           <div class="credit-card-avatar">
             <q-avatar rounded size="xl">
               <HiveAvatar :hiveAccname="storeUser.hiveAccname" />
@@ -46,17 +47,13 @@
               {{ storeUser.hiveAccname }}@v4v.app
             </div>
           </div>
-          <div style="font-size: 0.7rem">
+          <div style="font-size: 1.2rem">
             <q-checkbox
               v-model="currencyToggle"
               size="sm"
               unchecked-icon="currency_exchange"
               checked-icon="currency_exchange"
-              :label="
-                storeUser.localCurrency.label +
-                ' ' +
-                storeUser.localCurrency.unit
-              "
+              :label="storeUser.localCurrency.unit"
             >
             </q-checkbox>
             <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
@@ -73,8 +70,9 @@
             <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
           </div>
         </div>
+        <!-- End Name avatar and buttons -->
         <!-- Table for the balances  -->
-        <div class="col-4 text-right">
+        <div class="col-5 text-right">
           <div class="row justify-end">
             <table>
               <tr v-if="nonZeroKeepSats">
@@ -144,7 +142,6 @@
       </div>
     </q-card-section>
   </q-card>
-
 </template>
 
 <script setup>
@@ -154,6 +151,8 @@ import { nextTick, computed, ref, onMounted, watch } from "vue"
 import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { tidyNumber } from "src/use/useUtils"
+import { useI18n } from "vue-i18n"
+
 // import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
 import ConfettiExplosion from "vue-confetti-explosion"
 
@@ -161,10 +160,10 @@ const storeUser = useStoreUser()
 const q = useQuasar()
 const savingsToggle = ref(false)
 const currencyToggle = ref(false)
+const t = useI18n().t
 
 // emit balances to the parent component
 const emit = defineEmits(["balances"])
-
 
 const backgroundImage = [
   "sealogo01",
@@ -200,6 +199,12 @@ watch(
   () => storeUser.keepSatsBalanceNum,
   (newVal, oldVal) => {
     // This function will be called whenever `storeUser.keepSatsBalance` changes
+    if (oldVal === "💰💰💰") {
+      oldVal = 0
+    }
+    if (newVal === "💰💰💰") {
+      newVal = 0
+    }
     console.log(
       "keepSatsBalance changed from",
       oldVal,
@@ -209,11 +214,14 @@ watch(
       newVal - oldVal
     )
     const satsChange = tidyNumber(newVal - oldVal, 0)
+    // check if satsChange is a number and not 0
+
     if (oldVal !== undefined && satsChange !== 0) {
+      const color = (newVal - oldVal) > 0 ? "positive" : "negative"
       explode()
       q.notify({
-        message: `KeepSats Balance changed by ${satsChange} sats`,
-        color: "primary",
+        message: `${t('balance_changed')} ${satsChange} sats`,
+        color: color,
         position: "top",
         icon: "savings",
         timeout: 5000,
@@ -265,7 +273,6 @@ const balances = computed(() => {
         keepSats: storeUser.keepSatsBalanceLocal,
         bitcoinDisplay: storeUser.bitcoinDisplay,
       }
-
     }
   } else {
     if (savingsToggle.value) {
@@ -319,6 +326,14 @@ function changeBackground() {
   storeUser.update()
   explode()
 }
+
+watch(
+  [() => storeUser.localCurrency, () => storeUser.pos.fixedRate],
+  () => {
+    storeUser.update()
+  }
+)
+
 </script>
 
 <style lang="scss" scoped>

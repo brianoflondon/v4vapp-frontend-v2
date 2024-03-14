@@ -145,6 +145,7 @@ export default {
   // Credit Card
   savings: 'Savings',
   savings_tooltip: 'Show the amounts stored in Hive\'s savings accounts for HBD and Hive',
+  balance_changed: "KeepSats balance has changed by",
   // Transfer page
   sending: 'Sending',
   // Point of Sale POS

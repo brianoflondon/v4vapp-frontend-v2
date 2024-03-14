@@ -547,26 +547,26 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {number|string} - The converted amount in the storeUser's local currency, or "💰💰💰" if the conversion is not possible.
      */
     convertToLocalCurrency(amount, currency) {
-      // /**
-      //  * Updates the local rates based on the storeUser's local currency.
-      //  * If the localRates structure does not have the storeUser's local currency,
-      //  * it adds the currency with the fixed rate from the storeUser.
-      //  */
-      // function updateLocalRates() {
-      //   // check if the localRates structure has the storeUser.localCurrency.value in it
-      //   // this is necessary if a user has added their own currency
-      //   console.log("updateLocalRates", this.localCurrency)
-      //   if (!localRates.hive[this.localCurrency.value]) {
-      //     addCurrency(this.localCurrency.value, this.pos.fixedRate)
-      //   }
-      // }
+      /**
+       * Updates the local rates based on the storeUser's local currency.
+       * If the localRates structure does not have the storeUser's local currency,
+       * it adds the currency with the fixed rate from the storeUser.
+       */
+      function updateLocalRates() {
+        // check if the localRates structure has the storeUser.localCurrency.value in it
+        // this is necessary if a user has added their own currency
+        console.log("updateLocalRates", this.localCurrency)
+        if (!localRates.hive[this.localCurrency.value]) {
+          addCurrency(this.localCurrency.value, this.pos.fixedRate)
+        }
+      }
 
-      // function addCurrency(currencySymbol, ratePerUSD) {
-      //   // Calculate and add the new currency value for hive and hive_dollar
-      //   localRates.hive[currencySymbol] = localRates.hive.usd * ratePerUSD
-      //   localRates.hive_dollar[currencySymbol] =
-      //     localRates.hive_dollar.usd * ratePerUSD
-      // }
+      function addCurrency(currencySymbol, ratePerUSD) {
+        // Calculate and add the new currency value for hive and hive_dollar
+        localRates.hive[currencySymbol] = localRates.hive.usd * ratePerUSD
+        localRates.hive_dollar[currencySymbol] =
+          localRates.hive_dollar.usd * ratePerUSD
+      }
 
       currency = currency === "hbd" ? "hive_dollar" : currency
       let localRates = storeCoingecko.exchangeRates
@@ -574,7 +574,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       const cacheKey = `rates-${this.localCurrency.value}`
       const exchangeRate = storeCoingecko.ratesCache[cacheKey]
       if (!exchangeRate) return "💰💰💰"
-      // updateLocalRates()
+      updateLocalRates()
       let rawBalance = 0
       if (currency === "sats") {
         const usdBalance = amount / exchangeRate.usd.btc / 100000000
