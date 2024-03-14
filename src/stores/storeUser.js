@@ -553,7 +553,6 @@ export const useStoreUser = defineStore("useStoreUser", {
        * it adds the currency with the fixed rate from the storeUser.
        */
       if (!this.localCurrency.value) return "💰💰💰"
-      console.log("localCurrency", this.localCurrency)
       function updateLocalRates() {
         // check if the localRates structure has the storeUser.localCurrency.value in it
         // this is necessary if a user has added their own currency

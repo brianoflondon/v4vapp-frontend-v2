@@ -321,7 +321,6 @@ const creditCardShading = computed(() => {
 })
 
 function changeBackground() {
-  console.log("changeBackground")
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
   storeUser.update()
   explode()
