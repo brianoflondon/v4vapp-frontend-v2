@@ -35,7 +35,7 @@
         <!-- Name avatar and buttons -->
         <div class="col-7 flex items-center">
           <div class="credit-card-avatar">
-            <q-avatar rounded size="xl">
+            <q-avatar rounded size="lg">
               <HiveAvatar :hiveAccname="storeUser.hiveAccname" />
             </q-avatar>
           </div>
