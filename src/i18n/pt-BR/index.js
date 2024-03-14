@@ -76,8 +76,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Falhou',
   working: 'Processando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Instale o app Hive Keychain',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Atualizar preços',
   // Invoice
   invoice: 'Fatura',
@@ -145,6 +145,7 @@ export default {
   // Credit Card
   savings: 'Poupança',
   savings_tooltip: 'Mostrar os valores HBD e Hive armazenados nas contas de poupança da Hive blockchain',
+  balance_changed: 'KeepSats balance has changed by',
   // Transfer page
   sending: 'Enviando',
   // Point of Sale POS
