@@ -555,7 +555,6 @@ export const useStoreUser = defineStore("useStoreUser", {
       function updateLocalRates() {
         // check if the localRates structure has the storeUser.localCurrency.value in it
         // this is necessary if a user has added their own currency
-        console.log("updateLocalRates", this.localCurrency)
         if (!localRates.hive[this.localCurrency.value]) {
           addCurrency(this.localCurrency.value, this.pos.fixedRate)
         }
