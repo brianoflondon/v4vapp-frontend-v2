@@ -76,8 +76,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Keychain no se encuentra',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
@@ -145,6 +145,7 @@ export default {
   // Credit Card
   savings: 'Ahorros',
   savings_tooltip: 'Muestra las cantidades almacenadas en las cuentas de ahorro de HBD y Hive',
+  balance_changed: 'KeepSats balance has changed by',
   // Transfer page
   sending: 'Enviando',
   // Point of Sale POS

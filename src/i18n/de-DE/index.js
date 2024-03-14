@@ -76,8 +76,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Arbeitet',
-  keychain_installed: 'Keychain ist installiert',
-  keychain_missing: 'Keychain ist nicht installiert',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -145,6 +145,7 @@ export default {
   // Credit Card
   savings: 'Erspartes',
   savings_tooltip: 'Zeige die in Hive-Savings für HBD und Hive gespeicherten Beträge',
+  balance_changed: 'KeepSats balance has changed by',
   // Transfer page
   sending: 'Senden',
   // Point of Sale POS
