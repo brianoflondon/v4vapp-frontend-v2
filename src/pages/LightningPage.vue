@@ -703,9 +703,9 @@ async function payInvoice(currency, method) {
   const payWithSats = currency === "payWithSats"
   let amountNum = 0
   if (currency == "HIVE") {
-    amountNum = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(Hive.value) + 4 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
-    amountNum = parseFloat(HBD.value) + 1 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(HBD.value) + 1.5 + 0.002 * parseFloat(Hive.value)
   } else if (payWithSats) {
     amountNum = 0.001
     currency = "HIVE"
