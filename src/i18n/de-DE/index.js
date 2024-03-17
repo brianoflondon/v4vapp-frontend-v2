@@ -42,7 +42,7 @@ export default {
   not_found: 'nicht gefunden',
   lightning_failed: 'Lightning-Zahlung fehlgeschlagen',
   Progress: 'In Umsetzung',
-  private_memo: 'Use a Private Hive Transfer Memo (needs a Memo key)',
+  private_memo: 'Privates Hive-Transfer-Memo (Memo Key erforderlich)',
   // Login
   keychain_not_installed: 'Keychain ist nicht installiert',
   enter_hive_account: 'Bitte geben Sie Ihren Hive-Namen ein',
@@ -145,7 +145,7 @@ export default {
   // Credit Card
   savings: 'Erspartes',
   savings_tooltip: 'Zeige die in Hive-Savings für HBD und Hive gespeicherten Beträge',
-  balance_changed: 'KeepSats balance has changed by',
+  balance_changed: 'KeepSats Guthaben ändert sich um',
   // Transfer page
   sending: 'Senden',
   // Point of Sale POS
