@@ -30,13 +30,18 @@
             {{ storeUser.getUser(user.hiveAccname).hasApiToken }}
           </q-tooltip>
         </q-item-section>
-        <!-- <q-item-section
+        <q-item-section
           side
-          top
-          v-if="storeUser.getUser(user.hiveAccname).hasApiToken"
+          v-if="storeUser.getUser(user.hiveAccname).isHAS"
         >
-          <q-icon name="star" color="yellow" />
-        </q-item-section> -->
+            <q-icon name="img:/has/hive-auth-logo.svg" />
+        </q-item-section>
+        <q-item-section
+          side
+          v-if="storeUser.getUser(user.hiveAccname).isKeychain"
+        >
+            <q-icon name="img:/keychain/hive-keychain-round.svg" />
+        </q-item-section>
       </q-item>
     </q-list>
   </div>

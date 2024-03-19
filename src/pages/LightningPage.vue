@@ -1,5 +1,9 @@
 <template>
   <q-page>
+    <pre>
+              login method: {{ storeUser.loginMethod }}
+            </pre
+    >
     <div class="flex column text-center items-center q-pa-none">
       <q-tabs v-model="currentTab" align="justify" dense animated>
         <q-tab name="wallet" :label="$t('wallet')" />
@@ -183,17 +187,21 @@
               ></q-input>
             </div>
           </div>
-          <!-- Amounts Display -->
         </div>
+        <!-- End Amounts Display -->
         <!-- Payment Buttons -->
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
           <!-- Need to check if user is logged in with keychain or HAS and use the right
-          button -->
+            button -->
+          <pre>
+              login method: {{ storeUser.loginMethod }}
+            </pre
+          >
           <div class="row justify-center q-pa-sm" v-if="enoughKeepSats">
             <div class="pay-with-sats-button">
               <q-btn
                 class="payment-button-sats"
-                @click="payInvoice('payWithSats', 'HiveKeychain')"
+                @click="payInvoice('payWithSats', storeUser.loginMethod)"
                 :loading="storeApiStatus.payInvoice"
                 :disable="storeApiStatus.payInvoice"
                 icon="fa-brands fa-btc"
