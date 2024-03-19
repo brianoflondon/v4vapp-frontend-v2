@@ -40,7 +40,7 @@ import { useAppDetails } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { api, apiLogin, serverHiveAccount } from "boot/axios"
 
-import { createWaxFoundation } from "@hive/wax"
+// import { createWaxFoundation } from "@hive/wax"
 
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()
@@ -105,11 +105,10 @@ onBeforeMount(async () => {
     window.location.href.includes("127.0") ||
     window.location.href.includes("192.168") ||
     window.location.href.includes("10.0")
-  const wax = await createWaxFoundation()
-  waxVersion.value = wax.getVersion()
-  console.log("waxVersion", waxVersion.value)
-  console.log("wax", wax)
-  
+  // const wax = await createWaxFoundation()
+  // waxVersion.value = wax.getVersion()
+  // console.log("waxVersion", waxVersion.value)
+  // console.log("wax", wax)
 })
 
 onMounted(() => {})
