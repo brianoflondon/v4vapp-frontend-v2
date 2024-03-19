@@ -1,130 +1,103 @@
 <template>
-  <div
-    class="q-pa-sm col justify-evenly"
-    v-if="storeUser.keepSatsBalanceNum > storeAPIStatus.minMax.sats.min"
-  >
-    <div class="explanation-box text-justify q-pa-sm">
+  <div class="q-pa-sm col justify-evenly">
+    <div class="explanation-box text-justify q-pa-s">
       <ExplanationBox title="Convert Sats to Hive" text="How to do it" />
     </div>
-    <div v-if="true" class="toggle pad-max-width">
+    <div class="toggle pad-max-width">
       <div class="q-pa-sm">
-      <q-btn-toggle
-        spread
-        v-model="destination"
-        push
-        dense
-        glossy
-        toggle-color="primary"
-        :options="[
-          { label: '', value: 'hbd', slot: 'hbd' },
-          { label: '', value: 'hive', slot: 'hive' },
-        ]"
-        @update:model-value="(val) => updateDestination(val)"
-      >
-        <!-- HBD Button -->
-        <template #hbd>
-          <div class="column items-center q-pa-none" style="font-size: 1.2rem">
-            <div><HbdLogoIcon /></div>
-            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-              HBD
-            </div>
-          </div>
-        </template>
-        <!-- Hive Button -->
-        <template #hive>
-          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
-            <div><i class="fa-brands fa-hive" /></div>
-            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-              Hive
-            </div>
-          </div>
-        </template>
-      </q-btn-toggle>
-
-
-      <div>
-        <q-toggle
-          v-model="privateMemo"
-          icon="lock"
-          size="xl"
-          color="primary"
+        <!-- HBD Hive and Sats toggle -->
+        <q-btn-toggle
+          spread
+          v-model="destination"
+          push
           dense
-          flat
-          toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
-        />
-        <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
-      </div>
-
-      </div>
-
-      <div class="amount-input">
-        <q-input
-          class="amount-display"
-          v-model="amount"
-          inputmode="decimal"
-          pattern="\d*"
-          :label="$t('amount') + ` (sats)`"
-          stack-label
-          debounce="20"
-          :input-style="{ 'text-align': 'right' }"
+          glossy
+          toggle-color="primary"
+          :options="[
+            { label: '', value: 'hbd', slot: 'hbd' },
+            { label: '', value: 'hive', slot: 'hive' },
+          ]"
+          @update:model-value="(val) => updateDestination(val)"
         >
-        </q-input>
+          <!-- HBD Button -->
+          <template #hbd>
+            <div
+              class="column items-center q-pa-none"
+              style="font-size: 1.2rem"
+            >
+              <div><HbdLogoIcon /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                HBD
+              </div>
+            </div>
+          </template>
+          <!-- Hive Button -->
+          <template #hive>
+            <div
+              class="column items-center q-pa-none"
+              style="font-size: 2.05rem"
+            >
+              <div><i class="fa-brands fa-hive" /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                Hive
+              </div>
+            </div>
+          </template>
+        </q-btn-toggle>
+        <!-- End HBD Hive and Sats toggle -->
       </div>
-      <div class="amount-slider">
-        <q-slider
-          v-model="amount"
-          color="primary"
-          :min="storeAPIStatus.minMax.sats.min"
-          :max="
-            Math.min(
-              storeUser.keepSatsBalanceNum,
-              storeAPIStatus.minMax.sats.max
-            )
-          "
-          label
-          label-always
-          snap
-          markers
-          :step="100"
-          :label-value="`${amount}`"
-        />
-      </div>
+      <AmountSlider v-model="CurrencyCalc" />
+
+      <!-- Payment buttons -->
       <div>
-        <div class="pay-buttons">
-          <div class="payment-buttons row justify-evenly">
-            <div>
-              <q-btn
-                class="payment-button-hive"
-                @click="makePayment('HiveKeychain')"
-                :loading="false"
-                :disable="false"
-                icon="img:/keychain/hive-keychain-round.svg"
-                icon-right="img:avatars/hive_logo_dark.svg"
-                label="Keychain"
-                :color="buttonColor.buttonColor"
-                :text-color="buttonColor.textColor"
-                size="md"
-                rounded
-              />
-            </div>
-            <div>
-              <q-btn
-                class="payment-button-hive"
-                @click="makePayment('HAS')"
-                :loading="false"
-                :disable="false"
-                icon="img:/has/hive-auth-logo.svg"
-                icon-right="img:avatars/hive_logo_dark.svg"
-                label="HAS"
-                :color="buttonColor.buttonColor"
-                :text-color="buttonColor.textColor"
-                size="md"
-                rounded
-              />
-            </div>
+        <div class="payment-buttons row justify-evenly items-center">
+          <div class="q-pa-sm">
+            <q-btn
+              class="payment-button-hive"
+              @click="makePayment('HiveKeychain')"
+              :loading="false"
+              :disable="false"
+              icon="img:/keychain/hive-keychain-round.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              label="Keychain"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+          </div>
+          <!-- Private Memo toggle  -->
+          <div class="private-memo-toggle q-pa-sm">
+            <q-toggle
+              v-model="privateMemo"
+              icon="lock"
+              size="xl"
+              color="primary"
+              dense
+              flat
+              toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
+            />
+            <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
+          </div>
+          <!-- End Private Memo toggle  -->
+          <div class="q-pa-sm">
+            <q-btn
+              class="payment-button-hive"
+              @click="makePayment('HAS')"
+              :loading="false"
+              :disable="false"
+              icon="img:/has/hive-auth-logo.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              label="HAS"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
           </div>
         </div>
       </div>
+      <!-- End Payment buttons -->
     </div>
   </div>
   <AlternateCurrency v-model="CurrencyCalc" />
@@ -140,6 +113,7 @@ import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import AskHASDialog from "src/components/hive/AskHASDialog.vue"
+import AmountSlider from "src/components/utils/AmountSlider.vue"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 
 const HASDialog = ref({ show: false })
@@ -150,7 +124,6 @@ const storeAPIStatus = useStoreAPIStatus()
 const q = useQuasar()
 
 const destination = ref("hive")
-const amount = ref(1000)
 
 const privateMemo = ref(false)
 
@@ -175,14 +148,11 @@ function updateDestination(val) {
   destination.value = val
 }
 
-watch(amount, (val) => {
-  CurrencyCalc.value.amount = val
-})
 
 async function makePayment(method) {
   console.log("makePayment")
 
-  const fixedAmount = parseFloat(amount.value).toFixed(0)
+  const fixedAmount = parseFloat(CurrencyCalc.value.amount).toFixed(0)
   // Adds encryption to the memo 2024-02-23
   let memo = `${fixedAmount} #convertkeepsats #v4vapp`
   if (privateMemo.value) {

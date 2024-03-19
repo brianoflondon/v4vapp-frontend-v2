@@ -15,7 +15,7 @@
           :label="$t('convert')"
           :disable="
             !storeUser.currentUser ||
-            storeUser?.keepSatsBalanceNum < storeApiStatus?.minMax?.sats?.min
+            storeUser?.keepSatsBalanceNum < storeApiStatus?.minMax?.sats.min
           "
         >
           <q-tooltip>{{ $t("convert_sats_from_v4vapp") }}</q-tooltip>
@@ -187,6 +187,8 @@
         </div>
         <!-- Payment Buttons -->
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
+          <!-- Need to check if user is logged in with keychain or HAS and use the right
+          button -->
           <div class="row justify-center q-pa-sm" v-if="enoughKeepSats">
             <div class="pay-with-sats-button">
               <q-btn

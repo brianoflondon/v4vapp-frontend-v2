@@ -4,6 +4,7 @@
       <ExplanationBox title="KeepSats on V4V.app" text="How to do it" />
     </div>
     <div class="destination-toggle pad-max-width">
+      <!-- HBD Hive and Sats toggle -->
       <q-btn-toggle
         spread
         v-model="destination"
@@ -12,9 +13,9 @@
         glossy
         toggle-color="primary"
         :options="[
-          { label: '', value: 'sats', slot: 'lightning' },
           { label: '', value: 'hbd', slot: 'hbd' },
           { label: '', value: 'hive', slot: 'hive' },
+          { label: '', value: 'sats', slot: 'lightning' },
         ]"
         @update:model-value="(val) => updateDestination(val)"
       >
@@ -43,44 +44,13 @@
           </div>
         </template>
       </q-btn-toggle>
-      <!-- End of Toggle -->
-      <!-- Amount input -->
+      <!-- End HBD Hive and Sats toggle -->
+
       <q-slide-transition appear disappear :duration="500">
         <div v-if="destination != 'sats'">
-          <div class="amount-input">
-            <q-input
-              class="amount-display"
-              v-model="amount"
-              inputmode="decimal"
-              pattern="\d*"
-              :label="$t('amount')"
-              stack-label
-              clearable
-              debounce="20"
-              @update:model-value="(val) => updateAmount(val)"
-              :input-style="{ 'text-align': 'right' }"
-              :rules="[(val) => !!val || t('no_amount')]"
-            >
-            </q-input>
-          </div>
-          <div class="amount-slider">
-            <q-slider
-              v-model="amount"
-              color="primary"
-              :min="sliderMinMax.min"
-              :max="sliderMinMax.max"
-              label
-              label-always
-              snap
-              markers
-              :step="sliderMinMax.step"
-              :label-value="`${amount}`"
-              @update:model-value="(val) => updateAmount(val)"
-            />
-          </div>
+          <AmountSlider v-model="CurrencyCalc" />
         </div>
       </q-slide-transition>
-      <!-- End of Amount input -->
     </div>
     <div
       class="row justify-center address-qr-code q-pa-sm"
@@ -117,8 +87,9 @@
         <!-- Important that tooltip is not in the button -->
         <q-tooltip>{{ $t("copy_qrcode") }}</q-tooltip>
       </div>
-      <div class="payment-buttons row justify-evenly" v-else>
-        <div>
+      <!-- Payment buttons -->
+      <div class="payment-buttons row justify-evenly items-center" v-else>
+        <div class="q-pa-sm">
           <q-btn
             class="payment-button-hive"
             @click="makePayment('HiveKeychain')"
@@ -133,7 +104,21 @@
             rounded
           />
         </div>
-        <div>
+        <!-- Private Memo toggle  -->
+        <div class="private-memo-toggle q-pa-sm">
+          <q-toggle
+            v-model="privateMemo"
+            icon="lock"
+            size="xl"
+            color="primary"
+            dense
+            flat
+            toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
+          />
+          <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
+        </div>
+        <!-- End Private Memo toggle  -->
+        <div class="q-pa-sm">
           <q-btn
             class="payment-button-hive"
             @click="makePayment('HAS')"
@@ -149,6 +134,7 @@
           />
         </div>
       </div>
+      <!-- End Payment buttons -->
     </div>
     <div
       v-if="destination !== 'sats'"
@@ -176,6 +162,7 @@ import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { serverHiveAccount } from "src/boot/axios"
 import { encodeOp } from "hive-uri"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
+import AmountSlider from "src/components/utils/AmountSlider.vue"
 
 const t = useI18n().t
 const q = useQuasar()
@@ -184,40 +171,18 @@ const HASDialog = ref({ show: false })
 const storeUser = useStoreUser()
 const storeApiStatus = useStoreAPIStatus()
 const loading = ref(false)
-const destination = ref("sats")
+const destination = ref("hbd")
 const qrCode = ref("") // QrCode object emitted from CreateQRCode
+const privateMemo = ref(false)
 
 const bech32 = ref("")
-const amount = ref(1)
+const amount = ref(0)
 
-const CurrencyCalc = ref({})
+const CurrencyCalc = ref({ amount: 0, currency: "hbd" })
 
 const dotColor = computed(() => {
   let isLightning = destination.value === "sats"
   return QRLightningHiveColor(isLightning, loading.value)
-})
-
-const sliderMinMax = computed(() => {
-  if (storeApiStatus.minMax) {
-    let min = storeApiStatus.minMax[destination.value.toUpperCase()].min
-    let max = storeApiStatus.minMax[destination.value.toUpperCase()].max
-
-    min = Math.min(min, storeUser.balancesNum[destination.value.toLowerCase()])
-    max = Math.min(max, storeUser.balancesNum[destination.value.toLowerCase()])
-    const diff = max - min
-
-    // Divide the difference by 100 to get the initial step size
-    let step = diff / 100
-
-    // Calculate the power of 10 for the step size
-    const power = Math.floor(Math.log10(step))
-
-    // Round the step size to the nearest power of 10
-    step = Math.pow(10, power)
-    console.log("min", min, "max", max, "step", step)
-    return { min: min, max: max, step: step }
-  }
-  return { min: 1, max: 400, step: 1 }
 })
 
 const lightningAddressPrefix = computed(() => {
@@ -279,8 +244,8 @@ async function updateDestination() {
 }
 
 function updateAmount(val) {
-  // console.log(calcFees(val).sats)
-  amount.value = val
+  console.log("updateAmount in DepositKeepSats", val)
+  amount.value = parseFloat(val)
   CurrencyCalc.value = {
     amount: parseFloat(val),
     currency: destination.value,
@@ -324,7 +289,11 @@ async function makePayment(method) {
   const fixedAmount = parseFloat(amount.value).toFixed(3)
 
   // Adds encryption to the memo 2024-02-23
-  const memo = `#${storeUser.currentUser} Deposit to #SATS`
+  const memo = `${storeUser.currentUser} Deposit to #SATS`
+  if (privateMemo.value) {
+    memo = "#" + memo
+  }
+
   if (method === "HiveKeychain") {
     if (!storeApiStatus.isKeychainIn) {
       q.notify({
