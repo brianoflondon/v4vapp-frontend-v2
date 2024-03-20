@@ -71,9 +71,7 @@ function calcFraction() {
 watch(
   () => props.expiry,
   (newValue, oldValue) => {
-    console.log("props.expiry changed", newValue, oldValue)
     expiryLocal.value = newValue
-    console.log("expiryLocal.value", expiryLocal.value)
     startTime.value = Math.floor(Date.now() / 1000)
     startTimer()
   }

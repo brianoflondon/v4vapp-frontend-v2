@@ -11,6 +11,18 @@ const storeAPIStatus = useStoreAPIStatus()
 const storeCoingecko = useCoingeckoStore()
 
 export class HiveUser {
+  /**
+   * Represents a User object.
+   * @constructor
+   * @param {string} hiveAccname - The Hive account name.
+   * @param {string} profileName - The profile name.
+   * @param {string} keySelected - The selected key.
+   * @param {number|null} [timestamp=null] - The timestamp (optional, defaults to current timestamp if not provided).
+   * @param {string|null} [authKey=null] - The HAS authentication key (optional).
+   * @param {number|null} [expire=null] - The expiration time (optional).
+   * @param {string|null} [token=null] - The token (optional).
+   * @param {string|null} [apiToken=null] - The API token (optional).
+   */
   constructor(
     hiveAccname,
     profileName,
@@ -86,6 +98,18 @@ export class HiveUser {
   get loginHASExpireHuman() {
     if (!this.expire) return null
     return formatTimeAgo(this.expire)
+  }
+
+  get isHAS() {
+    if (!this.apiToken) return false
+    if (this.authKey) return true
+    return false
+  }
+
+  get isKeychain() {
+    if (!this.apiToken) return false
+    if (this.authKey) return false
+    return true
   }
 
   get allData() {
@@ -164,6 +188,29 @@ export const useStoreUser = defineStore("useStoreUser", {
       return this.users[this.currentUser]
     },
     /**
+     * Determines the login method for the current user.
+     * @returns {string} The login method. Possible values are "none", "has", or "keychain".
+     */
+    loginMethod() {
+      if (!this.currentUser) return "HiveKeychainQR"
+      const hiveUser = this.users[this.currentUser]
+      if (hiveUser.authKey) return "HAS"
+      return "HiveKeychain"
+    },
+    isHAS() {
+      if (!this.currentUser) return false
+      const hiveUser = this.users[this.currentUser]
+      console.log(hiveUser)
+      if (hiveUser.authKey) return true
+      return false
+    },
+    isKeychain() {
+      if (!this.currentUser) return false
+      const hiveUser = this.users[this.currentUser]
+      if (hiveUser.authKey) return false
+      return true
+    },
+    /**
      * Represents a Hive User.
      * @class
      * @param {string} hiveAccname - The Hive account name.
@@ -195,6 +242,10 @@ export const useStoreUser = defineStore("useStoreUser", {
     // Return true if the user is logged in via Hive Keychain
     // Returns false if the user is logged in via HAS
     // Returns null if the user is not logged in
+    /**
+     * Determines the login method for the current user.
+     * @returns {string|null} The login method. Possible values are "has", "keychain", or null if there is no current user.
+     */
     getKeychain: (state) => {
       return (hiveAccname) => {
         const temp = state.users[hiveAccname]
@@ -408,7 +459,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * Logs in a user with the provided credentials.
      * @param {string} hiveAccname - The Hive account name.
      * @param {string} keySelected - The selected key.
-     * @param {string|null} authKey - The authentication key (optional).
+     * @param {string|null} authKey - The authentication key (optional) set by HAS.
      * @param {string|null} expire - The expiration date (optional).
      * @param {string|null} token - The token (optional).
      * @param {string|null} apiToken - The API token (optional).
