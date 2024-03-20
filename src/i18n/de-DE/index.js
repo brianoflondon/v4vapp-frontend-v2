@@ -42,7 +42,7 @@ export default {
   not_found: 'nicht gefunden',
   lightning_failed: 'Lightning-Zahlung fehlgeschlagen',
   Progress: 'In Umsetzung',
-  private_memo: 'Use a Private Hive Transfer Memo (needs a Memo key)',
+  private_memo: 'Privates Hive-Transfer-Memo (Memo Key erforderlich)',
   // Login
   keychain_not_installed: 'Keychain ist nicht installiert',
   enter_hive_account: 'Bitte geben Sie Ihren Hive-Namen ein',
@@ -76,8 +76,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Arbeitet',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain ist installiert',
+  keychain_missing: 'Keychain ist nicht installiert',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -145,7 +145,7 @@ export default {
   // Credit Card
   savings: 'Erspartes',
   savings_tooltip: 'Zeige die in Hive-Savings für HBD und Hive gespeicherten Beträge',
-  balance_changed: 'KeepSats balance has changed by',
+  balance_changed: 'KeepSats Guthaben ändert sich um',
   // Transfer page
   sending: 'Senden',
   // Point of Sale POS
@@ -174,7 +174,7 @@ export default {
   date: 'Datum',
   paid: 'Bezahlt',
   pending: 'Anstehend',
-  date: 'Date',
+  date: 'Datum',
   paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',
