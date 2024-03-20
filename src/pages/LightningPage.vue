@@ -1,9 +1,5 @@
 <template>
   <q-page>
-    <pre>
-              login method: {{ storeUser.loginMethod }}
-            </pre
-    >
     <div class="flex column text-center items-center q-pa-none">
       <q-tabs v-model="currentTab" align="justify" dense animated>
         <q-tab name="wallet" :label="$t('wallet')" />
@@ -193,12 +189,9 @@
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
           <!-- Need to check if user is logged in with keychain or HAS and use the right
             button -->
-          <pre>
-              login method: {{ storeUser.loginMethod }}
-            </pre
-          >
+
           <div class="row justify-center q-pa-sm" v-if="enoughKeepSats">
-            <div class="pay-with-sats-button">
+            <div class="paywithsats-button">
               <q-btn
                 class="payment-button-sats"
                 @click="payInvoice('payWithSats', storeUser.loginMethod)"
@@ -210,6 +203,11 @@
                 :text-color="buttonColor.textColor"
                 size="md"
                 rounded
+                :icon-right="
+                  storeUser.isHAS
+                    ? 'img:/has/hive-auth-logo.svg'
+                    : 'img:/keychain/hive-keychain-round.svg'
+                "
               />
             </div>
           </div>
@@ -358,11 +356,12 @@ const t = useI18n().t
 const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
+const payWithSatsAmount = ref(0)
 
 const payWithSatsButton = computed(() => {
   return (
     "Pay " +
-    tidyNumber(CurrencyCalc.value.sats, 0) +
+    tidyNumber(payWithSatsAmount.value, 0) +
     " from " +
     storeUser.keepSatsBalance +
     " シ"
@@ -566,6 +565,7 @@ function clearReset() {
   cameraOn.value = false
   cameraShow.value = false
   CurrencyCalc.value.amount = 0
+  payWithSatsAmount.value = 0
   HASDialog.value = { show: false }
 }
 
@@ -608,6 +608,7 @@ async function decodeInvoice() {
       console.log("dInvoice.value", dInvoice.value)
       CurrencyCalc.value.amount = dInvoice.value?.satoshis
       CurrencyCalc.value.currency = "sats"
+      payWithSatsAmount.value = CurrencyCalc.value.amount
       dInvoice.value.progress = []
       invoiceValid.value = true
       invoiceChecking.value = false

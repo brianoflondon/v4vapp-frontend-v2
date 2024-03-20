@@ -197,7 +197,19 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (hiveUser.authKey) return "HAS"
       return "HiveKeychain"
     },
-
+    isHAS() {
+      if (!this.currentUser) return false
+      const hiveUser = this.users[this.currentUser]
+      console.log(hiveUser)
+      if (hiveUser.authKey) return true
+      return false
+    },
+    isKeychain() {
+      if (!this.currentUser) return false
+      const hiveUser = this.users[this.currentUser]
+      if (hiveUser.authKey) return false
+      return true
+    },
     /**
      * Represents a Hive User.
      * @class
