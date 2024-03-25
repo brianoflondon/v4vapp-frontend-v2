@@ -7,6 +7,11 @@ import { onMounted, onUnmounted, ref } from "vue"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 
+L.Icon.Default.imagePath =
+  process.env.NODE_ENV === "production"
+    ? "/public/maps/leaflet/images/"
+    : "/node_modules/leaflet/dist/images/"
+
 const mapContainer = ref(null)
 let mymap = null
 
@@ -16,19 +21,18 @@ onMounted(() => {
     attribution: "© OpenStreetMap contributors",
   }).addTo(mymap)
 
-  mymap.on('moveend', searchInView)
+  mymap.on("moveend", searchInView)
 
   searchInView()
 })
 
 function getPaymentMethods(element) {
-  let methods = [];
-  if (element.tags['payment:hive'] === 'yes') methods.push('Hive');
-  if (element.tags['payment:hbd'] === 'yes') methods.push('HBD');
-  if (element.tags['payment:lightning'] === 'yes') methods.push('Lightning');
-  return methods.join(', ');
+  let methods = []
+  if (element.tags["payment:hive"] === "yes") methods.push("Hive")
+  if (element.tags["payment:hbd"] === "yes") methods.push("HBD")
+  if (element.tags["payment:lightning"] === "yes") methods.push("Lightning")
+  return methods.join(", ")
 }
-
 
 function searchInView() {
   const bounds = mymap.getBounds()
@@ -49,20 +53,19 @@ function searchInView() {
       for (let element of data.elements) {
         if (element.lat && element.lon) {
           const marker = L.marker([element.lat, element.lon]).addTo(mymap)
-          const name = element.tags.name || 'Unnamed'
+          const name = element.tags.name || "Unnamed"
           const url = `https://www.openstreetmap.org/node/${element.id}`
-          const paymentMethods = getPaymentMethods(element);
-          marker.bindPopup(`<b>${name}</b><br>Accepts: ${paymentMethods}<br><a href="${url}" target="_blank">View on OpenStreetMap</a>`)
+          const paymentMethods = getPaymentMethods(element)
+          marker.bindPopup(
+            `<b>${name}</b><br>Accepts: ${paymentMethods}<br><a href="${url}" target="_blank">View on OpenStreetMap</a>`
+          )
         }
       }
     })
 }
 
-
-
-
 onUnmounted(() => {
-  mymap.off('moveend', searchInView)
+  mymap.off("moveend", searchInView)
   mymap.remove()
 })
 </script>
