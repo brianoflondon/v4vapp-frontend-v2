@@ -357,6 +357,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.log("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
+      
       if (this.currentKeepSats?.net_sats > 1000000) {
         const netBitcoin = this.currentKeepSats?.net_sats / 100000000
         return tidyNumber(netBitcoin, 3)

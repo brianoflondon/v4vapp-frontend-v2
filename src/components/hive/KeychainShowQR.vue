@@ -286,6 +286,11 @@ onMounted(async () => {
 })
 
 function updateStoreSales() {
+  /**
+   * Represents the currency variable used in the KeychainShowQR component.
+   * This variable stores the currency information.
+   */
+  const currency =
   const currency =
     KeychainDialog.value.currencyToSend === "hbd"
       ? "hive_dollar"
@@ -311,6 +316,12 @@ function updateStoreSales() {
 // Calculates the fees charged in the same currency Hive/HBD as
 // the amount being sent.
 function calcFees() {
+  /**
+   * Retrieves the currency to send and the amount to send from the KeychainDialog value.
+   *
+   * @type {string} currencyToSend - The currency to send.
+   * @type {number} amountToSend - The amount to send.
+   */
   const { currencyToSend, amountToSend } = KeychainDialog.value
   const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeApiStatus
 
@@ -380,6 +391,12 @@ async function updateQRCode() {
 }
 
 async function generateLightningQRCode() {
+  /**
+   * Retrieves the currency to send from the KeychainDialog value.
+   *
+   * @returns {string} The currency to send.
+   */
+  const cur = KeychainDialog.value.currencyToSend;
   const cur = KeychainDialog.value.currencyToSend
   if (showLightning.value && KeychainDialog.value?.lndData[cur] == null) {
     KeychainDialog.value.loading = true
