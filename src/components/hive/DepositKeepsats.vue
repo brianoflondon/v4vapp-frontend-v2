@@ -45,10 +45,9 @@
         </template>
       </q-btn-toggle>
       <!-- End HBD Hive and Sats toggle -->
-
       <q-slide-transition appear disappear :duration="500">
         <div v-if="destination != 'sats'">
-          <AmountSlider v-model="CurrencyCalc" />
+          <AmountSlider v-model="CurrencyCalc" @amountUpdated="val => updateAmount(val)" />
         </div>
       </q-slide-transition>
     </div>
@@ -244,7 +243,6 @@ async function updateDestination() {
 }
 
 function updateAmount(val) {
-  console.log("updateAmount in DepositKeepSats", val)
   amount.value = parseFloat(val)
   CurrencyCalc.value = {
     amount: parseFloat(val),

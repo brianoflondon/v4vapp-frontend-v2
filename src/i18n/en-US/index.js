@@ -142,6 +142,8 @@ export default {
   The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
   The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive.\n
   The old 'Hive' tab is still available, but it is recommended to use the 'Send' and 'Receive' tabs instead.\n`,
+
+  // Receive Page
   // Credit Card
   savings: 'Savings',
   savings_tooltip: 'Show the amounts stored in Hive\'s savings accounts for HBD and Hive',
