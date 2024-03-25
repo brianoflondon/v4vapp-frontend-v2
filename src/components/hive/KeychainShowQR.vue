@@ -258,10 +258,7 @@ const dotColor = computed(() => {
   if (showLightning.value === null || !showLightning.value) {
     lightning = false
   }
-  return QRLightningHiveColor(
-    showLightning.value,
-    KeychainDialog.value.loading
-  )
+  return QRLightningHiveColor(showLightning.value, KeychainDialog.value.loading)
 })
 
 onBeforeMount(() => {
@@ -290,7 +287,6 @@ function updateStoreSales() {
    * Represents the currency variable used in the KeychainShowQR component.
    * This variable stores the currency information.
    */
-  const currency =
   const currency =
     KeychainDialog.value.currencyToSend === "hbd"
       ? "hive_dollar"
@@ -396,7 +392,6 @@ async function generateLightningQRCode() {
    *
    * @returns {string} The currency to send.
    */
-  const cur = KeychainDialog.value.currencyToSend;
   const cur = KeychainDialog.value.currencyToSend
   if (showLightning.value && KeychainDialog.value?.lndData[cur] == null) {
     KeychainDialog.value.loading = true
