@@ -27,6 +27,7 @@
       label-always
       snap
       markers
+      debounce="200"
       :step="sliderMinMax.step"
       :label-value="localAmount"
       @update:model-value="(val) => updateAmount(val)"

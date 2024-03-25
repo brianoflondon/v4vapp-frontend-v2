@@ -36,6 +36,25 @@ onMounted(() => {
   })
   mymap.addControl(searchControl)
 
+  // Add locate control
+  const locateControl = L.control({ position: "topright" })
+  locateControl.onAdd = function (map) {
+    var div = L.DomUtil.create(
+      "div",
+      "leaflet-bar leaflet-control leaflet-control-custom"
+    )
+    div.style.backgroundColor = "white"
+    div.style.backgroundImage = "url(/images/leaflet/location-crosshairs.svg)" // replace with your icon
+    div.style.backgroundSize = "30px 30px"
+    div.style.width = "34px"
+    div.style.height = "34px"
+    div.onclick = function () {
+      centerMapOnUser()
+    }
+    return div
+  }
+  mymap.addControl(locateControl)
+
   mymap.on("moveend", searchInView)
 
   searchInView()
@@ -84,6 +103,17 @@ function searchInView() {
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
+}
+
+function centerMapOnUser() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const { latitude, longitude } = position.coords
+      mymap.setView([latitude, longitude], 15)
+    })
+  } else {
+    alert("Geolocation is not supported by this browser.")
+  }
 }
 
 onUnmounted(() => {
