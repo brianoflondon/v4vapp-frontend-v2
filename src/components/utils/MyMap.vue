@@ -5,7 +5,9 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue"
 import L from "leaflet"
+import "leaflet-search"
 import "leaflet/dist/leaflet.css"
+import "leaflet-search/dist/leaflet-search.min.css"
 
 L.Icon.Default.imagePath =
   process.env.NODE_ENV === "production"
@@ -20,6 +22,19 @@ onMounted(() => {
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
   }).addTo(mymap)
+
+  // Add search control
+  const searchControl = new L.Control.Search({
+    url: "http://nominatim.openstreetmap.org/search?format=json&q={s}",
+    jsonpParam: "json_callback",
+    propertyName: "display_name",
+    propertyLoc: ["lat", "lon"],
+    marker: L.marker([0, 0]),
+    autoCollapse: true,
+    autoType: false,
+    minLength: 2,
+  })
+  mymap.addControl(searchControl)
 
   mymap.on("moveend", searchInView)
 
@@ -54,14 +69,21 @@ function searchInView() {
         if (element.lat && element.lon) {
           const marker = L.marker([element.lat, element.lon]).addTo(mymap)
           const name = element.tags.name || "Unnamed"
+          const type = element.tags.amenity
+            ? capitalizeFirstLetter(element.tags.amenity)
+            : "Unknown"
           const url = `https://www.openstreetmap.org/node/${element.id}`
           const paymentMethods = getPaymentMethods(element)
           marker.bindPopup(
-            `<b>${name}</b><br>Accepts: ${paymentMethods}<br><a href="${url}" target="_blank">View on OpenStreetMap</a>`
+            `<b>${name}</b><br>${type}<br>Accepts: ${paymentMethods}<br><a href="${url}" target="_blank">View on OpenStreetMap</a>`
           )
         }
       }
     })
+}
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
 }
 
 onUnmounted(() => {

@@ -23,6 +23,7 @@
     "hive-uri": "^0.2.5",
     "keychain-sdk": "^0.3.0",
     "leaflet": "^1.9.4",
+    "leaflet-search": "^4.0.0",
     "pinia": "^2.1.7",
     "qr-code-styling": "^1.6.0-rc.1",
     "qrcode": "^1.5.3",

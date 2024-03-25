@@ -5,7 +5,9 @@
 </template>
 
 <script setup>
+
 import MyMap from "components/utils/MyMap.vue"
+
 
 </script>
 
