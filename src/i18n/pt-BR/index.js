@@ -76,8 +76,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Falhou',
   working: 'Processando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Instale o app Hive Keychain',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Atualizar preços',
   // Invoice
   invoice: 'Fatura',
@@ -142,6 +142,7 @@ export default {
    A guia "Enviar" permite que você pague qualquer fatura ou endereço Lightning.\n
    A guia "Receber" permite solicitar um pagamento Hive (como um QR Code para o pagador) ou uma fatura Lightning BTC sats com Hive.\n
    \n`,
+  // Receive Page
   // Credit Card
   savings: 'Poupança',
   savings_tooltip: 'Mostrar os valores HBD e Hive armazenados nas contas de poupança da Hive blockchain',
