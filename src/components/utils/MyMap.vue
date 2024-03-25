@@ -9,7 +9,7 @@ import "leaflet/dist/leaflet.css"
 
 L.Icon.Default.imagePath =
   process.env.NODE_ENV === "production"
-    ? "/images/leaflet/images/"
+    ? "/images/leaflet/"
     : "/node_modules/leaflet/dist/images/"
 
 const mapContainer = ref(null)
