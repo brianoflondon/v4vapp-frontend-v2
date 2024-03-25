@@ -16,7 +16,7 @@ const mapContainer = ref(null)
 let mymap = null
 
 onMounted(() => {
-  mymap = L.map(mapContainer.value).setView([32.3314, -117.0504], 13)
+  mymap = L.map(mapContainer.value).setView([32.3314, -117.0504], 15)
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
   }).addTo(mymap)
@@ -30,7 +30,7 @@ function getPaymentMethods(element) {
   let methods = []
   if (element.tags["payment:hive"] === "yes") methods.push("Hive")
   if (element.tags["payment:hbd"] === "yes") methods.push("HBD")
-  if (element.tags["payment:lightning"] === "yes") methods.push("Lightning")
+  if (element.tags["payment:lightning"] === "yes") methods.push("BTC Lightning")
   return methods.join(", ")
 }
 
