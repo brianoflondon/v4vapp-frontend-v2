@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue"
+import { computed, onMounted, ref, defineEmits } from "vue"
 import { useI18n } from "vue-i18n"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
@@ -47,8 +47,9 @@ const storeApiStatus = useStoreAPIStatus()
 const localAmount = ref(0)
 const AmountCurrency = defineModel()
 
+const emit = defineEmits(["amountUpdated"])
+
 onMounted(() => {
-  console.log("AmountCurrency", AmountCurrency.value)
   if (storeApiStatus.minMax) {
     if (AmountCurrency.value.currency === "sats") {
       updateAmount(parseInt(sliderMinMax.value.mid))
@@ -66,7 +67,6 @@ const isDisabled = computed(() => {
 })
 
 const sliderMinMax = computed(() => {
-  console.log("AmountCurrency", AmountCurrency.value)
   let dest = AmountCurrency.value.currency.toUpperCase()
   if (storeApiStatus.minMax) {
     let min = 1
@@ -96,7 +96,6 @@ const sliderMinMax = computed(() => {
     // Round the step size to the nearest power of 10
     step = Math.pow(10, power)
     const mid = diff / 2 + min
-    console.log("min", min, "max", max, "step", step, "mid", mid)
     return { min: min, max: max, step: step, mid: mid }
   }
   return { min: 1, max: 400, step: 1, diff: 200 }
@@ -104,14 +103,13 @@ const sliderMinMax = computed(() => {
 
 function updateAmount(val) {
   if (val === null || val === undefined || val === "" || val === 0) {
-    console.log("val is null")
-    console.log("sliderMinMax", sliderMinMax.value)
     val = parseInt(sliderMinMax.value.mid)
     localAmount.value = val
     AmountCurrency.value.amount = val
   }
   AmountCurrency.value.amount = parseFloat(val)
   localAmount.value = parseFloat(val)
+  emit("amountUpdated", localAmount.value)
 }
 </script>
 
