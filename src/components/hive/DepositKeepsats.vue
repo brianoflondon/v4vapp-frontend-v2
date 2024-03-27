@@ -287,7 +287,7 @@ async function makePayment(method) {
   const fixedAmount = parseFloat(amount.value).toFixed(3)
 
   // Adds encryption to the memo 2024-02-23
-  const memo = `${storeUser.currentUser} Deposit to #SATS`
+  let memo = `${storeUser.currentUser} Deposit to #SATS`
   if (privateMemo.value) {
     memo = "#" + memo
   }
