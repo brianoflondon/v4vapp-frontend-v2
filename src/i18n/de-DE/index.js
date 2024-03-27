@@ -76,8 +76,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Arbeitet',
-  keychain_installed: 'Keychain ist installiert',
-  keychain_missing: 'Keychain ist nicht installiert',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -142,6 +142,7 @@ export default {
   Auf der Registerkarte 'Senden' können Sie jede Lightning Rechnung oder Lightning Adresse bezahlen.\n
   Auf der Registerkarte 'Empfangen' können Sie eine Hive-Zahlung (als QR-Code für den Zahler) oder eine BTC-Rechnung als Hive anfordern.\n
   Die alte Registerkarte 'Hive' ist immer noch verfügbar, aber es wird empfohlen, stattdessen die Registerkarten 'Senden' und 'Empfangen' zu verwenden.\n`,
+  // Receive Page
   // Credit Card
   savings: 'Erspartes',
   savings_tooltip: 'Zeige die in Hive-Savings für HBD und Hive gespeicherten Beträge',
@@ -174,7 +175,7 @@ export default {
   date: 'Datum',
   paid: 'Bezahlt',
   pending: 'Anstehend',
-  date: 'Datum',
+  date: 'Date',
   paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',

@@ -142,6 +142,7 @@ export default {
   En 'Enviar' puedes pagar cualquier factura lightning o enviar a una dirección lightning.\ln
   En 'Recibir' generar una factura lightning (con un código QR) para recibir sats de BTC en HIVE.\ln
   La sección 'Hive' aún esta disponible, pero se recomienda usar las secciones anteriores.\ln`,
+  // Receive Page
   // Credit Card
   savings: 'Ahorros',
   savings_tooltip: 'Muestra las cantidades almacenadas en las cuentas de ahorro de HBD y Hive',
