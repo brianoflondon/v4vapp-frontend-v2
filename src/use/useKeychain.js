@@ -4,6 +4,7 @@ import { useHiveAvatarURL } from "src/use/useHive.js"
 import { Platform, Notify } from "quasar"
 import { i18n } from "boot/i18n"
 import { useStoreUser } from "src/stores/storeUser"
+import { useGetChallenge } from "src/use/useUtils"
 
 const storeUser = useStoreUser()
 const keychain = new KeychainSDK(window)
@@ -109,10 +110,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
   try {
     const clientId = storeUser.clientId
     console.log("clientId: ", clientId)
-    const challenge = await useGetApiKeychainChallenge(
-      hiveAccObj.value,
-      clientId
-    )
+    const challenge = await useGetChallenge(hiveAccObj.value, clientId)
 
     console.log("challenge: ", challenge)
     var note = Notify.create({

@@ -6,6 +6,8 @@
 
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
+import { apiLogin } from "boot/axios"
+import { productName, version } from "../../package.json"
 
 /**
  * Formats a number by inserting commas as thousands separators in its integer part,
@@ -302,4 +304,24 @@ export function QRLightningHiveColor(isLightning, loading) {
   }
 
   return q.dark.isActive ? "#1976D2" : "#0E4377"
+}
+
+
+
+/**
+ * Retrieves the challenge from the Login API.
+ *
+ * @param {string} hiveAccName - The hive account name.
+ * @param {string} clientId - The client ID.
+ * @returns {Promise} - A promise that resolves to the challenge data.
+ */
+export async function useGetChallenge(hiveAccName, clientId) {
+  const getChallenge = await apiLogin.get(`/auth/${hiveAccName}`, {
+    params: {
+      clientId: clientId,
+      appId: `${productName}-${version}`.replace(/\s+/g, ''),
+    },
+  })
+  console.log("getChallenge", getChallenge)
+  return getChallenge
 }

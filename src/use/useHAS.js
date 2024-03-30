@@ -5,6 +5,7 @@ import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { v4 as uuidv4 } from "uuid"
 import { apiLogin } from "boot/axios"
+import { useGetChallenge } from "src/use/useUtils"
 
 const qrCodeTextHAS = ref("")
 const expiry = ref(0)
@@ -91,21 +92,12 @@ export async function useHASLogin(username = "", keyType = "posting") {
   const status = HAS.status()
   console.log(status)
 
-  async function getChallenge(hiveAccName, clientId) {
-    const getChallenge = await apiLogin.get(`/auth/${hiveAccName}`, {
-      params: {
-        clientId: clientId,
-      },
-    })
-    return getChallenge
-  }
-
   if (auth.expire > Date.now()) {
     // token exists and is still valid - no need to login again
     resolve(true)
   } else {
     const clientId = storeUser.clientId
-    const challenge = await getChallenge(username, clientId)
+    const challenge = await useGetChallenge(username, clientId)
     console.log("challenge", challenge)
     let challenge_data = undefined
     // optional - create a challenge to be signed with the posting key
