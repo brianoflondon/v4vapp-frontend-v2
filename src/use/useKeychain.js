@@ -15,9 +15,7 @@ const keychain = new KeychainSDK(window)
 
 export async function useIsHiveKeychainInstalled() {
   try {
-    console.log("-------------> useIsHiveKeychainInstalled")
     const isKeychainIn = await keychain.isKeychainInstalled()
-    console.log("isKeychainIn: ", isKeychainIn)
     return isKeychainIn
   } catch (error) {
     console.error({ error })
@@ -52,6 +50,9 @@ export async function useHiveKeychainLogin({
       keychainParams.data,
       keychainParams.options
     )
+    // this line is the result which should be used in the API text scripts
+    // signed_message_example.json
+    // console.log("loginResult: ", loginResult)
     return loginResult
   } catch (error) {
     console.error({ error })
@@ -64,10 +65,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 export async function useKeychainLoginFlow(hiveAccObj, props) {
   // Fetch the avatar for the user
   const t = i18n.global.t
-  console.log("useKeychainLoginFlow: ", hiveAccObj)
-
   let userToLogin = hiveAccObj.value
-
   if (storeUser.currentUser === "v4vapp.dev") {
     console.log("Admin user, Override userToLogin")
     console.log("useKeychainLoginFlow: ", storeUser.currentUser)
@@ -77,10 +75,8 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
   // changes to hiveAccObj object DO flow back to the
   // reactive object in the component
   const avatarUrl = useHiveAvatarURL({ hiveAccname: hiveAccObj.value })
-  console.log("avatarUrl: ", avatarUrl)
   // Check for Hive Keychain in the browser
   const isKeychainInstalled = await useIsHiveKeychainInstalled()
-  console.log("isKeychainInstalled: ", isKeychainInstalled)
   let position = "left"
   if (Platform.is.mobile) {
     position = "top"
@@ -109,10 +105,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
   // Fetch the challenge message from the server
   try {
     const clientId = storeUser.clientId
-    console.log("clientId: ", clientId)
     const challenge = await useGetChallenge(hiveAccObj.value, clientId)
-
-    console.log("challenge: ", challenge)
     var note = Notify.create({
       group: false, // required to be updatable
       timeout: 0, // we want to be in control when it gets dismissed
@@ -133,13 +126,9 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
       signedMessage.success &&
       signedMessage?.data?.message == challenge.data.challenge
     ) {
-      console.log("now to validate")
       const validate = await useValidateApi(clientId, signedMessage)
-      console.log("validate: ", validate)
-      console.log("validate.data: ", validate.data)
       // convert validate.data.expire to a date
       const expireDate = new Date(validate.data.expire * 1000)
-      console.log("validate token expires at ", expireDate)
       // need to store this token in the storeUser store
       hiveAccObj["loggedIn"] = true
       hiveAccObj.caption = validate.data.access_token
@@ -209,9 +198,7 @@ export async function useHiveKeychainTransfer(
 ) {
   try {
     const keychain = new KeychainSDK(window)
-    console.log("useHiveKeychainTransfer: ", username, amount, currency, memo)
     amount = parseFloat(amount).toFixed(3)
-    console.log("amount: ", amount)
     const formParamsAsObject = {
       data: {
         username: username,
