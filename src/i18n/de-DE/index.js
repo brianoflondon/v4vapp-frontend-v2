@@ -67,6 +67,7 @@ export default {
   download_tooltip: 'QR-Code als Datei herunterladen',
   downloading_qrcode: 'QR-Code wird heruntergeladen',
   // SideMenu
+  map: 'Map',
   page: 'Seite',
   home: 'Startseite',
   status: 'Status',
@@ -76,8 +77,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Arbeitet',
-  keychain_installed: 'Keychain ist installiert',
-  keychain_missing: 'Keychain ist nicht installiert',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -175,7 +176,7 @@ export default {
   date: 'Datum',
   paid: 'Bezahlt',
   pending: 'Anstehend',
-  date: 'Datum',
+  date: 'Date',
   paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',
