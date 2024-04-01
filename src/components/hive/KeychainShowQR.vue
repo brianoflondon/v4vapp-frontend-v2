@@ -183,10 +183,10 @@ import { useI18n } from "vue-i18n"
 import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
 import { encodeOp, Parameters } from "hive-uri"
 
-const hiveCheckTime = 5 // seconds between each check
+const hiveCheckTime = 1 // seconds between each check
 const hiveCheckTimer = ref(100)
 
-const maxChecks = 20 // 20 checks total
+const maxChecks = 100 // 20 checks total
 
 const checkTimeTotal = hiveCheckTime * maxChecks
 let currentTime = 0
@@ -499,7 +499,6 @@ async function checkHiveTransaction(count = 0) {
         KeychainDialog.value.hiveAccTo,
         5
       )
-      console.log("Checking Hive....")
       hiveCheckTimer.value = 100
       const transactionFound = findTransactionWithCheckCode(
         KeychainDialog.value.transactions,

@@ -27,10 +27,13 @@
       label-always
       snap
       markers
+      debounce="200"
       :step="sliderMinMax.step"
       :label-value="localAmount"
-      @update:model-value="(val) => updateAmount(val)"
+      @change="(val) => updateAmount(val)"
+      @pan="(val) => panStart(val)"
     ></q-slider>
+    <!-- @update:model-value="(val) => updateAmount(val)" -->
   </div>
 </template>
 
@@ -46,8 +49,9 @@ const storeApiStatus = useStoreAPIStatus()
 
 const localAmount = ref(0)
 const AmountCurrency = defineModel()
+const panning = ref(false)
 
-const emit = defineEmits(["amountUpdated"])
+const emit = defineEmits(["amountUpdated", "panning"])
 
 onMounted(() => {
   if (storeApiStatus.minMax) {
@@ -101,7 +105,18 @@ const sliderMinMax = computed(() => {
   return { min: 1, max: 400, step: 1, diff: 200 }
 })
 
+function panStart(val) {
+  if (val == "start") {
+    panning.value = true
+    emit("panning", true)
+  } else {
+    panning.value = false
+    emit("panning", false)
+  }
+}
+
 function updateAmount(val) {
+  panning.value = false
   if (val === null || val === undefined || val === "" || val === 0) {
     val = parseInt(sliderMinMax.value.mid)
     localAmount.value = val

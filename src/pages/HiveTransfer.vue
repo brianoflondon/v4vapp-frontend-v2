@@ -305,7 +305,7 @@ async function sendTransfer() {
         to: hiveAccTo.value.value,
         amount: amountToSend.value,
         memo: memoToSend,
-        enforce: true,
+        enforce: false,
         currency: currencyToSend.value,
       },
       options: {},

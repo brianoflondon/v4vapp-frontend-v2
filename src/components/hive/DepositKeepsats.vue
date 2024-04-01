@@ -47,7 +47,11 @@
       <!-- End HBD Hive and Sats toggle -->
       <q-slide-transition appear disappear :duration="500">
         <div v-if="destination != 'sats'">
-          <AmountSlider v-model="CurrencyCalc" @amountUpdated="val => updateAmount(val)" />
+          <AmountSlider
+            v-model="CurrencyCalc"
+            @amountUpdated="(val) => updateAmount(val)"
+            @panning="(val) => (loading = val)"
+          />
         </div>
       </q-slide-transition>
     </div>
@@ -103,20 +107,6 @@
             rounded
           />
         </div>
-        <!-- Private Memo toggle  -->
-        <div class="private-memo-toggle q-pa-sm">
-          <q-toggle
-            v-model="privateMemo"
-            icon="lock"
-            size="xl"
-            color="primary"
-            dense
-            flat
-            toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
-          />
-          <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
-        </div>
-        <!-- End Private Memo toggle  -->
         <div class="q-pa-sm">
           <q-btn
             class="payment-button-hive"
@@ -132,6 +122,22 @@
             rounded
           />
         </div>
+        <!-- Private Memo toggle  -->
+        <div class="private-memo-toggle q-pa-sm">
+          <q-toggle
+            v-model="privateMemo"
+            icon="lock"
+            size="xl"
+            color="primary"
+            dense
+            flat
+            toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
+          />
+          <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
+        </div>
+        <!-- End Private Memo toggle  -->
+
+
       </div>
       <!-- End Payment buttons -->
     </div>

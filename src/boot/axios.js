@@ -24,6 +24,7 @@ const isLocalhost =
 console.log("isLocalhost", isLocalhost)
 
 console.log("process.env.VUE_APP_LOCAL_API", process.env.VUE_APP_LOCAL_API)
+console.log("process.env.VUE_APP_DEV_API", process.env.VUE_APP_DEV_API)
 
 if (process.env.VUE_APP_LOCAL_API === "true" || isLocalhost) {
   console.log("Using local API")
@@ -40,6 +41,8 @@ const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 let apiURL = rootUrl
 let apiLoginURL = rootLoginUrl
 
+console.log("useDev", useDev)
+console.log("useLocal", useLocal)
 if (useLocal) {
   apiURL = "http://localhost:1818/v1"
   apiLoginURL = "http://localhost:1818/"

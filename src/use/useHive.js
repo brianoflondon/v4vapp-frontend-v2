@@ -361,7 +361,7 @@ export function useGenerateHiveTransferOp(
 ) {
   // Returns a Hive transfer operation
   if (!from) {
-    from = "__signer"
+    from = ""
   }
   if (!to) {
     return null

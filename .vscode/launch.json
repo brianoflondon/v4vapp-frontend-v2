@@ -16,7 +16,7 @@
       },
       "skipFiles": [
         "<node_internals>/**"
-      ]
+      ],
       // ENV set by .env file in project root
     },
     {
