@@ -67,6 +67,7 @@ export default {
   download_tooltip: 'Baixar QR Code como arquivo',
   downloading_qrcode: 'Baixando o QR Code',
   // SideMenu
+  map: 'Map',
   page: 'Página',
   home: 'Início',
   status: 'Status',
@@ -76,8 +77,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Falhou',
   working: 'Processando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Instale o app Hive Keychain',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Atualizar preços',
   // Invoice
   invoice: 'Fatura',
