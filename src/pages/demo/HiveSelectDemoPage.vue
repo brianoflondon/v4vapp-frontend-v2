@@ -1,19 +1,65 @@
 <template>
   <q-page>
-    <div>
-      <q-btn @click="fetchData">{{ storeUser.currentUser }}</q-btn>
-    </div>
-    <div class="q-pa-md row items-start q-gutter-md">
-      <q-table
-        :rows="data"
-        row-key="group_id"
-        :visible-columns="['trx_reason', 'max_sats', 'last_timestamp']"
-      ></q-table>
-
-      <div v-if="data">
-        <pre>{{ data[0] }}</pre>
+    <div class="webauthn-testing flex">
+      <div class="webauthn-list q-pa-md">
+        <div>
+          <q-btn
+            label="List Credentials"
+            @click="listCredentials"
+            class="q-mb-md"
+            color="primary"
+            size="lg"
+          />
+        </div>
+        <div>
+          <q-table
+            :rows="keyList"
+            row-key="timestamp"
+            wrap-cells
+            flat
+            dense
+            class="q-mb-md"
+          />
+        </div>
+      </div>
+      <div class="webauthn-register q-pa-md">
+        <div>
+          <q-btn
+            label="WebAuthn register"
+            @click="webauthnRegister"
+            class="q-mb-md"
+            color="primary"
+            size="lg"
+          />
+          <q-input
+            v-model="deviceName"
+            label="Device Name"
+            outlined
+            dense
+            class="q-mb-md"
+          />
+          <q-input
+            v-model="storeUser.hiveAccname"
+            label="Hive Account Name"
+            disable
+            dense
+          />
+        </div>
+      </div>
+      <div class="webauth-auth q-pa-md">
+        <div>
+          <q-btn
+            label="WebAuthn auth"
+            @click="webauthnAuth"
+            class="q-mb-md"
+            color="primary"
+            size="lg"
+          />
+          <q-input v-model="loginHiveAccname" label="Hive Account Name" dense />
+        </div>
       </div>
     </div>
+    <div class="q-pa-md row items-start q-gutter-md"></div>
     <div>
       <div v-if="hiveAccname">{{ hiveAccname }}</div>
       <div v-else>Default Value</div>
@@ -74,11 +120,15 @@ import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
 import HiveSelectAcc from "components/HiveSelectAcc.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useStoreUser } from "src/stores/storeUser"
-import { ref, watch, onMounted } from "vue"
-import { api } from "boot/axios"
+import { ref, onMounted } from "vue"
+import * as webauthn from "@github/webauthn-json"
+import { apiLogin } from "src/boot/axios"
+
+const deviceName = ref("")
+const keyList = ref()
+const loginHiveAccname = ref()
 
 const storeUser = useStoreUser()
-const data = ref()
 const columns = ref()
 const hiveAccname = ref({ label: "", value: "", caption: "" })
 
@@ -93,22 +143,132 @@ columns.value = [
   },
 ]
 
-async function fetchData() {
-  console.log("fetchData")
-  let rawData = []
-  if (storeUser.apiTokenSet()) {
-    try {
-      rawData = await api.get("/trx_records/")
-      data.value = rawData.data
-    } catch (error) {
-      console.error("fetchData error", error)
-    }
-  }
-}
-
 onMounted(async () => {
   console.log("HiveSelectDemoPage mounted")
+  console.log("webauthn.supported", webauthn.supported())
+  await storeUser.switchUser(storeUser.hiveAccname)
+  listCredentials()
 })
+
+async function listCredentials() {
+  console.log("listCredentials - start")
+
+  apiLogin.defaults.headers.common[
+    "Authorization"
+  ] = `Bearer ${storeUser.apiToken}`
+  console.log("storeUser.apiToken", storeUser.apiToken)
+  const listCredentials = await apiLogin.get(`/list/credentials/`, {})
+  keyList.value = listCredentials.data
+  console.log("credentials", listCredentials.data)
+}
+
+async function webauthnRegister() {
+  console.log("webauthnRegister - start")
+  // First get the challenge from the server
+  // Then call webauthn.create with the challenge
+  let params = {
+    hive_accname: storeUser.hiveAccname,
+    clientId: storeUser.clientId,
+    appId: "work-in-progress",
+  }
+
+  if (deviceName.value) {
+    params.deviceName = deviceName.value
+  }
+  let getChallenge = null
+  try {
+    getChallenge = await apiLogin.post(`/register/begin/`, params, {
+      params,
+    })
+    console.log("getChallenge.data", getChallenge.data)
+  } catch (error) {
+    console.error("getChallenge error fetching the challenge", error)
+    return
+  }
+  // let options = webauthn.parseCreationOptionsFromJSON(getChallenge.data)
+  // console.log("options", options)
+  let response = null
+  try {
+    response = await webauthn.create(getChallenge.data)
+  } catch (error) {
+    console.error("webauthn.create error", error)
+    return
+  }
+  console.log("response", response)
+  let sendChallengeBack = null
+  // alert("ask for the device name", response)
+  try {
+    sendChallengeBack = await apiLogin.post(`/register/complete/`, response, {
+      params,
+      headers: { "Content-Type": "application/json" },
+    })
+  } catch (error) {
+    console.error("sendChallengeBack error", error)
+    return
+  }
+
+  console.log("sendChallengeBack.data", sendChallengeBack.data)
+}
+
+async function webauthnAuth() {
+  console.log("webauthnAuth - start")
+  if (!loginHiveAccname.value) {
+    console.error("No Hive Account Name provided")
+    return
+  }
+  let params = {
+    hive_accname: loginHiveAccname.value,
+    clientId: storeUser.clientId,
+    appId: "work-in-progress",
+  }
+  let getChallenge = null
+  try {
+    getChallenge = await apiLogin.post(`/authenticate/begin/`, params, {
+      params,
+    })
+    console.log("getChallenge.data", getChallenge.data)
+  } catch (error) {
+    if (error.response.status === 401) {
+      console.log("No Credentials found for this account")
+      return
+    }
+    console.error("getChallenge error", error)
+    return
+  }
+  try {
+    let response = await webauthn.get(getChallenge.data)
+    console.log("response", response)
+    let sendChallengeBack = await apiLogin.post(
+      `/authenticate/complete/`,
+      response,
+      {
+        params,
+        headers: { "Content-Type": "application/json" },
+      }
+    )
+    console.log("sendChallengeBack.data", sendChallengeBack.data)
+    if (sendChallengeBack.data.access_token) {
+      console.log(
+        "sendChallengeBack.data.access_token",
+        sendChallengeBack.data.access_token
+      )
+      // give me a date 1 week in the future
+      let expireDate = new Date()
+      expireDate.setDate(expireDate.getDate() + 7)
+      await storeUser.login(
+        loginHiveAccname.value,
+        "posting",
+        "webauthn",
+        expireDate,
+        null,
+        sendChallengeBack.data.access_token
+      )
+    }
+  } catch (error) {
+    console.error("webauthn.get error", error)
+    return
+  }
+}
 </script>
 
 <style lang="sass" scoped>

@@ -357,7 +357,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.log("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
-      
+
       if (this.currentKeepSats?.net_sats > 1000000) {
         const netBitcoin = this.currentKeepSats?.net_sats / 100000000
         return tidyNumber(netBitcoin, 3)
@@ -526,6 +526,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
      */
     apiTokenSet(hiveAccname = this.currentUser) {
+      console.log('Setting API Token for', hiveAccname)
       if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
         apiLogin.defaults.headers.common[
           "Authorization"
