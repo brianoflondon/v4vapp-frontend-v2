@@ -67,6 +67,7 @@ export default {
   download_tooltip: 'Download QR code as a file',
   downloading_qrcode: 'Downloading QR code',
   // SideMenu
+  map: 'Map',
   page: 'Page',
   home: 'Home',
   status: 'Status',
