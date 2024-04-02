@@ -14,13 +14,49 @@
         <div>
           <q-table
             :rows="keyList"
-            row-key="timestamp"
+            row-key="_id"
             wrap-cells
             flat
             dense
             class="q-mb-md"
-          />
+            @row-click="handleRowClick"
+            selection="multiple"
+            v-model:selected="selectedRows"
+          >
+            <template v-slot:header="props">
+              <q-tr :props="props">
+                <q-th auto-width></q-th>
+                <!-- Empty header for the checkbox column -->
+                <q-th auto-width></q-th>
+                <!-- Empty header for the edit button column -->
+                <q-th auto-width></q-th>
+                <!-- Empty header for the delete button column -->
+                <q-th v-for="col in props.cols" :key="col.name" :props="props">
+                  {{ col.label }}
+                </q-th>
+              </q-tr>
+            </template>
+            <template v-slot:body="props">
+              <q-tr :props="props">
+                <q-td auto-width>
+                  <q-checkbox v-model="props.selected" />
+                </q-td>
+                <q-td auto-width>
+                  <q-btn icon="edit" @click="updateRow(props.row)" />
+                </q-td>
+                <q-td auto-width="">
+                  <q-btn icon="delete" @click="deleteRow(props.row)" />
+                </q-td>
+                <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                  {{ col.value }}
+                </q-td>
+              </q-tr>
+            </template>
+          </q-table>
         </div>
+        <pre>
+          {{ selectedRows }}
+        </pre>
       </div>
       <div class="webauthn-register q-pa-md">
         <div>
@@ -126,10 +162,12 @@ import { apiLogin } from "src/boot/axios"
 
 const deviceName = ref("")
 const keyList = ref()
+const selectedRows = ref()
 const loginHiveAccname = ref()
 
 const storeUser = useStoreUser()
 const columns = ref()
+
 const hiveAccname = ref({ label: "", value: "", caption: "" })
 
 columns.value = [
@@ -157,7 +195,7 @@ async function listCredentials() {
     "Authorization"
   ] = `Bearer ${storeUser.apiToken}`
   console.log("storeUser.apiToken", storeUser.apiToken)
-  const listCredentials = await apiLogin.get(`/list/credentials/`, {})
+  const listCredentials = await apiLogin.get(`/credentials/list/`, {})
   keyList.value = listCredentials.data
   console.log("credentials", listCredentials.data)
 }
@@ -268,6 +306,34 @@ async function webauthnAuth() {
     console.error("webauthn.get error", error)
     return
   }
+}
+
+function handleRowClick(event, row) {
+  console.log("row", row)
+}
+
+async function deleteRow(row) {
+  console.log("deleteRow", row)
+  let params = {
+    credentialId: row._id,
+  }
+  let deleteResult = await apiLogin.delete(`/credentials/delete/`, {
+    params,
+  })
+  console.log("deleteResult", deleteResult)
+  listCredentials()
+}
+
+async function updateRow(row) {
+  console.log("updateRow", row)
+
+  let params = {
+    credentialId: row._id,
+    deviceName: row.device_name + " updated",
+  }
+  let updateResult = await apiLogin.put(`/credentials/update/`, {}, { params })
+  console.log("updateResult", updateResult)
+  listCredentials()
 }
 </script>
 
