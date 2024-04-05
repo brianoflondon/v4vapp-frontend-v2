@@ -67,7 +67,7 @@ export default {
   download_tooltip: 'QR-Code als Datei herunterladen',
   downloading_qrcode: 'QR-Code wird heruntergeladen',
   // SideMenu
-  map: 'Map',
+  map: 'Landkarte',
   page: 'Seite',
   home: 'Startseite',
   status: 'Status',
