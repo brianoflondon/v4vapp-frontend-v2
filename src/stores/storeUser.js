@@ -188,6 +188,15 @@ export const useStoreUser = defineStore("useStoreUser", {
       return this.users[this.currentUser]
     },
     /**
+     * Returns the number of users in the store.
+     *
+     * @returns {number} The number of users.
+     */
+    numUsers() {
+      console.log("numUsers", Object.keys(this.users).length)
+      return Object.keys(this.users).length
+    },
+    /**
      * Determines the login method for the current user.
      * @returns {string} The login method. Possible values are "none", "has", or "keychain".
      */

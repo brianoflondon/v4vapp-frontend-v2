@@ -6,6 +6,7 @@
         @click="$emit('close-menu')"
       />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
+      <PasskeyManagement v-model="hiveAccObj" />
     </div>
     <div class="q-pa-md">
       <LocalCurrency />
@@ -39,6 +40,7 @@ import LocalCurrency from "components/utils/LocalCurrency.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { api, apiLogin, serverHiveAccount } from "boot/axios"
+import PasskeyManagement from "components/utils/PasskeyManagement.vue"
 
 // import { createWaxFoundation } from "@hive/wax"
 
