@@ -1,24 +1,31 @@
 <template>
-  <q-card>
+  <q-card class="q-pb-sm">
     <q-list>
       <q-expansion-item expand-separator icon="key" label="Passkey">
         <!-- Hive Account name input -->
         <q-item>
-          <HiveInputAcc v-model="hiveAccObj" :prefix="t('pay_to')">
-          </HiveInputAcc>
+          <HiveInputAcc v-model="hiveAccObj" prefix="🔑 "> </HiveInputAcc>
         </q-item>
-        <q-item>
+        <q-item dense class="justify-center">
           <q-btn
             :disable="numCredentials === 0"
             rounded
-            label="Passkey Login"
+            align="left"
+            label="Login"
+            icon="key"
             @click="doPasskeyLogin"
+            style="width: 200px"
           />
+        </q-item>
+        <q-item dense class="justify-center">
           <q-btn
             :disable="!storeUser.currentUser"
             rounded
-            label="Passkey Manage"
+            label="Manage"
+            align="left"
+            icon="admin_panel_settings"
             @click="doPasskeyManage"
+            style="width: 200px"
           />
         </q-item>
         <!-- End Hive Account name input -->
@@ -47,23 +54,39 @@
           @click="doPasskeyRegister"
         />
       </q-card-section>
+
       <q-card-section>
-        <p>Passkeys for user: {{ storeUser.currentUser }}</p>
-        <!-- List of passkeys -->
-        <q-item v-if="numCredentials > 0">
-          <q-list>
-            <q-item-section>
-              <q-item
-                clickable
-                caption
-                v-for="cred in listCredentials"
-                :key="cred._id"
-                @click="doManageKey(cred)"
-              >
-                {{ cred.device_name }}
-              </q-item>
-            </q-item-section>
-          </q-list>
+        <q-item>
+          <q-item-section avatar>
+            <HiveAvatar :hiveAccname="storeUser.currentUser" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>
+              {{ storeUser.profileName }}
+            </q-item-label>
+            <q-item-label caption> @{{ storeUser.hiveAccname }} </q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-card-section>
+
+      <q-card-section>
+        <q-item
+          clickable
+          caption
+          v-for="cred in listCredentials"
+          :key="cred._id"
+          @click="doManageKey(cred)"
+        >
+          <q-item-section avatar>
+            <q-icon name="key" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>{{ cred.device_name }}</q-item-label>
+            <q-item-label caption
+              >Used: {{ cred.count }} time{{ cred.count > 1 ? "s" : "" }}
+              {{ myFormatTimeAgo(cred.last_used) }}
+            </q-item-label>
+          </q-item-section>
         </q-item>
       </q-card-section>
     </q-card>
@@ -71,7 +94,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch, nextTick } from "vue"
+import { onMounted, ref } from "vue"
 import {
   useListCredentials,
   useNumCredentials,
@@ -79,52 +102,41 @@ import {
   usePasskeyRegister,
 } from "src/use/usePasskeys"
 import { useStoreUser } from "src/stores/storeUser"
+import { convertUtcToUserLocalTime } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 import HiveInputAcc from "components/HiveInputAcc.vue"
-import ConfettiExplosion from "vue-confetti-explosion"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
+import { formatTimeAgo } from "@vueuse/core"
 
 const storeUser = useStoreUser()
 const t = useI18n().t
 
 const showDialog = ref(false)
-const hiveAccObj = defineModel()
+const hiveAccObj = ref()
 
 const passkeyName = ref("")
 const showError = ref(false)
 const listCredentials = ref()
 const numCredentials = ref(0)
 
-/**
- * ConfettiExplosion component
- */
-const visible = ref(false)
-async function explode() {
-  visible.value = false
-  await nextTick()
-  visible.value = true
-}
-
-onMounted(async () => {
-  numCredentials.value = await useNumCredentials(hiveAccObj.value.value)
-  // listCredentials.value = await useListCredentials()
-})
-
-watch(hiveAccObj, async (val) => {
-  console.log("val", val)
-  if (val.value) {
-    await updatePasskeyList()
-  } else {
-    listCredentials.value = []
-  }
-})
+onMounted(async () => {})
 
 async function updatePasskeyList() {
-  numCredentials.value = await useNumCredentials(hiveAccObj.value.value)
+  let checkHiveAcc = storeUser.currentUser
+
+  if (!hiveAccObj.value) {
+    if (storeUser.currentUser) {
+      checkHiveAcc = storeUser.currentUser
+    } else {
+      checkHiveAcc = hiveAccObj.value.value
+    }
+  }
+  numCredentials.value = await useNumCredentials(checkHiveAcc)
   console.log("numCredentials", numCredentials.value)
   console.log("storeUser.currentUser", storeUser.currentUser)
-  console.log("hiveAccObj.value.value", hiveAccObj.value.value)
+  console.log("checkHiveAcc", checkHiveAcc)
   if (
-    storeUser.currentUser === hiveAccObj.value.value &&
+    storeUser.currentUser === checkHiveAcc &&
     storeUser.currentUser &&
     numCredentials.value > 0
   ) {
@@ -136,6 +148,9 @@ async function updatePasskeyList() {
 
 async function doPasskeyLogin() {
   console.log("doPasskeyLogin")
+  if (!hiveAccObj.value.value) {
+    return
+  }
   const result = await usePasskeyLogin(hiveAccObj.value.value)
   if (result.success) {
     let expireDate = new Date()
@@ -157,6 +172,11 @@ async function doPasskeyLogin() {
 async function doPasskeyManage() {
   console.log("doPasskeyManage")
   showDialog.value = true
+  hiveAccObj.value = {
+    label: storeUser.currentUser,
+    value: storeUser.currentUser,
+    caption: storeUser.getUser(storeUser.currentUser).profileName,
+  }
   await updatePasskeyList()
 }
 
@@ -184,6 +204,12 @@ async function doManageKey(cred) {
   console.log("doManageKey", cred)
   console.log("cred._id", cred._id)
   console.log("cred.device_name", cred.device_name)
+  console.log("formatTimeAgo(cred.last_used)", cred.last_used)
+}
+
+function myFormatTimeAgo(timeString) {
+  const date = new Date(timeString)
+  return formatTimeAgo(date)
 }
 </script>
 

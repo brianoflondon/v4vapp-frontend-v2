@@ -1,5 +1,5 @@
 <template>
-  <q-card>
+  <q-card class="q-pb-sm">
     <q-list>
       <q-expansion-item
         expand-separator
@@ -13,9 +13,6 @@
         </q-item>
         <!-- End Hive Account name input -->
         <!-- Login with buttons -->
-        <q-item-label class="text-left q-pa-sm">
-          {{ $t("login_with") }}:
-        </q-item-label>
         <!-- Hive Keychain Button -->
         <q-item dense class="justify-center">
           <q-btn
@@ -78,25 +75,6 @@
                 {{ timeMessage }}</q-item-label
               >
             </div>
-          </div>
-        </q-item>
-        <q-item class="flex justify-center">
-          <div class="text-center q-pa-md">
-            <q-btn
-              :disable="storeUser.numUsers < 1"
-              rounded
-              @click="storeUser.logout()"
-              :label="$t('logout')"
-            />
-          </div>
-          <div class="text-center q-pa-md">
-            <q-btn
-              rounded
-              :disable="storeUser.numUsers < 1"
-              @click="storeUser.logoutAll()"
-              :label="$t('logout_all')"
-              style="white-space: nowrap"
-            />
           </div>
         </q-item>
       </q-expansion-item>
