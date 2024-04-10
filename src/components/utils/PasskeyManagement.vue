@@ -71,7 +71,6 @@
 
       <q-card-section>
         <q-item
-          clickable
           caption
           v-for="cred in listCredentials"
           :key="cred._id"
@@ -87,8 +86,20 @@
               {{ myFormatTimeAgo(cred.last_used) }}
             </q-item-label>
           </q-item-section>
+          <q-item-section side>
+            <q-btn
+              round
+              size="sm"
+              icon="delete"
+              name="delete"
+              @click="doPasskeyDelete(evt, cred)"
+            />
+          </q-item-section>
         </q-item>
       </q-card-section>
+      <q-card-actions class="justify-center">
+        <q-btn label="Close" @click="showDialog = false" />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
@@ -100,6 +111,7 @@ import {
   useNumCredentials,
   usePasskeyLogin,
   usePasskeyRegister,
+  usePasskeyDelete,
 } from "src/use/usePasskeys"
 import { useStoreUser } from "src/stores/storeUser"
 import { convertUtcToUserLocalTime } from "src/use/useUtils"
@@ -107,6 +119,7 @@ import { useI18n } from "vue-i18n"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { formatTimeAgo } from "@vueuse/core"
+import { Notify } from "quasar"
 
 const storeUser = useStoreUser()
 const t = useI18n().t
@@ -193,11 +206,27 @@ async function doPasskeyRegister() {
   if (result.success) {
     await updatePasskeyList()
     passkeyName.value = ""
-    explode()
+    showError.value = false
+    Notify.create({
+      message: "Passkey registered",
+      color: "positive",
+      position: "top",
+    })
   } else {
     console.log("doPasskeyRegister failed")
     console.log("result", result.message)
   }
+}
+
+async function doPasskeyDelete(evt, cred) {
+  console.log("doPasskeyDelete", cred)
+  await usePasskeyDelete(cred._id)
+  await updatePasskeyList()
+  Notify.create({
+    message: "Passkey deleted",
+    color: "positive",
+    position: "top",
+  })
 }
 
 async function doManageKey(cred) {
@@ -208,7 +237,11 @@ async function doManageKey(cred) {
 }
 
 function myFormatTimeAgo(timeString) {
-  const date = new Date(timeString)
+  const date = new Date(timeString+'Z')
+  const localTimeString = date.toLocaleString()
+  console.log("timeString", timeString)
+  console.log("localTimeString", localTimeString)
+  console.log("formatTimeAgo(date)", formatTimeAgo(date))
   return formatTimeAgo(date)
 }
 </script>

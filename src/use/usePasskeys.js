@@ -128,3 +128,24 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
   console.log("sendChallengeBack.data", sendChallengeBack.data)
   return { success: true, message: "device registered" }
 }
+
+export async function usePasskeyDelete(credentialId) {
+  console.log("usePasskeyDelete - start")
+  if (!credentialId) {
+    return { success: false, message: "No device name or Hive Account" }
+  }
+  let params = {
+    credentialId: credentialId,
+  }
+  let response = null
+  try {
+    response = await apiLogin.delete(`/credentials/delete/`, {
+      params: params,
+    })
+    console.log("response", response.data)
+    return { success: true, message: "device deleted" }
+  } catch (error) {
+    console.error("usePasskeyDelete error", error)
+    return { success: false, message: "delete error" }
+  }
+}
