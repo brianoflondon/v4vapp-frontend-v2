@@ -70,10 +70,7 @@
         </q-item>
       </q-card-section>
       <q-card-section>
-        <div
-          class="text-center"
-          v-if="loadingCredentials"
-        >
+        <div class="text-center" v-if="loadingCredentials">
           <q-spinner-grid color="primary" size="40px" />
         </div>
         <div v-if="loadingCredentials === false && numCredentials === 0">
@@ -98,7 +95,7 @@
               size="sm"
               icon="delete"
               name="delete"
-              @click="doPasskeyDelete(evt, cred)"
+              @click="doPasskeyDeleteAsk(evt, cred)"
             />
           </q-item-section>
         </q-item>
@@ -108,6 +105,38 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+  <!-- End Passkey manage and register dialog -->
+  <!-- Confirm Delete passkey dialog  -->
+  <q-dialog v-model="confirmDelete" persistent>
+    <q-card>
+      <q-card-section class="text-h6">{{ t("confirm_delete") }}</q-card-section>
+      <q-card-section class="row items-center">
+        <q-list>
+          <q-item>
+            <q-item-section avatar>
+              <q-icon name="key" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>{{ confirmDeleteCred.device_name }}</q-item-label>
+              <q-item-label caption
+                >{{ credCountText(confirmDeleteCred) }}
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn flat icon="cancel" color="primary" v-close-popup />
+        <q-btn
+          flat
+          icon="delete"
+          color="primary"
+          @click="doPasskeyDelete(evt, confirmDeleteCred)"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <!-- End Confirm Delete passkey dialog -->
 </template>
 
 <script setup>
@@ -131,6 +160,8 @@ const storeUser = useStoreUser()
 const t = useI18n().t
 
 const showDialog = ref(false)
+const confirmDelete = ref(false)
+const confirmDeleteCred = ref()
 const hiveAccObj = ref()
 
 const passkeyName = ref("")
@@ -275,10 +306,17 @@ async function doPasskeyRegister() {
   }
 }
 
+async function doPasskeyDeleteAsk(evt, cred) {
+  console.log("doPasskeyDelete", cred)
+  confirmDeleteCred.value = cred
+  confirmDelete.value = true
+}
+
 async function doPasskeyDelete(evt, cred) {
   console.log("doPasskeyDelete", cred)
+  confirmDelete.value = false
   await usePasskeyDelete(cred._id)
-  await updatePasskeyList()
+  await updatePasskeyList(false)
   Notify.create({
     message: "Passkey deleted",
     color: "positive",
