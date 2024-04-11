@@ -1,5 +1,6 @@
 <template>
   <q-card class="q-pb-sm">
+    <q-btn dense flat round icon="home" @click="explode" />
     <q-list>
       <q-expansion-item expand-separator icon="key" label="Passkey">
         <!-- Hive Account name input -->
@@ -7,6 +8,7 @@
           <HiveInputAcc v-model="hiveAccObj" prefix="🔑 "> </HiveInputAcc>
         </q-item>
         <q-item dense class="justify-center">
+          <ConfettiExplosion v-if="visibleConfetti" />
           <q-btn
             :disable="numCredentials === 0"
             rounded
@@ -68,8 +70,16 @@
           </q-item-section>
         </q-item>
       </q-card-section>
-
       <q-card-section>
+        <div
+          class="text-center"
+          v-if="loadingCredentials && numCredentials === 0"
+        >
+          <q-spinner-grid color="primary" size="40px" />
+        </div>
+        <div v-if="loadingCredentials === false && numCredentials === 0">
+          No passkeys registered
+        </div>
         <q-item
           caption
           v-for="cred in listCredentials"
@@ -102,7 +112,7 @@
 </template>
 
 <script setup>
-import { watch, computed, ref } from "vue"
+import { watch, computed, ref, nextTick } from "vue"
 import {
   useListCredentials,
   useNumCredentials,
@@ -114,6 +124,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
+import ConfettiExplosion from "vue-confetti-explosion"
 import { formatTimeAgo } from "@vueuse/core"
 import { Notify } from "quasar"
 
@@ -126,9 +137,26 @@ const hiveAccObj = ref()
 const passkeyName = ref("")
 const showError = ref(false)
 const listCredentials = ref()
+const loadingCredentials = ref(false)
 const numCredentials = ref(0)
 
-//
+/**
+ * ConfettiExplosion component
+ */
+const visibleConfetti = ref(false)
+async function explode() {
+  visibleConfetti.value = false
+  await nextTick()
+  visibleConfetti.value = true
+}
+
+// Watch for changes in the current user
+watch(storeUser.currentUser, async (newVal) => {
+  console.log("storeUser.currentUser changed to:", newVal)
+  listCredentials.value = []
+  numCredentials.value = 0
+})
+
 const isValid = computed(() => {
   if (hiveAccObj.value && hiveAccObj.value.valid) {
     return true
@@ -147,7 +175,6 @@ watch(isValid, async (newVal) => {
 
 async function updatePasskeyList() {
   let checkHiveAcc = storeUser.currentUser
-
   if (!hiveAccObj.value) {
     if (storeUser.currentUser) {
       checkHiveAcc = storeUser.currentUser
@@ -157,14 +184,9 @@ async function updatePasskeyList() {
   } else {
     checkHiveAcc = hiveAccObj.value.value
   }
-  console.log("storeUser.currentUser", storeUser.currentUser)
-  console.log("hiveAccObj.value.value", hiveAccObj.value.value)
-  console.log("checkHiveAcc", checkHiveAcc)
-  console.log("checking for passkeys for", checkHiveAcc)
+  loadingCredentials.value = true
   numCredentials.value = await useNumCredentials(checkHiveAcc)
-  console.log("numCredentials", numCredentials.value)
-  console.log("storeUser.currentUser", storeUser.currentUser)
-  console.log("checkHiveAcc", checkHiveAcc)
+  loadingCredentials.value = false
   if (
     storeUser.currentUser === checkHiveAcc &&
     storeUser.currentUser &&
@@ -193,7 +215,18 @@ async function doPasskeyLogin() {
       null,
       result.token
     )
+    Notify.create({
+      message: "Logged in with passkey",
+      color: "positive",
+      position: "top",
+    })
+    explode()
   } else {
+    Notify.create({
+      message: result.message,
+      color: "negative",
+      position: "top",
+    })
     console.log("doPasskeyLogin failed")
     console.log("result", result.message)
   }

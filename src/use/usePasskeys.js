@@ -95,7 +95,7 @@ export async function usePasskeyLogin(hiveAccName) {
     }
   } catch (error) {
     console.error("webauthn.get error", error)
-    return { success: false, message: "webauthn error" }
+    return { success: false, message: error.message }
   }
 }
 
