@@ -72,15 +72,13 @@
       </q-card-section>
 
       <q-card-section>
-        <div class="loading-credential-list">
-          <div class="text-center" v-if="loadingCredentials">
-            <q-spinner-grid color="primary" size="40px" />
-          </div>
-          <div v-else-if="loadingCredentials === false && numCredentials === 0">
-            No passkeys registered
-          </div>
+        <div class="text-center" v-if="loadingCredentials">
+          <q-spinner-grid color="primary" size="40px" />
         </div>
-        <div class="credential-list">
+        <div v-else-if="loadingCredentials === false && numCredentials === 0">
+          No passkeys registered
+        </div>
+        <div v-else class="credential-list">
           <q-item
             caption
             v-for="cred in listCredentials"
@@ -210,6 +208,7 @@ watch(isValid, async (newVal) => {
 })
 
 async function updatePasskeyList(useCache = true) {
+  loadingCredentials.value = true
   let checkHiveAcc = storeUser.currentUser
   if (!hiveAccObj.value) {
     if (storeUser.currentUser) {
@@ -220,9 +219,7 @@ async function updatePasskeyList(useCache = true) {
   } else {
     checkHiveAcc = hiveAccObj.value.value
   }
-  loadingCredentials.value = true
   numCredentials.value = await useNumCredentials(checkHiveAcc, useCache)
-  loadingCredentials.value = false
   if (
     storeUser.currentUser === checkHiveAcc &&
     storeUser.currentUser &&
@@ -232,6 +229,7 @@ async function updatePasskeyList(useCache = true) {
   } else {
     listCredentials.value = []
   }
+  loadingCredentials.value = false
 }
 
 async function doPasskeyLogin() {
@@ -277,7 +275,7 @@ async function doPasskeyManage() {
     value: storeUser.currentUser,
     caption: storeUser.getUser(storeUser.currentUser).profileName,
   }
-  await updatePasskeyList()
+  await updatePasskeyList(false)
 }
 
 async function doPasskeyManageClose() {
