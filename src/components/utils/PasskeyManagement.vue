@@ -81,10 +81,7 @@
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ cred.device_name }}</q-item-label>
-            <q-item-label caption
-              >Used: {{ cred.count }} time{{ cred.count > 1 ? "s" : "" }}
-              {{ myFormatTimeAgo(cred.last_used) }}
-            </q-item-label>
+            <q-item-label caption>{{ credCountText(cred) }} </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn
@@ -130,7 +127,6 @@ const passkeyName = ref("")
 const showError = ref(false)
 const listCredentials = ref()
 const numCredentials = ref(0)
-
 
 //
 const isValid = computed(() => {
@@ -234,6 +230,11 @@ async function doPasskeyRegister() {
       position: "top",
     })
   } else {
+    Notify.create({
+      message: result.message,
+      color: "negative",
+      position: "top",
+    })
     console.log("doPasskeyRegister failed")
     console.log("result", result.message)
   }
@@ -257,12 +258,18 @@ async function doManageKey(cred) {
   console.log("formatTimeAgo(cred.last_used)", cred.last_used)
 }
 
+function credCountText(cred) {
+  if (cred.count === 0) {
+    return t("unused")
+  }
+  return `${t("used")}: ${cred.count} time${
+    cred.count > 1 ? "s" : ""
+  } ${myFormatTimeAgo(cred.last_used)}`
+}
+
 function myFormatTimeAgo(timeString) {
   const date = new Date(timeString + "Z")
   const localTimeString = date.toLocaleString()
-  console.log("timeString", timeString)
-  console.log("localTimeString", localTimeString)
-  console.log("formatTimeAgo(date)", formatTimeAgo(date))
   return formatTimeAgo(date)
 }
 </script>

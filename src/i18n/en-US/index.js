@@ -58,6 +58,9 @@ export default {
   matches: "matches",
   logout: "Logout",
   logout_all: "Logout All",
+  // Passkeys:
+  used: "Used",
+  unused: "Unused",
   // Get Hive
   amount: "Amount",
   copy: "Copy",

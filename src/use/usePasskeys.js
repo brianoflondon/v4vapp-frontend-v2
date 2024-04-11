@@ -9,7 +9,16 @@ import { useStoreUser } from "src/stores/storeUser"
 import * as webauthn from "@github/webauthn-json"
 
 const storeUser = useStoreUser()
+const isDev = window.location.href.includes("dev.v4v.app")
+let appId = "v4v.app"
+if (isDev) {
+  appId = "dev.v4v.app"
+}
 
+/**
+ * Retrieves a list of credentials.
+ * @returns {Promise<Array>} A promise that resolves to an array of credentials.
+ */
 export async function useListCredentials() {
   if (!storeUser.currentUser) {
     return []
@@ -19,6 +28,12 @@ export async function useListCredentials() {
   return listCredentials.data
 }
 
+/**
+ * Retrieves the number of credentials for a given hive account name.
+ *
+ * @param {string} hiveAccname - The hive account name.
+ * @returns {Promise<number>} The number of credentials.
+ */
 export async function useNumCredentials(hiveAccname) {
   console.log("useNumCredentials - start", hiveAccname)
   if (!hiveAccname) {
@@ -46,7 +61,7 @@ export async function usePasskeyLogin(hiveAccName) {
   let params = {
     hive_accname: hiveAccName,
     clientId: storeUser.clientId,
-    appId: "dev.v4v.app",
+    appId: appId,
   }
   let getChallenge = null
   try {
@@ -84,6 +99,13 @@ export async function usePasskeyLogin(hiveAccName) {
   }
 }
 
+/**
+ * Registers a device using a passkey.
+ *
+ * @param {string} hiveAccName - The Hive Account name.
+ * @param {string} deviceName - The name of the device.
+ * @returns {Promise<{ success: boolean, message: string }>} - A promise that resolves to an object with the success status and a message.
+ */
 export async function usePasskeyRegister(hiveAccName, deviceName) {
   console.log("usePasskeyRegister - start")
   // First get the challenge from the server
@@ -94,7 +116,7 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
   let params = {
     hive_accname: hiveAccName,
     clientId: storeUser.clientId,
-    appId: "dev.v4v.app",
+    appId: appId,
     deviceName: deviceName,
   }
 
@@ -103,9 +125,7 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
     getChallenge = await apiLogin.post(`/register/begin/`, params, {
       params,
     })
-    console.log("getChallenge.data", getChallenge.data)
   } catch (error) {
-    console.error("getChallenge error fetching the challenge", error)
     return { success: false, message: "challenge error" }
   }
   // let options = webauthn.parseCreationOptionsFromJSON(getChallenge.data)
@@ -114,12 +134,9 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
   try {
     response = await webauthn.create(getChallenge.data)
   } catch (error) {
-    console.error("webauthn.create error", error)
     return { success: false, message: error.message }
   }
-  console.log("response", response)
   let sendChallengeBack = null
-  // alert("ask for the device name", response)
   try {
     sendChallengeBack = await apiLogin.post(`/register/complete/`, response, {
       params,
@@ -130,13 +147,13 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
     return { success: false, message: error.message }
   }
   console.log("sendChallengeBack.data", sendChallengeBack.data)
-  return { success: true, message: "device registered" }
+  return { success: true, message: "Device Registered" }
 }
 
 export async function usePasskeyDelete(credentialId) {
   console.log("usePasskeyDelete - start")
   if (!credentialId) {
-    return { success: false, message: "No device name or Hive Account" }
+    return { success: false, message: "Nothing to delete" }
   }
   let params = {
     credentialId: credentialId,
