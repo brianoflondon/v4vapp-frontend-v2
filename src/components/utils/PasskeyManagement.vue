@@ -1,6 +1,5 @@
 <template>
   <q-card class="q-pb-sm">
-    <q-btn dense flat round icon="home" @click="explode" />
     <q-list>
       <q-expansion-item expand-separator icon="key" label="Passkey">
         <!-- Hive Account name input -->
@@ -73,7 +72,7 @@
       <q-card-section>
         <div
           class="text-center"
-          v-if="loadingCredentials && numCredentials === 0"
+          v-if="loadingCredentials"
         >
           <q-spinner-grid color="primary" size="40px" />
         </div>
