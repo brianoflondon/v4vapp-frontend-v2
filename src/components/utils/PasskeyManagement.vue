@@ -172,7 +172,7 @@ watch(isValid, async (newVal) => {
   }
 })
 
-async function updatePasskeyList() {
+async function updatePasskeyList(useCache = true) {
   let checkHiveAcc = storeUser.currentUser
   if (!hiveAccObj.value) {
     if (storeUser.currentUser) {
@@ -184,14 +184,14 @@ async function updatePasskeyList() {
     checkHiveAcc = hiveAccObj.value.value
   }
   loadingCredentials.value = true
-  numCredentials.value = await useNumCredentials(checkHiveAcc)
+  numCredentials.value = await useNumCredentials(checkHiveAcc, useCache)
   loadingCredentials.value = false
   if (
     storeUser.currentUser === checkHiveAcc &&
     storeUser.currentUser &&
     numCredentials.value > 0
   ) {
-    listCredentials.value = await useListCredentials()
+    listCredentials.value = await useListCredentials(useCache)
   } else {
     listCredentials.value = []
   }
@@ -220,6 +220,7 @@ async function doPasskeyLogin() {
       position: "top",
     })
     explode()
+    await updatePasskeyList(false)
   } else {
     Notify.create({
       message: result.message,
@@ -261,6 +262,8 @@ async function doPasskeyRegister() {
       color: "positive",
       position: "top",
     })
+    explode()
+    await updatePasskeyList(false)
   } else {
     Notify.create({
       message: result.message,

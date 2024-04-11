@@ -19,11 +19,13 @@ if (isDev) {
  * Retrieves a list of credentials.
  * @returns {Promise<Array>} A promise that resolves to an array of credentials.
  */
-export async function useListCredentials() {
+export async function useListCredentials(useCache = true) {
   if (!storeUser.currentUser) {
     return []
   }
-  const listCredentials = await apiLogin.get(`/credentials/list/`, {})
+  const listCredentials = await apiLogin.get(`/credentials/list/`, {
+    params: { useCache: useCache },
+  })
   console.log("credentials", listCredentials.data)
   return listCredentials.data
 }
@@ -34,7 +36,7 @@ export async function useListCredentials() {
  * @param {string} hiveAccname - The hive account name.
  * @returns {Promise<number>} The number of credentials.
  */
-export async function useNumCredentials(hiveAccname) {
+export async function useNumCredentials(hiveAccname, useCache = true) {
   console.log("useNumCredentials - start", hiveAccname)
   if (!hiveAccname) {
     return 0
@@ -42,7 +44,7 @@ export async function useNumCredentials(hiveAccname) {
   try {
     const numCredentials = await apiLogin.get(
       `/credentials/count/${hiveAccname}`,
-      {}
+      { params: { useCache: useCache } }
     )
     console.log("numCredentials", numCredentials.data)
     return numCredentials.data.devices
