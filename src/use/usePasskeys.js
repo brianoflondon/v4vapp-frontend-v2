@@ -20,6 +20,10 @@ export async function useListCredentials() {
 }
 
 export async function useNumCredentials(hiveAccname) {
+  console.log("useNumCredentials - start", hiveAccname)
+  if (!hiveAccname) {
+    return 0
+  }
   try {
     const numCredentials = await apiLogin.get(
       `/credentials/count/${hiveAccname}`,

@@ -105,7 +105,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue"
+import { watch, computed, ref } from "vue"
 import {
   useListCredentials,
   useNumCredentials,
@@ -114,7 +114,6 @@ import {
   usePasskeyDelete,
 } from "src/use/usePasskeys"
 import { useStoreUser } from "src/stores/storeUser"
-import { convertUtcToUserLocalTime } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
@@ -132,7 +131,23 @@ const showError = ref(false)
 const listCredentials = ref()
 const numCredentials = ref(0)
 
-onMounted(async () => {})
+
+//
+const isValid = computed(() => {
+  if (hiveAccObj.value && hiveAccObj.value.valid) {
+    return true
+  } else {
+    return false
+  }
+})
+
+// Need to watch this computed derivative of hiveAccObj
+watch(isValid, async (newVal) => {
+  console.log("isValid changed to:", newVal)
+  if (newVal) {
+    await updatePasskeyList()
+  }
+})
 
 async function updatePasskeyList() {
   let checkHiveAcc = storeUser.currentUser
@@ -143,7 +158,13 @@ async function updatePasskeyList() {
     } else {
       checkHiveAcc = hiveAccObj.value.value
     }
+  } else {
+    checkHiveAcc = hiveAccObj.value.value
   }
+  console.log("storeUser.currentUser", storeUser.currentUser)
+  console.log("hiveAccObj.value.value", hiveAccObj.value.value)
+  console.log("checkHiveAcc", checkHiveAcc)
+  console.log("checking for passkeys for", checkHiveAcc)
   numCredentials.value = await useNumCredentials(checkHiveAcc)
   console.log("numCredentials", numCredentials.value)
   console.log("storeUser.currentUser", storeUser.currentUser)
@@ -237,7 +258,7 @@ async function doManageKey(cred) {
 }
 
 function myFormatTimeAgo(timeString) {
-  const date = new Date(timeString+'Z')
+  const date = new Date(timeString + "Z")
   const localTimeString = date.toLocaleString()
   console.log("timeString", timeString)
   console.log("localTimeString", localTimeString)
