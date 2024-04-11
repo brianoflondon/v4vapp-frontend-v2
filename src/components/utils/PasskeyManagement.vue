@@ -38,8 +38,23 @@
     <q-card>
       <q-toolbar>
         <q-toolbar-title>Passkey Management</q-toolbar-title>
-        <q-btn flat round dense icon="close" @click="showDialog = false" />
+        <q-btn flat round dense icon="close" @click="doPasskeyManageClose" />
       </q-toolbar>
+      <!-- User name  -->
+      <q-card-section>
+        <q-item>
+          <q-item-section avatar>
+            <HiveAvatar :hiveAccname="storeUser.currentUser" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>
+              {{ storeUser.profileName }}
+            </q-item-label>
+            <q-item-label caption> @{{ storeUser.hiveAccname }} </q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-card-section>
+      <!-- End User name -->
       <q-card-section>
         <p>Register a new passkey</p>
         <q-input
@@ -57,51 +72,42 @@
       </q-card-section>
 
       <q-card-section>
-        <q-item>
-          <q-item-section avatar>
-            <HiveAvatar :hiveAccname="storeUser.currentUser" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>
-              {{ storeUser.profileName }}
-            </q-item-label>
-            <q-item-label caption> @{{ storeUser.hiveAccname }} </q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-card-section>
-      <q-card-section>
-        <div class="text-center" v-if="loadingCredentials">
-          <q-spinner-grid color="primary" size="40px" />
+        <div class="loading-credential-list">
+          <div class="text-center" v-if="loadingCredentials">
+            <q-spinner-grid color="primary" size="40px" />
+          </div>
+          <div v-else-if="loadingCredentials === false && numCredentials === 0">
+            No passkeys registered
+          </div>
         </div>
-        <div v-if="loadingCredentials === false && numCredentials === 0">
-          No passkeys registered
+        <div class="credential-list">
+          <q-item
+            caption
+            v-for="cred in listCredentials"
+            :key="cred._id"
+            @click="doManageKey(cred)"
+          >
+            <q-item-section avatar>
+              <q-icon name="key" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>{{ cred.device_name }}</q-item-label>
+              <q-item-label caption>{{ credCountText(cred) }} </q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                round
+                size="sm"
+                icon="delete"
+                name="delete"
+                @click="doPasskeyDeleteAsk(evt, cred)"
+              />
+            </q-item-section>
+          </q-item>
         </div>
-        <q-item
-          caption
-          v-for="cred in listCredentials"
-          :key="cred._id"
-          @click="doManageKey(cred)"
-        >
-          <q-item-section avatar>
-            <q-icon name="key" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>{{ cred.device_name }}</q-item-label>
-            <q-item-label caption>{{ credCountText(cred) }} </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              round
-              size="sm"
-              icon="delete"
-              name="delete"
-              @click="doPasskeyDeleteAsk(evt, cred)"
-            />
-          </q-item-section>
-        </q-item>
       </q-card-section>
       <q-card-actions class="justify-center">
-        <q-btn label="Close" @click="showDialog = false" />
+        <q-btn label="Close" @click="doPasskeyManageClose" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -272,6 +278,12 @@ async function doPasskeyManage() {
     caption: storeUser.getUser(storeUser.currentUser).profileName,
   }
   await updatePasskeyList()
+}
+
+async function doPasskeyManageClose() {
+  showDialog.value = false
+  listCredentials.value = []
+  numCredentials.value = 0
 }
 
 async function doPasskeyRegister() {
