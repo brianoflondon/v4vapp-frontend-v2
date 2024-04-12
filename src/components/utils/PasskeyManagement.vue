@@ -96,6 +96,15 @@
               <q-btn
                 round
                 size="sm"
+                icon="edit"
+                name="edit"
+                @click="doPasskeyDeleteAsk(evt, cred)"
+              />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                round
+                size="sm"
                 icon="delete"
                 name="delete"
                 @click="doPasskeyDeleteAsk(evt, cred)"
