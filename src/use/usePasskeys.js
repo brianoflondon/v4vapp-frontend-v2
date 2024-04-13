@@ -172,3 +172,28 @@ export async function usePasskeyDelete(credentialId) {
     return { success: false, message: "delete error" }
   }
 }
+
+export async function usePasskeyUpdate(credentialId, newDeviceName) {
+  console.log("usePasskeyUpdate - start")
+  if (!credentialId || !newDeviceName) {
+    return { success: false, message: "Nothing to update" }
+  }
+  let params = {
+    credentialId: credentialId,
+    deviceName: newDeviceName,
+  }
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }
+  let response = null
+  try {
+    response = await apiLogin.put(`/credentials/update/`, params, config)
+    console.log("response", response.data)
+    return { success: true, message: "device updated" }
+  } catch (error) {
+    console.error("usePasskeyUpdate error", error)
+    return { success: false, message: "update error" }
+  }
+}

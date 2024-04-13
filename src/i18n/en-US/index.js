@@ -59,8 +59,16 @@ export default {
   logout: "Logout",
   logout_all: "Logout All",
   // Passkeys:
+  passkey: "Passkey",
   used: "Used",
   unused: "Unused",
+  add: "Add",
+  manage: "Manage",
+  confirm_delete: "Confirm Delete",
+  confirm_edit: "Confirm edit",
+  name: "Name",
+  add_new_key: "Add a new Passkey",
+  name_required: "Device Name is required",
   // Get Hive
   amount: "Amount",
   copy: "Copy",

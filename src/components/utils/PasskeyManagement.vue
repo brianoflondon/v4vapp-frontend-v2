@@ -22,7 +22,7 @@
           <q-btn
             :disable="!storeUser.currentUser"
             rounded
-            label="Manage"
+            :label="t('manage') +' / ' + t('add')"
             align="left"
             icon="admin_panel_settings"
             @click="doPasskeyManage"
@@ -56,17 +56,17 @@
       </q-card-section>
       <!-- End User name -->
       <q-card-section>
-        <p>Register a new passkey</p>
+        <p>{{ t("add_new_key") }}</p>
         <q-input
           v-model="passkeyName"
           label="Device Name"
           :error="showError"
-          error-message="Device Name is required"
+          :error-message="t('name_required')"
         />
         <q-btn
           :disable="!passkeyName"
           rounded
-          label="Register"
+          :label="t('add')"
           @click="doPasskeyRegister"
         />
       </q-card-section>
@@ -98,7 +98,7 @@
                 size="sm"
                 icon="edit"
                 name="edit"
-                @click="doPasskeyDeleteAsk(evt, cred)"
+                @click="doPasskeyUpdateAsk(evt, cred)"
               />
             </q-item-section>
             <q-item-section side>
@@ -150,6 +150,41 @@
     </q-card>
   </q-dialog>
   <!-- End Confirm Delete passkey dialog -->
+  <!-- Confirm Edit passkey dialog  -->
+  <q-dialog v-model="confirmEdit" persistent>
+    <q-card>
+      <q-card-section class="text-h6">{{ t("confirm_edit") }}</q-card-section>
+      <q-card-section class="row items-center">
+        <q-list>
+          <q-item>
+            <q-item-section avatar>
+              <q-icon name="key" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>
+                <q-input
+                  v-model="passkeyName"
+                  label="Device Name"
+                  :error="showError"
+                  error-message="Device Name is required"
+                />
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn flat icon="cancel" color="primary" v-close-popup />
+        <q-btn
+          flat
+          icon="edit"
+          color="primary"
+          @click="doPasskeyUpdate(evt, confirmEditCred)"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <!-- End Confirm Edit passkey dialog -->
 </template>
 
 <script setup>
@@ -160,6 +195,7 @@ import {
   usePasskeyLogin,
   usePasskeyRegister,
   usePasskeyDelete,
+  usePasskeyUpdate,
 } from "src/use/usePasskeys"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
@@ -175,6 +211,8 @@ const t = useI18n().t
 const showDialog = ref(false)
 const confirmDelete = ref(false)
 const confirmDeleteCred = ref()
+const confirmEdit = ref(false)
+const confirmEditCred = ref()
 const hiveAccObj = ref()
 
 const passkeyName = ref("")
@@ -331,6 +369,13 @@ async function doPasskeyDeleteAsk(evt, cred) {
   confirmDelete.value = true
 }
 
+async function doPasskeyUpdateAsk(evt, cred) {
+  console.log("do PasskeyUpdate", cred)
+  passkeyName.value = cred.device_name
+  confirmEditCred.value = cred
+  confirmEdit.value = true
+}
+
 async function doPasskeyDelete(evt, cred) {
   console.log("doPasskeyDelete", cred)
   confirmDelete.value = false
@@ -338,6 +383,20 @@ async function doPasskeyDelete(evt, cred) {
   await updatePasskeyList(false)
   Notify.create({
     message: "Passkey deleted",
+    color: "positive",
+    position: "top",
+  })
+}
+
+async function doPasskeyUpdate(evt, cred) {
+  console.log("doPasskeyUpdate", cred)
+  confirmEdit.value = false
+  console.log("old name", cred.device_name)
+  console.log("new name", passkeyName.value)
+  await usePasskeyUpdate(cred._id, passkeyName.value)
+  await updatePasskeyList(false)
+  Notify.create({
+    message: "Passkey edited",
     color: "positive",
     position: "top",
   })
