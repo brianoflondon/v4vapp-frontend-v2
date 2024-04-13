@@ -22,7 +22,7 @@
           <q-btn
             :disable="!storeUser.currentUser"
             rounded
-            :label="t('manage') +' / ' + t('add')"
+            :label="t('manage') + ' / ' + t('add')"
             align="left"
             icon="admin_panel_settings"
             @click="doPasskeyManage"
@@ -232,10 +232,13 @@ async function explode() {
 }
 
 // Watch for changes in the current user
-watch(storeUser.currentUser, async (newVal) => {
-  console.log("storeUser.currentUser changed to:", newVal)
-  listCredentials.value = []
-  numCredentials.value = 0
+watch(storeUser, async (newVal) => {
+  console.log("storeUser.currentUser changed to:", newVal.currentUser)
+  console.log("hiveAccObj.value", hiveAccObj.value)
+  if (newVal.currentUser !== hiveAccObj.value?.value) {
+    listCredentials.value = []
+    numCredentials.value = 0
+  }
 })
 
 const isValid = computed(() => {
