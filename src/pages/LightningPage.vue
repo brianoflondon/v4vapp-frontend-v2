@@ -883,27 +883,14 @@ watch(
 )
 
 async function checkHiveTransaction(username, trx_id, notif) {
-  /**
-   * Return immediately if trx_id is null
-   */
   if (trx_id == null) {
     console.log("checkHiveTransaction trx_id is null")
     return
   }
-
   const maxRetries = 20
   let count = 0
   let transaction_found
-
-  /**
-   * Executes a while loop until the count is less than maxRetries.
-   *
-   * @param {number} count - The current count value.
-   * @param {number} maxRetries - The maximum number of retries.
-   */
   while (count < maxRetries) {
-    // loop logic here
-  }
     count++
     await new Promise((resolve) => setTimeout(resolve, 5000)) // Wait for 5 seconds
     const transactions = await useGetHiveTransactionHistory(username)
