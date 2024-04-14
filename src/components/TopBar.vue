@@ -16,7 +16,7 @@
       <q-space />
       <LanguageSelector />
       <DarkSelector />
-      <LoggedInUser />
+      <LoggedInUser @click="toggleRightDrawer" />
       <q-btn dense flat round icon="menu" @click="toggleRightDrawer" />
     </q-toolbar>
   </div>

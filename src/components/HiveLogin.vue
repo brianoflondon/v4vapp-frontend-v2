@@ -1,5 +1,5 @@
 <template>
-  <q-card>
+  <q-card class="q-pb-sm">
     <q-list>
       <q-expansion-item
         expand-separator
@@ -11,17 +11,8 @@
           <HiveInputAcc v-model="hiveAccObj" :prefix="t('pay_to')">
           </HiveInputAcc>
         </q-item>
-        <q-item v-if="false">
-          <HiveSelectFancyAcc
-            dense
-            :label="props.label"
-            v-model="hiveAccObj"
-            fancyOptions
-          />
-        </q-item>
-        <q-item-label class="text-left q-pa-sm">
-          {{ $t("login_with") }}:
-        </q-item-label>
+        <!-- End Hive Account name input -->
+        <!-- Login with buttons -->
         <!-- Hive Keychain Button -->
         <q-item dense class="justify-center">
           <q-btn
@@ -86,14 +77,6 @@
             </div>
           </div>
         </q-item>
-        <q-item class="flex justify-center">
-          <div class="text-center q-pa-md">
-            <q-btn rounded @click="storeUser.logout()" label="Logout" />
-          </div>
-          <div class="text-center q-pa-md">
-            <q-btn rounded @click="storeUser.logoutAll()" label="Logout All" />
-          </div>
-        </q-item>
       </q-expansion-item>
     </q-list>
   </q-card>
@@ -115,8 +98,7 @@
  *
  */
 
-import { ref, watch, onMounted, computed } from "vue"
-import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
+import { ref, watch, onMounted } from "vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import {

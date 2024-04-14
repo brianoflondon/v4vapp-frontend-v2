@@ -307,7 +307,6 @@ export function QRLightningHiveColor(isLightning, loading) {
 }
 
 
-
 /**
  * Retrieves the challenge from the Login API.
  *

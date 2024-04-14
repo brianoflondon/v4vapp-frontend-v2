@@ -36,4 +36,5 @@ yarn-error.log*
 # Local Scratch pad
 /localScratchPad
 
+# Local Certificates
 /certs
