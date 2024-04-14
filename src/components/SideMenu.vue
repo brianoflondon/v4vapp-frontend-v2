@@ -6,6 +6,8 @@
         @click="$emit('close-menu')"
       />
       <HiveLogin v-model="hiveAccObj" key-type="Posting" :label="label" />
+      <PasskeyManagement />
+      <HiveLogout />
     </div>
     <div class="q-pa-md">
       <LocalCurrency />
@@ -34,6 +36,8 @@ import { useI18n } from "vue-i18n"
 import EssentialLink from "components/EssentialLink.vue"
 import UserList from "components/hive/UserList.vue"
 import HiveLogin from "components/HiveLogin.vue"
+import HiveLogout from "components/HiveLogout.vue"
+import PasskeyManagement from "components/utils/PasskeyManagement.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
