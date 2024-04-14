@@ -217,12 +217,12 @@ watch(
     // check if satsChange is a number and not 0
 
     if (oldVal !== undefined && satsChange !== 0) {
-      const color = (newVal - oldVal) > 0 ? "positive" : "negative"
+      const color = newVal - oldVal > 0 ? "positive" : "negative"
       explode()
       q.notify({
-        message: `${t('balance_changed')} ${satsChange} sats`,
+        message: `${t("balance_changed")} ${satsChange} sats`,
         color: color,
-        position: "top",
+        position: "top-left",
         icon: "savings",
         timeout: 5000,
       })
@@ -326,13 +326,9 @@ function changeBackground() {
   explode()
 }
 
-watch(
-  [() => storeUser.localCurrency, () => storeUser.pos.fixedRate],
-  () => {
-    storeUser.update()
-  }
-)
-
+watch([() => storeUser.localCurrency, () => storeUser.pos.fixedRate], () => {
+  storeUser.update()
+})
 </script>
 
 <style lang="scss" scoped>
