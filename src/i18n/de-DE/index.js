@@ -56,6 +56,19 @@ export default {
   login_success: 'Anmeldung erfolgreich',
   sign_this: 'Transaktion bestätigen',
   matches: ' stimmt überein',
+  logout: 'Logout',
+  logout_all: 'Logout All',
+  // Passkeys:
+  passkey: 'Passkey',
+  used: 'Used',
+  unused: 'Unused',
+  add: 'Add',
+  manage: 'Manage',
+  confirm_delete: 'Confirm Delete',
+  confirm_edit: 'Confirm edit',
+  name: 'Name',
+  add_new_key: 'Add a new Passkey',
+  name_required: 'Device Name is required',
   // Get Hive
   amount: 'Betrag',
   copy: 'Kopieren',
@@ -67,7 +80,7 @@ export default {
   download_tooltip: 'QR-Code als Datei herunterladen',
   downloading_qrcode: 'QR-Code wird heruntergeladen',
   // SideMenu
-  map: 'Map',
+  map: 'Landkarte',
   page: 'Seite',
   home: 'Startseite',
   status: 'Status',
