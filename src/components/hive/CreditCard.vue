@@ -205,7 +205,7 @@ watch(
     if (newVal === "💰💰💰") {
       newVal = 0
     }
-    console.log(
+    console.debug(
       "keepSatsBalance changed from",
       oldVal,
       "to",

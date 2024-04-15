@@ -122,9 +122,9 @@ const t = useI18n().t
 const quasar = useQuasar()
 
 if (Platform.is.mobile) {
-  console.log("Running on a mobile device")
+  console.debug("Running on a mobile device")
 } else {
-  console.log("Not running on a mobile device")
+  console.debug("Not running on a mobile device")
 }
 
 const isHAS = ref(true)
@@ -160,14 +160,14 @@ async function loginHAS(username) {
       return
     }
     const answer = await useHASLogin(username)
-    console.log("HAS Login answer: ", answer)
+    console.debug("HAS Login answer: ", answer)
   } catch (error) {
-    console.log("error: ", error)
+    console.debug("error: ", error)
   }
 }
 
 watch(qrCodeTextHAS, (newValue) => {
-  console.log("qrCodeTextHAS newValue: ", newValue)
+  console.debug("qrCodeTextHAS newValue: ", newValue)
   if (!newValue) {
     displayQRCode.value = false
     return
@@ -176,7 +176,7 @@ watch(qrCodeTextHAS, (newValue) => {
 })
 
 onMounted(async () => {
-  console.log("onMounted HiveLogin")
+  console.debug("onMounted HiveLogin")
   isKeychain.value = await useIsHiveKeychainInstalled()
   isHAS.value = await useIsHASAvailable()
 })
@@ -186,7 +186,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 // Review this later
 // TODO: #46 Review this later
 function adminCheck() {
-  console.log("storeUser.currentUser: ", storeUser.currentUser)
+  console.debug("storeUser.currentUser: ", storeUser.currentUser)
   if (storeUser.currentUser === "brianoflondon") {
     return false
   }

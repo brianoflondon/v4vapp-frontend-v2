@@ -21,13 +21,7 @@ const isLocalhost =
   window.location.href.includes("192.168") ||
   window.location.href.includes("10.0")
 
-console.log("isLocalhost", isLocalhost)
-
-console.log("process.env.VUE_APP_LOCAL_API", process.env.VUE_APP_LOCAL_API)
-console.log("process.env.VUE_APP_DEV_API", process.env.VUE_APP_DEV_API)
-
 if (process.env.VUE_APP_LOCAL_API === "true" || isLocalhost) {
-  console.log("Using local API")
   useLocal = process.env.VUE_APP_LOCAL_API !== "false"
 }
 
@@ -41,34 +35,12 @@ const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 let apiURL = rootUrl
 let apiLoginURL = rootLoginUrl
 
-console.log("useDev", useDev)
-console.log("useLocal", useLocal)
 if (useLocal) {
   apiURL = "http://localhost:1818/v1"
   apiLoginURL = "http://localhost:1818/"
 }
 
-// // make a test call to localhost and if it fails, use the remote server
-// if (useLocal) {
-//   axios
-//     .get("http://localhost:1818/v1")
-//     .then((response) => {
-//       console.log("Local API available", response.data)
-//       apiURL = "http://localhost:1818/v1"
-//       apiLoginURL = "http://localhost:1818/"
-
-//     })
-//     .catch((error) => {
-//       console.log("Local API not available", error)
-//     })
-// }
-
 const serverHiveAccount = useLocal ? "hivehydra" : "v4vapp"
-
-console.log("useLocal", useLocal)
-console.log("rootUrl", rootUrl)
-console.log("apiURL", apiURL)
-console.log("apiLoginURL", apiLoginURL)
 
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({ baseURL: apiLoginURL })

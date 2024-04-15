@@ -267,7 +267,6 @@ export async function checkCache(key) {
       await cache.delete(`${key}-timestamp`)
       return null
     } else {
-      console.log("Cache hit")
       const data = await cachedResponse.json()
       return data
     }

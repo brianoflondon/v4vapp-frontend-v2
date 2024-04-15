@@ -193,7 +193,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {number} The number of users.
      */
     numUsers() {
-      console.log("numUsers", Object.keys(this.users).length)
+      console.debug("numUsers", Object.keys(this.users).length)
       return Object.keys(this.users).length
     },
     /**
@@ -209,7 +209,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     isHAS() {
       if (!this.currentUser) return false
       const hiveUser = this.users[this.currentUser]
-      console.log(hiveUser)
+      console.debug(hiveUser)
       if (hiveUser.authKey) return true
       return false
     },
@@ -362,8 +362,8 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     keepSatsBalance() {
       if (this.currentKeepSats === null) {
-        console.log("Need to reauthenticate to get keepSatsBalance")
-        console.log("check if logged in with HAS or Keychain")
+        console.debug("Need to reauthenticate to get keepSatsBalance")
+        console.debug("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
 
@@ -385,8 +385,8 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     keepSatsBalanceNumDisplay() {
       if (this.currentKeepSats === null) {
-        console.log("Need to reauthenticate to get keepSatsBalance")
-        console.log("check if logged in with HAS or Keychain")
+        console.debug("Need to reauthenticate to get keepSatsBalance")
+        console.debug("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
       if (this.currentKeepSats?.net_sats > 1000000) {
@@ -396,8 +396,8 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     keepSatsBalanceNum() {
       if (this.currentKeepSats === null) {
-        console.log("Need to reauthenticate to get keepSatsBalance")
-        console.log("check if logged in with HAS or Keychain")
+        console.debug("Need to reauthenticate to get keepSatsBalance")
+        console.debug("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
       return this.currentKeepSats?.net_sats
@@ -452,7 +452,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         const currentSatsBalance = this.currentKeepSats?.net_sats
         try {
           this.currentKeepSats = await useKeepSats(useCache, false)
-          console.log("currentKeepSats", this.currentKeepSats)
+          console.debug("currentKeepSats", this.currentKeepSats)
           if (this.currentKeepSats) {
             if (currentSatsBalance !== this.currentKeepSats.net_sats) {
               return true
@@ -518,7 +518,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     switchUser(hiveAccname) {
       try {
-        console.log("switchUser to ", hiveAccname, " from ", this.currentUser)
+        console.debug("switchUser to ", hiveAccname, " from ", this.currentUser)
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
           this.apiTokenSet(hiveAccname)
@@ -526,7 +526,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.update()
         }
       } catch (err) {
-        console.log(err)
+        console.debug(err)
       }
     },
     /**
@@ -535,7 +535,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
      */
     apiTokenSet(hiveAccname = this.currentUser) {
-      console.log('Setting API Token for', hiveAccname)
+      console.debug('Setting API Token for', hiveAccname)
       if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
         apiLogin.defaults.headers.common[
           "Authorization"
@@ -550,7 +550,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       // have expired, log them out.
       for (const user in this.users) {
         if (this.users[user].expire < Date.now()) {
-          console.log("User expired", user)
+          console.debug("User expired", user)
           delete this.users[user]
         }
       }

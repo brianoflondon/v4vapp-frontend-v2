@@ -94,12 +94,11 @@ onMounted(async () => {
     await storeAPIStatus.update()
     scheduleUpdate()
   } catch (err) {
-    console.log("PriceBar err", err)
+    console.error("PriceBar err", err)
   }
 })
 
 async function scheduleUpdate() {
-  // console.log("Updating prices")
   await storeAPIStatus.update()
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 10 * 60 * 1000)

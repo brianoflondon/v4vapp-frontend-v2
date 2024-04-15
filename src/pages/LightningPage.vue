@@ -505,7 +505,6 @@ function checkInvoiceProgress(timeLeft) {
   dInvoice.value.timeLeft = timeLeft
   if (timeLeft < 0) {
     // Check if invoice is expired return true if expired
-    console.log("Invoice expired")
     dInvoice.value.errors.expired = true
     dInvoice.value.errors.text.push("invoice_expired")
     errorMessage.value = dInvoice.value?.errors.text
@@ -514,15 +513,13 @@ function checkInvoiceProgress(timeLeft) {
     dInvoice.value.timeLeft = 0
     invoiceValid.value = false
     invoiceChecking.value = false
-    console.log("Invoice expired")
-    console.log("errors", dInvoice.value.errors)
   }
 }
 
 function receiveNewInvoice(val) {
   if (val === null) {
     // Need to notify of problem with Lightning service of invoice provider
-    console.log("Lightning service provider not working")
+    console.debug("Lightning service provider not working")
     dInvoice.value.askDetails = false
     q.notify({
       message: t("invoice_provider_not_working"),
@@ -572,14 +569,12 @@ function clearReset() {
 async function onDecode(content) {
   // Switch to better QR Code library, handle multiple QR codes
   // scan through them until a valid Lightning invoice is found.
-  console.log("onDecode", content)
   let i = 0
   while (i < content.length && !invoiceValid.value) {
     const rawValue = content[i].rawValue
 
     invoiceText.value = rawValue
     await decodeInvoice()
-    console.log("invoice valid", invoiceValid.value)
 
     i++
   }
@@ -605,7 +600,6 @@ async function decodeInvoice() {
     // decode the invoice
     dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
     if (dInvoice.value) {
-      console.log("dInvoice.value", dInvoice.value)
       CurrencyCalc.value.amount = dInvoice.value?.satoshis
       CurrencyCalc.value.currency = "sats"
       payWithSatsAmount.value = CurrencyCalc.value.amount
@@ -662,7 +656,6 @@ const cameraErrors = [
 ]
 
 function onReady(capabilities) {
-  console.log("onReady", capabilities)
   invoiceChecking.value = true
 
   cameraOn.value = true
@@ -670,7 +663,7 @@ function onReady(capabilities) {
 }
 
 function onError(error) {
-  console.log("onError", error.name)
+  console.error("onError", error.name)
   if (cameraErrors.includes(error.name)) {
     cameraError.value = `${t("error")}: ${t(error.name)}`
   } else {
@@ -710,7 +703,6 @@ function toggleCamera() {
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
   // Add 6 Hive to the amount to cover the fee or 2 HBD
-  console.log("payInvoice currency ", currency, "method ", method)
   const payWithSats = currency === "payWithSats"
   let amountNum = 0
   if (currency == "HIVE") {
@@ -767,7 +759,6 @@ async function payInvoice(currency, method) {
     case "HiveKeychain":
       // Hive Keychain process
       result = await useHiveKeychainTransfer(username, amount, currency, memo)
-      console.log("pay result", result)
       if (result.success) {
         const notif = q.notify({
           avatar: "/site-logo/v4vapp-logo.svg",

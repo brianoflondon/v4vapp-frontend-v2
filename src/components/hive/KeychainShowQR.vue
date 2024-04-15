@@ -556,7 +556,7 @@ async function checkHiveTransaction(count = 0) {
  */
 function findTransactionWithCheckCode(transactions, checkCode) {
   if (!transactions || !checkCode) {
-    console.log(
+    console.error(
       "findTransactionWithCheckCode: missing transactions or checkCode"
     )
     return
@@ -565,7 +565,6 @@ function findTransactionWithCheckCode(transactions, checkCode) {
     transaction.op[1].memo.endsWith(checkCode)
   )
   if (transactionFound) {
-    console.log("transactionFound", transactionFound)
     const trx_id = transactionFound?.trx_id
     // modify the transaction object to include the memo without the checkCode
     const hiveAccFrom = transactionFound.op[1].from

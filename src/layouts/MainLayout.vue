@@ -43,14 +43,14 @@ onMounted(() => {
     window.location.href.includes("192.168") ||
     window.location.href.includes("10.0")
   if (isDev || isLocalhost) {
-    console.log("checking PWA and iPhone")
-    console.log("isPWA: ", isPWA)
-    console.log("isIphone: ", isIphone)
+    console.debug("checking PWA and iPhone")
+    console.debug("isPWA: ", isPWA)
+    console.debug("isIphone: ", isIphone)
     if (isPWA && isIphone) {
-      console.log("iPhone PWA")
+      console.debug("iPhone PWA")
       // Add extra space to the bottom of the screen
     } else {
-      console.log("Not iPhone PWA")
+      console.debug("Not iPhone PWA")
       // Do nothing
     }
     q.notify({

@@ -72,7 +72,6 @@ export const useStoreSales = defineStore("storeSales", {
       }
     },
     findSale(checkCode) {
-      console.log("findSale", checkCode)
       return this.requestedSales.find((sale) => sale.checkCode === checkCode)
     },
     clearSales() {

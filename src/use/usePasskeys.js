@@ -22,7 +22,7 @@ export async function useListCredentials(useCache = true) {
   const listCredentials = await apiLogin.get(`/credentials/list/`, {
     params: { useCache: useCache },
   })
-  console.log("credentials", listCredentials.data)
+  console.debug("credentials", listCredentials.data)
   return listCredentials.data
 }
 
@@ -33,7 +33,7 @@ export async function useListCredentials(useCache = true) {
  * @returns {Promise<number>} The number of credentials.
  */
 export async function useNumCredentials(hiveAccname, useCache = true) {
-  console.log("useNumCredentials - start", hiveAccname)
+  console.debug("useNumCredentials - start", hiveAccname)
   if (!hiveAccname) {
     return 0
   }
@@ -42,16 +42,16 @@ export async function useNumCredentials(hiveAccname, useCache = true) {
       `/credentials/count/${hiveAccname}`,
       { params: { useCache: useCache } }
     )
-    console.log("numCredentials", numCredentials.data)
+    console.debug("numCredentials", numCredentials.data)
     return numCredentials.data.devices
   } catch (error) {
-    console.log("useNumCredentials error", error)
+    console.debug("useNumCredentials error", error)
     return 0
   }
 }
 
 export async function usePasskeyLogin(hiveAccName) {
-  console.log("webauthnAuth - start")
+  console.debug("webauthnAuth - start")
   if (!hiveAccName) {
     console.error("No Hive Account Name provided")
     return { success: false, message: "no account" }
@@ -66,10 +66,10 @@ export async function usePasskeyLogin(hiveAccName) {
     getChallenge = await apiLogin.post(`/authenticate/begin/`, params, {
       params,
     })
-    console.log("getChallenge.data", getChallenge.data)
+    console.debug("getChallenge.data", getChallenge.data)
   } catch (error) {
     if (error.response.status === 401) {
-      console.log("No Credentials found for this account")
+      console.debug("No Credentials found for this account")
       return { success: false, message: "no credentials" }
     }
     console.error("getChallenge error", error)
@@ -77,7 +77,7 @@ export async function usePasskeyLogin(hiveAccName) {
   }
   try {
     let response = await webauthn.get(getChallenge.data)
-    console.log("response", response)
+    console.debug("response", response)
     let sendChallengeBack = await apiLogin.post(
       `/authenticate/complete/`,
       response,
@@ -105,7 +105,7 @@ export async function usePasskeyLogin(hiveAccName) {
  * @returns {Promise<{ success: boolean, message: string }>} - A promise that resolves to an object with the success status and a message.
  */
 export async function usePasskeyRegister(hiveAccName, deviceName) {
-  console.log("usePasskeyRegister - start")
+  console.debug("usePasskeyRegister - start")
   // First get the challenge from the server
   // Then call webauthn.create with the challenge
   if (!deviceName || !hiveAccName) {
@@ -127,7 +127,7 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
     return { success: false, message: "challenge error" }
   }
   // let options = webauthn.parseCreationOptionsFromJSON(getChallenge.data)
-  // console.log("options", options)
+  // console.debug("options", options)
   let response = null
   try {
     response = await webauthn.create(getChallenge.data)
@@ -144,12 +144,12 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
     console.error("sendChallengeBack error", error)
     return { success: false, message: error.message }
   }
-  console.log("sendChallengeBack.data", sendChallengeBack.data)
+  console.debug("sendChallengeBack.data", sendChallengeBack.data)
   return { success: true, message: "Device Registered" }
 }
 
 export async function usePasskeyDelete(credentialId) {
-  console.log("usePasskeyDelete - start")
+  console.debug("usePasskeyDelete - start")
   if (!credentialId) {
     return { success: false, message: "Nothing to delete" }
   }
@@ -161,7 +161,7 @@ export async function usePasskeyDelete(credentialId) {
     response = await apiLogin.delete(`/credentials/delete/`, {
       params: params,
     })
-    console.log("response", response.data)
+    console.debug("response", response.data)
     return { success: true, message: "device deleted" }
   } catch (error) {
     console.error("usePasskeyDelete error", error)
@@ -170,7 +170,7 @@ export async function usePasskeyDelete(credentialId) {
 }
 
 export async function usePasskeyUpdate(credentialId, newDeviceName) {
-  console.log("usePasskeyUpdate - start")
+  console.debug("usePasskeyUpdate - start")
   if (!credentialId || !newDeviceName) {
     return { success: false, message: "Nothing to update" }
   }
@@ -186,7 +186,7 @@ export async function usePasskeyUpdate(credentialId, newDeviceName) {
   let response = null
   try {
     response = await apiLogin.put(`/credentials/update/`, params, config)
-    console.log("response", response.data)
+    console.debug("response", response.data)
     return { success: true, message: "device updated" }
   } catch (error) {
     console.error("usePasskeyUpdate error", error)

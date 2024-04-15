@@ -233,8 +233,8 @@ async function explode() {
 
 // Watch for changes in the current user
 watch(storeUser, async (newVal) => {
-  console.log("storeUser.currentUser changed to:", newVal.currentUser)
-  console.log("hiveAccObj.value", hiveAccObj.value)
+  console.debug("storeUser.currentUser changed to:", newVal.currentUser)
+  console.debug("hiveAccObj.value", hiveAccObj.value)
   if (newVal.currentUser === null) {
     updatePasskeyList(false)
   }
@@ -254,7 +254,7 @@ const isValid = computed(() => {
 
 // Need to watch this computed derivative of hiveAccObj
 watch(isValid, async (newVal) => {
-  console.log("isValid changed to:", newVal)
+  console.debug("isValid changed to:", newVal)
   if (newVal) {
     await updatePasskeyList()
   }
@@ -292,7 +292,7 @@ async function updatePasskeyList(useCache = true) {
 }
 
 async function doPasskeyLogin() {
-  console.log("doPasskeyLogin")
+  console.debug("doPasskeyLogin")
   if (!hiveAccObj.value.value) {
     return
   }
@@ -321,13 +321,13 @@ async function doPasskeyLogin() {
       color: "negative",
       position: "top",
     })
-    console.log("doPasskeyLogin failed")
-    console.log("result", result.message)
+    console.debug("doPasskeyLogin failed")
+    console.debug("result", result.message)
   }
 }
 
 async function doPasskeyManage() {
-  console.log("doPasskeyManage")
+  console.debug("doPasskeyManage")
   showDialog.value = true
   hiveAccObj.value = {
     label: storeUser.currentUser,
@@ -344,7 +344,7 @@ async function doPasskeyManageClose() {
 }
 
 async function doPasskeyRegister() {
-  console.log("doPasskeyRegister")
+  console.debug("doPasskeyRegister")
   if (!passkeyName.value) {
     showError.value = true
     return
@@ -370,26 +370,26 @@ async function doPasskeyRegister() {
       color: "negative",
       position: "top",
     })
-    console.log("doPasskeyRegister failed")
-    console.log("result", result.message)
+    console.debug("doPasskeyRegister failed")
+    console.debug("result", result.message)
   }
 }
 
 async function doPasskeyDeleteAsk(evt, cred) {
-  console.log("doPasskeyDelete", cred)
+  console.debug("doPasskeyDelete", cred)
   confirmDeleteCred.value = cred
   confirmDelete.value = true
 }
 
 async function doPasskeyUpdateAsk(evt, cred) {
-  console.log("do PasskeyUpdate", cred)
+  console.debug("do PasskeyUpdate", cred)
   passkeyName.value = cred.device_name
   confirmEditCred.value = cred
   confirmEdit.value = true
 }
 
 async function doPasskeyDelete(evt, cred) {
-  console.log("doPasskeyDelete", cred)
+  console.debug("doPasskeyDelete", cred)
   confirmDelete.value = false
   await usePasskeyDelete(cred._id)
   await updatePasskeyList(false)
@@ -401,10 +401,10 @@ async function doPasskeyDelete(evt, cred) {
 }
 
 async function doPasskeyUpdate(evt, cred) {
-  console.log("doPasskeyUpdate", cred)
+  console.debug("doPasskeyUpdate", cred)
   confirmEdit.value = false
-  console.log("old name", cred.device_name)
-  console.log("new name", passkeyName.value)
+  console.debug("old name", cred.device_name)
+  console.debug("new name", passkeyName.value)
   await usePasskeyUpdate(cred._id, passkeyName.value)
   await updatePasskeyList(false)
   Notify.create({
@@ -415,10 +415,10 @@ async function doPasskeyUpdate(evt, cred) {
 }
 
 async function doManageKey(cred) {
-  console.log("doManageKey", cred)
-  console.log("cred._id", cred._id)
-  console.log("cred.device_name", cred.device_name)
-  console.log("formatTimeAgo(cred.last_used)", cred.last_used)
+  console.debug("doManageKey", cred)
+  console.debug("cred._id", cred._id)
+  console.debug("cred.device_name", cred.device_name)
+  console.debug("formatTimeAgo(cred.last_used)", cred.last_used)
 }
 
 function credCountText(cred) {

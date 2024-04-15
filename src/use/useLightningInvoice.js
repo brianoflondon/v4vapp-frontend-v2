@@ -235,7 +235,6 @@ export async function useCreateInvoice(dInvoice) {
       console.error("response from Lightning Service Provider is null")
       return null
     }
-    console.log("response in useLightning", response)
     dInvoice.askDetails = false
     dInvoice.callback = response
     return response

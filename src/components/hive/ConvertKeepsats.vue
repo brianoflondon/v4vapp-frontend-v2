@@ -150,8 +150,6 @@ function updateDestination(val) {
 
 
 async function makePayment(method) {
-  console.log("makePayment")
-
   const fixedAmount = parseFloat(CurrencyCalc.value.amount).toFixed(0)
   // Adds encryption to the memo 2024-02-23
   let memo = `${fixedAmount} #convertkeepsats #v4vapp`
@@ -174,7 +172,6 @@ async function makePayment(method) {
       destination.value.toUpperCase(),
       memo
     )
-    console.log("pay result", result)
     if (result.success) {
       q.notify({
         avatar: "/site-logo/v4vapp-logo.svg",
@@ -203,16 +200,13 @@ async function makePayment(method) {
 }
 
 async function checkForSats(oldNetSats = 0, count = 0) {
-  console.log("checkForSats", oldNetSats, count)
   let currentSatsBalance = 0
   if (oldNetSats === 0) {
     currentSatsBalance = storeUser.currentKeepSats.net_sats
   } else {
     currentSatsBalance = oldNetSats
   }
-  console.log("currentSatsBalance", currentSatsBalance)
   const change = await storeUser.updateSatsBalance(false)
-  console.log("change", change)
   if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
     q.notify({
       message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,

@@ -20,9 +20,9 @@ let auth_payload = {}
 
 export async function useIsHASAvailable() {
   try {
-    console.log("useIsHasAvailable running")
+    console.debug("useIsHasAvailable running")
     const status = HAS.status()
-    console.log("status", status)
+    console.debug("status", status)
     return status.connected
   } catch (error) {
     console.error({ error })
@@ -36,13 +36,13 @@ export async function useIsHASAvailable() {
  * @returns {boolean} - Returns true if there is an existing authentication that is not expired, otherwise false.
  */
 export function useCheckExistingHASAuth(username) {
-  console.log("Checking existing HAS auth for ", username)
+  console.debug("Checking existing HAS auth for ", username)
   const existingAuth = storeUser.getUser(username)
-  console.log("existingAuth", existingAuth)
+  console.debug("existingAuth", existingAuth)
   if (existingAuth && !existingAuth.apiKey) {
-    console.log("existingAuth", existingAuth)
+    console.debug("existingAuth", existingAuth)
     if (existingAuth.authKey && existingAuth.expire > Date.now()) {
-      console.log(
+      console.debug(
         "login expires in: ",
         (existingAuth.expire - Date.now()) / 1000 / 60,
         "min"
@@ -68,10 +68,10 @@ export async function useHASLogin(username = "", keyType = "posting") {
   }
   const existingAuth = useCheckExistingHASAuth(username)
   if (existingAuth) {
-    console.log("existingAuth", existingAuth)
+    console.debug("existingAuth", existingAuth)
     return true
   }
-  console.log("username", username)
+  console.debug("username", username)
   const APP_META = {
     name: "v4vapp",
     description: "V4V.app Lightning Hive Gateway",
@@ -90,7 +90,7 @@ export async function useHASLogin(username = "", keyType = "posting") {
 
   // Retrieving connection status
   const status = HAS.status()
-  console.log(status)
+  console.debug(status)
 
   if (auth.expire > Date.now()) {
     // token exists and is still valid - no need to login again
@@ -98,18 +98,18 @@ export async function useHASLogin(username = "", keyType = "posting") {
   } else {
     const clientId = storeUser.clientId
     const challenge = await useGetChallenge(username, clientId)
-    console.log("challenge", challenge)
+    console.debug("challenge", challenge)
     let challenge_data = undefined
     // optional - create a challenge to be signed with the posting key
     challenge_data = {
       key_type: keyType,
       challenge: challenge.data.challenge,
     }
-    console.log("challenge_data", challenge_data)
+    console.debug("challenge_data", challenge_data)
 
     HAS.authenticate(auth, APP_META, challenge_data, (req) => {
-      console.log("response", req) // process auth_wait
-      console.log("expires in ", (req.expire - Date.now()) / 1000, "secs")
+      console.debug("response", req) // process auth_wait
+      console.debug("expires in ", (req.expire - Date.now()) / 1000, "secs")
       expiry.value = req.expire / 1000
       auth_payload = {
         account: req.account,
@@ -136,10 +136,10 @@ export async function useHASLogin(username = "", keyType = "posting") {
  * @returns {Promise<void>} - A promise that resolves when the authentication process is completed.
  */
 async function resolveAuth(res, auth, challenge_data) {
-  console.log("--- resolveAuth ---")
-  console.log("res.data", res.data)
-  console.log("auth_payload", auth_payload)
-  console.log("challenge_data", challenge_data)
+  console.debug("--- resolveAuth ---")
+  console.debug("res.data", res.data)
+  console.debug("auth_payload", auth_payload)
+  console.debug("challenge_data", challenge_data)
 
   // Now we call the API to get the token
   // TRY HERE
@@ -174,7 +174,7 @@ async function resolveAuth(res, auth, challenge_data) {
     const hasTokenExpireDate = new Date(hasTokenExpire)
 
     if (hasTokenExpire > apiTokenExpire) {
-      console.log("HAS expire is greater than API expire")
+      console.debug("HAS expire is greater than API expire")
       hasTokenExpire = apiTokenExpire
     }
     storeUser.login(
@@ -190,17 +190,17 @@ async function resolveAuth(res, auth, challenge_data) {
     auth_payload = {}
     resolvedHAS.value = res
   } catch (error) {
-    console.log("signature failure")
+    console.debug("signature failure")
     console.error("error", error)
   }
 
   if (pendingTransaction) {
     const start = Date.now()
-    console.log("pendingTransaction delay executing now")
+    console.debug("pendingTransaction delay executing now")
     // run the pending transaction AFTER a delay of 300ms to
     // allow the login to complete
     setTimeout(() => {
-      console.log("pendingTransaction executing now ", Date.now() - start, "ms")
+      console.debug("pendingTransaction executing now ", Date.now() - start, "ms")
       pendingTransaction()
     }, 3000)
   }
@@ -243,7 +243,7 @@ function createOp(from, to, amount, memo) {
  * @returns {Promise} - A promise that resolves when the transfer is successful or rejects with an error.
  */
 export async function useHASTransfer(username, amount, currency, memo) {
-  console.log("useHASTransfer: ", username, amount, currency, memo)
+  console.debug("useHASTransfer: ", username, amount, currency, memo)
   amount = parseFloat(amount).toFixed(3)
   const amountString = `${amount} ${currency}`
   const operation = createOp(username, serverHiveAccount, amountString, memo)
@@ -252,11 +252,11 @@ export async function useHASTransfer(username, amount, currency, memo) {
   const user = storeUser.getUser(username)
   if (!user || !user.authKey) {
     // User not authenticated with HAS
-    console.log("user not authenticated with HAS")
+    console.debug("user not authenticated with HAS")
     pendingTransaction = function () {
       useHASTransfer(username, amount, currency, memo)
     }
-    console.log("pendingTransaction stored")
+    console.debug("pendingTransaction stored")
     useHASLogin(username)
     return
   }

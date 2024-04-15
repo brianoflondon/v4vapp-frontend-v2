@@ -69,13 +69,13 @@ const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS()
 
 onMounted(async () => {
   await checkUser()
-  console.log("mounted HASDialog")
+  console.debug("mounted HASDialog")
 })
 
 watch(
   () => resolvedHAS.value,
   (val) => {
-    console.log("watch HASDialog", val)
+    console.debug("watch HASDialog", val)
     HASDialog.value["resolvedHAS"] = val
     if (val.cmd === "sign_ack") {
       HASDialog.value.show = false
@@ -86,16 +86,16 @@ watch(
 async function checkUser() {
   if (!HASDialog.value?.payment?.username) {
     if (hiveAccObj.value?.value) {
-      console.log("startHASProcess: has user", hiveAccObj.value.value)
+      console.debug("startHASProcess: has user", hiveAccObj.value.value)
       HASDialog.value.payment.username = hiveAccObj.value.value
       // Now check if we have an active HAS session.
       const activeUser = storeUser.getUser(HASDialog.value.payment.username)
       if (!activeUser) {
-        console.log("startHASProcess: no active HAS session")
-        console.log("logging in process needed")
+        console.debug("startHASProcess: no active HAS session")
+        console.debug("logging in process needed")
       }
     } else {
-      console.log("startHASProcess: no user")
+      console.debug("startHASProcess: no user")
       if (storeUser?.user?.authKey) {
         HASDialog.value.payment.username = storeUser.hiveAccname
         hiveAccObj.value.value = storeUser.hiveAccname

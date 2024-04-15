@@ -75,8 +75,6 @@ watch(
 )
 
 function emitEvent(currencyType) {
-  console.log("emitEvent", currencyType)
-  console.log("Currency Local", storeUser.localCurrency.value)
   emit("currencyClicked", currencyType)
 }
 

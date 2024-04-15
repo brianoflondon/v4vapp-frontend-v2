@@ -221,7 +221,6 @@ const hiveAmount = computed(() => {
     answer = Number(amount.value / storeAPIStatus.hiveBTCNumber).toFixed(3)
   }
   if (optionsSelected.value === "USD") {
-    console.log(storeAPIStatus.apiStatus.crypto.hive.usd)
     answer = Number(
       amount.value / storeAPIStatus.apiStatus.crypto.hive.usd
     ).toFixed(3)
@@ -263,7 +262,6 @@ async function copyNumToClipboard(value) {
   try {
     const valueNumber = parseFloat(value.replace(/,/g, ""))
     await navigator.clipboard.writeText(valueNumber)
-    console.log("Value copied to clipboard:", value, valueNumber)
   } catch (error) {
     console.error("Failed to copy value to clipboard:", error)
   }
@@ -314,10 +312,9 @@ async function sendTransfer() {
       formParamsAsObject.data,
       formParamsAsObject.options
     )
-    console.log({ transfer })
   } catch (error) {
-    console.log("❌ failure")
-    console.log({ error })
+    console.error("❌ failure")
+    console.error({ error })
     $q.notify(`${error.message}`)
   }
 }
@@ -338,9 +335,7 @@ const qrCodeText = computed(() => {
       memo: memo.value,
     },
   ]
-  console.log(op)
   const hiveUri = encodeOp(op)
-  console.log("hiveUri", hiveUri)
   return hiveUri
 })
 

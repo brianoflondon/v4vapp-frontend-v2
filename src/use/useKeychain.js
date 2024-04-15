@@ -28,7 +28,6 @@ export async function useHiveKeychainLogin({
   message = null,
   keyType = "posting",
 }) {
-  console.log("useHiveKeychainLogin: ", hiveAccname, message, keyType)
   const isKeychainIn = keychain.isKeychainInstalled()
   if (!isKeychainIn || !hiveAccname) {
     return null
@@ -67,8 +66,6 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
   const t = i18n.global.t
   let userToLogin = hiveAccObj.value
   if (storeUser.currentUser === "v4vapp.dev") {
-    console.log("Admin user, Override userToLogin")
-    console.log("useKeychainLoginFlow: ", storeUser.currentUser)
     userToLogin = storeUser.currentUser
   }
 
@@ -210,7 +207,6 @@ export async function useHiveKeychainTransfer(
       },
     }
     const transfer = await keychain.transfer(formParamsAsObject.data)
-    console.log({ transfer })
     return transfer
   } catch (error) {
     console.error({ error })

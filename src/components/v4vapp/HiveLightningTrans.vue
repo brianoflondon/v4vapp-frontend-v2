@@ -277,9 +277,7 @@ const keepSatsColumns = computed(() => {
 watch(
   () => storeUser.currentUser,
   async (newVal) => {
-    console.log("HiveLightningTrans.vue watch", newVal)
     fetchData()
-    // data.value = rawData
   }
 )
 
@@ -287,16 +285,13 @@ async function fetchData(newValue = dataDays.value) {
   if (!storeUser.hiveAccname) {
     return
   }
-  console.log("HiveLightningTrans.vue fetchData", newValue)
   const [satsHistory, keepSats] = await Promise.all([
     useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
     useKeepSats(false, true),
   ])
 
   if (keepSats.summary_transactions) {
-    console.log(keepSats)
     const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
-    console.log(oldTimestamp)
     keepSatsData.value = keepSats.summary_transactions.filter(
       (trx) => trx.reason !== "Fees" && trx.timestamp > oldTimestamp
     )
@@ -328,7 +323,6 @@ async function fetchData(newValue = dataDays.value) {
 }
 
 onMounted(() => {
-  console.log("HiveLightningTrans.vue onMounted")
   fetchData()
 })
 
@@ -339,7 +333,6 @@ onMounted(() => {
  * If there are any expanded rows, it collapses all rows by setting `rowsExpanded.value` to an empty array.
  */
 function expandAll() {
-  console.log("HiveLightningTrans.vue expandAll", rowsExpanded.value.length)
   if (rowsExpanded.value.length === 0) {
     rowsExpanded.value = keepSatsData.value.map((row) => row.group_id)
   } else {
