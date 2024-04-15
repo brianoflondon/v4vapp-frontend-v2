@@ -273,7 +273,7 @@ async function updatePasskeyList(useCache = true) {
     if (storeUser.currentUser) {
       checkHiveAcc = storeUser.currentUser
     } else {
-      checkHiveAcc = hiveAccObj.value.value
+      checkHiveAcc = ""
     }
   } else {
     checkHiveAcc = hiveAccObj.value.value

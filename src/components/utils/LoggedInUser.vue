@@ -16,7 +16,6 @@ import { useStoreUser } from "src/stores/storeUser"
 import { useHiveAvatarURL } from "src/use/useHive"
 const storeUser = useStoreUser()
 const avatar = ref(null)
-console.log(storeUser.currentUser)
 avatar.value = useHiveAvatarURL({
   hiveAccname: storeUser.currentUser,
   size: "small",
