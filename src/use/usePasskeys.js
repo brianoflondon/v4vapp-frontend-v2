@@ -7,13 +7,9 @@
 import { apiLogin } from "boot/axios"
 import { useStoreUser } from "src/stores/storeUser"
 import * as webauthn from "@github/webauthn-json"
+import { useAppStr } from "src/use/useAppDetails"
 
 const storeUser = useStoreUser()
-const isDev = window.location.href.includes("dev.v4v.app")
-let appId = "v4v.app"
-if (isDev) {
-  appId = "dev.v4v.app"
-}
 
 /**
  * Retrieves a list of credentials.
@@ -63,7 +59,7 @@ export async function usePasskeyLogin(hiveAccName) {
   let params = {
     hive_accname: hiveAccName,
     clientId: storeUser.clientId,
-    appId: appId,
+    appId: useAppStr(),
   }
   let getChallenge = null
   try {
@@ -118,7 +114,7 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
   let params = {
     hive_accname: hiveAccName,
     clientId: storeUser.clientId,
-    appId: appId,
+    appId: useAppStr(),
     deviceName: deviceName,
   }
 

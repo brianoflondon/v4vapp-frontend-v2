@@ -235,6 +235,9 @@ async function explode() {
 watch(storeUser, async (newVal) => {
   console.log("storeUser.currentUser changed to:", newVal.currentUser)
   console.log("hiveAccObj.value", hiveAccObj.value)
+  if (newVal.currentUser === null) {
+    updatePasskeyList(false)
+  }
   if (newVal.currentUser !== hiveAccObj.value?.value) {
     listCredentials.value = []
     numCredentials.value = 0
@@ -257,6 +260,12 @@ watch(isValid, async (newVal) => {
   }
 })
 
+/**
+ * Updates the passkey list.
+ *
+ * @param {boolean} useCache - Whether to use the cache or not. Default is true.
+ * @returns {Promise} - A promise that resolves when the passkey list is updated.
+ */
 async function updatePasskeyList(useCache = true) {
   loadingCredentials.value = true
   let checkHiveAcc = storeUser.currentUser

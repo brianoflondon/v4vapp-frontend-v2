@@ -20,6 +20,7 @@
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
     <div v-if="isDev || isLocalhost">
+      <div class="q-pa-xs text-caption">{{ useAppStr() }}</div>
       <div class="q-pa-xs text-caption">{{ appName }} - {{ appVersion }}</div>
       <div class="q-pa-xs text-caption">{{ serverHiveAccount }}</div>
       <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
@@ -40,7 +41,7 @@ import HiveLogout from "components/HiveLogout.vue"
 import PasskeyManagement from "components/utils/PasskeyManagement.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import LocalCurrency from "components/utils/LocalCurrency.vue"
-import { useAppDetails } from "src/use/useAppDetails.js"
+import { useAppDetails, useAppStr } from "src/use/useAppDetails.js"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { api, apiLogin, serverHiveAccount } from "boot/axios"
 
