@@ -566,6 +566,17 @@ function clearReset() {
   HASDialog.value = { show: false }
 }
 
+watch(
+  () => storeUser.currentUser,
+  async (newVal) => {
+    if (newVal === null || newVal === undefined) {
+      currentTab.value=("wallet")
+    }
+    return
+  }
+)
+
+
 async function onDecode(content) {
   // Switch to better QR Code library, handle multiple QR codes
   // scan through them until a valid Lightning invoice is found.

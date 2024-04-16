@@ -53,10 +53,10 @@
             >
               <q-btn
                 size="xs"
-                text-color="inherit"
+                color="accent"
                 flat
                 dense
-                icon="open_in_new"
+                icon="fa-brands fa-hive"
                 name="open_in_new"
               />
             </a>
@@ -68,7 +68,7 @@
             </div>
             <div v-else>
               <!-- Lightning payment -->
-              <i class="fa-hive" />
+              <i class="fa-sharp fa-solid fa-bolt" />
             </div>
           </div>
         </q-td>

@@ -277,12 +277,21 @@ const keepSatsColumns = computed(() => {
 watch(
   () => storeUser.currentUser,
   async (newVal) => {
-    fetchData()
+    if (newVal) {
+      await fetchData()
+    }
+    if (newVal === null || newVal === undefined) {
+      data.value = []
+      keepSatsData.value = []
+    }
+    return
   }
 )
 
 async function fetchData(newValue = dataDays.value) {
   if (!storeUser.hiveAccname) {
+    data.value = []
+    keepSatsData.value = []
     return
   }
   const [satsHistory, keepSats] = await Promise.all([
