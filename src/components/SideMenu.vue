@@ -58,6 +58,12 @@ const t = useI18n().t
 const waxVersion = ref("")
 const linkList = ref([
   {
+    title: "Sign Up",
+    caption: "Sign Up",
+    icon: "fa-solid fa-user-plus",
+    link: "/signup",
+  },
+  {
     title: t("map"),
     caption: t("map"),
     icon: "fa-solid fa-map-marked-alt",

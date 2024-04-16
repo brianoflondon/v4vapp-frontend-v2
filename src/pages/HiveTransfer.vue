@@ -134,6 +134,7 @@
         </q-item>
       </q-list>
     </div>
+    <NewAccount />
   </q-page>
 </template>
 
@@ -149,6 +150,8 @@ import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import { api } from "boot/axios"
 import { useI18n } from "vue-i18n"
 import CreditCard from "src/components/hive/CreditCard.vue"
+import NewAccount from "src/components/hive/NewAccount.vue"
+
 const t = useI18n().t
 const hiveAccFrom = ref({ label: "", value: "", caption: "" })
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
