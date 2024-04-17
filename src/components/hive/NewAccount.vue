@@ -8,6 +8,7 @@
         outlined
         debounce="500"
         clearable
+        @clear="handleReset"
         @update:model-value="checkHiveAccountName"
         :error="!nameCheck"
         :error-message="nameCheckError"
@@ -19,19 +20,29 @@
           <q-icon name="check" v-if="nameCheck" />
         </template>
       </q-input>
-      <q-slider
-        v-model="accountName.length"
-        :label-value="accountName.length"
-        :step="1"
-        :min="0"
-        :inner-min="3"
-        :inner-max="16"
-        :max="20"
-        :color="nameCheck ? 'primary' : 'negative'"
-        dense
-        readonly
-      >
-      </q-slider>
+      <div class="flex items-center">
+        <div class="q-pa-sm col-shrink large-font">
+          {{ accountName.length }}
+        </div>
+        <div class="q-pa-sm col-grow">
+          <q-slider
+            v-model="accountName.length"
+            caption="Account Name Length"
+            track-size="8px"
+            :step="1"
+            :min="0"
+            :inner-min="3"
+            :inner-max="16"
+            markers
+            :max="20"
+            :color="nameCheck ? 'primary' : 'negative'"
+            dense
+            readonly
+            switch-label-side
+          >
+          </q-slider>
+        </div>
+      </div>
       <q-input
         class="q-my-md"
         v-model="masterPassword"
@@ -49,50 +60,167 @@
       ></q-btn>
       <q-btn
         class="q-ma-sm"
-        label="Generate Keys"
-        color="primary"
-        @click="generateKeys"
-      ></q-btn>
-      <q-btn
-        class="q-ma-sm"
         label="Download Keys"
         :disable="!nameCheck"
         color="primary"
         @click="downloadKeys"
       ></q-btn>
-      <input type="submit" value="Sign In" />
-      <!-- <div v-if="nameCheck">
-        <input name="ownerKey" type="password" :value="keys?.private.owner" />
-        <input name="activeKey" type="password" :value="keys?.private.active" />
-        <input name="postingKey" type="password" :value="keys?.private.posting" />
-        <input name="memoKey" type="password" :value="keys?.private.memo" />
-        <input name="ownerPubKey" :value="keys?.public.owner" />
-        <input name="activePubKey" :value="keys?.public.active" />
-        <input name="postingPubKey" :value="keys?.public.posting" />
-        <input name="memoPubKey" :value="keys?.public.memo" />
-      </div> -->
+
+      <q-btn
+        label="Get Account"
+        :disable="!nameCheck"
+        color="primary"
+        type="submit"
+      />
     </q-form>
+    <div v-show="paymentRequest">
+      <q-card>
+        <q-card-section>
+          <!-- Green tick -->
+          <div
+            class="row text-center justify-center overlay-container"
+            :class="{ 'show-tick': false }"
+          >
+            <CreateQRCode
+              :qrText="paymentRequest"
+              :width="maxUseableWidth"
+              :height="maxUseableWidth"
+              hiveAccname="v4vapp.api"
+              :color="dotColor"
+              :loading="false"
+              @qr-code="(val) => (qrCode = val)"
+            />
+          </div>
+          <div class="q-pt-none">
+            <q-linear-progress
+              :width="maxUseableWidth"
+              class="invoice-timer"
+              size="10px"
+              :value="progress"
+              color="positive"
+            >
+            </q-linear-progress>
+          </div>
+        </q-card-section>
+      </q-card>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, computed } from "vue"
+import { useQuasar, copyToClipboard } from "quasar"
 import { useHiveAccountExists } from "src/use/useHive"
 import { PrivateKey } from "@hiveio/dhive"
+import { genRandAlphaNum } from "src/use/useUtils"
+import { api } from "src/boot/axios"
+import { useAppStr } from "src/use/useAppDetails"
+import { useStoreUser } from "src/stores/storeUser"
+import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
+import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
+import { Notify } from "quasar"
+import { useI18n } from "vue-i18n"
 
+const t = useI18n().t
+
+const storeUser = useStoreUser()
+const q = useQuasar()
 // Define the account name and master password
 const accountName = ref("")
 const nameCheck = ref(true)
 const nameCheckError = ref("")
 const masterPassword = ref("")
 const keys = ref({})
+const progress = ref(0)
+const getPayment = ref(false)
+const paymentRequest = ref("")
+let initialTime = 0
 
-function handleSubmit() {
+const maxUseableWidth = computed(() => {
+  if (q.screen.width < 460) {
+    return q.screen.width - 120
+  }
+  return 350
+})
+
+const dotColor = computed(() => {
+  return QRLightningHiveColor(true, false)
+})
+
+async function handleSubmit() {
   console.log("submit pressed")
+  // First call to get an invoice
+  const accountData = {
+    accountName: accountName.value,
+    appId: useAppStr(),
+    clientId: storeUser.clientId,
+  }
+  try {
+    const resp = await api.post("/account/create", accountData)
+    console.log("resp", resp)
+    const r_hash = resp.data.r_hash
+    paymentRequest.value = r_hash
+    progress.value = 100
+    initialTime = Math.floor(Date.now() / 1000) // Store the initial time
+    checkPayment(resp.data.expires_at)
+  } catch (error) {
+    console.error("error", error)
+  }
+}
+
+// function to loop and call api invoice/check every second to check if payment is made
+async function checkPayment(expiresAt) {
+  console.log("checkPayment")
+  try {
+    const resp = await api.post(`check_invoice`, {
+      r_hash: paymentRequest.value,
+    })
+    console.log("resp", resp)
+    if (resp.data.paid) {
+      console.log("paid")
+      return
+    }
+    if (resp.data.expired) {
+      console.log("expired")
+      handleExpired()
+      return
+    }
+
+    // Calculate progress
+    const currentTime = Math.floor(Date.now() / 1000) // get current time in seconds
+    const totalDuration = expiresAt - currentTime
+    const totalTime = expiresAt - initialTime
+    progress.value = totalDuration / totalTime
+    console.log("progress", progress.value)
+
+    setTimeout(() => checkPayment(expiresAt), 1000)
+  } catch (error) {
+    console.error("error", error)
+  }
+}
+function handleExpired() {
+  console.log("expired")
+  Notify.create({
+    message: t("invoice_expired"),
+    color: "negative",
+    position: "top",
+    timeout: 5000,
+  })
+  paymentRequest.value = ""
+  progress.value = 1
+  randomMasterPassword()
+  generateKeys()
 }
 
 function handleReset() {
   console.log("reset pressed")
+  accountName.value = ""
+  nameCheck.value = true
+  nameCheckError.value = ""
+  masterPassword.value = ""
+  keys.value = {}
+  progress.value = 1
+  paymentRequest.value = ""
 }
 
 async function checkHiveAccountName() {
@@ -118,13 +246,9 @@ async function checkHiveAccountName() {
 
 function randomMasterPassword() {
   // Generate a random master password
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-  let result = ""
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  masterPassword.value = result
+  masterPassword.value = genRandAlphaNum(32)
   generateKeys()
+  return
 }
 
 function generateKeys() {

@@ -19,6 +19,7 @@ export function useGenerateTxUrl(txId) {
   return `${baseURLBlockExplorer}${txId}`
 }
 
+
 /**
  * Retrieves Hive profile and details for a given Hive account name.
  *
@@ -56,10 +57,13 @@ export async function useHiveAccountExists(hiveAccname) {
     return { exists: false, valid: false, error: "Name must not start with a number" }
   }
   if (hiveAccname.length < 3 || hiveAccname.length > 16) {
+
+    const errorText = hiveAccname.length < 3 ? "Too short" : "Too long"
+
     return {
       exists: false,
       valid: false,
-      error: "Too short or too long, 3 to 16 chars",
+      error: `${errorText}: 3 to 16 chars`,
     }
   }
   if (!hiveAccname?.match(useHiveAccountRegex)) {
