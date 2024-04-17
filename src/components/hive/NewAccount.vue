@@ -73,7 +73,7 @@
         type="submit"
       />
     </q-form>
-    <div v-show="paymentRequest">
+    <div v-show="paymentRequest?.payment_request">
       <q-card>
         <q-card-section>
           <!-- Green tick -->
@@ -82,7 +82,7 @@
             :class="{ 'show-tick': false }"
           >
             <CreateQRCode
-              :qrText="paymentRequest"
+              :qrText="paymentRequest?.payment_request || 'No payment request'"
               :width="maxUseableWidth"
               :height="maxUseableWidth"
               hiveAccname="v4vapp.api"
@@ -105,6 +105,9 @@
       </q-card>
     </div>
   </div>
+  <pre>
+    {{ paymentRequest }}
+  </pre>
 </template>
 
 <script setup>
@@ -132,8 +135,9 @@ const nameCheckError = ref("")
 const masterPassword = ref("")
 const keys = ref({})
 const progress = ref(0)
-const getPayment = ref(false)
-const paymentRequest = ref("")
+const respPaid = ref({})
+const paymentRequest = ref({})
+const invoiceLoading = ref(false)
 let initialTime = 0
 
 const maxUseableWidth = computed(() => {
@@ -148,8 +152,12 @@ const dotColor = computed(() => {
 })
 
 async function handleSubmit() {
-  console.log("submit pressed")
+  requestInvoice()
+}
+
+async function requestInvoice() {
   // First call to get an invoice
+  invoiceLoading.value = true
   const accountData = {
     accountName: accountName.value,
     appId: useAppStr(),
@@ -158,10 +166,12 @@ async function handleSubmit() {
   try {
     const resp = await api.post("/account/create", accountData)
     console.log("resp", resp)
-    const r_hash = resp.data.r_hash
-    paymentRequest.value = r_hash
+    paymentRequest.value = resp.data
+    paymentRequest.value["payment_request"] =
+      "lightning:" + resp.data.payment_request
     progress.value = 100
     initialTime = Math.floor(Date.now() / 1000) // Store the initial time
+    invoiceLoading.value = false
     checkPayment(resp.data.expires_at)
   } catch (error) {
     console.error("error", error)
@@ -171,13 +181,16 @@ async function handleSubmit() {
 // function to loop and call api invoice/check every second to check if payment is made
 async function checkPayment(expiresAt) {
   console.log("checkPayment")
+  console.log("paymentRequest", paymentRequest.value)
   try {
     const resp = await api.post(`check_invoice`, {
-      r_hash: paymentRequest.value,
+      r_hash: paymentRequest.value.r_hash,
     })
     console.log("resp", resp)
     if (resp.data.paid) {
+      respPaid.value = resp.data
       console.log("paid")
+      handlePaid()
       return
     }
     if (resp.data.expired) {
@@ -185,7 +198,6 @@ async function checkPayment(expiresAt) {
       handleExpired()
       return
     }
-
     // Calculate progress
     const currentTime = Math.floor(Date.now() / 1000) // get current time in seconds
     const totalDuration = expiresAt - currentTime
@@ -210,6 +222,56 @@ function handleExpired() {
   progress.value = 1
   randomMasterPassword()
   generateKeys()
+}
+
+async function handlePaid() {
+  console.log("paid")
+  Notify.create({
+    message: t("invoice_paid"),
+    color: "positive",
+    position: "top",
+    timeout: 5000,
+  })
+  const accountData = {
+    accountName: accountName.value,
+    appId: useAppStr(),
+    clientId: storeUser.clientId,
+    masterPassword: masterPassword.value,
+    r_preimage: respPaid.value.r_preimage,
+    payment_hash: paymentRequest.value.payment_hash,
+    r_hash: paymentRequest.value.r_hash,
+  }
+  try {
+    const resp = await api.post("/account/create_complete", accountData)
+    console.log("resp", resp)
+    // This is where we have to enforce key download and checks.
+    if (resp.data.masterPassword === masterPassword.value) {
+      console.log("Master Passwords match")
+    }
+    if (resp.data.accountName === accountName.value) {
+      console.log("Account Names match")
+    }
+    if (resp.data.success) {
+      Notify.create({
+        message: t("account_created"),
+        color: "positive",
+        position: "top",
+        timeout: 5000,
+      })
+    } else {
+      Notify.create({
+        message: t("account_not_created"),
+        color: "negative",
+        position: "top",
+        timeout: 5000,
+      })
+    }
+  } catch (error) {
+    console.error("error", error)
+  }
+  paymentRequest.value = ""
+  progress.value = 1
+  // Copy the ke
 }
 
 function handleReset() {
