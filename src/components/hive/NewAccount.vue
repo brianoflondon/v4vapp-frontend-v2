@@ -1,6 +1,5 @@
 <template>
   <div class="flex column text-center items-center q-pa-none">
-    {{ invoicePaid }}
     <StepNumbers :num-items="4" :active-item="activeItem" />
     <q-form @submit="handleSubmit" @reset="handleReset">
       <div class="text-h6">1. Pick Hive Name</div>
