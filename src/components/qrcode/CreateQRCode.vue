@@ -73,6 +73,7 @@ const props = defineProps({
   qrText: {
     type: String,
     required: true,
+    default: "loading..."
   },
   width: {
     type: Number,
