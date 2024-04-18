@@ -15,10 +15,10 @@
         :error-message="nameCheckError"
         clearable
       >
-        <template v-slot:prepend>
+        <template #prepend>
           <q-icon name="person" />
         </template>
-        <template v-slot:append>
+        <template #append>
           <q-icon name="check" v-if="nameCheck" />
         </template>
       </q-input>
