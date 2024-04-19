@@ -399,7 +399,7 @@ async function checkPayment(expiresAt) {
     }
     console.log("resp", resp.data)
     console.log("voucher", voucher.value)
-    if (voucher.value === "paid") {
+    if (voucher.value) {
       respPaid.value = resp.data
       console.log("paid by voucher")
       handlePaid()
@@ -463,7 +463,7 @@ async function handlePaid() {
     payment_hash: paymentRequest.value.payment_hash,
     r_hash: paymentRequest.value.r_hash,
   }
-  if (voucher.value === "paid") {
+  if (voucher.value) {
     accountData["paymentVoucher"] = voucher.value
   }
   try {
