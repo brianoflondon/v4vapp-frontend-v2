@@ -1,189 +1,238 @@
 <template>
   <div class="flex column text-center items-center q-pa-none">
+    <q-toggle v-model="accountConfirm" label="Confirm Account" />
+    <!-- MARK: NUMBERs -->
     <StepNumbers :num-items="4" :active-item="activeItem" />
-    <q-form @submit="handleSubmit" @reset="handleReset">
-      <div class="text-h6">1. Pick Hive Name</div>
-      <q-input
-        class="large-font"
-        v-model="accountName"
-        label="Hive Account Name"
-        outlined
-        debounce="500"
-        @clear="handleReset"
-        @update:model-value="checkHiveAccountName"
-        :error="!nameCheck"
-        :error-message="nameCheckError"
-        clearable
-      >
-        <template #prepend>
-          <q-icon name="person" />
-        </template>
-        <template #append>
-          <q-icon name="check" v-if="nameCheck" />
-        </template>
-      </q-input>
-      <div v-if="false" class="flex items-center">
-        <div class="q-pa-sm col-shrink large-font">
-          {{ accountName.length }}
-        </div>
-        <div class="q-pa-sm col-grow">
-          <q-slider
-            v-model="accountName.length"
-            caption="Account Name Length"
-            track-size="8px"
-            :step="1"
-            :min="0"
-            :inner-min="3"
-            :inner-max="16"
-            markers
-            :max="20"
-            :color="nameCheck ? 'primary' : 'negative'"
-            dense
-            readonly
-            switch-label-side
-          >
-          </q-slider>
-        </div>
-      </div>
-      <div class="fit row wrap justify-center items-center content-start">
-        <div class="col">
-          <q-input
-            class=""
-            v-model="masterPassword"
-            label="Master Password"
-            outlined
-            dense
-            debounce="500"
-            @update:model-value="generateKeys"
-          ></q-input>
-        </div>
-        <div class="col-2">
-          <q-btn
-            class="q-ma-sm"
-            icon="autorenew"
-            color="primary"
-            @click="randomMasterPassword"
-          ></q-btn>
-        </div>
-      </div>
-      <div>
-        <div class="text-h6">2. Download Keys</div>
-      </div>
-      <div class="flex row wrap justify-center">
-        <div>
-          <q-btn
-            class="q-ma-sm"
-            label="Download Keys"
-            :disable="activeItem < 2"
-            icon="download"
-            :color="buttonActiveNot(!activeItem < 2).color"
-            :text-color="buttonActiveNot(!activeItem < 2).textColor"
-            @click="downloadKeys"
-          ></q-btn>
-        </div>
-        <div>
-          <q-btn
-            class="q-ma-sm"
-            label="Copy Keys"
-            :disable="activeItem < 2"
-            icon="content_copy"
-            :color="buttonActiveNot(!activeItem < 2).color"
-            :text-color="buttonActiveNot(!activeItem < 2).textColor"
-            @click="copyKeys"
-          ></q-btn>
-        </div>
-      </div>
-      <div>
-        <div class="text-h6 q-pa-md">3. Confirm Download</div>
-        <q-checkbox
-          v-model="downloadedKeys"
-          label="YES! I have downloaded and saved my keys"
-          :text-color="buttonActiveNot(!activeItem < 3).textColor"
-          :disable="activeItem < 3"
-          @update:model-value="downloadedKeys"
-        />
-      </div>
-      <div>
-        <div class="text-h6 q-pa-md">4. Pay</div>
-
-        <q-btn
-          label="Pay"
-          icon="bolt"
-          :disable="activeItem < 4"
-          :color="buttonActiveNot(!activeItem < 4).color"
-          :text-color="buttonActiveNot(!activeItem < 4).textColor"
-          type="submit"
-        />
-      </div>
-    </q-form>
-    <q-dialog v-model="showPayment" persistent>
-      <q-card>
-        <q-card-section>
-          <div class="text-h6">Lightning Invoice</div>
-          <div class="text-subtitle">
-            Pay this invoice to create <strong>@{{ accountName }}</strong> on
-            Hive
+    <!-- MARK Get Hive Keychain -->
+    <transition
+      appear
+      enter-active-class="animated fadeInDown"
+      leave-active-class="animated fadeOutUp"
+    >
+      <div v-if="activeItem < 2" class="q-pa-lg">
+        <p class="text-h6" style="word-wrap: break-word">
+          Get Hive Keychain before your account.
+        </p>
+        <div class="dark-background">
+          <div class="q-pa-md">
+            <a href="https://hive-keychain.com/" target="_blank">
+              <q-img
+                src="public/keychain/hive-keychain-wide.png"
+                alt="Hive Keychain"
+              />
+            </a>
           </div>
-        </q-card-section>
-
-        <q-card-section>
-          <!-- Green tick -->
-          <div
-            class="row text-center justify-center overlay-container"
-            :class="{ 'show-tick': invoicePaid }"
-          >
-            <CreateQRCode
-              :qrText="paymentRequest?.payment_request || 'loading'"
-              :width="maxUseableWidth"
-              :height="maxUseableWidth"
-              hiveAccname="v4vapp.api"
-              :color="dotColor"
-              :loading="invoiceLoading"
-              @qr-code="(val) => (qrCode = val)"
-            />
+        </div>
+      </div>
+    </transition>
+    <transition
+      appear
+      move
+      enter-active-class="animated fadeInDown"
+      leave-active-class="animated fadeOutUp"
+    >
+      <q-form @submit="handleSubmit" @reset="handleReset">
+        <div class="text-h6">1. Pick Hive Name</div>
+        <q-input
+          class="large-font"
+          v-model="accountName"
+          label="Hive Account Name"
+          outlined
+          debounce="500"
+          @clear="handleReset"
+          @update:model-value="checkHiveAccountName"
+          :error="!nameCheck"
+          :error-message="nameCheckError"
+          clearable
+        >
+          <template #prepend>
+            <q-icon name="person" />
+          </template>
+          <template #append>
+            <q-icon name="check" v-if="nameCheck" />
+          </template>
+        </q-input>
+        <div v-if="false" class="flex items-center">
+          <div class="q-pa-sm col-shrink large-font">
+            {{ accountName.length }}
           </div>
-          <div class="q-pt-none">
-            <q-linear-progress
-              :width="maxUseableWidth"
-              class="invoice-timer"
-              size="10px"
-              :value="progress"
-              color="positive"
+          <div class="q-pa-sm col-grow">
+            <q-slider
+              v-model="accountName.length"
+              caption="Account Name Length"
+              track-size="8px"
+              :step="1"
+              :min="0"
+              :inner-min="3"
+              :inner-max="16"
+              markers
+              :max="20"
+              :color="nameCheck ? 'primary' : 'negative'"
+              dense
+              readonly
+              switch-label-side
             >
-            </q-linear-progress>
+            </q-slider>
           </div>
-        </q-card-section>
-        <q-card-section>
-          <div class="flex q-gutter-sm items-center">
-            <div class="q-px-sm">
+        </div>
+        <div class="fit row wrap justify-center items-center content-start">
+          <div class="col">
+            <q-input
+              class=""
+              v-model="masterPassword"
+              label="Master Password"
+              outlined
+              dense
+              debounce="500"
+              @update:model-value="generateKeys"
+            ></q-input>
+          </div>
+          <div class="col-2">
+            <q-btn
+              class="q-ma-sm"
+              icon="autorenew"
+              color="primary"
+              @click="randomMasterPassword"
+            ></q-btn>
+          </div>
+        </div>
+        <div>
+          <div class="text-h6">2. Download Keys</div>
+        </div>
+        <div class="flex row wrap justify-center">
+          <div>
+            <q-btn
+              class="q-ma-sm"
+              label="Download Keys"
+              :disable="activeItem < 2"
+              icon="download"
+              :color="buttonActiveNot(!activeItem < 2).color"
+              :text-color="buttonActiveNot(!activeItem < 2).textColor"
+              @click="downloadKeys"
+            ></q-btn>
+          </div>
+          <div>
+            <q-btn
+              class="q-ma-sm"
+              label="Copy Keys"
+              :disable="activeItem < 2"
+              icon="content_copy"
+              :color="buttonActiveNot(!activeItem < 2).color"
+              :text-color="buttonActiveNot(!activeItem < 2).textColor"
+              @click="copyKeys"
+            ></q-btn>
+          </div>
+        </div>
+        <div>
+          <div class="text-h6 q-pa-md">3. Confirm Download</div>
+          <q-checkbox
+            v-model="downloadedKeys"
+            label="YES! I have downloaded and saved my keys"
+            :text-color="buttonActiveNot(!activeItem < 3).textColor"
+            :disable="activeItem < 3"
+            @update:model-value="downloadedKeys"
+          />
+        </div>
+        <div>
+          <div class="text-h6 q-pa-md">4. Pay</div>
+          <div class="flex col wrap justify-center items-center content-start">
+            <div class="q-px-md">
+              <q-input label="Voucher" v-model="voucher" outlined dense>
+              </q-input>
+            </div>
+            <div class="q-px-md">
               <q-btn
-                icon="content_copy"
-                round
-                @click="copyToClipboard(paymentRequest?.payment_request)"
-              >
-                <q-tooltip>{{ t("copy_qrcode") }}</q-tooltip>
-              </q-btn>
-            </div>
-            <div class="col-grow text-right">
-              <pre>@{{ accountName }}</pre>
+                label="Pay"
+                icon="bolt"
+                :disable="activeItem < 4"
+                :color="buttonActiveNot(!activeItem < 4).color"
+                :text-color="buttonActiveNot(!activeItem < 4).textColor"
+                type="submit"
+              />
             </div>
           </div>
-        </q-card-section>
-
-        <q-card-actions align="right" justify="end">
-          <q-btn
-            label="Cancel"
-            icon="cancel"
-            color="negative"
-            @click="handleCancel"
-          ></q-btn>
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+        </div>
+      </q-form>
+    </transition>
   </div>
+  <!-- The Payment Dialog screen -->
+  <q-dialog v-model="showPayment" persistent>
+    <q-card>
+      <q-card-section>
+        <div class="text-h6">Lightning Invoice</div>
+        <div class="text-subtitle">
+          Pay this invoice to create <strong>@{{ accountName }}</strong> on Hive
+        </div>
+      </q-card-section>
+      <q-card-section>
+        <!-- Green tick -->
+        <div
+          class="row text-center justify-center overlay-container"
+          :class="{ 'show-tick': invoicePaid }"
+        >
+          <CreateQRCode
+            :qrText="paymentRequest?.payment_request || 'loading'"
+            :width="maxUseableWidth"
+            :height="maxUseableWidth"
+            hiveAccname="v4vapp.api"
+            :color="dotColor"
+            :loading="invoiceLoading"
+            @qr-code="(val) => (qrCode = val)"
+          />
+        </div>
+        <div class="q-pt-none">
+          <q-linear-progress
+            :width="maxUseableWidth"
+            class="invoice-timer"
+            size="10px"
+            :value="progress"
+            color="positive"
+          >
+          </q-linear-progress>
+        </div>
+      </q-card-section>
+      <q-card-section>
+        <div class="flex q-gutter-sm items-center">
+          <div class="q-px-sm">
+            <q-btn
+              icon="content_copy"
+              round
+              @click="copyToClipboard(paymentRequest?.payment_request)"
+            >
+              <q-tooltip>{{ t("copy_qrcode") }}</q-tooltip>
+            </q-btn>
+          </div>
+          <div class="col-grow text-right">
+            <pre>@{{ accountName }}</pre>
+          </div>
+        </div>
+      </q-card-section>
+
+      <q-card-actions align="right" justify="end">
+        <q-btn
+          label="Cancel"
+          icon="cancel"
+          color="negative"
+          @click="handleCancel"
+        ></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <!-- Mark: End of Payment Dialog screen -->
+  <!-- Mark: Confirm new account screen -->
+  <q-dialog v-model="accountConfirm">
+    <ConfirmNewAccount
+      :accountName="accountName"
+      :masterPassword="masterPassword"
+      :keys="keys"
+      @close="accountConfirm = false"
+    />
+  </q-dialog>
 </template>
 
 <script setup>
+//MARK: script setup
+
 import { ref, computed, watch } from "vue"
 import { useQuasar, copyToClipboard } from "quasar"
 import { useHiveAccountExists } from "src/use/useHive"
@@ -193,12 +242,13 @@ import { genRandAlphaNum } from "src/use/useUtils"
 import { api } from "src/boot/axios"
 import { useAppStr } from "src/use/useAppDetails"
 import { useStoreUser } from "src/stores/storeUser"
-import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
-import StepNumbers from "src/components/utils/StepNumbers.vue"
-import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
+import { QRLightningHiveColor } from "src/use/useUtils"
 import { Notify } from "quasar"
 import { useI18n } from "vue-i18n"
 import { nextTick } from "vue"
+import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
+import StepNumbers from "src/components/utils/StepNumbers.vue"
+import ConfirmNewAccount from "src/components/hive/ConfirmNewAccount.vue"
 
 const t = useI18n().t
 
@@ -211,14 +261,16 @@ const nameCheckError = ref("")
 const masterPassword = ref("")
 const keys = ref({})
 const progress = ref(0)
+const voucher = ref("")
 const respPaid = ref({})
-const paymentRequest = ref({})
-const invoiceLoading = ref(false)
-const activeItem = ref(1)
-const downloadedKeys = ref(false)
-const showPayment = ref(true)
+const paymentRequest = ref({}) // Payment request object
+const invoiceLoading = ref(false) // Loading state for the invoice
+const activeItem = ref(1) // Active item in the stepper
+const downloadedKeys = ref(false) // Checks if the keys have been downloaded
+const showPayment = ref(false) // Shows the payment dialog
 const invoicePaid = ref(false)
 let initialTime = 0
+const accountConfirm = ref(false) // Dialog to confirm account creation
 
 // Watch for changes in downloadedKeys
 watch(downloadedKeys, (newVal) => {
@@ -332,6 +384,7 @@ async function requestInvoice() {
 // used to cancel payment
 let checkTimeout = null
 
+// MARK: CheckPayment
 // function to loop and call api invoice/check every second to check if payment is made
 async function checkPayment(expiresAt) {
   try {
@@ -341,6 +394,14 @@ async function checkPayment(expiresAt) {
     if (resp.data.paid) {
       respPaid.value = resp.data
       console.log("paid")
+      handlePaid()
+      return
+    }
+    console.log("resp", resp.data)
+    console.log("voucher", voucher.value)
+    if (voucher.value === "paid") {
+      respPaid.value = resp.data
+      console.log("paid by voucher")
       handlePaid()
       return
     }
@@ -360,12 +421,8 @@ async function checkPayment(expiresAt) {
   }
 }
 function handleExpired() {
-  console.log("handleExpired or canceled")
+  console.log("handleExpired")
   clearTimeout(checkTimeout)
-  nextTick(() => {
-    console.log("next tick")
-  })
-  console.log("after next tick")
   invoiceLoading.value = true
   paymentRequest.value = {}
   progress.value = 1
@@ -377,10 +434,8 @@ function handleExpired() {
     position: "top",
     timeout: 5000,
   })
-  setTimeout(() => {
-    showPayment.value = false
-    invoiceLoading.value = true
-  }, 5000)
+  invoiceLoading.value = true
+  showPayment.value = false
   invoiceLoading.value = false
   invoicePaid.value = false
   randomMasterPassword()
@@ -408,6 +463,9 @@ async function handlePaid() {
     payment_hash: paymentRequest.value.payment_hash,
     r_hash: paymentRequest.value.r_hash,
   }
+  if (voucher.value === "paid") {
+    accountData["paymentVoucher"] = voucher.value
+  }
   try {
     const resp = await api.post("/account/create_complete", accountData)
     console.log("resp", resp)
@@ -426,6 +484,7 @@ async function handlePaid() {
         timeout: 5000,
       })
       console.log("show successes and next steps")
+      accountConfirm.value = true
     } else {
       Notify.create({
         message: t("account_not_created"),
@@ -481,6 +540,17 @@ function generateKeys() {
       posting: postingKey.createPublic().toString(),
       memo: memoKey.createPublic().toString(),
     },
+    keychain: {
+      name: accountName.value,
+      keys: {
+        active: activeKey.toString(),
+        activePubkey: activeKey.createPublic().toString(),
+        posting: postingKey.toString(),
+        postingPubkey: postingKey.createPublic().toString(),
+        memo: memoKey.toString(),
+        memoPubkey: memoKey.createPublic().toString(),
+      },
+    },
   }
 }
 
@@ -527,6 +597,11 @@ const keysText = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+.dark-background {
+  background-color: #000; /* Replace with the color you want */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
 .large-font {
   font-size: 1.8rem;
 }
@@ -571,5 +646,9 @@ const keysText = computed(() => {
 .overlay-container.show-tick::after {
   display: block;
   opacity: 0.9;
+}
+
+.animated {
+  animation-duration: 2s; /* Adjust this value to change the animation speed */
 }
 </style>

@@ -134,7 +134,6 @@
         </q-item>
       </q-list>
     </div>
-    <NewAccount />
   </q-page>
 </template>
 
