@@ -100,9 +100,8 @@
           <div class="text-h6">2. Download Keys</div>
         </div>
         <div class="flex row wrap justify-center">
-          <div>
+          <div class="q-ma-sm">
             <q-btn
-              class="q-ma-sm"
               label="Download Keys"
               :disable="activeItem < 2"
               icon="download"
@@ -111,9 +110,8 @@
               @click="downloadKeys"
             ></q-btn>
           </div>
-          <div>
+          <div class="q-ma-sm">
             <q-btn
-              class="q-ma-sm"
               label="Copy Keys"
               :disable="activeItem < 2"
               icon="content_copy"
@@ -225,7 +223,9 @@
       :accountName="accountName"
       :masterPassword="masterPassword"
       :keys="keys"
-      @close="accountConfirm = false"
+      @close="handleReset"
+      @downloadKeys="downloadKeys"
+      @copyKeys="copyKeys"
     />
   </q-dialog>
 </template>
@@ -331,6 +331,7 @@ function handleReset() {
   paymentRequest.value = ""
   downloadedKeys.value = false
   showPayment.value = false
+  accountConfirm.value = false
 }
 
 async function handleSubmit() {
