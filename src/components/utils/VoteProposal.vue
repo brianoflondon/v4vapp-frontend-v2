@@ -93,7 +93,7 @@ const modelValue = defineModel({
   },
   proposalId: {
     type: String,
-    default: "265",
+    default: "303",
   },
   showButton: {
     type: Boolean,
@@ -108,7 +108,7 @@ const modelValue = defineModel({
 const hiveAccname = ref({ label: "", value: modelValue.value.hiveUser, caption: "" })
 
 if (!modelValue.value?.proposalId) {
-  modelValue.value.proposalId = "265"
+  modelValue.value.proposalId = "303"
 }
 
 onMounted(async () => {
