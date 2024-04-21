@@ -218,7 +218,7 @@
   </q-dialog>
   <!-- Mark: End of Payment Dialog screen -->
   <!-- Mark: Confirm new account screen -->
-  <q-dialog v-model="accountConfirm">
+  <q-dialog v-model="accountConfirm" persistent>
     <ConfirmNewAccount
       :accountName="accountName"
       :masterPassword="masterPassword"

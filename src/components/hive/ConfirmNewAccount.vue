@@ -72,6 +72,17 @@
           </div>
         </div>
       </q-card-section>
+      <q-card-section>
+        <div class="flex row justify-center q-pa-md">
+          <q-btn
+            label="Close"
+            icon="close"
+            @click="closeDialog"
+            :color="buttonActiveNot(true).color"
+            :text-color="buttonActiveNot(true).textColor"
+          ></q-btn>
+        </div>
+      </q-card-section>
     </q-card>
   </div>
 </template>
