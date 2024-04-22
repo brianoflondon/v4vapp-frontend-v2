@@ -35,6 +35,7 @@ const routes = [
           return "/pos/sales/@" + to.params.hiveAccTo
         },
       },
+      { path: "/signup", component: () => import("pages/SignUp.vue") },
 
       // {
       //   path: "/pos/@:hiveAccTo(.*)", // Allow any character including dots after '@'
@@ -48,7 +49,6 @@ const routes = [
       { path: "/vote", component: () => import("pages/VoteNow.vue") },
       { path: "/status", component: () => import("pages/StatusPage.vue") },
       { path: "/transfer", component: () => import("pages/HiveTransfer.vue") },
-      { path: "/signup", component: () => import("pages/SignUp.vue") },
       {
         path: "/selectdemo",
         component: () => import("pages/demo/HiveSelectDemoPage.vue"),

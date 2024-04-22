@@ -1,161 +1,155 @@
 <template>
-  <!-- MARK: Main page start -->
   <div class="flex column text-center items-center q-pa-none">
-    <q-toggle v-model="accountConfirm" label="Confirm Account" />
-    <!-- MARK: NUMBERs -->
-    <StepNumbers :num-items="4" :active-item="activeItem" />
-    <!-- MARK Get Hive Keychain -->
-    <transition
-      appear
-      enter-active-class="animated fadeInDown"
-      leave-active-class="animated fadeOutUp"
-    >
-      <div v-if="activeItem < 2" class="q-pa-lg">
-        <p class="text-h6" style="word-wrap: break-word">
-          Get Hive Keychain before your account.
-        </p>
-        <div class="dark-background">
-          <div class="q-pa-md">
-            <a href="https://hive-keychain.com/" target="_blank">
-              <q-img
-                src="keychain/hive-keychain-wide.png"
-                alt="Hive Keychain"
-              />
-            </a>
-          </div>
+    <div class="content-container">
+      <!-- MARK: Main page start -->
+      <div class="main-content">
+        <div class="flex column text-center items-center q-pa-none">
+          <q-toggle v-model="accountConfirm" label="Confirm Account" />
+          <!-- MARK: NUMBERs -->
+          <p class="text-h6" style="word-wrap: break-word">
+            Install Hive Keychain first.
+          </p>
+          <StepNumbers :num-items="4" :active-item="activeItem" />
+          <transition
+            appear
+            move
+            enter-active-class="animated fadeInDown"
+            leave-active-class="animated fadeOutUp"
+          >
+            <q-form @submit="handleSubmit" @reset="handleReset">
+              <div class="text-h6">1. Pick Hive Name</div>
+              <q-input
+                class="large-font"
+                v-model="accountName"
+                label="Hive Account Name"
+                outlined
+                debounce="500"
+                @clear="handleReset"
+                @update:model-value="checkHiveAccountName"
+                :error="!nameCheck"
+                :error-message="nameCheckError"
+                clearable
+              >
+                <template #prepend>
+                  <q-icon name="person" />
+                </template>
+                <template #append>
+                  <q-icon name="check" v-if="nameCheck" />
+                </template>
+              </q-input>
+              <div v-if="false" class="flex items-center">
+                <div class="q-pa-sm col-shrink large-font">
+                  {{ accountName.length }}
+                </div>
+                <div class="q-pa-sm col-grow">
+                  <q-slider
+                    v-model="accountName.length"
+                    caption="Account Name Length"
+                    track-size="8px"
+                    :step="1"
+                    :min="0"
+                    :inner-min="3"
+                    :inner-max="16"
+                    markers
+                    :max="20"
+                    :color="nameCheck ? 'primary' : 'negative'"
+                    dense
+                    readonly
+                    switch-label-side
+                  >
+                  </q-slider>
+                </div>
+              </div>
+              <div
+                class="fit row wrap justify-center items-center content-start"
+              >
+                <div class="col">
+                  <q-input
+                    class=""
+                    v-model="masterPassword"
+                    label="Master Password"
+                    outlined
+                    dense
+                    debounce="500"
+                    @update:model-value="generateKeys"
+                  ></q-input>
+                </div>
+                <div class="col-2">
+                  <q-btn
+                    class="q-ma-sm"
+                    icon="autorenew"
+                    color="primary"
+                    @click="randomMasterPassword"
+                  ></q-btn>
+                </div>
+              </div>
+              <div>
+                <div class="text-h6">2. Download Keys</div>
+              </div>
+              <div class="flex row wrap justify-center">
+                <div class="q-ma-sm">
+                  <q-btn
+                    label="Download Keys"
+                    :disable="activeItem < 2"
+                    icon="download"
+                    :color="buttonActiveNot(!activeItem < 2).color"
+                    :text-color="buttonActiveNot(!activeItem < 2).textColor"
+                    @click="downloadKeys"
+                  ></q-btn>
+                </div>
+                <div class="q-ma-sm">
+                  <q-btn
+                    label="Copy Keys"
+                    :disable="activeItem < 2"
+                    icon="content_copy"
+                    :color="buttonActiveNot(!activeItem < 2).color"
+                    :text-color="buttonActiveNot(!activeItem < 2).textColor"
+                    @click="copyKeys"
+                  ></q-btn>
+                </div>
+              </div>
+              <div>
+                <div class="text-h6 q-pa-md">3. Confirm Download</div>
+                <q-checkbox
+                  v-model="downloadedKeys"
+                  label="YES! I have downloaded and saved my keys"
+                  :text-color="buttonActiveNot(!activeItem < 3).textColor"
+                  :disable="activeItem < 3"
+                  @update:model-value="downloadedKeys"
+                />
+              </div>
+              <div>
+                <div class="text-h6 q-pa-md">4. Pay</div>
+                <div
+                  class="flex col wrap justify-center items-center content-start"
+                >
+                  <div class="q-px-md">
+                    <q-input label="Voucher" v-model="voucher" outlined dense>
+                    </q-input>
+                  </div>
+                  <div class="q-px-md">
+                    <q-btn
+                      label="Pay"
+                      icon="bolt"
+                      :disable="activeItem < 4"
+                      :color="buttonActiveNot(!activeItem < 4).color"
+                      :text-color="buttonActiveNot(!activeItem < 4).textColor"
+                      type="submit"
+                    />
+                  </div>
+                </div>
+              </div>
+            </q-form>
+          </transition>
         </div>
       </div>
-    </transition>
-    <!-- MARK: End Get Hive Keychain -->
-    <transition
-      appear
-      move
-      enter-active-class="animated fadeInDown"
-      leave-active-class="animated fadeOutUp"
-    >
-      <q-form @submit="handleSubmit" @reset="handleReset">
-        <div class="text-h6">1. Pick Hive Name</div>
-        <q-input
-          class="large-font"
-          v-model="accountName"
-          label="Hive Account Name"
-          outlined
-          debounce="500"
-          @clear="handleReset"
-          @update:model-value="checkHiveAccountName"
-          :error="!nameCheck"
-          :error-message="nameCheckError"
-          clearable
-        >
-          <template #prepend>
-            <q-icon name="person" />
-          </template>
-          <template #append>
-            <q-icon name="check" v-if="nameCheck" />
-          </template>
-        </q-input>
-        <div v-if="false" class="flex items-center">
-          <div class="q-pa-sm col-shrink large-font">
-            {{ accountName.length }}
-          </div>
-          <div class="q-pa-sm col-grow">
-            <q-slider
-              v-model="accountName.length"
-              caption="Account Name Length"
-              track-size="8px"
-              :step="1"
-              :min="0"
-              :inner-min="3"
-              :inner-max="16"
-              markers
-              :max="20"
-              :color="nameCheck ? 'primary' : 'negative'"
-              dense
-              readonly
-              switch-label-side
-            >
-            </q-slider>
-          </div>
-        </div>
-        <div class="fit row wrap justify-center items-center content-start">
-          <div class="col">
-            <q-input
-              class=""
-              v-model="masterPassword"
-              label="Master Password"
-              outlined
-              dense
-              debounce="500"
-              @update:model-value="generateKeys"
-            ></q-input>
-          </div>
-          <div class="col-2">
-            <q-btn
-              class="q-ma-sm"
-              icon="autorenew"
-              color="primary"
-              @click="randomMasterPassword"
-            ></q-btn>
-          </div>
-        </div>
-        <div>
-          <div class="text-h6">2. Download Keys</div>
-        </div>
-        <div class="flex row wrap justify-center">
-          <div class="q-ma-sm">
-            <q-btn
-              label="Download Keys"
-              :disable="activeItem < 2"
-              icon="download"
-              :color="buttonActiveNot(!activeItem < 2).color"
-              :text-color="buttonActiveNot(!activeItem < 2).textColor"
-              @click="downloadKeys"
-            ></q-btn>
-          </div>
-          <div class="q-ma-sm">
-            <q-btn
-              label="Copy Keys"
-              :disable="activeItem < 2"
-              icon="content_copy"
-              :color="buttonActiveNot(!activeItem < 2).color"
-              :text-color="buttonActiveNot(!activeItem < 2).textColor"
-              @click="copyKeys"
-            ></q-btn>
-          </div>
-        </div>
-        <div>
-          <div class="text-h6 q-pa-md">3. Confirm Download</div>
-          <q-checkbox
-            v-model="downloadedKeys"
-            label="YES! I have downloaded and saved my keys"
-            :text-color="buttonActiveNot(!activeItem < 3).textColor"
-            :disable="activeItem < 3"
-            @update:model-value="downloadedKeys"
-          />
-        </div>
-        <div>
-          <div class="text-h6 q-pa-md">4. Pay</div>
-          <div class="flex col wrap justify-center items-center content-start">
-            <div class="q-px-md">
-              <q-input label="Voucher" v-model="voucher" outlined dense>
-              </q-input>
-            </div>
-            <div class="q-px-md">
-              <q-btn
-                label="Pay"
-                icon="bolt"
-                :disable="activeItem < 4"
-                :color="buttonActiveNot(!activeItem < 4).color"
-                :text-color="buttonActiveNot(!activeItem < 4).textColor"
-                type="submit"
-              />
-            </div>
-          </div>
-        </div>
-      </q-form>
-    </transition>
+      <div class="sidebar">
+        <GetKeychain :active-item="activeItem" />
+      </div>
+    </div>
   </div>
-  <!-- The Payment Dialog screen -->
+
+  <!-- MARK: The Payment Dialog screen -->
   <q-dialog v-model="showPayment" persistent>
     <q-card>
       <q-card-section>
@@ -251,6 +245,7 @@ import { nextTick } from "vue"
 import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
 import StepNumbers from "src/components/utils/StepNumbers.vue"
 import ConfirmNewAccount from "src/components/hive/ConfirmNewAccount.vue"
+import GetKeychain from "src/components/hive/GetKeychain.vue"
 
 const t = useI18n().t
 
@@ -576,7 +571,7 @@ function downloadKeys() {
   link.href = url
   link.download = `HIVE_${accountName.value.toUpperCase()}_KEYS.txt`
   // This prevents page refresh because of the click handler on the form.
-  link.addEventListener("click", function(e) {
+  link.addEventListener("click", function (e) {
     e.preventDefault()
   })
   link.click()
@@ -604,9 +599,34 @@ const keysText = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.dark-background {
-  background-color: #000; /* Replace with the color you want */
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+.content-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  // border: 1px solid #ccc;
+  /* Your main content styles */
+}
+
+.sidebar {
+  // border: 1px solid #cccccc;
+  /* Your sidebar styles */
+}
+
+/* Media query for screens wider than 460px */
+@media (min-width: 650px) {
+  .content-container {
+    flex-direction: row;
+  }
+
+  .main-content {
+    flex: 1;
+  }
+
+  .sidebar {
+    width: 200px; /* Adjust as needed */
+  }
 }
 
 .large-font {
@@ -656,6 +676,6 @@ const keysText = computed(() => {
 }
 
 .animated {
-  animation-duration: 2s; /* Adjust this value to change the animation speed */
+  animation-duration: 1s; /* Adjust this value to change the animation speed */
 }
 </style>
