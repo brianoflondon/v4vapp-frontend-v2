@@ -204,6 +204,12 @@
 
       <q-card-actions align="right" justify="end">
         <q-btn
+          label="Paid"
+          icon="check"
+          color="positive"
+          @click="checkPayment(false)"
+        />
+        <q-btn
           label="Cancel"
           icon="cancel"
           color="negative"
@@ -365,7 +371,20 @@ async function requestInvoice() {
     clientId: storeUser.clientId,
   }
   try {
-    const resp = await api.post("/account/create", accountData)
+    let resp
+    while (true) {
+      try {
+        console.log("Trying /account/create")
+        resp = await api.post("/account/create", accountData)
+        console.log("resp", resp)
+        if (resp.status !== 429) {
+          break
+        }
+      } catch (error) {
+        console.error("error in first /account/create", error)
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+    }
     console.log("resp", resp)
     paymentRequest.value = resp.data
     paymentRequest.value["payment_request"] =
@@ -408,11 +427,14 @@ async function checkPayment(expiresAt) {
       return
     }
     // Calculate progress
-    const currentTime = Math.floor(Date.now() / 1000) // get current time in seconds
-    const totalDuration = expiresAt - currentTime
-    const totalTime = expiresAt - initialTime
-    progress.value = totalDuration / totalTime
-    checkTimeout = setTimeout(() => checkPayment(expiresAt), 1000)
+    if (expiresAt) {
+      console.log("Checking payment", expiresAt)
+      const currentTime = Math.floor(Date.now() / 1000) // get current time in seconds
+      const totalDuration = expiresAt - currentTime
+      const totalTime = expiresAt - initialTime
+      progress.value = totalDuration / totalTime
+      checkTimeout = setTimeout(() => checkPayment(expiresAt), 1000)
+    }
   } catch (error) {
     clearTimeout(checkTimeout)
     console.error("error", error)
@@ -465,8 +487,19 @@ async function handlePaid() {
     accountData["paymentVoucher"] = voucher.value
   }
   try {
-    const resp = await api.post("/account/create_complete", accountData)
-    console.log("resp", resp)
+    let resp
+    while (true) {
+      try {
+        resp = await api.post("/account/create_complete", accountData)
+        console.log("resp", resp)
+        if (resp.status !== 429) {
+          break
+        }
+      } catch (error) {
+        console.error("error", error)
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+    }
     // This is where we have to enforce key download and checks.
     if (resp.data.masterPassword === masterPassword.value) {
       console.log("Master Passwords match")
@@ -492,6 +525,7 @@ async function handlePaid() {
       })
     }
   } catch (error) {
+
     console.error("error", error)
   }
   paymentRequest.value = ""
@@ -557,7 +591,6 @@ function copyKeys() {
   activeItem.value = 3
   copyToClipboard(keysText.value)
 }
-
 function downloadKeys() {
   // Generate the text file
   activeItem.value = 3
@@ -570,11 +603,11 @@ function downloadKeys() {
   const link = document.createElement("a")
   link.href = url
   link.download = `HIVE_${accountName.value.toUpperCase()}_KEYS.txt`
-  // This prevents page refresh because of the click handler on the form.
-  link.addEventListener("click", function (e) {
-    e.preventDefault()
-  })
+  document.body.appendChild(link) // Append the link to the body
   link.click()
+
+  // Remove the link from the DOM
+  document.body.removeChild(link)
 
   // Revoke the URL to free up memory
   URL.revokeObjectURL(url)

@@ -17,7 +17,9 @@
             <p>Please make sure you've saved them in a safe place</p>
           </div>
         </div>
-        <div class="h6">Copy your Hive Name and Master Password to Hive Keychain</div>
+        <div class="h6">
+          Copy your Hive Name and Master Password to Hive Keychain
+        </div>
         <div class="flex row justify-center">
           <div class="q-pa-md">
             <q-btn
@@ -61,13 +63,20 @@
       </q-card-section>
       <q-card-section>
         <div class="flex row justify-center">
-          <div class="flex wrap items-center justify-center">
+          <div
+            v-if="keychainLink"
+            class="flex wrap items-center justify-center"
+          >
             <q-expansion-item
               expand-separator
               icon="qr_code_2"
               label="Scan your Keys with Keychain"
             >
-              <CreateQRCode :qrText="keychainLink" :width="300" :height="300" />
+              <CreateQRCode
+                :qr-text="keychainLink"
+                :width="350"
+                :height="350"
+              />
             </q-expansion-item>
           </div>
         </div>
@@ -91,7 +100,8 @@
 import { useQuasar, copyToClipboard } from "quasar"
 import { buttonActiveNot } from "src/use/useUtils"
 import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
-import { computed } from "vue"
+import { ref } from "vue"
+import { onMounted } from "vue"
 
 const emit = defineEmits(["close", "downloadKeys", "copyKeys"])
 
@@ -110,9 +120,12 @@ const props = defineProps({
   },
 })
 
+const keychainLink = ref("")
 
-const keychainLink = computed(() => {
-  return `keychain://add_account=${JSON.stringify(props.keys.keychain)}`
+onMounted(() => {
+  keychainLink.value = `keychain://add_account=${JSON.stringify(
+    props.keys.keychain
+  )}`
 })
 
 function closeDialog() {
@@ -128,7 +141,6 @@ function copyKeys() {
   console.log("copyKeys")
   emit("copyKeys")
 }
-
 </script>
 
 <style lang="scss" scoped>
