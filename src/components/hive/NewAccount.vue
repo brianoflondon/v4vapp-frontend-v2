@@ -1,4 +1,5 @@
 <template>
+  <!-- MARK: Main page start -->
   <div class="flex column text-center items-center q-pa-none">
     <q-toggle v-model="accountConfirm" label="Confirm Account" />
     <!-- MARK: NUMBERs -->
@@ -17,7 +18,7 @@
           <div class="q-pa-md">
             <a href="https://hive-keychain.com/" target="_blank">
               <q-img
-                src="public/keychain/hive-keychain-wide.png"
+                src="keychain/hive-keychain-wide.png"
                 alt="Hive Keychain"
               />
             </a>
@@ -25,6 +26,7 @@
         </div>
       </div>
     </transition>
+    <!-- MARK: End Get Hive Keychain -->
     <transition
       appear
       move
@@ -573,6 +575,10 @@ function downloadKeys() {
   const link = document.createElement("a")
   link.href = url
   link.download = `HIVE_${accountName.value.toUpperCase()}_KEYS.txt`
+  // This prevents page refresh because of the click handler on the form.
+  link.addEventListener("click", function(e) {
+    e.preventDefault()
+  })
   link.click()
 
   // Revoke the URL to free up memory
