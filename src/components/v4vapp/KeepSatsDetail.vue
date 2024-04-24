@@ -36,7 +36,7 @@
     <template v-slot:body="props">
       <q-tr :props="props.row" class="no-divider">
         <q-td class="text-left">
-          {{ props.row.reason }}
+          {{ props.row.reason_str }}
         </q-td>
         <q-td class="text-right">
           {{ tidyNumber(props.row.hive, 3) }}

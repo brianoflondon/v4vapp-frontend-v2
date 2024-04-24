@@ -30,6 +30,7 @@
       <div class="transaction-data-tables row">
         <!-- Hive to Sats Table -->
         <div class="hivetosats-table q-pa-sm">
+          Hive  Sats
           <q-table
             class="q-pa-xs"
             dense
@@ -82,6 +83,7 @@
     <div class="col-auto">
       <!-- Keep Sats Table -->
       <div class="keepsats-table q-pa-sm">
+        KeepSats
         <q-table
           class="q-pa-xs"
           dense
@@ -113,7 +115,7 @@
                 {{ formatPrettyDate(props.row.timestamp) }}
               </q-td>
               <q-td :props="props" style="text-align: left" key="reason">
-                {{ props.row.reason }}
+                {{ props.row.reason_str }}
               </q-td>
               <q-td :props="props" style="text-align: right" key="hive">
                 {{ tidyNumber(props.row.hive, 3) }}
@@ -329,6 +331,7 @@ async function fetchData(newValue = dataDays.value) {
       totals.value.totalSats += data.value[i].sats
     }
   }
+  console.log("keepSatsData", keepSatsData.value)
 }
 
 onMounted(() => {
