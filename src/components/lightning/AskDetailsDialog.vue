@@ -147,11 +147,12 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, computed } from "vue"
 import { useCreateInvoice } from "src/use/useLightningInvoice"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { tidyNumber } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
+import { useHiveAvatarURL } from "src/use/useHive"
 import NumberButtons from "components/utils/NumberButtons.vue"
 const t = useI18n().t
 
@@ -167,6 +168,16 @@ const amounts = ref({
   satsNum: 1000,
 })
 const main_message = ref("")
+
+const hiveAvatar = computed(() => {
+  console.log("computing hiveAvatar", dInvoice.value.v4vapp.sendTo)
+  if (!dInvoice.value?.v4vapp?.sendTo) {
+    return
+  }
+  const ans = useHiveAvatarURL({ hiveAccname: dInvoice.value.v4vapp.sendTo })
+  console.log(ans)
+  return ans
+})
 
 function showDialog() {
   if (dInvoice.value?.makingInvoice) {
@@ -262,9 +273,20 @@ const vAutofocus = {
 }
 
 async function createInvoice() {
+  if (dInvoice.value.v4vapp.type === "hiveAccname") {
+    let amountSats
+    if (typeof amounts.value.sats === "string") {
+      amountSats = parseFloat(amounts.value.sats.replace(/,/g, ""), 10)
+    }
+    dInvoice.value.askDetails = false
+    dInvoice.value.satoshis = amountSats
+    dInvoice.value.v4vapp.amountToSend = amountSats
+    emit("newInvoice", dInvoice.value)
+    return
+  }
   const newInvoice = await useCreateInvoice(dInvoice.value)
   emit("newInvoice", newInvoice)
-  emit("amounts", amounts.value)
+  // emit("amounts", amounts.value)
 }
 </script>
 

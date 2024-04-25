@@ -19,7 +19,6 @@ export function useGenerateTxUrl(txId) {
   return `${baseURLBlockExplorer}${txId}`
 }
 
-
 /**
  * Retrieves Hive profile and details for a given Hive account name.
  *
@@ -53,17 +52,23 @@ export async function useHiveDetails(hiveAccname) {
 export async function useHiveAccountExists(hiveAccname) {
   // Returns true if the Hive account exists
   // first char is not a-z
+  console.log("Checking Hive account: ", hiveAccname)
   if (!hiveAccname[0].match(/[a-z]/)) {
-    return { exists: false, valid: false, error: "Name must not start with a number" }
+    return {
+      exists: false,
+      valid: false,
+      error: "Name must not start with a number",
+      hiveAccname: hiveAccname,
+    }
   }
   if (hiveAccname.length < 3 || hiveAccname.length > 16) {
-
     const errorText = hiveAccname.length < 3 ? "Too short" : "Too long"
 
     return {
       exists: false,
       valid: false,
       error: `${errorText}: 3 to 16 chars`,
+      hiveAccname: hiveAccname,
     }
   }
   if (!hiveAccname?.match(useHiveAccountRegex)) {
@@ -72,11 +77,21 @@ export async function useHiveAccountExists(hiveAccname) {
   try {
     const res = await hiveTx.call("condenser_api.get_accounts", [[hiveAccname]])
     if (res.result.length > 0) {
-      return { exists: true, valid: false, error: "Account Name taken" }
+      return {
+        exists: true,
+        valid: false,
+        error: "Account Name taken",
+        hiveAccname: hiveAccname,
+      }
     }
-    return { exists: false, valid: true, error: "Available Account Name" }
+    return {
+      exists: false,
+      valid: true,
+      error: "Available Account Name",
+      hiveAccname: hiveAccname,
+    }
   } catch (e) {
-    return { exists: false, valid: null, error: e }
+    return { exists: false, valid: null, error: e, hiveAccname: hiveAccname }
   }
 }
 
@@ -129,6 +144,7 @@ export function useHiveAvatarURL({
 }) {
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
+  console.log("useHiveAvatarURL", hiveAccname, size, reason)
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     return useBlankProfileURL()
   }

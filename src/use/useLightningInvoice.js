@@ -63,10 +63,13 @@ export async function useCheckLightningInvoice(paymentHash) {
   }
 }
 
+/**
+ * Decodes a lightning invoice using local Bolt11 library and V4V.app API.
+ *
+ * @param {string} invoice - The lightning invoice to decode.
+ * @returns {Promise<Object|null>} - The decoded invoice object, or null if decoding fails.
+ */
 export async function useDecodeLightningInvoice(invoice) {
-  // Decode a lightning invoice first using local Bolt11 library
-  // then using V4V.app API to decode lnurl and lightning addresses
-
   let decodedInvoice = null
   invoice = invoice.toLowerCase().trim()
   // if the invoice starts with lnbc the bolt11 library can decode it

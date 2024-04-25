@@ -398,7 +398,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (this.currentKeepSats === null) {
         console.debug("Need to reauthenticate to get keepSatsBalance")
         console.debug("check if logged in with HAS or Keychain")
-        return "💰💰💰"
+        return 0
       }
       return this.currentKeepSats?.net_sats
     },
