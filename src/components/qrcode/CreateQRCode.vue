@@ -175,37 +175,41 @@ async function newQRCode() {
   if (props.loading) {
     return
   }
-  qrCode.value = new QRCodeStyling({
-    width: props.width,
-    height: props.height,
-    type: "webp",
-    data: qrTextPage.value,
-    image: avatarUrl.value,
-    qrOptions: {
-      typeNumber: "0",
-      mode: "Byte",
-      errorCorrectionLevel: "M",
-      cellSize: 6,
-      margin: 0,
-    },
-    dotsOptions: {
-      color: props.color,
-      type: "square",
-    },
-    backgroundOptions: {
-      color: quasar.dark.isActive ? "#03002c" : "#f5f5f5",
-    },
-    margin: 1,
-    imageOptions: {
-      crossOrigin: "anonymous",
-      hideBackgroundDots: false,
-      imageSize: 0.4,
-      margin: 0,
-    },
-  })
-  qrCodeContainer.value.innerHTML = ""
-  qrCode.value.append(qrCodeContainer.value)
-  emit("qrCode", qrCode.value)
+  try {
+    qrCode.value = new QRCodeStyling({
+      width: props.width,
+      height: props.height,
+      type: "webp",
+      data: qrTextPage.value,
+      image: avatarUrl.value,
+      qrOptions: {
+        typeNumber: "0",
+        mode: "Byte",
+        errorCorrectionLevel: "M",
+        cellSize: 6,
+        margin: 0,
+      },
+      dotsOptions: {
+        color: props.color,
+        type: "square",
+      },
+      backgroundOptions: {
+        color: quasar.dark.isActive ? "#03002c" : "#f5f5f5",
+      },
+      margin: 1,
+      imageOptions: {
+        crossOrigin: "anonymous",
+        hideBackgroundDots: false,
+        imageSize: 0.4,
+        margin: 0,
+      },
+    })
+    qrCodeContainer.value.innerHTML = ""
+    qrCode.value.append(qrCodeContainer.value)
+    emit("qrCode", qrCode.value)
+  } catch (error) {
+    console.error("Error generating QR code: ", error)
+  }
 }
 
 function openLinkInNewWindow() {

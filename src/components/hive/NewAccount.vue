@@ -164,15 +164,17 @@
           class="row text-center justify-center overlay-container"
           :class="{ 'show-tick': invoicePaid }"
         >
-          <CreateQRCode
-            :qrText="paymentRequest?.payment_request || 'loading'"
-            :width="maxUseableWidth"
-            :height="maxUseableWidth"
-            hiveAccname="v4vapp.api"
-            :color="dotColor"
-            :loading="invoiceLoading"
-            @qr-code="(val) => (qrCode = val)"
-          />
+          <div v-if="!accountConfirm">
+            <CreateQRCode
+              :qrText="paymentRequest?.payment_request || 'loading'"
+              :width="maxUseableWidth"
+              :height="maxUseableWidth"
+              hiveAccname="v4vapp.api"
+              :color="dotColor"
+              :loading="invoiceLoading"
+              @qr-code="(val) => (qrCode = val)"
+            />
+          </div>
         </div>
         <div class="q-pt-none">
           <q-linear-progress
@@ -225,6 +227,7 @@
       :accountName="accountName"
       :masterPassword="masterPassword"
       :keys="keys"
+      :keychain-link="keychainLink"
       @close="handleReset"
       @downloadKeys="downloadKeys"
       @copyKeys="copyKeys"
@@ -263,6 +266,7 @@ const nameCheck = ref(true)
 const nameCheckError = ref("")
 const masterPassword = ref("")
 const keys = ref({})
+const keychainLink = ref("")
 const progress = ref(0)
 const voucher = ref("")
 const respPaid = ref({})
@@ -324,13 +328,13 @@ function randomMasterPassword() {
 }
 
 function handleReset() {
-  console.log("reset pressed")
   accountName.value = ""
   nameCheck.value = true
   nameCheckError.value = ""
   masterPassword.value = ""
   keys.value = {}
   progress.value = 1
+  activeItem.value = 1
   paymentRequest.value = ""
   downloadedKeys.value = false
   showPayment.value = false
@@ -342,7 +346,6 @@ async function handleSubmit() {
 }
 
 async function handleCancel() {
-  console.log("handleCancel")
   clearTimeout(checkTimeout)
   showPayment.value = false
   paymentRequest.value = {}
@@ -374,9 +377,7 @@ async function requestInvoice() {
     let resp
     while (true) {
       try {
-        console.log("Trying /account/create")
         resp = await api.post("/account/create", accountData)
-        console.log("resp", resp)
         if (resp.status !== 429) {
           break
         }
@@ -385,7 +386,6 @@ async function requestInvoice() {
       }
       await new Promise((resolve) => setTimeout(resolve, 5000))
     }
-    console.log("resp", resp)
     paymentRequest.value = resp.data
     paymentRequest.value["payment_request"] =
       "lightning:" + resp.data.payment_request
@@ -410,15 +410,11 @@ async function checkPayment(expiresAt) {
     })
     if (resp.data.paid) {
       respPaid.value = resp.data
-      console.log("paid")
       handlePaid()
       return
     }
-    console.log("resp", resp.data)
-    console.log("voucher", voucher.value)
     if (voucher.value) {
       respPaid.value = resp.data
-      console.log("paid by voucher")
       handlePaid()
       return
     }
@@ -428,7 +424,6 @@ async function checkPayment(expiresAt) {
     }
     // Calculate progress
     if (expiresAt) {
-      console.log("Checking payment", expiresAt)
       const currentTime = Math.floor(Date.now() / 1000) // get current time in seconds
       const totalDuration = expiresAt - currentTime
       const totalTime = expiresAt - initialTime
@@ -441,7 +436,6 @@ async function checkPayment(expiresAt) {
   }
 }
 function handleExpired() {
-  console.log("handleExpired")
   clearTimeout(checkTimeout)
   invoiceLoading.value = true
   paymentRequest.value = {}
@@ -463,7 +457,6 @@ function handleExpired() {
 }
 
 async function handlePaid() {
-  console.log("paid")
   clearTimeout(checkTimeout)
   nextTick(() => {
     invoicePaid.value = true
@@ -491,7 +484,6 @@ async function handlePaid() {
     while (true) {
       try {
         resp = await api.post("/account/create_complete", accountData)
-        console.log("resp", resp)
         if (resp.status !== 429) {
           break
         }
@@ -514,7 +506,6 @@ async function handlePaid() {
         position: "top",
         timeout: 5000,
       })
-      console.log("show successes and next steps")
       accountConfirm.value = true
     } else {
       Notify.create({
@@ -525,7 +516,6 @@ async function handlePaid() {
       })
     }
   } catch (error) {
-
     console.error("error", error)
   }
   paymentRequest.value = ""
@@ -584,6 +574,9 @@ function generateKeys() {
       },
     },
   }
+  keychainLink.value = `keychain://add_account=${JSON.stringify(
+    keys.value.keychain
+  )}`
 }
 
 function copyKeys() {

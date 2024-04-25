@@ -88,6 +88,7 @@
             icon="close"
             @click="closeDialog"
             :color="buttonActiveNot(true).color"
+            hive-accname="v4vapp"
             :text-color="buttonActiveNot(true).textColor"
           ></q-btn>
         </div>
@@ -97,7 +98,7 @@
 </template>
 
 <script setup>
-import { useQuasar, copyToClipboard } from "quasar"
+import { copyToClipboard } from "quasar"
 import { buttonActiveNot } from "src/use/useUtils"
 import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
 import { ref } from "vue"
@@ -118,27 +119,24 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  keychainLink: {
+    type: String,
+    default: "",
+  }
 })
 
-const keychainLink = ref("")
-
 onMounted(() => {
-  keychainLink.value = `keychain://add_account=${JSON.stringify(
-    props.keys.keychain
-  )}`
+
 })
 
 function closeDialog() {
-  console.log("closeDialog")
   emit("close")
 }
 
 function downloadKeys() {
-  console.log("downloadKeys")
   emit("downloadKeys")
 }
 function copyKeys() {
-  console.log("copyKeys")
   emit("copyKeys")
 }
 </script>
