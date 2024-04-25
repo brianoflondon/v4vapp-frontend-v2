@@ -632,21 +632,30 @@ async function decodeInvoice() {
     if (invoiceText.value.startsWith("@")) {
       invoiceText.value = invoiceText.value.substring(1)
     }
+    // trim invoiceText
+    invoiceText.value = invoiceText.value.trim()
     const [isHiveAccount, dInvoiceValue] = await Promise.all([
       useHiveAccountExists(invoiceText.value),
       useDecodeLightningInvoice(invoiceText.value),
     ])
 
     dInvoice.value = dInvoiceValue
-    console.log("dInvoice", dInvoice.value)
-    console.log("isHiveAccount", isHiveAccount)
-    console.log("keepSatsBalance", storeUser.keepSatsBalanceNum)
     if (isHiveAccount.exists) {
-      console.log("---------------")
-      console.log("isHiveAccount", isHiveAccount)
       if (!storeUser.keepSatsBalanceNum) {
+        // TODO: replace with translation
         errorMessage.value =
           "You need to be logged in with a KeepSats balance to send sats to a Hive user"
+        dInvoice.value = {
+          v4vapp: {
+            type: "hiveAccname",
+          },
+        }
+        invoiceValid.value = false
+        invoiceChecking.value = false
+        return
+      }
+      if (storeUser.currentUser === isHiveAccount.hiveAccname) {
+        errorMessage.value = t("cannot_send_to_self")
         dInvoice.value = {
           v4vapp: {
             type: "hiveAccname",

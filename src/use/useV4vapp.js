@@ -124,9 +124,12 @@ export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
 
   try {
     const response = await apiLogin.post("/v1/v4vapp/keepsats/transfer", data)
-    console.log(response.data)
-    return response.data
+    if (response.status === 200) {
+      console.log(response.data)
+      return response.data
+    }
   } catch (error) {
     console.error(error)
+    return error
   }
 }
