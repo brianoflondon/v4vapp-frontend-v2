@@ -811,6 +811,13 @@ async function payWithApi() {
         message: response.message,
         position: "top",
       })
+    } else {
+      q.notify({
+        color: "negative",
+        timeout: 5000,
+        message: t('payment_failed'),
+        position: "top",
+      })
     }
     // wait 2 seconds then clear the form
     await new Promise((resolve) => setTimeout(resolve, 2000))
