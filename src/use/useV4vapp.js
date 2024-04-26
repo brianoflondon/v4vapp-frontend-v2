@@ -2,7 +2,7 @@
 //
 
 import { Notify } from "quasar"
-import { apiLogin } from "src/boot/axios"
+import { api, apiLogin } from "src/boot/axios"
 import { useStoreUser } from "src/stores/storeUser"
 import { checkCache, putInCache } from "src/use/useUtils"
 
@@ -131,5 +131,20 @@ export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
   } catch (error) {
     console.error(error)
     return error
+  }
+}
+
+
+/**
+ * Fetches the cost of a new account from the API.
+ * @returns {Promise<any>} A promise that resolves to the cost data.
+ */
+export async function useNewAccountCost() {
+  try {
+    const response = await api.get("/account/cost")
+    return response.data
+  } catch (error) {
+    console.error(error)
+    return null
   }
 }

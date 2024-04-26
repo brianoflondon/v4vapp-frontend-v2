@@ -117,7 +117,7 @@
               <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
             </div>
           </div>
-
+          <!-- Invoice and multipurpose input box -->
           <div class="column flex-center q-pt-sm q-px-sm">
             <q-input
               for="invoice"
@@ -141,16 +141,23 @@
               :hint="invoiceHint"
               hide-bottom-space
             >
+              <template v-if="dInvoice?.v4vapp?.sendTo" v-slot:prepend>
+                <q-avatar rounded size="md">
+                  <HiveAvatar :hiveAccname="dInvoice?.v4vapp?.sendTo" />
+                </q-avatar>
+              </template>
               <!-- hide-bottom-space: stops the animation for the hint text-->
             </q-input>
+            {{dInvoice?.v4vapp?.sendTo }}
           </div>
+          <!-- End Invoice and multipurpose input box -->
           <CountdownBar
             class="q-pt-xs"
             :expiry="dInvoice?.timeExpireDate"
             @message="(val) => (timeMessage = val)"
             @time-left="(val) => checkInvoiceProgress(val)"
           />
-          <!-- Amounts Display -->
+          <!-- Amounts Display HIDDEN -->
           <div v-if="false" class="amounts-display flex justify-evenly">
             <div class="q-pa-xs input-amount-readonly">
               <q-input
@@ -281,7 +288,7 @@
           </div>
         </div>
       </div>
-      <!-- Camera Toggle, paste and invoice input -->
+      <!-- End Camera Toggle, paste and invoice input -->
     </div>
     <!-- End Main page content for wallet with credit card and invoice entry -->
     <AskDetailsDialog
@@ -337,6 +344,7 @@ import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HiveLightningTrans from "src/components/v4vapp/HiveLightningTrans.vue"
 import DepositKeepsats from "src/components/hive/DepositKeepsats.vue"
 import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -815,7 +823,7 @@ async function payWithApi() {
       q.notify({
         color: "negative",
         timeout: 5000,
-        message: t('payment_failed'),
+        message: t("payment_failed"),
         position: "top",
       })
     }

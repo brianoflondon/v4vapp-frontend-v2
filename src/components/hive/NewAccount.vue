@@ -129,7 +129,7 @@
                   </div>
                   <div class="q-px-md">
                     <q-btn
-                      label="Pay"
+                      :label="payButton"
                       icon="bolt"
                       :disable="activeItem < 4"
                       :color="buttonActiveNot(!activeItem < 4).color"
@@ -147,6 +147,7 @@
         <GetKeychain :active-item="activeItem" />
       </div>
     </div>
+    {{ newAccountCost }}
   </div>
 
   <!-- MARK: The Payment Dialog screen -->
@@ -185,6 +186,7 @@
             color="positive"
           >
           </q-linear-progress>
+          Cost: {{ paymentRequest.amount }} sats
         </div>
       </q-card-section>
       <q-card-section>
@@ -238,7 +240,7 @@
 <script setup>
 //MARK: script setup
 
-import { ref, computed, watch } from "vue"
+import { ref, computed, watch, onMounted } from "vue"
 import { useQuasar, copyToClipboard } from "quasar"
 import { useHiveAccountExists } from "src/use/useHive"
 import { buttonActiveNot } from "src/use/useUtils"
@@ -255,6 +257,8 @@ import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
 import StepNumbers from "src/components/utils/StepNumbers.vue"
 import ConfirmNewAccount from "src/components/hive/ConfirmNewAccount.vue"
 import GetKeychain from "src/components/hive/GetKeychain.vue"
+import { useNewAccountCost } from "src/use/useV4vapp"
+import { tidyNumber } from "src/use/useUtils"
 
 const t = useI18n().t
 
@@ -278,6 +282,22 @@ const showPayment = ref(false) // Shows the payment dialog
 const invoicePaid = ref(false)
 let initialTime = 0
 const accountConfirm = ref(false) // Dialog to confirm account creation
+
+const newAccountCost = ref({})
+
+const payButton = computed(() => {
+  return (
+    newAccountCost.value.hive +
+    " Hive | " +
+    tidyNumber(newAccountCost.value.sats, 0) +
+    " sats"
+  )
+})
+
+onMounted(async () => {
+  newAccountCost.value = await useNewAccountCost()
+  console.log("newAccountCost", newAccountCost.value)
+})
 
 // Watch for changes in downloadedKeys
 watch(downloadedKeys, (newVal) => {
