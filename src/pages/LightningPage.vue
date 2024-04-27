@@ -533,7 +533,7 @@ function checkInvoiceProgress(timeLeft) {
 
 function receiveNewInvoice(val) {
   console.log("receiveNewInvoice", val)
-  if (val?.v4vapp.type === "hiveAccname") {
+  if (val?.v4vapp?.type === "hiveAccname") {
     // we have a Hive account to send to.
     dInvoice.value = val
     invoiceValid.value = true
