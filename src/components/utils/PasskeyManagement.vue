@@ -72,12 +72,16 @@
       </q-card-section>
 
       <q-card-section>
-        <div class="text-center" v-if="loadingCredentials">
-          <q-spinner-grid color="primary" size="40px" />
-        </div>
-        <div v-else-if="loadingCredentials === false && numCredentials === 0">
+        <!-- <div class="text-center" v-if="loadingCredentials"> -->
+        <!-- <q-spinner-grid color="primary" size="300px 35px" /> -->
+        <!-- </div> -->
+        <div v-if="loadingCredentials === false && numCredentials === 0">
           No passkeys registered
         </div>
+
+        <q-item v-if="loadingCredentials">
+          <q-skeleton type="range" width="303px" :height="40*numCredentials + 'px'" />
+        </q-item>
         <div v-else class="credential-list">
           <q-item
             caption
@@ -344,6 +348,7 @@ async function doPasskeyManageClose() {
 }
 
 async function doPasskeyRegister() {
+  loadingCredentials.value = true
   console.debug("doPasskeyRegister")
   if (!passkeyName.value) {
     showError.value = true
@@ -375,6 +380,7 @@ async function doPasskeyRegister() {
     console.debug("doPasskeyRegister failed")
     console.debug("result", result.message)
   }
+  loadingCredentials.value = false
 }
 
 async function doPasskeyDeleteAsk(evt, cred) {
