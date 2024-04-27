@@ -349,6 +349,8 @@ async function doPasskeyRegister() {
     showError.value = true
     return
   }
+  // strip trailing spaces from passkeyName
+  passkeyName.value = passkeyName.value.trim()
   const result = await usePasskeyRegister(
     storeUser.currentUser,
     passkeyName.value
