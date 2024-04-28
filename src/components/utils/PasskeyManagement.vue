@@ -78,21 +78,26 @@
         <div v-if="loadingCredentials === false && numCredentials === 0">
           No passkeys registered
         </div>
-
-        <q-item v-if="loadingCredentials">
-          <q-skeleton type="range" width="303px" :height="40*numCredentials + 'px'" />
-        </q-item>
-        <div v-else class="credential-list">
+        <div class="credential-list">
           <q-item
             caption
             v-for="cred in listCredentials"
             :key="cred._id"
             @click="doManageKey(cred)"
           >
-            <q-item-section avatar>
+            <q-item-section avatar v-if="loadingCredentials">
+              <q-skeleton type="QAvatar" size="35px" />
+            </q-item-section>
+            <q-item-section avatar v-else>
               <q-icon name="key" />
             </q-item-section>
-            <q-item-section>
+            <q-item-section v-if="loadingCredentials">
+              <q-item-label
+                ><q-skeleton type="text" width="160px"
+              /></q-item-label>
+              <q-item-label caption><q-skeleton type="text" /> </q-item-label>
+            </q-item-section>
+            <q-item-section v-else>
               <q-item-label>{{ cred.device_name }}</q-item-label>
               <q-item-label caption>{{ credCountText(cred) }} </q-item-label>
             </q-item-section>
