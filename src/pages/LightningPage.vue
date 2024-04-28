@@ -59,6 +59,7 @@
     </div>
     <!-- Main page content for wallet with credit card and invoice entry -->
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
+      <!-- Camera  -->
       <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
         <div
@@ -69,16 +70,18 @@
         </div>
       </div>
       <div v-if="cameraShow">
-        <!-- <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream> -->
         <qrcode-stream
           @detect="onDecode"
           @camera-on="onReady"
           @error="onError"
         ></qrcode-stream>
       </div>
+      <!-- End Camera -->
+      <!-- Progress screen -->
       <div class="progress-screen">
         <ShowProgress v-model="dInvoice" />
       </div>
+      <!-- End Progress screen -->
       <!-- Camera Toggle, paste and invoice input -->
       <div class="camera-toggle-invoice">
         <div class="column flex-center">
@@ -148,7 +151,7 @@
               </template>
               <!-- hide-bottom-space: stops the animation for the hint text-->
             </q-input>
-            {{dInvoice?.v4vapp?.sendTo }}
+            {{ dInvoice?.v4vapp?.sendTo }}
           </div>
           <!-- End Invoice and multipurpose input box -->
           <CountdownBar
@@ -190,18 +193,15 @@
               ></q-input>
             </div>
           </div>
+          <!-- End Amounts Display -->
         </div>
-        <!-- End Amounts Display -->
         <!-- Payment Buttons -->
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
-          <!-- Need to check if user is logged in with keychain or HAS and use the right
-            button -->
-
           <div class="row justify-center q-pa-sm" v-if="enoughKeepSats">
             <div class="paywithsats-button flex column">
               <q-btn
                 class="payment-button-sats q-ma-sm"
-                @click="payInvoice('payWithSats', 'HiveKeychain')"
+                @click="payWithApi()"
                 :loading="storeApiStatus.payInvoice"
                 :disable="storeApiStatus.payInvoice"
                 icon="fa-brands fa-btc"
@@ -210,24 +210,13 @@
                 :text-color="buttonColor.textColor"
                 size="md"
                 rounded
-                icon-right="img:/keychain/hive-keychain-round.svg"
-              />
-              <q-btn v-if="dInvoice?.v4vapp?.type !== 'hiveAccname'"
-                class="payment-button-sats q-ma-sm"
-                @click="payInvoice('payWithSats', 'HAS')"
-                :loading="storeApiStatus.payInvoice"
-                :disable="storeApiStatus.payInvoice"
-                icon="fa-brands fa-btc"
-                :label="payWithSatsButton"
-                :color="buttonColor.buttonColor"
-                :text-color="buttonColor.textColor"
-                size="md"
-                rounded
-                icon-right="img:/has/hive-auth-logo.svg"
+                icon-right="img:/site-logo/v4vapp-logo-shadows.svg"
               />
             </div>
           </div>
-          <div v-if="dInvoice?.v4vapp?.type !== 'hiveAccname'">
+          <div
+            v-if="dInvoice?.v4vapp?.type !== 'hiveAccname' && !payWithSatsOnly"
+          >
             <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
               <q-btn
                 class="payment-button-hbd"
@@ -304,6 +293,9 @@
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
     />
+    <pre>
+      {{ dInvoice }}
+    </pre>
   </q-page>
 </template>
 
@@ -335,7 +327,7 @@ import {
   useHiveAccountExists,
   useHiveAvatarURL,
 } from "src/use/useHive.js"
-import { useKeepSatsTransfer } from "src/use/useV4vapp"
+import { useKeepSatsTransfer, useKeepSatsInvoice } from "src/use/useV4vapp"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
@@ -344,7 +336,7 @@ import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
 import CountdownBar from "components/utils/CountdownBar.vue"
 import { useI18n } from "vue-i18n"
-import { useQuasar } from "quasar"
+import { useQuasar, QSpinnerGears } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
@@ -393,6 +385,13 @@ const payWithSatsButton = computed(() => {
 
 const enoughKeepSats = computed(() => {
   if (storeUser.keepSatsBalanceNum >= CurrencyCalc.value.sats) {
+    return true
+  }
+  return false
+})
+
+const payWithSatsOnly = computed(() => {
+  if (dInvoice.value?.payWithSatsOnly) {
     return true
   }
   return false
@@ -811,35 +810,69 @@ function toggleCamera() {
   cameraShow.value = cameraOn.value
 }
 
+const paymentInProgressDialog = ref()
+
+function showPaying() {
+  paymentInProgressDialog.value = q.dialog({
+    title: "Processing...",
+
+    progress: {
+      spinner: QSpinnerGears,
+      color: "amber",
+    },
+    persistent: true, // we want the user to not be able to close it
+    ok: false, // we want the user to not be able to close it
+  })
+}
+
 async function payWithApi() {
   console.log("payWithApi")
+  showPaying()
   try {
-    const response = await useKeepSatsTransfer(
-      dInvoice.value.v4vapp.sendTo,
-      dInvoice.value.satoshis,
-      dInvoice.value.v4vapp.comment
+    let response
+    if (dInvoice.value?.v4vapp.type === "hiveAccname") {
+      response = await useKeepSatsTransfer(
+        dInvoice.value.v4vapp.sendTo,
+        dInvoice.value.satoshis,
+        dInvoice.value.v4vapp.comment
+      )
+    } else {
+      console.log("dInvoice.value", dInvoice.value)
+      response = await useKeepSatsInvoice(dInvoice.value.paymentRequest)
+    }
+    console.log(
+      "->>>>>> payment response: ",
+      response?.response?.data?.detail?.message
     )
-    console.log(response)
+    // extract the message from this response
+    paymentInProgressDialog.value.hide()
     if (response.success) {
       q.notify({
         color: "positive",
-        timeout: 2000,
+        timeout: 5000,
         message: response.message,
         position: "top",
       })
     } else {
+      const message = `${t("payment_failed")} - ${response?.response?.data?.detail?.message}`
       q.notify({
         color: "negative",
         timeout: 5000,
-        message: t("payment_failed"),
+        message: message,
         position: "top",
       })
     }
     // wait 2 seconds then clear the form
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 4000))
     clearReset()
   } catch (e) {
     console.error("Error in payWithApi", e)
+    q.notify({
+      color: "negative",
+      timeout: 5000,
+      message: t("payment_failed"),
+      position: "top",
+    })
   }
 }
 
@@ -853,19 +886,11 @@ async function payWithApi() {
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
   // Add 6 Hive to the amount to cover the fee or 2 HBD
-  const payWithSats = currency === "payWithSats"
-  if (dInvoice.value?.v4vapp?.type === "hiveAccname") {
-    payWithApi()
-    return
-  }
   let amountNum = 0
   if (currency == "HIVE") {
     amountNum = parseFloat(Hive.value) + 4 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
     amountNum = parseFloat(HBD.value) + 1.5 + 0.002 * parseFloat(Hive.value)
-  } else if (payWithSats) {
-    amountNum = 0.001
-    currency = "HIVE"
   }
   CurrencyCalc.value.amount = amountNum
   CurrencyCalc.value.currency = currency.toLowerCase()
@@ -879,9 +904,6 @@ async function payInvoice(currency, method) {
     memo = "#" + memo
   }
 
-  if (payWithSats) {
-    memo += " #paywithsats"
-  }
   dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
   let username = null
@@ -948,7 +970,6 @@ async function payInvoice(currency, method) {
       }
 
       // result = await useHASTransfer(username, amount, currency, memo)
-      const message = `${t("open_HAS")} <a href="has://sign_wait/">Click</a>`
       dInvoice.value.progress.push(`${t("open_HAS")}`)
       // Code will finish within the useHAS code
       break
