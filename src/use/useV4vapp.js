@@ -104,7 +104,7 @@ export async function useFetchSatsHistory(username, days = 7 * 4) {
  * @returns {Promise<void>} - A promise that resolves when the transfer is successful, or rejects with an error.
  */
 export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
-  // convert amountsats to an int and check it is > 0
+  // convert amount sats to an int and check it is > 0
   if (isNaN(amountSats) || amountSats <= 0) {
     console.error("Invalid amountSats", amountSats)
     return
@@ -126,6 +126,22 @@ export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
     const response = await apiLogin.post("/v1/v4vapp/keepsats/transfer", data)
     if (response.status === 200) {
       console.log(response.data)
+      return response.data
+    }
+  } catch (error) {
+    console.error(error)
+    return error
+  }
+}
+
+export async function useKeepSatsInvoice(paymentRequest) {
+  console.log("useKeepSatsInvoice", paymentRequest)
+  try {
+    const data = {
+      memo: paymentRequest,
+    }
+    const response = await apiLogin.post("/v1/v4vapp/keepsats/invoice", data)
+    if (response.status === 200) {
       return response.data
     }
   } catch (error) {

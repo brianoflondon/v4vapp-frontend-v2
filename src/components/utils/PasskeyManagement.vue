@@ -242,8 +242,6 @@ async function explode() {
 
 // Watch for changes in the current user
 watch(storeUser, async (newVal) => {
-  console.debug("storeUser.currentUser changed to:", newVal.currentUser)
-  console.debug("hiveAccObj.value", hiveAccObj.value)
   if (newVal.currentUser === null) {
     updatePasskeyList(false)
   }

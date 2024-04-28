@@ -1,8 +1,11 @@
 import { api, myNodePubKey } from "boot/axios"
+import { store } from "quasar/wrappers"
 import * as bolt11 from "src/assets/bolt11.min.js"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import { useStoreUser } from "src/stores/storeUser"
 
 const storeAPIStatus = useStoreAPIStatus()
+const storeUser = useStoreUser()
 
 export async function useGetLightingHiveInvoice(
   hiveAccname,
@@ -122,6 +125,7 @@ export function useGetTimeProgress(decodedInvoice) {
 function validateInvoice(decodedInvoice) {
   // Check value of invoice is within min and max
   // check that invoice is not expired
+  console.log("validateInvoice", decodedInvoice)
   decodedInvoice.errors = {}
   decodedInvoice.errors.text = []
   if (!decodedInvoice) {
@@ -139,14 +143,20 @@ function validateInvoice(decodedInvoice) {
     storeAPIStatus.apiStatus.config.minimum_invoice_payment_sats
   const maximumPayment =
     storeAPIStatus.apiStatus.config.maximum_invoice_payment_sats
-  if (amount < minimumPayment) {
+  // need to add check to see if user has a sats balance
+  console.log("storeUser.keepSatsBalanceNum", storeUser.keepSatsBalanceNum)
+  console.log("amount", amount)
+  decodedInvoice.payWithSatsOnly = false
+  if (amount < minimumPayment && storeUser.keepSatsBalanceNum < amount) {
     decodedInvoice.errors.too_low = true
     decodedInvoice.errors.text.push("invoice_too_low")
     return
-  } else if (amount > maximumPayment) {
+  } else if (amount > maximumPayment && amount > storeUser.keepSatsBalanceNum) {
     decodedInvoice.errors.too_high = true
     decodedInvoice.errors.text.push("invoice_too_high")
     return
+  } else if (amount < minimumPayment || amount > maximumPayment) {
+    decodedInvoice.payWithSatsOnly = true
   }
   // Compare the current time with the expiration time
   if (Date.now() > decodedInvoice.timeExpireDate * 1000) {

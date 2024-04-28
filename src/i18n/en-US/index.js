@@ -98,7 +98,7 @@ export default {
   invoice: "Invoice",
   expires: "expires",
   Expires: "Expires",
-  enter_invoice: "lnbc.... or Lightning Address",
+  enter_invoice: "lnbc...., Lightning Address or Hive Name",
   valid_invoice: "Invoice decoded",
   valid_lightning_address: "Address decoded",
   invalid_invoice: "Invalid invoice or Lightning Address",
