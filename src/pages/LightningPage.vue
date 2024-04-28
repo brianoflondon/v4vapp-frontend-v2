@@ -198,10 +198,10 @@
             button -->
 
           <div class="row justify-center q-pa-sm" v-if="enoughKeepSats">
-            <div class="paywithsats-button">
+            <div class="paywithsats-button flex column">
               <q-btn
-                class="payment-button-sats"
-                @click="payInvoice('payWithSats', storeUser.loginMethod)"
+                class="payment-button-sats q-ma-sm"
+                @click="payInvoice('payWithSats', 'HiveKeychain')"
                 :loading="storeApiStatus.payInvoice"
                 :disable="storeApiStatus.payInvoice"
                 icon="fa-brands fa-btc"
@@ -210,11 +210,20 @@
                 :text-color="buttonColor.textColor"
                 size="md"
                 rounded
-                :icon-right="
-                  storeUser.isHAS
-                    ? 'img:/has/hive-auth-logo.svg'
-                    : 'img:/keychain/hive-keychain-round.svg'
-                "
+                icon-right="img:/keychain/hive-keychain-round.svg"
+              />
+              <q-btn v-if="dInvoice?.v4vapp?.type !== 'hiveAccname'"
+                class="payment-button-sats q-ma-sm"
+                @click="payInvoice('payWithSats', 'HAS')"
+                :loading="storeApiStatus.payInvoice"
+                :disable="storeApiStatus.payInvoice"
+                icon="fa-brands fa-btc"
+                :label="payWithSatsButton"
+                :color="buttonColor.buttonColor"
+                :text-color="buttonColor.textColor"
+                size="md"
+                rounded
+                icon-right="img:/has/hive-auth-logo.svg"
               />
             </div>
           </div>
@@ -675,6 +684,7 @@ async function decodeInvoice() {
       }
       invoiceValid.value = true
       errorMessage.value = ""
+      const amountToSend = storeUser.keepsatsBalanceNum > 1000 ? 1 : 1000
       dInvoice.value = {
         v4vapp: {
           type: "hiveAccname",
@@ -690,13 +700,11 @@ async function decodeInvoice() {
             maxSats: storeUser.keepSatsBalanceNum,
             commentLength: 255,
           },
-          amountToSend: 1000,
+          amountToSend: amountToSend,
         },
         sending: true,
         askDetails: true,
       }
-
-      console.log(dInvoice.value)
       return
     } else if (dInvoice.value) {
       CurrencyCalc.value.amount = dInvoice.value?.satoshis
