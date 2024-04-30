@@ -9,7 +9,8 @@
         <q-item dense class="justify-center">
           <ConfettiExplosion v-if="visibleConfetti" />
           <q-btn
-            :disable="numCredentials === 0"
+            :disable="numCredentials === 0 || !isValid"
+            :color="numCredentials === 0 || !isValid ? 'grey-9' : 'primary'"
             rounded
             align="left"
             label="Login"
@@ -21,6 +22,7 @@
         <q-item dense class="justify-center">
           <q-btn
             :disable="!storeUser.currentUser"
+            :color="!storeUser.currentUser ? 'grey-9' : 'primary'"
             rounded
             :label="t('manage') + ' / ' + t('add')"
             align="left"
