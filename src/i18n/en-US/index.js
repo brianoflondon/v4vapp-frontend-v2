@@ -24,6 +24,7 @@ export default {
   yes: "Yes",
   no: "No",
   all: "All",
+  keepsats: "KeepSats",
   // Dark Mode Selector
   change_light: "Change to light mode",
   change_dark: "Change to dark mode",
@@ -219,4 +220,8 @@ export default {
   convert_sats_to_hive: "Convert sats to Hive",
   deposit_sats_on_v4vapp: "Deposit sats on v4v.app",
   convert_sats_from_v4vapp: "Convert sats to Hive",
+  payment_failed: "Payment failed",
+
+  // Loading messages
+  new_content: "New content is available; please quit the app or refresh.",
 }

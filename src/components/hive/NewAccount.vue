@@ -147,7 +147,6 @@
         <GetKeychain :active-item="activeItem" />
       </div>
     </div>
-    {{ newAccountCost }}
   </div>
 
   <!-- MARK: The Payment Dialog screen -->

@@ -156,6 +156,13 @@ export async function useKeepSatsInvoice(paymentRequest) {
   }
 }
 
+/**
+ * Converts the specified amount of sats to the given currency using the V4vapp API.
+ * @param {number} satsToConvert - The amount of sats to convert.
+ * @param {string} currency - The currency to convert to.
+ * @param {string} [memo=""] - Optional memo for the conversion.
+ * @returns {Promise<any>} - A promise that resolves to the converted amount or rejects with an error.
+ */
 export async function useKeepSatsConvert(satsToConvert, currency, memo = "") {
   console.log("useKeepSatsConvert", satsToConvert, currency)
   try {

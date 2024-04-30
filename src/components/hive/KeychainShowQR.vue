@@ -79,6 +79,12 @@
           class="text-center q-pt-md"
           v-if="titleOptions[KeychainDialog.display].showHiveLightning"
         >
+          <q-toggle
+            v-model="keepSats"
+            :label="t('keepsats')"
+            @update:model-value="generateLightningQRCode()"
+          >
+          </q-toggle>
           <q-btn-toggle
             v-model="showLightning"
             icon="fa-sharp fa-solid fa-bolt"
@@ -198,6 +204,7 @@ const q = useQuasar()
 const t = useI18n().t
 
 const KeychainDialog = defineModel()
+const keepSats = ref(false)
 const storeApiStatus = useStoreAPIStatus()
 const storeSales = useStoreSales()
 const qrCode = ref(null)
@@ -217,14 +224,16 @@ const titleOptions = ref({
 
 const fees = computed(() => {
   const cur = KeychainDialog.value.currencyToSend
+  const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
+  const storeLndKey = cur + receiveCurrency
   if (showLightning.value === null) {
     return t("no_fees")
   }
-  if (!KeychainDialog.value.lndData[cur]) {
+  if (!KeychainDialog.value.lndData[storeLndKey]) {
     return t("calculating_fees")
   }
   return `sats: ${tidyNumber(
-    KeychainDialog.value?.lndData[cur]?.amount,
+    KeychainDialog.value?.lndData[storeLndKey]?.amount,
     0
   )} - ${t("Fees")}: ${tidyNumber(calcFees().sats, 0)} (${tidyNumber(
     calcFees().currency,
@@ -392,8 +401,14 @@ async function generateLightningQRCode() {
    *
    * @returns {string} The currency to send.
    */
+  console.log("keepSats", keepSats.value)
   const cur = KeychainDialog.value.currencyToSend
-  if (showLightning.value && KeychainDialog.value?.lndData[cur] == null) {
+  const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
+  console.log("receiveCurrency", receiveCurrency)
+  const storeLndKey = cur + receiveCurrency
+
+
+  if (showLightning.value && KeychainDialog.value?.lndData[storeLndKey] == null) {
     KeychainDialog.value.loading = true
     const lndData = await useGetLightingHiveInvoice(
       KeychainDialog.value.hiveAccTo,
@@ -401,18 +416,18 @@ async function generateLightningQRCode() {
       cur,
       KeychainDialog.value.memo,
       KeychainDialog.value.checkCode,
-      checkTimeTotal
+      checkTimeTotal,
+      receiveCurrency
     )
-    KeychainDialog.value.lndData[cur] = lndData
-
+    KeychainDialog.value.lndData[storeLndKey] = lndData
     KeychainDialog.value.loading = false
   }
   if (
-    KeychainDialog.value.lndData[cur]?.error ||
+    KeychainDialog.value.lndData[storeLndKey]?.error ||
     KeychainDialog.value.lndData == null
   ) {
-    const message = KeychainDialog.value.lndData[cur]?.error
-      ? KeychainDialog.value.lndData[cur]?.error
+    const message = KeychainDialog.value.lndData[storeLndKey]?.error
+      ? KeychainDialog.value.lndData[storeLndKey]?.error
       : t("lightning_invoice_not_created")
     q.notify({
       color: "negative",
@@ -426,7 +441,7 @@ async function generateLightningQRCode() {
   }
   if (showLightning.value) {
     KeychainDialog.value.qrCodeTextLightning =
-      "lightning:" + KeychainDialog.value?.lndData[cur]["payment_request"]
+      "lightning:" + KeychainDialog.value?.lndData[storeLndKey]["payment_request"]
     KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextLightning
     storeSales.markAsLightning(KeychainDialog.value.checkCode)
   } else {
@@ -501,7 +516,7 @@ async function checkHiveTransaction(count = 0) {
       )
       hiveCheckTimer.value = 100
       const transactionFound = findTransactionWithCheckCode(
-        KeychainDialog.value.transactions,
+        KeychainDialog.value?.transactions,
         KeychainDialog.value.checkCode
       )
       if (!transactionFound) {
@@ -561,6 +576,7 @@ function findTransactionWithCheckCode(transactions, checkCode) {
     )
     return
   }
+  console.log(transaction.op[1].memo)
   const transactionFound = transactions.find((transaction) =>
     transaction.op[1].memo.endsWith(checkCode)
   )

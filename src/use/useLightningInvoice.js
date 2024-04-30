@@ -13,7 +13,8 @@ export async function useGetLightingHiveInvoice(
   currency,
   memo,
   checkCode = "",
-  expiry = 300
+  expiry = 300,
+  receiveCurrency = ""
 ) {
   try {
     if (expiry > 600) {
@@ -34,6 +35,7 @@ export async function useGetLightingHiveInvoice(
         app_name: "v4vapp-pos",
         expiry: expiry,
         message: message,
+        receive_currency: receiveCurrency,
       },
     })
     return callBackResult.data

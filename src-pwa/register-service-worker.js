@@ -1,6 +1,7 @@
 import { Notify } from "quasar"
 import { register } from "register-service-worker"
 
+
 // The ready(), registered(), cached(), updatefound() and updated()
 // events passes a ServiceWorkerRegistration instance in their arguments.
 // ServiceWorkerRegistration: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration
@@ -32,10 +33,21 @@ register(process.env.SERVICE_WORKER_FILE, {
   updated(/* registration */) {
     console.log("New content is available; please refresh.")
     Notify.create({
-      message: "New content is available; please quit the app or refresh.",
+      message: "New content is available; please refresh.",
       color: "positive",
       position: "bottom",
-      timeout: 5000,
+      timeout: 0, // Make the notification sticky
+      actions: [
+        {
+          // Add an "OK" button
+          label: "OK",
+          color: "white",
+          handler: () => {
+            // Dismiss the notification when the "OK" button is clicked
+            Notify.dismiss()
+          },
+        },
+      ],
     })
   },
 
