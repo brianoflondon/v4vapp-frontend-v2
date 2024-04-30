@@ -134,6 +134,12 @@ export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
   }
 }
 
+/**
+ * Sends a payment request to the server and returns the response data.
+ *
+ * @param {string} paymentRequest - The payment request to be sent.
+ * @returns {Promise<any>} - The response data from the server.
+ */
 export async function useKeepSatsInvoice(paymentRequest) {
   console.log("useKeepSatsInvoice", paymentRequest)
   try {
@@ -150,6 +156,23 @@ export async function useKeepSatsInvoice(paymentRequest) {
   }
 }
 
+export async function useKeepSatsConvert(satsToConvert, currency, memo = "") {
+  console.log("useKeepSatsConvert", satsToConvert, currency)
+  try {
+    const data = {
+      sats: satsToConvert,
+      currency: currency,
+      memo: memo,
+    }
+    const response = await apiLogin.post("/v1/v4vapp/keepsats/convert", data)
+    if (response.status === 200) {
+      return response.data
+    }
+  } catch (error) {
+    console.error(error)
+    return error
+  }
+}
 
 /**
  * Fetches the cost of a new account from the API.

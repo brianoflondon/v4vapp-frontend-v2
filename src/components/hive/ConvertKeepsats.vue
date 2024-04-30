@@ -45,57 +45,30 @@
           </template>
         </q-btn-toggle>
         <!-- End HBD Hive and Sats toggle -->
+        {{ destination }}
       </div>
       <AmountSlider v-model="CurrencyCalc" />
 
       <!-- Payment buttons -->
       <div>
-        <div class="payment-buttons row justify-evenly items-center">
-          <div class="q-pa-sm">
+        <div class="row justify-center q-pa-sm">
+          <div class="paywithsats-button flex column">
             <q-btn
-              class="payment-button-hive"
-              @click="makePayment('HiveKeychain')"
+              class="payment-button-sats q-ma-sm"
+              @click="payWithApi"
               :loading="false"
               :disable="false"
-              icon="img:/keychain/hive-keychain-round.svg"
-              icon-right="img:avatars/hive_logo_dark.svg"
-              label="Keychain"
+              icon="fa-brands fa-btc"
+              label="KeepSats"
               :color="buttonColor.buttonColor"
               :text-color="buttonColor.textColor"
               size="md"
               rounded
-            />
-          </div>
-          <!-- Private Memo toggle  -->
-          <div class="private-memo-toggle q-pa-sm">
-            <q-toggle
-              v-model="privateMemo"
-              icon="lock"
-              size="xl"
-              color="primary"
-              dense
-              flat
-              toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
-            />
-            <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
-          </div>
-          <!-- End Private Memo toggle  -->
-          <div class="q-pa-sm">
-            <q-btn
-              class="payment-button-hive"
-              @click="makePayment('HAS')"
-              :loading="false"
-              :disable="false"
-              icon="img:/has/hive-auth-logo.svg"
-              icon-right="img:avatars/hive_logo_dark.svg"
-              label="HAS"
-              :color="buttonColor.buttonColor"
-              :text-color="buttonColor.textColor"
-              size="md"
-              rounded
+              icon-right="img:/site-logo/v4vapp-logo-shadows.svg"
             />
           </div>
         </div>
+
       </div>
       <!-- End Payment buttons -->
     </div>
@@ -107,6 +80,7 @@
 <script setup>
 import { ref, computed, watch } from "vue"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
+import { useKeepSatsConvert } from "src/use/useV4vapp"
 import { useQuasar } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
@@ -115,6 +89,8 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import AskHASDialog from "src/components/hive/AskHASDialog.vue"
 import AmountSlider from "src/components/utils/AmountSlider.vue"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
+import { useI18n } from "vue-i18n"
+const t = useI18n().t
 
 const HASDialog = ref({ show: false })
 const CurrencyCalc = ref({ amount: 1000, currency: "sats" })
@@ -148,6 +124,51 @@ function updateDestination(val) {
   destination.value = val
 }
 
+async function payWithApi() {
+  console.log("payWithApi")
+  try {
+    let response
+    response = await useKeepSatsConvert(
+      CurrencyCalc.value.sats,
+      destination.value.toUpperCase()
+    )
+
+    console.log(
+      "->>>>>> payment response: ",
+      response
+    )
+    // extract the message from this response
+    // paymentInProgressDialog.value.hide()
+    if (response.success) {
+      q.notify({
+        color: "positive",
+        timeout: 5000,
+        message: response?.message,
+        position: "top",
+      })
+    } else {
+      const message = `${t("payment_failed")} - ${
+        response?.message
+      }`
+      q.notify({
+        color: "negative",
+        timeout: 5000,
+        message: message,
+        position: "top",
+      })
+    }
+    storeUser.update()
+    await new Promise((resolve) => setTimeout(resolve, 4000))
+  } catch (e) {
+    console.error("Error in payWithApi", e)
+    q.notify({
+      color: "negative",
+      timeout: 5000,
+      message: t("payment_failed"),
+      position: "top",
+    })
+  }
+}
 
 async function makePayment(method) {
   const fixedAmount = parseFloat(CurrencyCalc.value.amount).toFixed(0)

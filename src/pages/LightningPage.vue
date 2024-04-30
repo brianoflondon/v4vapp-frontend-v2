@@ -82,7 +82,7 @@
         <ShowProgress v-model="dInvoice" />
       </div>
       <!-- End Progress screen -->
-      <!-- Camera Toggle, paste and invoice input -->
+      <!-- Payment buttons Camera Toggle, paste and invoice input -->
       <div class="camera-toggle-invoice">
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
@@ -286,16 +286,13 @@
           </div>
         </div>
       </div>
-      <!-- End Camera Toggle, paste and invoice input -->
+      <!-- End Payment buttons Camera Toggle, paste and invoice input -->
     </div>
     <!-- End Main page content for wallet with credit card and invoice entry -->
     <AskDetailsDialog
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
     />
-    <pre>
-      {{ dInvoice }}
-    </pre>
   </q-page>
 </template>
 
