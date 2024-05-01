@@ -1,52 +1,43 @@
 <template>
   <div class="q-pa-sm col justify-evenly">
     <div class="explanation-box text-justify q-pa-s">
-      <ExplanationBox title="Convert Sats to Hive" text="How to do it" />
+      <ExplanationBox :title="t('keepsats_convert_title')" :text="t('keepsats_convert_text')" />
     </div>
-    <div class="toggle pad-max-width">
-      <div class="q-pa-sm">
-        <!-- HBD Hive and Sats toggle -->
-        <q-btn-toggle
-          spread
-          v-model="destination"
-          push
-          dense
-          glossy
-          toggle-color="primary"
-          :options="[
-            { label: '', value: 'hbd', slot: 'hbd' },
-            { label: '', value: 'hive', slot: 'hive' },
-          ]"
-          @update:model-value="(val) => updateDestination(val)"
-        >
-          <!-- HBD Button -->
-          <template #hbd>
-            <div
-              class="column items-center q-pa-none"
-              style="font-size: 1.2rem"
-            >
-              <div><HbdLogoIcon /></div>
-              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-                HBD
-              </div>
+    <div class="destination-toggle pad-max-width">
+      <!-- HBD Hive and Sats toggle -->
+      <q-btn-toggle
+        spread
+        v-model="destination"
+        push
+        dense
+        glossy
+        toggle-color="primary"
+        :options="[
+          { label: '', value: 'hbd', slot: 'hbd' },
+          { label: '', value: 'hive', slot: 'hive' },
+        ]"
+        @update:model-value="(val) => updateDestination(val)"
+      >
+        <!-- HBD Button -->
+        <template #hbd>
+          <div class="column items-center q-pa-none" style="font-size: 1.2rem">
+            <div><HbdLogoIcon /></div>
+            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+              HBD
             </div>
-          </template>
-          <!-- Hive Button -->
-          <template #hive>
-            <div
-              class="column items-center q-pa-none"
-              style="font-size: 2.05rem"
-            >
-              <div><i class="fa-brands fa-hive" /></div>
-              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-                Hive
-              </div>
+          </div>
+        </template>
+        <!-- Hive Button -->
+        <template #hive>
+          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
+            <div><i class="fa-brands fa-hive" /></div>
+            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+              Hive
             </div>
-          </template>
-        </q-btn-toggle>
-        <!-- End HBD Hive and Sats toggle -->
-        {{ destination }}
-      </div>
+          </div>
+        </template>
+      </q-btn-toggle>
+      <!-- End HBD Hive and Sats toggle -->
       <AmountSlider v-model="CurrencyCalc" />
 
       <!-- Payment buttons -->
@@ -68,13 +59,12 @@
             />
           </div>
         </div>
-
       </div>
       <!-- End Payment buttons -->
     </div>
+    <AlternateCurrency v-model="CurrencyCalc" />
+    <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
   </div>
-  <AlternateCurrency v-model="CurrencyCalc" />
-  <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
 </template>
 
 <script setup>
@@ -133,10 +123,7 @@ async function payWithApi() {
       destination.value.toUpperCase()
     )
 
-    console.log(
-      "->>>>>> payment response: ",
-      response
-    )
+    console.log("->>>>>> payment response: ", response)
     // extract the message from this response
     // paymentInProgressDialog.value.hide()
     if (response.success) {
@@ -147,9 +134,7 @@ async function payWithApi() {
         position: "top",
       })
     } else {
-      const message = `${t("payment_failed")} - ${
-        response?.message
-      }`
+      const message = `${t("payment_failed")} - ${response?.message}`
       q.notify({
         color: "negative",
         timeout: 5000,
@@ -251,4 +236,10 @@ async function checkForSats(oldNetSats = 0, count = 0) {
 .amount-display {
   font-size: 2rem;
 }
+
+.explanation-box {
+  max-width: 400px;
+}
+
+
 </style>
