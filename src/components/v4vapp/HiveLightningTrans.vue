@@ -331,7 +331,6 @@ async function fetchData(newValue = dataDays.value) {
       totals.value.totalSats += data.value[i].sats
     }
   }
-  console.log("keepSatsData", keepSatsData.value)
 }
 
 onMounted(() => {

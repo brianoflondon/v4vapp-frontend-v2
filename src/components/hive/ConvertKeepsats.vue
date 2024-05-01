@@ -157,8 +157,8 @@ async function payWithApi() {
         position: "top",
       })
     }
-    storeUser.update()
     await new Promise((resolve) => setTimeout(resolve, 4000))
+    await storeUser.update(false) // update the user bypass the cache
   } catch (e) {
     console.error("Error in payWithApi", e)
     q.notify({

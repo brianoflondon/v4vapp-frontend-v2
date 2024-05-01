@@ -52,7 +52,6 @@ export async function useHiveDetails(hiveAccname) {
 export async function useHiveAccountExists(hiveAccname) {
   // Returns true if the Hive account exists
   // first char is not a-z
-  console.log("Checking Hive account: ", hiveAccname)
   if (!hiveAccname[0].match(/[a-z]/)) {
     return {
       exists: false,
@@ -144,7 +143,6 @@ export function useHiveAvatarURL({
 }) {
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
-  console.log("useHiveAvatarURL", hiveAccname, size, reason)
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     return useBlankProfileURL()
   }

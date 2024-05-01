@@ -230,7 +230,6 @@ onMounted(async () => {
 })
 
 watch(storeUser, (val) => {
-  console.log("storeUser changed DepositKeepSats", val)
   if (val) {
     updateDestination()
   }
@@ -380,8 +379,7 @@ async function checkForSats(oldNetSats = 0, count = 0) {
     currentSatsBalance = oldNetSats
   }
   console.log("currentSatsBalance", currentSatsBalance)
-  const change = await storeUser.updateSatsBalance(false)
-  console.log("change", change)
+  await storeUser.updateSatsBalance(false)
   if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
     q.notify({
       message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,

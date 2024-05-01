@@ -34,7 +34,6 @@ export async function useCheckApiTokenValid(username, apiToken) {
 export async function useKeepSats(useCache = true, transactions = true) {
   // if (!apiToken) return null
   // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
-  const expiryTimeInMinutes = 1
   try {
     const params = {
       useCache: useCache,

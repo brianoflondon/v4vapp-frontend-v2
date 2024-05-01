@@ -79,7 +79,10 @@
           class="text-center q-pt-md"
           v-if="titleOptions[KeychainDialog.display].showHiveLightning"
         >
+          <!-- Removed this options for now, don't want to re-write the entire
+             history page -->
           <q-toggle
+            v-if="false"
             v-model="keepSats"
             :label="t('keepsats')"
             @update:model-value="generateLightningQRCode()"
@@ -407,8 +410,10 @@ async function generateLightningQRCode() {
   console.log("receiveCurrency", receiveCurrency)
   const storeLndKey = cur + receiveCurrency
 
-
-  if (showLightning.value && KeychainDialog.value?.lndData[storeLndKey] == null) {
+  if (
+    showLightning.value &&
+    KeychainDialog.value?.lndData[storeLndKey] == null
+  ) {
     KeychainDialog.value.loading = true
     const lndData = await useGetLightingHiveInvoice(
       KeychainDialog.value.hiveAccTo,
@@ -441,7 +446,8 @@ async function generateLightningQRCode() {
   }
   if (showLightning.value) {
     KeychainDialog.value.qrCodeTextLightning =
-      "lightning:" + KeychainDialog.value?.lndData[storeLndKey]["payment_request"]
+      "lightning:" +
+      KeychainDialog.value?.lndData[storeLndKey]["payment_request"]
     KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextLightning
     storeSales.markAsLightning(KeychainDialog.value.checkCode)
   } else {
@@ -542,6 +548,7 @@ async function checkHiveTransaction(count = 0) {
         intervalRef.value.push(watchingInterval)
       })
       KeychainDialog.value.show = false
+      storeUser.update()
       return // Exit the function if the transaction is found
     } // End of the While Loop
     const memo = `${t("transfer")}: ${t("not_found")}:`
@@ -576,7 +583,6 @@ function findTransactionWithCheckCode(transactions, checkCode) {
     )
     return
   }
-  console.log(transaction.op[1].memo)
   const transactionFound = transactions.find((transaction) =>
     transaction.op[1].memo.endsWith(checkCode)
   )
