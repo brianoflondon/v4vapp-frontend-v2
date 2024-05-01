@@ -144,7 +144,7 @@
           </template>
 
           <!-- Show total for this age range at the bottom -->
-          <template v-slot:bottom-row v-if="data.length > 0">
+          <template v-slot:bottom-row v-if="keepSatsData.length > 0">
             <q-tr class="text-bold">
               <q-td class="text-left" colspan="2">Total</q-td>
               <q-td class="text-right">
@@ -300,7 +300,6 @@ async function fetchData(newValue = dataDays.value) {
     useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
     useKeepSats(false, true),
   ])
-
   if (keepSats.summary_transactions) {
     const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
     keepSatsData.value = keepSats.summary_transactions.filter(
