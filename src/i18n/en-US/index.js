@@ -159,7 +159,7 @@ export default {
   Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
   The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
   The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive.\n
-  The old 'Hive' tab is still available, but it is recommended to use the 'Send' and 'Receive' tabs instead.\n`,
+  You can store a small amount of Sats on V4V.app: your KeepSats balance. This balance is shown on your credit card when logged in. It's the big number.\n`,
   // Receive Page
   // Credit Card
   savings: "Savings",
