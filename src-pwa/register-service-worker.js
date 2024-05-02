@@ -33,7 +33,7 @@ register(process.env.SERVICE_WORKER_FILE, {
   updated(/* registration */) {
     console.log("New content is available; please refresh.")
     Notify.create({
-      message: "New content is available; please refresh.",
+      message: "This box should have actions. New content is available; please refresh.",
       color: "positive",
       position: "bottom",
       timeout: 0, // Make the notification sticky
