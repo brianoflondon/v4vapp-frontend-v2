@@ -4,11 +4,7 @@
     <div class="col-auto">
       <div class="refresh-days-button-select row justify-evenly q-py-sm">
         <div class="refresh-button q-px-sm">
-          <q-btn
-            label="Refresh"
-            rounded
-            @click="fetchData(dataDays)"
-          ></q-btn>
+          <q-btn label="Refresh" rounded @click="fetchData(dataDays)"></q-btn>
         </div>
         <div class="days-select q-px-sm">
           <q-select
@@ -30,7 +26,7 @@
       <div class="transaction-data-tables row">
         <!-- Hive to Sats Table -->
         <div class="hivetosats-table q-pa-sm">
-          Hive  Sats
+          Hive Sats
           <q-table
             class="q-pa-xs"
             dense
@@ -48,16 +44,16 @@
             <template v-slot:body-cell-link="props">
               <q-td :props="props">
                 <a
-                  :href="useGenerateTxUrl(props.row.answer_trx_id)"
+                  :href="useGenerateTxUrl(props.row.trx_id)"
                   target="_blank"
                   class="custom-link"
                 >
                   <q-btn
                     size="xs"
-                    text-color="inherit"
+                    color="accent"
                     flat
                     dense
-                    icon="open_in_new"
+                    icon="fa-brands fa-hive"
                     name="open_in_new"
                   />
                 </a>
