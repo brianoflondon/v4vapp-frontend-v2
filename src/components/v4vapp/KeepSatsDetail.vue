@@ -1,90 +1,92 @@
 <template>
-  <q-table
-    dense
-    hide-pagination
-    key="unique_id"
-    :rows="tableData"
-    :columns="columns"
-    row-key="trx_id"
-    :visible-columns="['reason', 'hive', 'msats', 'link']"
-  >
-    <template v-slot:body="props">
-      <q-tr :props="props.row" class="no-divider">
-        <q-td dense class="text-left">
-          {{ props.row.reason_str }}
-        </q-td>
-        <q-td class="text-right">
-          {{ tidyNumber(props.row.hive, 3) }}
-        </q-td>
-        <q-td class="text-right">
-          {{ tidyNumber(props.row.msats / 1000, 1) }}
-        </q-td>
-        <q-td>
-          <div v-if="props.row.trx_id">
-            <a
-              :href="useGenerateTxUrl(props.row.trx_id)"
-              target="_blank"
-              class="custom-link"
-            >
-              <q-btn
-                size="xs"
-                color="accent"
-                flat
-                dense
-                icon="fa-brands fa-hive"
-                name="open_in_new"
-              />
-            </a>
-          </div>
-          <div v-else>
-            <div v-if="props.row.nobroadcast">
-              <!-- Hive transfer not broadcasted -->
-              -
+  <div class="keepsats-detail-table">
+    <q-table
+      dense
+      hide-pagination
+      key="unique_id"
+      :rows="tableData"
+      :columns="columns"
+      row-key="trx_id"
+      :visible-columns="['reason', 'hive', 'msats', 'link']"
+    >
+      <template v-slot:body="props">
+        <q-tr :props="props.row" class="no-divider">
+          <q-td dense class="text-left">
+            {{ props.row.reason_str }} {{ props.row.reason }}
+          </q-td>
+          <q-td class="text-right">
+            {{ tidyNumber(props.row.hive, 3) }}
+          </q-td>
+          <q-td class="text-right">
+            {{ tidyNumber(props.row.msats / 1000, 1) }}
+          </q-td>
+          <q-td>
+            <div v-if="props.row.trx_id">
+              <a
+                :href="useGenerateTxUrl(props.row.trx_id)"
+                target="_blank"
+                class="custom-link"
+              >
+                <q-btn
+                  size="xs"
+                  color="accent"
+                  flat
+                  dense
+                  icon="fa-brands fa-hive"
+                  name="open_in_new"
+                />
+              </a>
             </div>
             <div v-else>
-              <!-- Lightning payment -->
-              <i class="fa-sharp fa-solid fa-bolt" />
+              <div v-if="props.row.nobroadcast">
+                <!-- Hive transfer not broadcasted -->
+                -
+              </div>
+              <div v-else>
+                <!-- Lightning payment -->
+                <i class="fa-sharp fa-solid fa-bolt" />
+              </div>
             </div>
-          </div>
-        </q-td>
-      </q-tr>
-      <!-- Expansion item showing the text memo -->
-      <q-tr v-if="props.row.memo" :props="props.row" class="no-divider">
-        <q-td
-          colspan="4"
-          class="text-left text-wrap max-width-cell-ellipsis"
-          :style="wrapNoWrap(expandedMemo[props.row.id])"
-        >
-        <div class="memo-content">
-          {{ props.row.memo }}
-          <q-btn
-            dense
-            flat
-            round
-            size="xs"
-            icon="expand"
-            class="q-mx-none expand-icon"
-            @click="toggleExpandedMemo(props.row.id)"
-          />
-          </div>
-        </q-td>
-      </q-tr>
-      <!-- End of Expansion item showing the text memo -->
-    </template>
+          </q-td>
+        </q-tr>
+        <!-- Expansion item showing the text memo -->
+        <q-tr v-if="props.row.memo" :props="props.row" class="no-divider">
+          <q-td
+            colspan="4"
+            class="text-left text-wrap max-width-cell-ellipsis"
+            :style="wrapNoWrap(expandedMemo[props.row.id])"
+          >
+            <div class="memo-content">
+              {{ props.row.memo }}
+              <q-btn
+                dense
+                flat
+                round
+                size="xs"
+                icon="expand"
+                class="q-mx-none expand-icon"
+                @click="toggleExpandedMemo(props.row.id)"
+              />
+            </div>
+          </q-td>
+        </q-tr>
+        <!-- End of Expansion item showing the text memo -->
+      </template>
 
-    <template v-slot:bottom-row>
-      <q-tr class="text-bold">
-        <q-td>Total</q-td>
-        <q-td class="text-right">
-          {{ tidyNumber(totals.totalHive, 3) }}
-        </q-td>
-        <q-td class="text-right">
-          {{ tidyNumber(totals.totalSats, 1) }}
-        </q-td>
-        <q-td colspan="1"> </q-td>
-      </q-tr>
-    </template>
-  </q-table>
+      <template v-slot:bottom-row>
+        <q-tr class="text-bold">
+          <q-td>Total</q-td>
+          <q-td class="text-right">
+            {{ tidyNumber(totals.totalHive, 3) }}
+          </q-td>
+          <q-td class="text-right">
+            {{ tidyNumber(totals.totalSats, 1) }}
+          </q-td>
+          <q-td colspan="1"> </q-td>
+        </q-tr>
+      </template>
+    </q-table>
+  </div>
 </template>
 
 <script setup>
@@ -152,6 +154,10 @@ const columns = computed(() => [
 </script>
 
 <style lang="scss" scoped>
+.keepsats-detail-table .q-table__container .q-table tbody tr td {
+  padding: 4px;
+}
+
 .no-divider {
   border: none;
 }

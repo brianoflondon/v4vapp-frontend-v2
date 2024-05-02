@@ -81,7 +81,6 @@
       <div class="keepsats-table">
         KeepSats
         <q-table
-          class="keepsats-table"
           dense
           :rows="keepSatsData"
           :columns="keepSatsColumns"
