@@ -28,7 +28,7 @@
         <div class="hivetosats-table q-pa-sm">
           Hive Sats
           <q-table
-            class="q-pa-xs"
+            class="hive-sats-table"
             dense
             :rows="data"
             row-key="trx_id"
@@ -78,10 +78,10 @@
     </div>
     <div class="col-auto">
       <!-- Keep Sats Table -->
-      <div class="keepsats-table q-pa-sm">
+      <div class="keepsats-table">
         KeepSats
         <q-table
-          class="q-pa-xs"
+          class="keepsats-table"
           dense
           :rows="keepSatsData"
           :columns="keepSatsColumns"
@@ -296,6 +296,7 @@ async function fetchData(newValue = dataDays.value) {
     useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
     useKeepSats(false, true),
   ])
+  console.log()
   if (keepSats.summary_transactions) {
     const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
     keepSatsData.value = keepSats.summary_transactions.filter(
@@ -351,4 +352,9 @@ function expandAll() {
 .bordered-div {
   border: 1px solid #e0e0e0;
 }
+
+.keepsats-table .q-table__container .q-table tbody tr td {
+  padding: 5px;
+}
+
 </style>
