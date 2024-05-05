@@ -9,7 +9,8 @@
         <q-item dense class="justify-center">
           <ConfettiExplosion v-if="visibleConfetti" />
           <q-btn
-            :disable="numCredentials === 0"
+            :disable="numCredentials === 0 || !isValid"
+            :color="numCredentials === 0 || !isValid ? 'grey-9' : 'primary'"
             rounded
             align="left"
             label="Login"
@@ -21,6 +22,7 @@
         <q-item dense class="justify-center">
           <q-btn
             :disable="!storeUser.currentUser"
+            :color="!storeUser.currentUser ? 'grey-9' : 'primary'"
             rounded
             :label="t('manage') + ' / ' + t('add')"
             align="left"
@@ -72,23 +74,32 @@
       </q-card-section>
 
       <q-card-section>
-        <div class="text-center" v-if="loadingCredentials">
-          <q-spinner-grid color="primary" size="40px" />
-        </div>
-        <div v-else-if="loadingCredentials === false && numCredentials === 0">
+        <!-- <div class="text-center" v-if="loadingCredentials"> -->
+        <!-- <q-spinner-grid color="primary" size="300px 35px" /> -->
+        <!-- </div> -->
+        <div v-if="loadingCredentials === false && numCredentials === 0">
           No passkeys registered
         </div>
-        <div v-else class="credential-list">
+        <div class="credential-list">
           <q-item
             caption
             v-for="cred in listCredentials"
             :key="cred._id"
             @click="doManageKey(cred)"
           >
-            <q-item-section avatar>
+            <q-item-section avatar v-if="loadingCredentials">
+              <q-skeleton type="QAvatar" size="35px" />
+            </q-item-section>
+            <q-item-section avatar v-else>
               <q-icon name="key" />
             </q-item-section>
-            <q-item-section>
+            <q-item-section v-if="loadingCredentials">
+              <q-item-label
+                ><q-skeleton type="text" width="160px"
+              /></q-item-label>
+              <q-item-label caption><q-skeleton type="text" /> </q-item-label>
+            </q-item-section>
+            <q-item-section v-else>
               <q-item-label>{{ cred.device_name }}</q-item-label>
               <q-item-label caption>{{ credCountText(cred) }} </q-item-label>
             </q-item-section>
@@ -233,8 +244,6 @@ async function explode() {
 
 // Watch for changes in the current user
 watch(storeUser, async (newVal) => {
-  console.debug("storeUser.currentUser changed to:", newVal.currentUser)
-  console.debug("hiveAccObj.value", hiveAccObj.value)
   if (newVal.currentUser === null) {
     updatePasskeyList(false)
   }
@@ -344,11 +353,14 @@ async function doPasskeyManageClose() {
 }
 
 async function doPasskeyRegister() {
+  loadingCredentials.value = true
   console.debug("doPasskeyRegister")
   if (!passkeyName.value) {
     showError.value = true
     return
   }
+  // strip trailing spaces from passkeyName
+  passkeyName.value = passkeyName.value.trim()
   const result = await usePasskeyRegister(
     storeUser.currentUser,
     passkeyName.value
@@ -373,6 +385,7 @@ async function doPasskeyRegister() {
     console.debug("doPasskeyRegister failed")
     console.debug("result", result.message)
   }
+  loadingCredentials.value = false
 }
 
 async function doPasskeyDeleteAsk(evt, cred) {

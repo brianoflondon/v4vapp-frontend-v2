@@ -305,6 +305,13 @@ export function QRLightningHiveColor(isLightning, loading) {
   return q.dark.isActive ? "#1976D2" : "#0E4377"
 }
 
+export function buttonActiveNot(isActive) {
+  const colors = {
+    color: isActive ? "primary" : "blue-grey-1",
+    textColor: isActive ? "white" : "grey-7",
+  }
+  return colors
+}
 
 /**
  * Retrieves the challenge from the Login API.
@@ -317,9 +324,8 @@ export async function useGetChallenge(hiveAccName, clientId) {
   const getChallenge = await apiLogin.get(`/auth/${hiveAccName}`, {
     params: {
       clientId: clientId,
-      appId: `${productName}-${version}`.replace(/\s+/g, ''),
+      appId: `${productName}-${version}`.replace(/\s+/g, ""),
     },
   })
-  console.log("getChallenge", getChallenge)
   return getChallenge
 }

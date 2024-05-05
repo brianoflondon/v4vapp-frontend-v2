@@ -40,6 +40,60 @@ export async function useHiveDetails(hiveAccname) {
   }
 }
 
+/**
+ * Checks if a Hive account exists.
+ *
+ * @param {string} hiveAccname - The Hive account name to check.
+ * @returns {Promise<Object>} - An object containing the result of the account existence check.
+ * @property {boolean} exists - Indicates whether the account exists or not.
+ * @property {boolean} valid - Indicates whether the account name is valid for new account or not.
+ * @property {string|null} error - The error message if any error occurred during the check.
+ */
+export async function useHiveAccountExists(hiveAccname) {
+  // Returns true if the Hive account exists
+  // first char is not a-z
+  if (!hiveAccname[0].match(/[a-z]/)) {
+    return {
+      exists: false,
+      valid: false,
+      error: "Name must not start with a number",
+      hiveAccname: hiveAccname,
+    }
+  }
+  if (hiveAccname.length < 3 || hiveAccname.length > 16) {
+    const errorText = hiveAccname.length < 3 ? "Too short" : "Too long"
+
+    return {
+      exists: false,
+      valid: false,
+      error: `${errorText}: 3 to 16 chars`,
+      hiveAccname: hiveAccname,
+    }
+  }
+  if (!hiveAccname?.match(useHiveAccountRegex)) {
+    return { exists: false, valid: false, error: "Invalid Hive account name" }
+  }
+  try {
+    const res = await hiveTx.call("condenser_api.get_accounts", [[hiveAccname]])
+    if (res.result.length > 0) {
+      return {
+        exists: true,
+        valid: false,
+        error: "Account Name taken",
+        hiveAccname: hiveAccname,
+      }
+    }
+    return {
+      exists: false,
+      valid: true,
+      error: "Available Account Name",
+      hiveAccname: hiveAccname,
+    }
+  } catch (e) {
+    return { exists: false, valid: null, error: e, hiveAccname: hiveAccname }
+  }
+}
+
 export async function useHiveProfile(hiveAccname) {
   // returns Hive Profile for a given Hive hiveAccname
   if (!hiveAccname?.match(useHiveAccountRegex)) {

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
-import { useStorage, formatTimeAgo } from "@vueuse/core"
+import { useStorage, formatTimeAgo, tryOnMounted } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
@@ -398,7 +398,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (this.currentKeepSats === null) {
         console.debug("Need to reauthenticate to get keepSatsBalance")
         console.debug("check if logged in with HAS or Keychain")
-        return "💰💰💰"
+        return 0
       }
       return this.currentKeepSats?.net_sats
     },
@@ -430,11 +430,11 @@ export const useStoreUser = defineStore("useStoreUser", {
   },
 
   actions: {
-    update() {
+    update(useCache = true) {
       const onOpen = async () => {
         if (this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
-        await this.updateSatsBalance()
+        await this.updateSatsBalance(useCache)
         this.currentProfile = this.currentDetails?.profile
       }
       this.apiTokenSet()
@@ -535,7 +535,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
      */
     apiTokenSet(hiveAccname = this.currentUser) {
-      console.debug('Setting API Token for', hiveAccname)
+      console.debug("Setting API Token for", hiveAccname)
       if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
         apiLogin.defaults.headers.common[
           "Authorization"

@@ -1,7 +1,12 @@
 <template>
   <div class="q-pa-sm col justify-evenly">
-    <div class="text-justify q-pa-sm">
-      <ExplanationBox title="KeepSats on V4V.app" text="How to do it" />
+    <div class="explanation-box text-justify q-pa-sm">
+      <div class="pad-max-width">
+        <ExplanationBox
+          :title="t('keepsats_deposit_title')"
+          :text="t('keepsats_deposit_text')"
+        />
+      </div>
     </div>
     <div class="destination-toggle pad-max-width">
       <!-- HBD Hive and Sats toggle -->
@@ -136,8 +141,6 @@
           <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
         </div>
         <!-- End Private Memo toggle  -->
-
-
       </div>
       <!-- End Payment buttons -->
     </div>
@@ -230,7 +233,6 @@ onMounted(async () => {
 })
 
 watch(storeUser, (val) => {
-  console.log("storeUser changed DepositKeepSats", val)
   if (val) {
     updateDestination()
   }
@@ -380,8 +382,7 @@ async function checkForSats(oldNetSats = 0, count = 0) {
     currentSatsBalance = oldNetSats
   }
   console.log("currentSatsBalance", currentSatsBalance)
-  const change = await storeUser.updateSatsBalance(false)
-  console.log("change", change)
+  await storeUser.updateSatsBalance(false)
   if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
     q.notify({
       message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,
@@ -419,11 +420,11 @@ const buttonColor = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.explanation-box {
-  max-width: 300px;
-}
-
 .amount-display {
   font-size: 2rem;
+}
+
+.explanation-box {
+  max-width: 400px;
 }
 </style>

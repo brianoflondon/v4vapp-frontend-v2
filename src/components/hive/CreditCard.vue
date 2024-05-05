@@ -14,7 +14,7 @@
         <div class="items-end flex row">
           <div class="card-spacer row col-12"></div>
           <!-- Sats balance on the face of the credit card -->
-          <div class="row col-12">
+          <div class="row col-12" v-if="false">
             <div class="text-h6 credit-card-text embossed-text"></div>
           </div>
           <!-- Sats balance on the face of the credit card -->
@@ -75,6 +75,9 @@
         <div class="col-5 text-right">
           <div class="row justify-end">
             <table>
+              <tr>
+                <td class="keepsats-table-cell">KeepSats</td>
+              </tr>
               <tr v-if="nonZeroKeepSats">
                 <td class="numeric-cell-lg">
                   <span v-if="currencyToggle" style="font-size: 1rem">
@@ -82,7 +85,7 @@
                   </span>
                   {{ balances["keepSats"] }}<br />
                 </td>
-                <td>
+                <td class="numeric-cell">
                   <div v-if="!balances['bitcoinDisplay']">
                     <span>シ</span>
                     <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
@@ -111,7 +114,7 @@
                   </span>
                   {{ balances["hbd"] }}
                 </td>
-                <td class="q-pl-sm">
+                <td class="numeric-cell q-pl-sm">
                   <HbdLogoIcon />
                 </td>
               </tr>
@@ -161,6 +164,8 @@ const q = useQuasar()
 const savingsToggle = ref(false)
 const currencyToggle = ref(false)
 const t = useI18n().t
+
+const adminOverride = ref(false)
 
 // emit balances to the parent component
 const emit = defineEmits(["balances"])
@@ -369,10 +374,22 @@ watch([() => storeUser.localCurrency, () => storeUser.pos.fixedRate], () => {
 
 .numeric-cell {
   text-align: right;
+  line-height: 0.9rem;
 }
 
 .numeric-cell-lg {
   text-align: right;
   font-size: 1.5rem;
+  padding: 0px;
+  margin: 0px;
+  line-height: 1.3rem;
+}
+
+.keepsats-table-cell {
+  padding: 0px;
+  margin: 0px;
+  text-align: left;
+  font-size: 0.6rem;
+  line-height: 0.6rem;
 }
 </style>

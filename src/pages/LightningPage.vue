@@ -35,7 +35,7 @@
           <q-slide-transition appear disappear :duration="1500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
               <div>
-                <HiveLightningTrans />
+                <HiveLightningTrans :adminOverride="adminOverride" />
               </div>
             </div>
           </q-slide-transition>
@@ -59,6 +59,7 @@
     </div>
     <!-- Main page content for wallet with credit card and invoice entry -->
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
+      <!-- Camera  -->
       <div v-if="!cameraShow" class="q-pb-lg">
         <CreditCard />
         <div
@@ -69,17 +70,19 @@
         </div>
       </div>
       <div v-if="cameraShow">
-        <!-- <QrcodeStream @decode="onDecode" @init="onInitCamera"></QrcodeStream> -->
         <qrcode-stream
           @detect="onDecode"
           @camera-on="onReady"
           @error="onError"
         ></qrcode-stream>
       </div>
+      <!-- End Camera -->
+      <!-- Progress screen -->
       <div class="progress-screen">
         <ShowProgress v-model="dInvoice" />
       </div>
-      <!-- Camera Toggle, paste and invoice input -->
+      <!-- End Progress screen -->
+      <!-- Payment buttons Camera Toggle, paste and invoice input -->
       <div class="camera-toggle-invoice">
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
@@ -117,7 +120,7 @@
               <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
             </div>
           </div>
-
+          <!-- Invoice and multipurpose input box -->
           <div class="column flex-center q-pt-sm q-px-sm">
             <q-input
               for="invoice"
@@ -141,17 +144,24 @@
               :hint="invoiceHint"
               hide-bottom-space
             >
+              <template v-if="dInvoice?.v4vapp?.sendTo" v-slot:prepend>
+                <q-avatar rounded size="md">
+                  <HiveAvatar :hiveAccname="dInvoice?.v4vapp?.sendTo" />
+                </q-avatar>
+              </template>
               <!-- hide-bottom-space: stops the animation for the hint text-->
             </q-input>
+            {{ dInvoice?.v4vapp?.sendTo }}
           </div>
+          <!-- End Invoice and multipurpose input box -->
           <CountdownBar
             class="q-pt-xs"
             :expiry="dInvoice?.timeExpireDate"
             @message="(val) => (timeMessage = val)"
             @time-left="(val) => checkInvoiceProgress(val)"
           />
-          <!-- Amounts Display -->
-          <div v-show="false" class="amounts-display flex justify-evenly">
+          <!-- Amounts Display HIDDEN -->
+          <div v-if="false" class="amounts-display flex justify-evenly">
             <div class="q-pa-xs input-amount-readonly">
               <q-input
                 readonly
@@ -183,18 +193,15 @@
               ></q-input>
             </div>
           </div>
+          <!-- End Amounts Display -->
         </div>
-        <!-- End Amounts Display -->
         <!-- Payment Buttons -->
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
-          <!-- Need to check if user is logged in with keychain or HAS and use the right
-            button -->
-
           <div class="row justify-center q-pa-sm" v-if="enoughKeepSats">
-            <div class="paywithsats-button">
+            <div class="paywithsats-button flex column">
               <q-btn
-                class="payment-button-sats"
-                @click="payInvoice('payWithSats', storeUser.loginMethod)"
+                class="payment-button-sats q-ma-sm"
+                @click="payWithApi()"
                 :loading="storeApiStatus.payInvoice"
                 :disable="storeApiStatus.payInvoice"
                 icon="fa-brands fa-btc"
@@ -203,70 +210,69 @@
                 :text-color="buttonColor.textColor"
                 size="md"
                 rounded
-                :icon-right="
-                  storeUser.isHAS
-                    ? 'img:/has/hive-auth-logo.svg'
-                    : 'img:/keychain/hive-keychain-round.svg'
-                "
+                icon-right="img:/site-logo/v4vapp-logo-shadows.svg"
               />
             </div>
           </div>
-
-          <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
-            <q-btn
-              class="payment-button-hbd"
-              @click="payInvoice('HBD', 'HiveKeychain')"
-              :loading="storeApiStatus.payInvoice"
-              :disable="storeApiStatus.payInvoice"
-              icon="img:/keychain/hive-keychain-round.svg"
-              icon-right="img:/avatars/hbd_logo.svg"
-              :label="HBD"
-              :color="buttonColor.buttonColor"
-              :text-color="buttonColor.textColor"
-              size="md"
-              rounded
-            />
-            <q-btn
-              class="payment-button-hive"
-              @click="payInvoice('HIVE', 'HiveKeychain')"
-              :loading="storeApiStatus.payInvoice"
-              :disable="storeApiStatus.payInvoice"
-              icon="img:/keychain/hive-keychain-round.svg"
-              icon-right="img:avatars/hive_logo_dark.svg"
-              :label="Hive"
-              :color="buttonColor.buttonColor"
-              :text-color="buttonColor.textColor"
-              size="md"
-              rounded
-            />
-          </div>
-          <div class="has-buttons row flex-center q-gutter-lg">
-            <q-btn
-              class="payment-button-hbd"
-              @click="payInvoice('HBD', 'HAS')"
-              :loading="storeApiStatus.payInvoice"
-              :disable="storeApiStatus.payInvoice"
-              icon="img:/has/hive-auth-logo.svg"
-              icon-right="img:/avatars/hbd_logo.svg"
-              :label="HBD"
-              :color="buttonColor.buttonColor"
-              :text-color="buttonColor.textColor"
-              size="md"
-              rounded
-            />
-            <q-btn
-              class="payment-button-hive"
-              @click="payInvoice('HIVE', 'HAS')"
-              :loading="storeApiStatus.payInvoice"
-              :disable="storeApiStatus.payInvoice"
-              icon="img:/has/hive-auth-logo.svg"
-              icon-right="img:avatars/hive_logo_dark.svg"
-              :label="Hive"
-              :color="buttonColor.buttonColor"
-              :text-color="buttonColor.textColor"
-              size="md"
-              rounded
-            />
+          <div
+            v-if="dInvoice?.v4vapp?.type !== 'hiveAccname' && !payWithSatsOnly"
+          >
+            <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
+              <q-btn
+                class="payment-button-hbd"
+                @click="payInvoice('HBD', 'HiveKeychain')"
+                :loading="storeApiStatus.payInvoice"
+                :disable="storeApiStatus.payInvoice"
+                icon="img:/keychain/hive-keychain-round.svg"
+                icon-right="img:/avatars/hbd_logo.svg"
+                :label="HBD"
+                :color="buttonColor.buttonColor"
+                :text-color="buttonColor.textColor"
+                size="md"
+                rounded
+              />
+              <q-btn
+                class="payment-button-hive"
+                @click="payInvoice('HIVE', 'HiveKeychain')"
+                :loading="storeApiStatus.payInvoice"
+                :disable="storeApiStatus.payInvoice"
+                icon="img:/keychain/hive-keychain-round.svg"
+                icon-right="img:avatars/hive_logo_dark.svg"
+                :label="Hive"
+                :color="buttonColor.buttonColor"
+                :text-color="buttonColor.textColor"
+                size="md"
+                rounded
+              />
+            </div>
+            <div class="has-buttons row flex-center q-gutter-lg">
+              <q-btn
+                class="payment-button-hbd"
+                @click="payInvoice('HBD', 'HAS')"
+                :loading="storeApiStatus.payInvoice"
+                :disable="storeApiStatus.payInvoice"
+                icon="img:/has/hive-auth-logo.svg"
+                icon-right="img:/avatars/hbd_logo.svg"
+                :label="HBD"
+                :color="buttonColor.buttonColor"
+                :text-color="buttonColor.textColor"
+                size="md"
+                rounded
+              />
+              <q-btn
+                class="payment-button-hive"
+                @click="payInvoice('HIVE', 'HAS')"
+                :loading="storeApiStatus.payInvoice"
+                :disable="storeApiStatus.payInvoice"
+                icon="img:/has/hive-auth-logo.svg"
+                icon-right="img:avatars/hive_logo_dark.svg"
+                :label="Hive"
+                :color="buttonColor.buttonColor"
+                :text-color="buttonColor.textColor"
+                size="md"
+                rounded
+              />
+            </div>
           </div>
         </div>
         <!-- End Payment Buttons -->
@@ -280,13 +286,20 @@
           </div>
         </div>
       </div>
-      <!-- Camera Toggle, paste and invoice input -->
+      <!-- End Payment buttons Camera Toggle, paste and invoice input -->
     </div>
     <!-- End Main page content for wallet with credit card and invoice entry -->
     <AskDetailsDialog
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
     />
+    <div v-if="storeUser.currentKeepSats?.admin">
+      <q-toggle
+        v-model="adminOverride"
+        label="Admin Override"
+        color="primary"
+      />
+    </div>
   </q-page>
 </template>
 
@@ -313,8 +326,13 @@ import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { QrcodeStream } from "vue-qrcode-reader"
 import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
-import { useGetHiveTransactionHistory } from "src/use/useHive.js"
-import { useHiveKeychainTransfer } from "src/use/useKeychain.js"
+import {
+  useGetHiveTransactionHistory,
+  useHiveAccountExists,
+  useHiveAvatarURL,
+} from "src/use/useHive.js"
+import { useKeepSatsTransfer, useKeepSatsInvoice } from "src/use/useV4vapp"
+import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
 import KeychainShowQR from "components/hive/KeychainShowQR.vue"
@@ -322,7 +340,7 @@ import ShowProgress from "components/lightning/ShowProgress.vue"
 import VoteProposal from "components/utils/VoteProposal.vue"
 import CountdownBar from "components/utils/CountdownBar.vue"
 import { useI18n } from "vue-i18n"
-import { useQuasar } from "quasar"
+import { useQuasar, QSpinnerGears } from "quasar"
 import CreditCard from "components/hive/CreditCard.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
@@ -331,6 +349,7 @@ import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HiveLightningTrans from "src/components/v4vapp/HiveLightningTrans.vue"
 import DepositKeepsats from "src/components/hive/DepositKeepsats.vue"
 import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -347,6 +366,8 @@ const voteOptions = ref({
 const cameraOn = ref(false)
 const cameraShow = ref(false)
 const cameraError = ref("")
+
+const adminOverride = ref(false)
 
 const privateMemo = ref(false)
 
@@ -370,6 +391,13 @@ const payWithSatsButton = computed(() => {
 
 const enoughKeepSats = computed(() => {
   if (storeUser.keepSatsBalanceNum >= CurrencyCalc.value.sats) {
+    return true
+  }
+  return false
+})
+
+const payWithSatsOnly = computed(() => {
+  if (dInvoice.value?.payWithSatsOnly) {
     return true
   }
   return false
@@ -495,6 +523,7 @@ const invoiceLabels = {
   bolt11: t("valid_invoice"),
   lightningAddress: t("valid_lightning_address"),
   invalid: t("invalid_invoice"),
+  hiveAccname: "Hive Account",
 }
 
 const invoiceLabel = computed(() => {
@@ -517,6 +546,16 @@ function checkInvoiceProgress(timeLeft) {
 }
 
 function receiveNewInvoice(val) {
+  console.log("receiveNewInvoice", val)
+  if (val?.v4vapp?.type === "hiveAccname") {
+    // we have a Hive account to send to.
+    dInvoice.value = val
+    invoiceValid.value = true
+    invoiceChecking.value = false
+    invoiceText.value = `@${val.v4vapp.sendTo}`
+    validHiveAccountToPay()
+    return
+  }
   if (val === null) {
     // Need to notify of problem with Lightning service of invoice provider
     console.debug("Lightning service provider not working")
@@ -544,6 +583,9 @@ function invoiceType() {
   if (!type) {
     return "invalid"
   }
+  if (type === "hiveAccname") {
+    return "hiveAccname"
+  }
   if (type === "bolt11") {
     return "bolt11"
   } else if (type === "lightningAddress") {
@@ -570,12 +612,11 @@ watch(
   () => storeUser.currentUser,
   async (newVal) => {
     if (newVal === null || newVal === undefined) {
-      currentTab.value=("wallet")
+      currentTab.value = "wallet"
     }
     return
   }
 )
-
 
 async function onDecode(content) {
   // Switch to better QR Code library, handle multiple QR codes
@@ -608,9 +649,69 @@ async function decodeInvoice() {
     invoiceText.value = lightningSection[1]
   }
   try {
+    // MARK: Decode the invoice
     // decode the invoice
-    dInvoice.value = await useDecodeLightningInvoice(invoiceText.value)
-    if (dInvoice.value) {
+    if (invoiceText.value.startsWith("@")) {
+      invoiceText.value = invoiceText.value.substring(1)
+    }
+    // trim invoiceText
+    invoiceText.value = invoiceText.value.trim()
+    const [isHiveAccount, dInvoiceValue] = await Promise.all([
+      useHiveAccountExists(invoiceText.value),
+      useDecodeLightningInvoice(invoiceText.value),
+    ])
+
+    dInvoice.value = dInvoiceValue
+    if (isHiveAccount.exists) {
+      if (!storeUser.keepSatsBalanceNum) {
+        // TODO: replace with translation
+        errorMessage.value =
+          "You need to be logged in with a KeepSats balance to send sats to a Hive user"
+        dInvoice.value = {
+          v4vapp: {
+            type: "hiveAccname",
+          },
+        }
+        invoiceValid.value = false
+        invoiceChecking.value = false
+        return
+      }
+      if (storeUser.currentUser === isHiveAccount.hiveAccname) {
+        errorMessage.value = t("cannot_send_to_self")
+        dInvoice.value = {
+          v4vapp: {
+            type: "hiveAccname",
+          },
+        }
+        invoiceValid.value = false
+        invoiceChecking.value = false
+        return
+      }
+      invoiceValid.value = true
+      errorMessage.value = ""
+      const amountToSend = storeUser.keepsatsBalanceNum > 1000 ? 1 : 1000
+      dInvoice.value = {
+        v4vapp: {
+          type: "hiveAccname",
+          sendTo: isHiveAccount.hiveAccname,
+          metadata: {
+            "text/plain": `Send KeepSats to @${isHiveAccount.hiveAccname}`,
+            "text/identifier": `@${isHiveAccount.hiveAccname}`,
+            imgUrl: useHiveAvatarURL({
+              hiveAccname: isHiveAccount.hiveAccname,
+            }),
+            requestString: `Send KeepSats to @${isHiveAccount.hiveAccname}`,
+            minSats: 1,
+            maxSats: storeUser.keepSatsBalanceNum,
+            commentLength: 255,
+          },
+          amountToSend: amountToSend,
+        },
+        sending: true,
+        askDetails: true,
+      }
+      return
+    } else if (dInvoice.value) {
       CurrencyCalc.value.amount = dInvoice.value?.satoshis
       CurrencyCalc.value.currency = "sats"
       payWithSatsAmount.value = CurrencyCalc.value.amount
@@ -654,6 +755,17 @@ async function decodeInvoice() {
     errorMessage.value = t("invalid_invoice")
     return false
   }
+}
+
+function validHiveAccountToPay() {
+  CurrencyCalc.value.amount = dInvoice.value?.satoshis
+  CurrencyCalc.value.currency = "sats"
+  payWithSatsAmount.value = CurrencyCalc.value.amount
+  dInvoice.value.progress = []
+  invoiceValid.value = true
+  invoiceChecking.value = false
+  cameraOn.value = false
+  cameraShow.value = false
 }
 
 const cameraErrors = [
@@ -704,6 +816,79 @@ function toggleCamera() {
   cameraShow.value = cameraOn.value
 }
 
+const paymentInProgressDialog = ref()
+
+function showPaying() {
+  paymentInProgressDialog.value = q.dialog({
+    title: "Processing...",
+
+    progress: {
+      spinner: QSpinnerGears,
+      color: "amber",
+    },
+    persistent: true, // we want the user to not be able to close it
+    ok: false, // we want the user to not be able to close it
+  })
+}
+
+async function payWithApi() {
+  console.log("payWithApi")
+  showPaying()
+  try {
+    let response
+    if (dInvoice.value?.v4vapp.type === "hiveAccname") {
+      response = await useKeepSatsTransfer(
+        dInvoice.value.v4vapp.sendTo,
+        dInvoice.value.satoshis,
+        dInvoice.value.v4vapp.comment
+      )
+    } else {
+      console.log("dInvoice.value", dInvoice.value)
+      response = await useKeepSatsInvoice(dInvoice.value.paymentRequest)
+    }
+    console.log("->>>>>> payment response: ", response?.message)
+    console.log("response", response)
+    // extract the message from this response
+    paymentInProgressDialog.value.hide()
+    if (response.success) {
+      q.notify({
+        color: "positive",
+        timeout: 5000,
+        message: response.message,
+        position: "top",
+      })
+    } else {
+      const message = `${t("payment_failed")} - ${response?.message}`
+      q.notify({
+        color: "negative",
+        timeout: 5000,
+        message: message,
+        position: "top",
+        actions: [
+          {
+            label: "OK",
+            color: "white",
+            handler: () => {
+              return
+            },
+          },
+        ],
+      })
+    }
+    // wait 2 seconds then clear the form
+    await new Promise((resolve) => setTimeout(resolve, 4000))
+    clearReset()
+  } catch (e) {
+    console.error("Error in payWithApi", e)
+    q.notify({
+      color: "negative",
+      timeout: 5000,
+      message: t("payment_failed"),
+      position: "top",
+    })
+  }
+}
+
 /**
  * Pay the invoice using the specified currency and method.
  *
@@ -714,15 +899,11 @@ function toggleCamera() {
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
   // Add 6 Hive to the amount to cover the fee or 2 HBD
-  const payWithSats = currency === "payWithSats"
   let amountNum = 0
   if (currency == "HIVE") {
     amountNum = parseFloat(Hive.value) + 4 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
     amountNum = parseFloat(HBD.value) + 1.5 + 0.002 * parseFloat(Hive.value)
-  } else if (payWithSats) {
-    amountNum = 0.001
-    currency = "HIVE"
   }
   CurrencyCalc.value.amount = amountNum
   CurrencyCalc.value.currency = currency.toLowerCase()
@@ -736,9 +917,6 @@ async function payInvoice(currency, method) {
     memo = "#" + memo
   }
 
-  if (payWithSats) {
-    memo += " #paywithsats"
-  }
   dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
   // replace null with logged in user
   let username = null
@@ -805,7 +983,6 @@ async function payInvoice(currency, method) {
       }
 
       // result = await useHASTransfer(username, amount, currency, memo)
-      const message = `${t("open_HAS")} <a href="has://sign_wait/">Click</a>`
       dInvoice.value.progress.push(`${t("open_HAS")}`)
       // Code will finish within the useHAS code
       break

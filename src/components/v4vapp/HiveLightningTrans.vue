@@ -4,11 +4,7 @@
     <div class="col-auto">
       <div class="refresh-days-button-select row justify-evenly q-py-sm">
         <div class="refresh-button q-px-sm">
-          <q-btn
-            label="Refresh"
-            rounded
-            @click="fetchData(dataDays)"
-          ></q-btn>
+          <q-btn label="Refresh" rounded @click="fetchData(dataDays)"></q-btn>
         </div>
         <div class="days-select q-px-sm">
           <q-select
@@ -30,8 +26,9 @@
       <div class="transaction-data-tables row">
         <!-- Hive to Sats Table -->
         <div class="hivetosats-table q-pa-sm">
+          Hive Sats
           <q-table
-            class="q-pa-xs"
+            class="hive-sats-table"
             dense
             :rows="data"
             row-key="trx_id"
@@ -47,16 +44,16 @@
             <template v-slot:body-cell-link="props">
               <q-td :props="props">
                 <a
-                  :href="useGenerateTxUrl(props.row.answer_trx_id)"
+                  :href="useGenerateTxUrl(props.row.trx_id)"
                   target="_blank"
                   class="custom-link"
                 >
                   <q-btn
                     size="xs"
-                    text-color="inherit"
+                    color="accent"
                     flat
                     dense
-                    icon="open_in_new"
+                    icon="fa-brands fa-hive"
                     name="open_in_new"
                   />
                 </a>
@@ -81,9 +78,9 @@
     </div>
     <div class="col-auto">
       <!-- Keep Sats Table -->
-      <div class="keepsats-table q-pa-sm">
+      <div class="keepsats-table">
+        KeepSats
         <q-table
-          class="q-pa-xs"
           dense
           :rows="keepSatsData"
           :columns="keepSatsColumns"
@@ -113,7 +110,7 @@
                 {{ formatPrettyDate(props.row.timestamp) }}
               </q-td>
               <q-td :props="props" style="text-align: left" key="reason">
-                {{ props.row.reason }}
+                {{ props.row.reason_str }}
               </q-td>
               <q-td :props="props" style="text-align: right" key="hive">
                 {{ tidyNumber(props.row.hive, 3) }}
@@ -142,7 +139,7 @@
           </template>
 
           <!-- Show total for this age range at the bottom -->
-          <template v-slot:bottom-row v-if="data.length > 0">
+          <template v-slot:bottom-row v-if="keepSatsData.length > 0">
             <q-tr class="text-bold">
               <q-td class="text-left" colspan="2">Total</q-td>
               <q-td class="text-right">
@@ -179,6 +176,11 @@ const totals = ref({ totalHive: 0, totalSats: 0 })
 const t = useI18n().t
 
 const rowsExpanded = ref([])
+
+
+const props = defineProps({
+  adminOverride: Boolean,
+})
 
 const columns = computed(() => {
   return [
@@ -296,9 +298,8 @@ async function fetchData(newValue = dataDays.value) {
   }
   const [satsHistory, keepSats] = await Promise.all([
     useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
-    useKeepSats(false, true),
+    useKeepSats(false, true, props.adminOverride),
   ])
-
   if (keepSats.summary_transactions) {
     const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
     keepSatsData.value = keepSats.summary_transactions.filter(
@@ -354,4 +355,9 @@ function expandAll() {
 .bordered-div {
   border: 1px solid #e0e0e0;
 }
+
+.keepsats-table .q-table__container .q-table tbody tr td {
+  padding: 5px;
+}
+
 </style>

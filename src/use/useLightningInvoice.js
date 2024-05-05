@@ -1,8 +1,11 @@
 import { api, myNodePubKey } from "boot/axios"
+import { store } from "quasar/wrappers"
 import * as bolt11 from "src/assets/bolt11.min.js"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import { useStoreUser } from "src/stores/storeUser"
 
 const storeAPIStatus = useStoreAPIStatus()
+const storeUser = useStoreUser()
 
 export async function useGetLightingHiveInvoice(
   hiveAccname,
@@ -10,7 +13,8 @@ export async function useGetLightingHiveInvoice(
   currency,
   memo,
   checkCode = "",
-  expiry = 300
+  expiry = 300,
+  receiveCurrency = ""
 ) {
   try {
     if (expiry > 600) {
@@ -31,6 +35,7 @@ export async function useGetLightingHiveInvoice(
         app_name: "v4vapp-pos",
         expiry: expiry,
         message: message,
+        receive_currency: receiveCurrency,
       },
     })
     return callBackResult.data
@@ -63,10 +68,13 @@ export async function useCheckLightningInvoice(paymentHash) {
   }
 }
 
+/**
+ * Decodes a lightning invoice using local Bolt11 library and V4V.app API.
+ *
+ * @param {string} invoice - The lightning invoice to decode.
+ * @returns {Promise<Object|null>} - The decoded invoice object, or null if decoding fails.
+ */
 export async function useDecodeLightningInvoice(invoice) {
-  // Decode a lightning invoice first using local Bolt11 library
-  // then using V4V.app API to decode lnurl and lightning addresses
-
   let decodedInvoice = null
   invoice = invoice.toLowerCase().trim()
   // if the invoice starts with lnbc the bolt11 library can decode it
@@ -136,14 +144,18 @@ function validateInvoice(decodedInvoice) {
     storeAPIStatus.apiStatus.config.minimum_invoice_payment_sats
   const maximumPayment =
     storeAPIStatus.apiStatus.config.maximum_invoice_payment_sats
-  if (amount < minimumPayment) {
+  // need to add check to see if user has a sats balance
+  decodedInvoice.payWithSatsOnly = false
+  if (amount < minimumPayment && storeUser.keepSatsBalanceNum < amount) {
     decodedInvoice.errors.too_low = true
     decodedInvoice.errors.text.push("invoice_too_low")
     return
-  } else if (amount > maximumPayment) {
+  } else if (amount > maximumPayment && amount > storeUser.keepSatsBalanceNum) {
     decodedInvoice.errors.too_high = true
     decodedInvoice.errors.text.push("invoice_too_high")
     return
+  } else if (amount < minimumPayment || amount > maximumPayment) {
+    decodedInvoice.payWithSatsOnly = true
   }
   // Compare the current time with the expiration time
   if (Date.now() > decodedInvoice.timeExpireDate * 1000) {

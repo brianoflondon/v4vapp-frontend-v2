@@ -35,6 +35,7 @@ const routes = [
           return "/pos/sales/@" + to.params.hiveAccTo
         },
       },
+      { path: "/signup", component: () => import("pages/SignUp.vue") },
 
       // {
       //   path: "/pos/@:hiveAccTo(.*)", // Allow any character including dots after '@'

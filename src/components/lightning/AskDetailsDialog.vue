@@ -1,7 +1,20 @@
 <template>
   <div v-if="dInvoice">
-    <q-dialog class="q-mx-lg" v-model="dInvoice.askDetails" @show="showDialog">
-      <q-card>
+    <q-dialog class="q-ma-lg" v-model="dInvoice.askDetails" @show="showDialog">
+      <q-card
+        bordered
+        class="q-pa-none"
+        :style="{
+          backgroundImage: q.dark.isActive
+            ? `linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)), url(${dInvoice.v4vapp.metadata.imgUrl})`
+            : `linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url(${dInvoice.v4vapp.metadata.imgUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }"
+      >
+        <q-card-section class="header-bar">
+          {{ headerBarTitle }} <q-icon :name="headerIcon" />
+        </q-card-section>
         <q-card-section>
           <div class="row q-pa-sm">
             <div class="left-side-details col-7 q-gutter-md">
@@ -147,13 +160,16 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, computed } from "vue"
+import { useQuasar } from "quasar"
 import { useCreateInvoice } from "src/use/useLightningInvoice"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { tidyNumber } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
+import { useHiveAvatarURL } from "src/use/useHive"
 import NumberButtons from "components/utils/NumberButtons.vue"
 const t = useI18n().t
+const q = useQuasar()
 
 const storeAPIStatus = useStoreAPIStatus()
 const dInvoice = defineModel()
@@ -167,6 +183,30 @@ const amounts = ref({
   satsNum: 1000,
 })
 const main_message = ref("")
+
+const headerBarTitle = computed(() => {
+  if (dInvoice.value.v4vapp.type === "hiveAccname") {
+    return t("send_to_hive")
+  }
+  return t("send_to_lightning")
+})
+
+const headerIcon = computed(() => {
+  if (dInvoice.value.v4vapp.type === "hiveAccname") {
+    return "fa-brands fa-hive"
+  }
+  return "fa-sharp fa-solid fa-bolt"
+})
+
+const hiveAvatar = computed(() => {
+  console.log("computing hiveAvatar", dInvoice.value.v4vapp.sendTo)
+  if (!dInvoice.value?.v4vapp?.sendTo) {
+    return
+  }
+  const ans = useHiveAvatarURL({ hiveAccname: dInvoice.value.v4vapp.sendTo })
+  console.log(ans)
+  return ans
+})
 
 function showDialog() {
   if (dInvoice.value?.makingInvoice) {
@@ -262,14 +302,33 @@ const vAutofocus = {
 }
 
 async function createInvoice() {
+  if (dInvoice.value.v4vapp.type === "hiveAccname") {
+    let amountSats
+    if (typeof amounts.value.sats === "string") {
+      amountSats = parseFloat(amounts.value.sats.replace(/,/g, ""), 10)
+    }
+    dInvoice.value.askDetails = false
+    dInvoice.value.satoshis = amountSats
+    dInvoice.value.v4vapp.amountToSend = amountSats
+    emit("newInvoice", dInvoice.value)
+    return
+  }
   const newInvoice = await useCreateInvoice(dInvoice.value)
   emit("newInvoice", newInvoice)
-  emit("amounts", amounts.value)
+  // emit("amounts", amounts.value)
 }
 </script>
 
 <style lang="scss" scoped>
 .input-amount {
   width: 6.3rem;
+  font-size: 2rem;
+}
+
+.header-bar {
+  font-size: 1.5rem;
+  background: #333; /* Change this to the color you want */
+  color: #fff; /* Change this to the color you want for the text */
+  text-align: center;
 }
 </style>
