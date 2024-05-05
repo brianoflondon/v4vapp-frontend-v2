@@ -1,10 +1,10 @@
 <template>
   <div class="flex column text-center items-center q-pa-none">
+    <div v-if="comingSoon" class="text-h3">Coming Soon</div>
     <div class="content-container">
       <!-- MARK: Main page start -->
       <div class="main-content">
         <div class="flex column text-center items-center q-pa-none">
-          <q-toggle v-model="accountConfirm" label="Confirm Account" />
           <!-- MARK: NUMBERs -->
           <p class="text-h6" style="word-wrap: break-word">
             Install Hive Keychain first.
@@ -131,7 +131,7 @@
                     <q-btn
                       :label="payButton"
                       icon="bolt"
-                      :disable="activeItem < 4"
+                      :disable="activeItem < 4 && comingSoon"
                       :color="buttonActiveNot(!activeItem < 4).color"
                       :text-color="buttonActiveNot(!activeItem < 4).textColor"
                       type="submit"
@@ -260,9 +260,19 @@ import { useNewAccountCost } from "src/use/useV4vapp"
 import { tidyNumber } from "src/use/useUtils"
 
 const t = useI18n().t
-
 const storeUser = useStoreUser()
 const q = useQuasar()
+
+const comingSoon = computed(() => {
+  if (window.location.hostname === "localhost") {
+    return false
+  }
+  if (window.location.hostname === "v4v.app") {
+    return true
+  }
+  return true
+})
+
 // Define the account name and master password
 const accountName = ref("")
 const nameCheck = ref(true)
