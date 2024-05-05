@@ -300,9 +300,6 @@ async function fetchData(newValue = dataDays.value) {
     useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
     useKeepSats(false, true, props.adminOverride),
   ])
-  console.log('keepSats', keepSats)
-  console.log('is admin', keepSats.admin)
-  console.log('satsHistory', satsHistory)
   if (keepSats.summary_transactions) {
     const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
     keepSatsData.value = keepSats.summary_transactions.filter(

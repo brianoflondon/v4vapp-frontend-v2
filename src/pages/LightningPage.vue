@@ -293,7 +293,7 @@
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
     />
-    <div v-if="storeUser.currentKeepSats.admin">
+    <div v-if="storeUser.currentKeepSats?.admin">
       <q-toggle
         v-model="adminOverride"
         label="Admin Override"
