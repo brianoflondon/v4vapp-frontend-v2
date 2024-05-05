@@ -31,11 +31,12 @@ register(process.env.SERVICE_WORKER_FILE, {
 
   updated(/* registration */) {
     console.log("New content is available; please refresh.")
-    const note = Notify.create({
-      message: "New content is available; please refresh.",
+    Notify.create({
+      message: "New version is available; please refresh.",
+      progress: true,
       color: "positive",
       position: "bottom",
-      timeout: 0, // Make the notification sticky
+      timeout: 5000, // Make the notification sticky
       actions: [
         {
           // Add an "OK" button
@@ -43,7 +44,7 @@ register(process.env.SERVICE_WORKER_FILE, {
           color: "white",
           handler: () => {
             // Dismiss the notification when the "OK" button is clicked
-            note.dismiss()
+            /* ... */
           },
         },
       ],
