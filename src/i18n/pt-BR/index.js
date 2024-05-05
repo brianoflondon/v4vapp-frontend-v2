@@ -24,6 +24,7 @@ export default {
   yes: 'Yes',
   no: 'No',
   all: 'All',
+  keepsats: 'KeepSats',
   // Dark Mode Selector
   change_light: 'Mudar para modo dia',
   change_dark: 'Mudar para modo noite',
@@ -97,7 +98,7 @@ export default {
   invoice: 'Fatura',
   expires: 'expira em',
   Expires: 'Expira em',
-  enter_invoice: 'lnbc.... ou Endereço Lightning',
+  enter_invoice: 'lnbc...., Lightning Address or Hive Name',
   valid_invoice: 'Fatura decodificada',
   valid_lightning_address: 'Endereço decodificado',
   invalid_invoice: 'Fatura ou endereço Lightning inválido',
@@ -105,7 +106,7 @@ export default {
   invoice_too_high: 'Fatura acima do pagamento máximo',
   invoice_expired: 'Fatura expirou',
   self_payment: 'Não é possível enviar para v4v.app',
-  invoice_hint: 'Cole uma fatura ou escaneie um QR Code',
+  invoice_hint: 'Paste an invoice, scan a QR code or a Hive Account name.',
   waiting_for: 'Aguardando a transação de resposta aparecer na Hive blockchain',
   payment_sent_hive_keychain: 'Pagamento enviado pelo Hive Keychain',
   check_lightning: 'Verifique sua carteira Lightning, o pagamento foi enviado',
@@ -131,6 +132,8 @@ export default {
   podcasts: 'Podcasts',
   pods: 'Pods',
   // Ask Details dialog
+  send_to_hive: 'Send to Hive',
+  send_to_lightning: 'Send to Lightning',
   asking_details: 'Você está prestes a pagar:',
   making_invoice: 'Você irá criar uma fatura para:',
   amount_to_send: 'Valor para enviar',
@@ -151,11 +154,19 @@ export default {
   OtherError: 'Erro desconhecido de câmera',
   // Explanation Box
   explanation_title: 'O que é este site?',
-  explanation_text: `v4v.app funciona como uma carteira Bitcoin Lightning para Hive.\n
-   Usando o Hive ou Hive Backed Dollars (HBD) que você tem em sua conta Hive, você pode pagar qualquer fatura Lightning ou enviar sats BTC para qualquer endereço Lightning.\n
-   A guia "Enviar" permite que você pague qualquer fatura ou endereço Lightning.\n
-   A guia "Receber" permite solicitar um pagamento Hive (como um QR Code para o pagador) ou uma fatura Lightning BTC sats com Hive.\n
-   \n`,
+  explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
+  Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
+  The 'Send' tab allows you to pay any Lightning invoice or Lightning Address. In addition you can deposit sats to be stored as 'KeepSats' on v4v.app and use those to pay Lightning invoices or send to other Hive users. At any time you can convert the sats to Hive or HBD.\n
+  The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive. This can act as a Point of Sale in a shop and let you collect payment instantly from people paying with Hive, HBD or Lightning.\n
+  You can store a small amount of Sats on V4V.app: your KeepSats balance. This balance is shown on your credit card when logged in. It's the big number.\n`,
+  keepsats_deposit_title: `How to get KeepSats on v4v.app`,
+  keepsats_deposit_text: `To store KeepSats on v4v.app, there are two ways.:\n
+  1. Deposit Hive or HBD and they will be converted and stored as a KeepSats balance\n
+  2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by @sats.v4v.app\n
+  A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
+  keepsats_convert_title: `How to convert KeepSats to Hive`,
+  keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
+  A fee applies when converting sats to Hive or HBD.`,
   // Receive Page
   // Credit Card
   savings: 'Poupança',
@@ -211,5 +222,8 @@ export default {
   convert: 'Convert',
   convert_sats_to_hive: 'Convert sats to Hive',
   deposit_sats_on_v4vapp: 'Deposit sats on v4v.app',
-  convert_sats_from_v4vapp: 'Convert sats to Hive'
+  convert_sats_from_v4vapp: 'Convert sats to Hive',
+  payment_failed: 'Payment failed',
+  // Loading messages
+  new_content: 'New content is available; please quit the app or refresh.'
 };
