@@ -327,6 +327,5 @@ export async function useGetChallenge(hiveAccName, clientId) {
       appId: `${productName}-${version}`.replace(/\s+/g, ""),
     },
   })
-  console.log("getChallenge", getChallenge)
   return getChallenge
 }

@@ -127,7 +127,6 @@ export function useGetTimeProgress(decodedInvoice) {
 function validateInvoice(decodedInvoice) {
   // Check value of invoice is within min and max
   // check that invoice is not expired
-  console.log("validateInvoice", decodedInvoice)
   decodedInvoice.errors = {}
   decodedInvoice.errors.text = []
   if (!decodedInvoice) {
@@ -146,8 +145,6 @@ function validateInvoice(decodedInvoice) {
   const maximumPayment =
     storeAPIStatus.apiStatus.config.maximum_invoice_payment_sats
   // need to add check to see if user has a sats balance
-  console.log("storeUser.keepSatsBalanceNum", storeUser.keepSatsBalanceNum)
-  console.log("amount", amount)
   decodedInvoice.payWithSatsOnly = false
   if (amount < minimumPayment && storeUser.keepSatsBalanceNum < amount) {
     decodedInvoice.errors.too_low = true
