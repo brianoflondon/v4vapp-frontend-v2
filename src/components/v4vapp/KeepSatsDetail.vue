@@ -188,8 +188,9 @@ const columns = computed(() => [
 .expand-icon {
   position: absolute;
   top: 0;
-  right: 0;
-  background: #fff; /* Change this to the color you want */
-  padding: 5px; /* Add some padding so the background is larger than the icon */
+  right: -5px;
+  background: #ecbaba; /* Change this to the color you want */
+  padding: 1px; /* Add some padding so the background is larger than the icon */
+  margin: 2px;
 }
 </style>

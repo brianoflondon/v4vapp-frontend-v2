@@ -35,7 +35,7 @@
           <q-slide-transition appear disappear :duration="1500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
               <div>
-                <HiveLightningTrans />
+                <HiveLightningTrans :adminOverride="adminOverride" />
               </div>
             </div>
           </q-slide-transition>
@@ -293,6 +293,13 @@
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
     />
+    <div v-if="storeUser.currentKeepSats.admin">
+      <q-toggle
+        v-model="adminOverride"
+        label="Admin Override"
+        color="primary"
+      />
+    </div>
   </q-page>
 </template>
 
@@ -359,6 +366,8 @@ const voteOptions = ref({
 const cameraOn = ref(false)
 const cameraShow = ref(false)
 const cameraError = ref("")
+
+const adminOverride = ref(false)
 
 const privateMemo = ref(false)
 
@@ -837,10 +846,8 @@ async function payWithApi() {
       console.log("dInvoice.value", dInvoice.value)
       response = await useKeepSatsInvoice(dInvoice.value.paymentRequest)
     }
-    console.log(
-      "->>>>>> payment response: ",
-      response?.response?.data?.detail?.message
-    )
+    console.log("->>>>>> payment response: ", response?.message)
+    console.log("response", response)
     // extract the message from this response
     paymentInProgressDialog.value.hide()
     if (response.success) {
@@ -851,12 +858,21 @@ async function payWithApi() {
         position: "top",
       })
     } else {
-      const message = `${t("payment_failed")} - ${response?.response?.data?.detail?.message}`
+      const message = `${t("payment_failed")} - ${response?.message}`
       q.notify({
         color: "negative",
         timeout: 5000,
         message: message,
         position: "top",
+        actions: [
+          {
+            label: "OK",
+            color: "white",
+            handler: () => {
+              return
+            },
+          },
+        ],
       })
     }
     // wait 2 seconds then clear the form

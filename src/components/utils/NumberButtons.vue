@@ -18,7 +18,7 @@
 
 <script setup>
 import { ref } from "vue"
-const buttonValues = ref([1, 5, 10, 20, 50, 75, 100])
+const buttonValues = ref([1, 2, 5, 10, 15, 20, 50, 75, 100])
 const emit = defineEmits(["buttonPressed"])
 </script>
 

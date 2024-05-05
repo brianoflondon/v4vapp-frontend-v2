@@ -29,15 +29,17 @@ export async function useCheckApiTokenValid(username, apiToken) {
  *
  * @param {boolean} useCache - Flag indicating whether to use cache or not. Default is true.
  * @param {boolean} transactions - Flag indicating whether to include transactions or not. Default is true.
+ * @param {boolean} adminOverride - Flag indicating whether to override the admin check or not. Default is false.
  * @returns {Promise} - A promise that resolves to the keepsats data.
  */
-export async function useKeepSats(useCache = true, transactions = true) {
+export async function useKeepSats(useCache = true, transactions = true, adminOverride = false) {
   // if (!apiToken) return null
   // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
   try {
     const params = {
       useCache: useCache,
       transactions: transactions,
+      admin: adminOverride,
     }
     const resp = await apiLogin.get("/v1/v4vapp/keepsats", {
       params,

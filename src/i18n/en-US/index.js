@@ -135,6 +135,8 @@ export default {
   podcasts: "Podcasts",
   pods: "Pods",
   // Ask Details dialog
+  send_to_hive: "Send to Hive",
+  send_to_lightning: "Send to Lightning",
   asking_details: "You are about to pay:",
   making_invoice: "You are about to create an invoice for:",
   amount_to_send: "Amount to send",
@@ -166,8 +168,7 @@ export default {
   2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by @sats.v4v.app\n
   A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
   keepsats_convert_title: `How to convert KeepSats to Hive`,
-  keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert
-  with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
+  keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
   A fee applies when converting sats to Hive or HBD.`,
   // Receive Page
   // Credit Card

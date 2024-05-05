@@ -177,6 +177,11 @@ const t = useI18n().t
 
 const rowsExpanded = ref([])
 
+
+const props = defineProps({
+  adminOverride: Boolean,
+})
+
 const columns = computed(() => {
   return [
     {
@@ -293,9 +298,11 @@ async function fetchData(newValue = dataDays.value) {
   }
   const [satsHistory, keepSats] = await Promise.all([
     useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
-    useKeepSats(false, true),
+    useKeepSats(false, true, props.adminOverride),
   ])
-  console.log()
+  console.log('keepSats', keepSats)
+  console.log('is admin', keepSats.admin)
+  console.log('satsHistory', satsHistory)
   if (keepSats.summary_transactions) {
     const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
     keepSatsData.value = keepSats.summary_transactions.filter(
