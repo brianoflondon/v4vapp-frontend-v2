@@ -24,6 +24,7 @@ export default {
   yes: 'Yes',
   no: 'No',
   all: 'All',
+  keepsats: 'KeepSats',
   // Dark Mode Selector
   change_light: 'Change to light mode',
   change_dark: 'Change to dark mode',
@@ -97,7 +98,7 @@ export default {
   invoice: 'Invoice',
   expires: 'expires',
   Expires: 'Expires',
-  enter_invoice: 'lnbc.... or Lightning Address',
+  enter_invoice: 'lnbc...., Lightning Address or Hive Name',
   valid_invoice: 'Invoice decoded',
   valid_lightning_address: 'Address decoded',
   invalid_invoice: 'Invalid invoice or Lightning Address',
@@ -105,7 +106,7 @@ export default {
   invoice_too_high: 'Invoice is above maximum payment',
   invoice_expired: 'Invoice has expired',
   self_payment: 'Can\'t send to v4v.app',
-  invoice_hint: 'Paste an invoice or scan a QR code',
+  invoice_hint: 'Paste an invoice, scan a QR code or a Hive Account name.',
   waiting_for: 'Waiting for reply transaction to appear on Hive blockchain',
   payment_sent_hive_keychain: 'Payment sent by Hive Keychain',
   check_lightning: 'Check your Lightning wallet, payment has been sent',
@@ -131,6 +132,8 @@ export default {
   podcasts: 'Podcasts',
   pods: 'Pods',
   // Ask Details dialog
+  send_to_hive: 'Send to Hive',
+  send_to_lightning: 'Send to Lightning',
   asking_details: 'You are about to pay:',
   making_invoice: 'You are about to create an invoice for:',
   amount_to_send: 'Amount to send',
@@ -153,9 +156,17 @@ export default {
   explanation_title: 'What is this site?',
   explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
   Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
-  The 'Send' tab allows you to pay any Lightning invoice or Lightning Address.\n
-  The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive.\n
-  The old 'Hive' tab is still available, but it is recommended to use the 'Send' and 'Receive' tabs instead.\n`,
+  The 'Send' tab allows you to pay any Lightning invoice or Lightning Address. In addition you can deposit sats to be stored as 'KeepSats' on v4v.app and use those to pay Lightning invoices or send to other Hive users. At any time you can convert the sats to Hive or HBD.\n
+  The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive. This can act as a Point of Sale in a shop and let you collect payment instantly from people paying with Hive, HBD or Lightning.\n
+  You can store a small amount of Sats on V4V.app: your KeepSats balance. This balance is shown on your credit card when logged in. It's the big number.\n`,
+  keepsats_deposit_title: `How to get KeepSats on v4v.app`,
+  keepsats_deposit_text: `To store KeepSats on v4v.app, there are two ways.:\n
+  1. Deposit Hive or HBD and they will be converted and stored as a KeepSats balance\n
+  2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by @sats.v4v.app\n
+  A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
+  keepsats_convert_title: `How to convert KeepSats to Hive`,
+  keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
+  A fee applies when converting sats to Hive or HBD.`,
   // Receive Page
   // Credit Card
   savings: 'Savings',
@@ -211,5 +222,8 @@ export default {
   convert: 'Convert',
   convert_sats_to_hive: 'Convert sats to Hive',
   deposit_sats_on_v4vapp: 'Deposit sats on v4v.app',
-  convert_sats_from_v4vapp: 'Convert sats to Hive'
+  convert_sats_from_v4vapp: 'Convert sats to Hive',
+  payment_failed: 'Payment failed',
+  // Loading messages
+  new_content: 'New content is available; please quit the app or refresh.'
 };
