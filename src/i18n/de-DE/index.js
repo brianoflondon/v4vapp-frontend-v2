@@ -24,6 +24,7 @@ export default {
   yes: 'Ja',
   no: 'Nein',
   all: 'Alles',
+  keepsats: 'KeepSats',
   // Dark Mode Selector
   change_light: 'Heller Modus',
   change_dark: 'Dunkler Modus',
@@ -97,7 +98,7 @@ export default {
   invoice: 'Rechnung',
   expires: 'verfällt',
   Expires: 'Verfällt',
-  enter_invoice: 'lnbc.... oder Lightning Adresse',
+  enter_invoice: 'lnbc...., Lightning Address or Hive Name',
   valid_invoice: 'Rechnung entschlüsselt',
   valid_lightning_address: 'Adresse entschlüsselt',
   invalid_invoice: 'Ungültige Rechnung oder Lightning Adresse',
@@ -105,7 +106,7 @@ export default {
   invoice_too_high: 'Rechnung ist über der Maximalzahlung',
   invoice_expired: 'Rechnung ist abgelaufen',
   self_payment: 'Senden an v4v.app ist nicht möglich',
-  invoice_hint: 'Rechnung einfügen oder QR-Code scannen',
+  invoice_hint: 'Paste an invoice, scan a QR code or a Hive Account name.',
   waiting_for: 'Warte auf Antwort der Hive-Blockchain',
   payment_sent_hive_keychain: 'Zahlung per Hive-Keychain gesendet',
   check_lightning: 'Überprüfen Sie Ihre Lightning Wallet, die Zahlung wurde gesendet',
@@ -131,6 +132,8 @@ export default {
   podcasts: 'Podcasts',
   pods: 'Pods',
   // Ask Details dialog
+  send_to_hive: 'Send to Hive',
+  send_to_lightning: 'Send to Lightning',
   asking_details: 'Sie zahlen:',
   making_invoice: 'Sie erstellen eine Rechnung für:',
   amount_to_send: 'Zu sendender Betrag',
@@ -151,11 +154,19 @@ export default {
   OtherError: 'Unbekannter Kamerafehler',
   // Explanation Box
   explanation_title: 'Was ist die V4V.app?',
-  explanation_text: `Die v4v.app wirkt wie ein Bitcoin-Lightning-Wallet für Hive.\n
-  Verwenden Sie Ihre Hive-oder Hive-Backed Dollars (HBD) die Sie in Ihrem Hive-Account haben. Damit können Sie jede Lightning Rechnung bezahlen oder BTC Sats an jede Lightning Adresse senden.\n
-  Auf der Registerkarte 'Senden' können Sie jede Lightning Rechnung oder Lightning Adresse bezahlen.\n
-  Auf der Registerkarte 'Empfangen' können Sie eine Hive-Zahlung (als QR-Code für den Zahler) oder eine BTC-Rechnung als Hive anfordern.\n
-  Die alte Registerkarte 'Hive' ist immer noch verfügbar, aber es wird empfohlen, stattdessen die Registerkarten 'Senden' und 'Empfangen' zu verwenden.\n`,
+  explanation_text: `v4v.app acts like a Bitcoin Lightning Wallet for Hive.\n
+  Using the Hive or Hive Backed Dollars (HBD) you have in your Hive account, you can pay any Lightning invoice or send BTC sats to any Lightning Address.\n
+  The 'Send' tab allows you to pay any Lightning invoice or Lightning Address. In addition you can deposit sats to be stored as 'KeepSats' on v4v.app and use those to pay Lightning invoices or send to other Hive users. At any time you can convert the sats to Hive or HBD.\n
+  The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive. This can act as a Point of Sale in a shop and let you collect payment instantly from people paying with Hive, HBD or Lightning.\n
+  You can store a small amount of Sats on V4V.app: your KeepSats balance. This balance is shown on your credit card when logged in. It's the big number.\n`,
+  keepsats_deposit_title: `How to get KeepSats on v4v.app`,
+  keepsats_deposit_text: `To store KeepSats on v4v.app, there are two ways.:\n
+  1. Deposit Hive or HBD and they will be converted and stored as a KeepSats balance\n
+  2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by @sats.v4v.app\n
+  A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
+  keepsats_convert_title: `How to convert KeepSats to Hive`,
+  keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
+  A fee applies when converting sats to Hive or HBD.`,
   // Receive Page
   // Credit Card
   savings: 'Erspartes',
@@ -211,5 +222,8 @@ export default {
   convert: 'Konvertieren',
   convert_sats_to_hive: 'Sats in Hive tauschen',
   deposit_sats_on_v4vapp: 'Sats auf v4v.app einzahlen',
-  convert_sats_from_v4vapp: 'Sats in Hive tauschen'
+  convert_sats_from_v4vapp: 'Sats in Hive tauschen',
+  payment_failed: 'Payment failed',
+  // Loading messages
+  new_content: 'New content is available; please quit the app or refresh.'
 };
