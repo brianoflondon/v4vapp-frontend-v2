@@ -1,6 +1,6 @@
 <template>
   <div class="flex column text-center items-center q-pa-none">
-    <div v-if="comingSoon" class="text-h3">Coming Soon</div>
+    <div v-if="comingSoon" class="text-h3">Coming Soon DON'T USE</div>
     <div class="content-container">
       <!-- MARK: Main page start -->
       <div class="main-content">
@@ -127,11 +127,11 @@
                     <q-input label="Voucher" v-model="voucher" outlined dense>
                     </q-input>
                   </div>
-                  <div class="q-px-md">
+                  <div class="q-px-md" v-if="!comingSoon">
                     <q-btn
                       :label="payButton"
                       icon="bolt"
-                      :disable="activeItem < 4 && comingSoon"
+                      :disable="activeItem < 4 && !comingSoon"
                       :color="buttonActiveNot(!activeItem < 4).color"
                       :text-color="buttonActiveNot(!activeItem < 4).textColor"
                       type="submit"
