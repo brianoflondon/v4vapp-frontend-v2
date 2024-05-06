@@ -876,6 +876,7 @@ async function payWithApi() {
       })
     }
     // wait 2 seconds then clear the form
+    storeUser.updateSatsBalance(false)
     await new Promise((resolve) => setTimeout(resolve, 4000))
     clearReset()
   } catch (e) {

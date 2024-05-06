@@ -26,13 +26,31 @@ register(process.env.SERVICE_WORKER_FILE, {
   },
 
   updatefound(/* registration */) {
-    console.log("New content is downloading.")
+    console.log("New version of app is downloading.")
+    Notify.create({
+      message: "New version of app is downloading.",
+      progress: true,
+      color: "positive",
+      position: "bottom",
+      timeout: 5000, // Make the notification sticky
+      actions: [
+        {
+          // Add an "OK" button
+          label: "OK",
+          color: "white",
+          handler: () => {
+            // Dismiss the notification when the "OK" button is clicked
+            /* ... */
+          },
+        },
+      ],
+    })
   },
 
   updated(/* registration */) {
-    console.log("New content is available; please refresh.")
+    console.log("New version of app is available; please refresh.")
     Notify.create({
-      message: "New version is available; please refresh.",
+      message: "New version of app is available; please refresh.",
       progress: true,
       color: "positive",
       position: "bottom",

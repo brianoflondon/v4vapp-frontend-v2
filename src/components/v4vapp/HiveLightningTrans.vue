@@ -26,7 +26,7 @@
       <div class="transaction-data-tables row">
         <!-- Hive to Sats Table -->
         <div class="hivetosats-table q-pa-sm">
-          Hive Sats
+          Hive -> Sats
           <q-table
             class="hive-sats-table"
             dense
@@ -330,6 +330,8 @@ async function fetchData(newValue = dataDays.value) {
       totals.value.totalSats += data.value[i].sats
     }
   }
+  console.log('data', data.value)
+  console.log('keepSatsData', keepSatsData.value)
 }
 
 onMounted(() => {
