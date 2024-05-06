@@ -92,7 +92,7 @@ export default {
   failure: 'Fehlgeschlagen',
   working: 'Arbeitet',
   keychain_installed: 'Keychain ist installiert',
-  keychain_missing: 'Keychain fehlt',
+  keychain_missing: 'Keychain ist nicht installiert',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
