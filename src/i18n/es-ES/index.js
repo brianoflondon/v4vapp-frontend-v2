@@ -91,8 +91,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Fallo',
   working: 'Trabajando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Keychain no se encuentra',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Recargar precios',
   // Invoice
   invoice: 'Factura',
@@ -162,7 +162,7 @@ export default {
   keepsats_deposit_title: `How to get KeepSats on v4v.app`,
   keepsats_deposit_text: `To store KeepSats on v4v.app, there are two ways.:\n
   1. Deposit Hive or HBD and they will be converted and stored as a KeepSats balance\n
-  2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by @sats.v4v.app\n
+  2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by \@sats.v4v.app\n
   A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
   keepsats_convert_title: `How to convert KeepSats to Hive`,
   keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
