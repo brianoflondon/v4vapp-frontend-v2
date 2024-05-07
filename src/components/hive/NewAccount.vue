@@ -7,7 +7,7 @@
         <div class="flex column text-center items-center q-pa-none">
           <!-- MARK: NUMBERs -->
           <p class="text-h6" style="word-wrap: break-word">
-            {{ t('install_keychain') }}.
+            {{ t("install_keychain") }}.
           </p>
           <StepNumbers :num-items="4" :active-item="activeItem" />
           <transition
@@ -17,7 +17,7 @@
             leave-active-class="animated fadeOutUp"
           >
             <q-form @submit="handleSubmit" @reset="handleReset">
-              <div class="text-h6">1. {{t('pick_hive_name')}}</div>
+              <div class="text-h6">1. {{ t("pick_hive_name") }}</div>
               <q-input
                 class="large-font"
                 v-model="accountName"
@@ -112,7 +112,7 @@
                 <div class="text-h6 q-pa-md">3. Confirm Download</div>
                 <q-checkbox
                   v-model="downloadedKeys"
-                  label="YES! I have downloaded and saved my keys"
+                  :label="t('keys_downloaded')"
                   :text-color="buttonActiveNot(!activeItem < 3).textColor"
                   :disable="activeItem < 3"
                   @update:model-value="downloadedKeys"
@@ -123,7 +123,7 @@
                 <div
                   class="flex col wrap justify-center items-center content-start"
                 >
-                  <div class="q-px-md">
+                  <div class="q-px-md" v-if="false">
                     <q-input label="Voucher" v-model="voucher" outlined dense>
                     </q-input>
                   </div>
@@ -138,13 +138,22 @@
                     />
                   </div>
                 </div>
-                <div class="q-pa-md">
-                  <span>You will be charged: {{ newAccountCost?.hive }} Hive</span>
-                  <p>
-                    Receive back:
-                    {{ tidyNumber(newAccountCost?.hive_back, 3) }} Hive and
-                    {{ tidyNumber(newAccountCost?.hbd_back, 3) }} HBD
-                  </p>
+                <div class="flex justify-center q-pa-md">
+                  <table>
+                    <tr>
+                      <td style="text-align: left">
+                        {{ t("you_will_be_charged") }}:
+                      </td>
+                      <td>{{ payButton }}</td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: left">{{ t("receive_back") }}:</td>
+                      <td>
+                        {{ tidyNumber(newAccountCost?.hive_back, 3) }} Hive and
+                        {{ tidyNumber(newAccountCost?.hbd_back, 3) }} HBD
+                      </td>
+                    </tr>
+                  </table>
                 </div>
               </div>
             </q-form>
@@ -215,13 +224,13 @@
 
       <q-card-actions align="right" justify="end">
         <q-btn
-          label="Paid"
+          :label="t('paid')"
           icon="check"
           color="positive"
           @click="checkPayment(false)"
         />
         <q-btn
-          label="Cancel"
+          :label="t('cancel')"
           icon="cancel"
           color="negative"
           @click="handleCancel"
@@ -299,9 +308,9 @@ const newAccountCost = ref({})
 const payButton = computed(() => {
   return (
     newAccountCost.value.hive +
-    " Hive | " +
+    " Hive (" +
     tidyNumber(newAccountCost.value.sats, 0) +
-    " sats"
+    " sats)"
   )
 })
 

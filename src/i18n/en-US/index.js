@@ -232,5 +232,8 @@ export default {
   "copy_keys": "Copy Keys to clipboard",
   "download_keys": "Download Keys",
   "confirm_download": "Confirm Download",
-
+  "invoice_canceled": "Invoice Canceled",
+  "keys_downloaded": "YES! I have downloaded and saved my keys",
+  "you_will_be_charged": "You will be charged",
+  "receive_back": "Receive back"
 };
