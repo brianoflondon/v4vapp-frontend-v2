@@ -20,39 +20,41 @@
         <div class="h6">
           Copy your Hive Name and Master Password to Hive Keychain
         </div>
-        <div class="flex row justify-center">
-          <div class="q-pa-md">
+        <div class="flex row justify-center q-pt-md">
+          <div class="q-pa-sm">
             <q-btn
               icon="content_copy"
-              :label="accountName"
+              :label="`@${accountName}`"
               @click="copyToClipboard(accountName)"
               :color="buttonActiveNot(true).color"
               :text-color="buttonActiveNot(true).textColor"
+              no-caps
             />
           </div>
-          <div class="q-pa-md">
+          <div class="q-pa-sm">
             <q-btn
               icon="content_copy"
-              label="Copy Master Password"
+              :label="$t('copy_master_password')"
               @click="copyToClipboard(masterPassword)"
               :color="buttonActiveNot(true).color"
               :text-color="buttonActiveNot(true).textColor"
+
             />
           </div>
         </div>
         <div class="flex row justify-center">
-          <div class="q-pa-md">
+          <div class="q-pa-sm">
             <q-btn
-              label="Download Keys"
+              :label="t('download_keys')"
               icon="download"
               :color="buttonActiveNot(true).color"
               :text-color="buttonActiveNot(true).textColor"
               @click="downloadKeys"
             ></q-btn>
           </div>
-          <div class="q-pa-md">
+          <div class="q-pa-sm">
             <q-btn
-              label="Copy Keys"
+              :label="t('copy_keys')"
               icon="content_copy"
               :color="buttonActiveNot(true).color"
               :text-color="buttonActiveNot(true).textColor"
@@ -101,8 +103,10 @@
 import { copyToClipboard } from "quasar"
 import { buttonActiveNot } from "src/use/useUtils"
 import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
-import { ref } from "vue"
 import { onMounted } from "vue"
+import { useI18n } from "vue-i18n"
+
+const t = useI18n().t
 
 const emit = defineEmits(["close", "downloadKeys", "copyKeys"])
 
@@ -122,12 +126,10 @@ const props = defineProps({
   keychainLink: {
     type: String,
     default: "",
-  }
+  },
 })
 
-onMounted(() => {
-
-})
+onMounted(() => {})
 
 function closeDialog() {
   emit("close")

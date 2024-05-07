@@ -1,13 +1,13 @@
 <template>
   <div class="flex column text-center items-center q-pa-none">
-    <div v-if="comingSoon" class="text-h3">Coming Soon DON'T USE</div>
+    <div v-if="isClosed" class="text-h3">Coming Soon DON'T USE</div>
     <div class="content-container">
       <!-- MARK: Main page start -->
       <div class="main-content">
         <div class="flex column text-center items-center q-pa-none">
           <!-- MARK: NUMBERs -->
           <p class="text-h6" style="word-wrap: break-word">
-            Install Hive Keychain first.
+            {{ t('install_keychain') }}.
           </p>
           <StepNumbers :num-items="4" :active-item="activeItem" />
           <transition
@@ -17,7 +17,7 @@
             leave-active-class="animated fadeOutUp"
           >
             <q-form @submit="handleSubmit" @reset="handleReset">
-              <div class="text-h6">1. Pick Hive Name</div>
+              <div class="text-h6">1. {{t('pick_hive_name')}}</div>
               <q-input
                 class="large-font"
                 v-model="accountName"
@@ -84,12 +84,12 @@
                 </div>
               </div>
               <div>
-                <div class="text-h6">2. Download Keys</div>
+                <div class="text-h6">2. {{ t("download_keys") }}</div>
               </div>
               <div class="flex row wrap justify-center">
                 <div class="q-ma-sm">
                   <q-btn
-                    label="Download Keys"
+                    :label="t('download_keys')"
                     :disable="activeItem < 2"
                     icon="download"
                     :color="buttonActiveNot(!activeItem < 2).color"
@@ -99,7 +99,7 @@
                 </div>
                 <div class="q-ma-sm">
                   <q-btn
-                    label="Copy Keys"
+                    :label="t('copy_keys')"
                     :disable="activeItem < 2"
                     icon="content_copy"
                     :color="buttonActiveNot(!activeItem < 2).color"
@@ -127,16 +127,24 @@
                     <q-input label="Voucher" v-model="voucher" outlined dense>
                     </q-input>
                   </div>
-                  <div class="q-px-md" v-if="!comingSoon">
+                  <div class="q-px-md" v-if="!isClosed">
                     <q-btn
                       :label="payButton"
                       icon="bolt"
-                      :disable="activeItem < 4 && !comingSoon"
+                      :disable="activeItem < 4 && !isClosed"
                       :color="buttonActiveNot(!activeItem < 4).color"
                       :text-color="buttonActiveNot(!activeItem < 4).textColor"
                       type="submit"
                     />
                   </div>
+                </div>
+                <div class="q-pa-md">
+                  <span>You will be charged: {{ newAccountCost?.hive }} Hive</span>
+                  <p>
+                    Receive back:
+                    {{ tidyNumber(newAccountCost?.hive_back, 3) }} Hive and
+                    {{ tidyNumber(newAccountCost?.hbd_back, 3) }} HBD
+                  </p>
                 </div>
               </div>
             </q-form>
@@ -263,12 +271,12 @@ const t = useI18n().t
 const storeUser = useStoreUser()
 const q = useQuasar()
 
-const comingSoon = computed(() => {
+const isClosed = computed(() => {
   if (window.location.hostname === "localhost") {
-    return false
+    return !newAccountCost.value?.isOpen
   }
   if (window.location.hostname === "v4v.app") {
-    return true
+    return !newAccountCost.value?.isOpen
   }
   return true
 })
@@ -536,6 +544,7 @@ async function handlePaid() {
         timeout: 5000,
       })
       accountConfirm.value = true
+      invoicePaid.value = false
     } else {
       Notify.create({
         message: t("account_not_created"),
@@ -543,12 +552,15 @@ async function handlePaid() {
         position: "top",
         timeout: 5000,
       })
+      invoicePaid.value = false
     }
   } catch (error) {
+    invoicePaid.value = false
     console.error("error", error)
   }
   paymentRequest.value = ""
   progress.value = 1
+  invoicePaid.value = false
   // Copy the ke
 }
 
