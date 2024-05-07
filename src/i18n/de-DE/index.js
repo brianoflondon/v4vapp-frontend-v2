@@ -91,8 +91,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Arbeitet',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain ist installiert',
+  keychain_missing: 'Keychain ist nicht installiert',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -200,7 +200,7 @@ export default {
   date: 'Datum',
   paid: 'Bezahlt',
   pending: 'Anstehend',
-  date: 'Date',
+  date: 'Datum',
   paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',
@@ -225,5 +225,11 @@ export default {
   convert_sats_from_v4vapp: 'Sats in Hive tauschen',
   payment_failed: 'Payment failed',
   // Loading messages
-  new_content: 'New content is available; please quit the app or refresh.'
+  new_content: 'New content is available; please quit the app or refresh.',
+  // New account
+  'install_keychain': 'Install Hive Keychain first',
+  'pick_hive_name': 'Pick a Hive Name',
+  'copy_keys': 'Copy Keys to clipboard',
+  'download_keys': 'Download Keys',
+  'confirm_download': 'Confirm Download'
 };
