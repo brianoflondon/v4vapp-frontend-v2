@@ -272,13 +272,7 @@ const storeUser = useStoreUser()
 const q = useQuasar()
 
 const isClosed = computed(() => {
-  if (window.location.hostname === "localhost") {
-    return !newAccountCost.value?.isOpen
-  }
-  if (window.location.hostname === "v4v.app") {
-    return !newAccountCost.value?.isOpen
-  }
-  return true
+  return !newAccountCost.value?.isOpen
 })
 
 // Define the account name and master password
