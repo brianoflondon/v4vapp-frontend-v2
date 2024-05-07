@@ -225,5 +225,11 @@ export default {
   convert_sats_from_v4vapp: 'Convert sats to Hive',
   payment_failed: 'Payment failed',
   // Loading messages
-  new_content: 'New content is available; please quit the app or refresh.'
+  new_content: 'New content is available; please quit the app or refresh.',
+  // New account
+  'install_keychain': 'Install Hive Keychain first',
+  'pick_hive_name': 'Pick a Hive Name',
+  'copy_keys': 'Copy Keys to clipboard',
+  'download_keys': 'Download Keys',
+  'confirm_download': 'Confirm Download'
 };
