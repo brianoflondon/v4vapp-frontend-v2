@@ -91,8 +91,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Falhou',
   working: 'Processando',
-  keychain_installed: 'Keychain is Installed',
-  keychain_missing: 'Keychain is Missing',
+  keychain_installed: 'Keychain está instalado',
+  keychain_missing: 'Instale o app Hive Keychain',
   reload_prices: 'Atualizar preços',
   // Invoice
   invoice: 'Fatura',
@@ -225,5 +225,11 @@ export default {
   convert_sats_from_v4vapp: 'Convert sats to Hive',
   payment_failed: 'Payment failed',
   // Loading messages
-  new_content: 'New content is available; please quit the app or refresh.'
+  new_content: 'New content is available; please quit the app or refresh.',
+  // New account
+  'install_keychain': 'Install Hive Keychain first',
+  'pick_hive_name': 'Pick a Hive Name',
+  'copy_keys': 'Copy Keys to clipboard',
+  'download_keys': 'Download Keys',
+  'confirm_download': 'Confirm Download'
 };
