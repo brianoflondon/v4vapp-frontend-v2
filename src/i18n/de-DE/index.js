@@ -91,8 +91,8 @@ export default {
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
   working: 'Arbeitet',
-  keychain_installed: 'Keychain ist installiert',
-  keychain_missing: 'Keychain ist nicht installiert',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
@@ -200,7 +200,7 @@ export default {
   date: 'Datum',
   paid: 'Bezahlt',
   pending: 'Anstehend',
-  date: 'Datum',
+  date: 'Date',
   paid_by: 'Gezahlt über',
   import_hive: 'Hive-Import',
   local_records: 'Lokale Einträge',
@@ -227,9 +227,21 @@ export default {
   // Loading messages
   new_content: 'New content is available; please quit the app or refresh.',
   // New account
+  'use_desktop': 'This process works on mobile, but is easier on a desktop.',
   'install_keychain': 'Install Hive Keychain first',
   'pick_hive_name': 'Pick a Hive Name',
   'copy_keys': 'Copy Keys to clipboard',
   'download_keys': 'Download Keys',
-  'confirm_download': 'Confirm Download'
+  'copy_master_password': 'Copy Master Password',
+  'confirm_download': 'Confirm Download',
+  'invoice_canceled': 'Invoice Canceled',
+  'keys_downloaded': 'YES! I have downloaded and saved my keys',
+  'you_will_be_charged': 'You will be charged',
+  'receive_back': 'Receive back',
+  'account_created': 'Your Account has been created',
+  'last_chance': 'This is the last chance to save your keys!',
+  'recommendation': 'Recommendation:',
+  'put_into_keychain': 'Put Username and Master Password direct into Hive Keychain.',
+  'store_safely': 'Store the master password safely in a Password manager.',
+  'no_forgot_option': 'There is no "I forgot my keys option" on Hive.'
 };
