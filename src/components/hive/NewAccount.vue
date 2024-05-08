@@ -1,10 +1,4 @@
 <template>
-  <q-toggle
-    v-model="accountConfirm"
-    label="confirm"
-    color="primary"
-    @update:model-value="accountConfirm"
-  />
   <div class="flex column text-center items-center q-pa-none">
     <div v-if="isClosed" class="text-h3">Coming Soon DON'T USE</div>
     <div class="content-container">
@@ -13,8 +7,7 @@
         <div class="flex column text-center items-center q-pa-none">
           <!-- MARK: NUMBERs -->
           <p class="text-h6" style="word-wrap: break-word">
-            {{ t("install_keychain") }}.
-            {{ t("use_desktop") }}
+            {{ t("install_keychain") }}. {{ t("use_desktop") }}
           </p>
           <StepNumbers :num-items="4" :active-item="activeItem" />
           <transition
@@ -156,13 +149,13 @@
                     <tr>
                       <td style="text-align: left">{{ t("receive_back") }}:</td>
                       <td style="text-align: right">
-                        {{ tidyNumber(newAccountCost?.hive_back, 3) }}<br>
-                        {{ tidyNumber(newAccountCost?.hbd_back, 3) }}<br>
+                        {{ tidyNumber(newAccountCost?.hive_back, 3) }}<br />
+                        {{ tidyNumber(newAccountCost?.hbd_back, 3) }}<br />
                         {{ tidyNumber(newAccountCost?.sats_back, 0) }}
                       </td>
                       <td>
-                        Hive<br>
-                        HBD<br>
+                        Hive<br />
+                        HBD<br />
                         sats
                       </td>
                     </tr>

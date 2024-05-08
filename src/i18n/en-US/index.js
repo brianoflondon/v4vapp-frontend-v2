@@ -237,5 +237,11 @@ export default {
   "invoice_canceled": "Invoice Canceled",
   "keys_downloaded": "YES! I have downloaded and saved my keys",
   "you_will_be_charged": "You will be charged",
-  "receive_back": "Receive back"
+  "receive_back": "Receive back",
+  "account_created": "Your Account has been created",
+  "last_chance": "This is the last chance to save your keys!",
+  "recommendation": "Recommendation:",
+  "put_into_keychain": "Put Username and Master Password direct into Hive Keychain.",
+  "store_safely": "Store the master password safely in a Password manager.",
+  "no_forgot_option": "There is no \"I forgot my keys option\" on Hive."
 };

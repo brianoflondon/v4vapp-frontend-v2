@@ -3,7 +3,7 @@
     <q-card>
       <!-- Top Close Button -->
       <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">Your Account has been created</div>
+        <div class="text-h6">{{ t("account_created") }}</div>
         <q-space />
         <q-space />
         <q-btn icon="close" flat round dense @click="closeDialog" />
@@ -11,11 +11,11 @@
       <q-card-section>
         <div class="flex row">
           <div class="text wrap">
-            <div>This is the last chance to save your keys!</div>
-            <div class="text-h6">Recommendation:</div>
-            <div>Put Username and Master Password direct into Hive Keychain.</div>
-            <div>Store the master password safely in a Password manager.</div>
-            <div>There is no "I forgot my keys option" on Hive.</div>
+            <div>{{ t("last_chance") }}</div>
+            <div class="text-h6">{{ t("recommendation") }}</div>
+            <div>{{ t("put_into_keychain") }}</div>
+            <div>{{ t("store_safely") }}</div>
+            <div>{{ t("no_forgot_option") }}</div>
           </div>
         </div>
         <div class="flex row justify-center q-pt-md">
