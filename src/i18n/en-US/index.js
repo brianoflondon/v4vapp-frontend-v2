@@ -227,6 +227,7 @@ export default {
   // Loading messages
   new_content: 'New content is available; please quit the app or refresh.',
   // New account
+  "use_desktop": "This process works on mobile, but is easier on a desktop.",
   "install_keychain" : "Install Hive Keychain first",
   "pick_hive_name" : "Pick a Hive Name",
   "copy_keys": "Copy Keys to clipboard",

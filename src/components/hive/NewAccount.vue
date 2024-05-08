@@ -1,4 +1,10 @@
 <template>
+  <q-toggle
+    v-model="accountConfirm"
+    label="confirm"
+    color="primary"
+    @update:model-value="accountConfirm"
+  />
   <div class="flex column text-center items-center q-pa-none">
     <div v-if="isClosed" class="text-h3">Coming Soon DON'T USE</div>
     <div class="content-container">
@@ -8,6 +14,7 @@
           <!-- MARK: NUMBERs -->
           <p class="text-h6" style="word-wrap: break-word">
             {{ t("install_keychain") }}.
+            {{ t("use_desktop") }}
           </p>
           <StepNumbers :num-items="4" :active-item="activeItem" />
           <transition
@@ -140,17 +147,23 @@
                 </div>
                 <div class="flex justify-center q-pa-md">
                   <table>
-                    <tr>
+                    <tr class="q-pb-sm">
                       <td style="text-align: left">
                         {{ t("you_will_be_charged") }}:
                       </td>
-                      <td>{{ payButton }}</td>
+                      <td colspan="2" class="border-bottom">{{ payButton }}</td>
                     </tr>
                     <tr>
                       <td style="text-align: left">{{ t("receive_back") }}:</td>
+                      <td style="text-align: right">
+                        {{ tidyNumber(newAccountCost?.hive_back, 3) }}<br>
+                        {{ tidyNumber(newAccountCost?.hbd_back, 3) }}<br>
+                        {{ tidyNumber(newAccountCost?.sats_back, 0) }}
+                      </td>
                       <td>
-                        {{ tidyNumber(newAccountCost?.hive_back, 3) }} Hive and
-                        {{ tidyNumber(newAccountCost?.hbd_back, 3) }} HBD
+                        Hive<br>
+                        HBD<br>
+                        sats
                       </td>
                     </tr>
                   </table>
@@ -747,5 +760,9 @@ const keysText = computed(() => {
 
 .animated {
   animation-duration: 1s; /* Adjust this value to change the animation speed */
+}
+
+.border-bottom {
+  border-bottom: 1px solid black;
 }
 </style>

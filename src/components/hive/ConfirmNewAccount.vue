@@ -10,15 +10,13 @@
       </q-card-section>
       <q-card-section>
         <div class="flex row">
-          <div class="text-h7 wrap">
-            <p>This is the last chance to save your keys!</p>
-            <p>If you lose them, you will lose access to your account.</p>
-            <p>There is no "I forgot my keys option" on Hive.</p>
-            <p>Please make sure you've saved them in a safe place</p>
+          <div class="text wrap">
+            <div>This is the last chance to save your keys!</div>
+            <div class="text-h6">Recommendation:</div>
+            <div>Put Username and Master Password direct into Hive Keychain.</div>
+            <div>Store the master password safely in a Password manager.</div>
+            <div>There is no "I forgot my keys option" on Hive.</div>
           </div>
-        </div>
-        <div class="h6">
-          Copy your Hive Name and Master Password to Hive Keychain
         </div>
         <div class="flex row justify-center q-pt-md">
           <div class="q-pa-sm">
@@ -38,7 +36,6 @@
               @click="copyToClipboard(masterPassword)"
               :color="buttonActiveNot(true).color"
               :text-color="buttonActiveNot(true).textColor"
-
             />
           </div>
         </div>
@@ -105,10 +102,13 @@ import { buttonActiveNot } from "src/use/useUtils"
 import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
 import { onMounted } from "vue"
 import { useI18n } from "vue-i18n"
-
+import { ref } from "vue"
 const t = useI18n().t
 
 const emit = defineEmits(["close", "downloadKeys", "copyKeys"])
+
+const accountNameForm = ref()
+const masterPasswordForm = ref()
 
 const props = defineProps({
   accountName: {
@@ -129,7 +129,13 @@ const props = defineProps({
   },
 })
 
-onMounted(() => {})
+onMounted(() => {
+  console.log("props", props)
+  accountNameForm.value = props.accountName
+  masterPasswordForm.value = props.masterPassword
+  console.log("accountNameForm", accountNameForm.value)
+  console.log("masterPasswordForm", masterPasswordForm.value)
+})
 
 function closeDialog() {
   emit("close")
