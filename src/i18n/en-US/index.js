@@ -232,6 +232,7 @@ export default {
   "pick_hive_name" : "Pick a Hive Name",
   "copy_keys": "Copy Keys to clipboard",
   "download_keys": "Download Keys",
+  "copy_master_password": "Copy Master Password",
   "confirm_download": "Confirm Download",
   "invoice_canceled": "Invoice Canceled",
   "keys_downloaded": "YES! I have downloaded and saved my keys",
