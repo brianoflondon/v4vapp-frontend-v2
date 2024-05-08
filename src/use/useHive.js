@@ -7,6 +7,8 @@ import { Dark } from "quasar"
 import { genRandAlphaNum } from "src/use/useUtils"
 import "src/assets/hive-tx.min.js"
 
+const useHiveImages = true
+
 const useHiveAccountRegex =
   /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
 
@@ -146,9 +148,9 @@ export function useHiveAvatarURL({
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     return useBlankProfileURL()
   }
-  return (
-    apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
-  )
+  return useHiveImages
+    ? "https://images.hive.blog/u/" + hiveAccname + "/avatar/" + size
+    : apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
 }
 
 export async function useHiveAvatarBlob({
@@ -161,7 +163,9 @@ export async function useHiveAvatarBlob({
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     return useBlankProfileURL()
   }
-  const url = "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
+  const url = useHiveImages
+    ? "https://images.hive.blog/u/" + hiveAccname + "/avatar/" + size
+    : "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
   try {
     const response = await api.get(url, { responseType: "blob" })
     const blob = new Blob([response.data], { type: response.data.type })

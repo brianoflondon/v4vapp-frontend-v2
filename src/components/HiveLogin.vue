@@ -8,7 +8,7 @@
       >
         <!-- Hive Account name input -->
         <q-item>
-          <HiveInputAcc v-model="hiveAccObj" :prefix="t('pay_to')">
+          <HiveInputAcc v-model="hiveAccObj" :prefix="t('login')">
           </HiveInputAcc>
         </q-item>
         <!-- End Hive Account name input -->
