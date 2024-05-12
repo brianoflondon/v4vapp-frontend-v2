@@ -35,7 +35,7 @@
           <q-slide-transition appear disappear :duration="1500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
               <div>
-                <HiveLightningTrans :adminOverride="adminOverride" />
+                <HiveLightningKeepSatsTrans :adminOverride="adminOverride" />
               </div>
             </div>
           </q-slide-transition>
@@ -346,7 +346,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import ExplanationBox from "components/utils/ExplanationBox.vue"
 import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
-import HiveLightningTrans from "src/components/v4vapp/HiveLightningTrans.vue"
+import HiveLightningKeepSatsTrans from "src/components/v4vapp/HiveLightningKeepSatsTrans.vue"
 import DepositKeepsats from "src/components/hive/DepositKeepsats.vue"
 import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
