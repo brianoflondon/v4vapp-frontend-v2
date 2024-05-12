@@ -13,7 +13,8 @@ const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
 // const myNodePubKey = ""
-let useLocal = true
+// Don't change
+let useLocal = false
 
 const isLocalhost =
   window.location.href.includes("localhost") ||
