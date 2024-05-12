@@ -321,18 +321,6 @@ async function fetchData(newValue = dataDays.value) {
     keepSatsData.value = keepSats.summary_transactions.filter(
       (trx) => trx.reason !== "Fees" && trx.timestamp > oldTimestamp
     )
-
-    const tempTotal = keepSats.summary_transactions.filter(
-      (trx) => trx.timestamp > oldTimestamp
-    )
-    keepSatsTotal.value = 0
-    keepHiveTotal.value = 0
-    for (let i = 0; i < tempTotal.length; i++) {
-      keepSatsTotal.value += tempTotal[i].msats
-      keepHiveTotal.value += tempTotal[i].hive
-    }
-
-    keepSatsTotal.value = keepSatsTotal.value / 1000
   }
   data.value = satsHistory
 
@@ -349,11 +337,12 @@ async function fetchData(newValue = dataDays.value) {
   console.log("data", data.value)
   console.log("keepSatsData", keepSatsData.value)
   await getKeepSatsReasons()
-  updateKeepSatsDataFiltered()
+  await updateKeepSatsDataFiltered()
+  await updateKeepSatsTotals()
   console.log("keepsatsDataFiltered", keepSatsDataFiltered.value)
 }
 
-function updateKeepSatsDataFiltered() {
+async function updateKeepSatsDataFiltered() {
   console.log("calling update keepSatsDataFilter", keepSatsDataFilter.value)
   if (keepSatsDataFilter.value === "All") {
     keepSatsDataFiltered.value = keepSatsData.value
@@ -364,6 +353,18 @@ function updateKeepSatsDataFiltered() {
     (trx) => trx.reason === keepSatsDataFilter.value
   )
   console.log("keepSatsDataFiltered", keepSatsDataFiltered.value)
+  await updateKeepSatsTotals()
+}
+
+async function updateKeepSatsTotals() {
+  const tempTotal = keepSatsDataFiltered.value
+  keepSatsTotal.value = 0
+  keepHiveTotal.value = 0
+  for (let i = 0; i < tempTotal.length; i++) {
+    keepSatsTotal.value += tempTotal[i].msats
+    keepHiveTotal.value += tempTotal[i].hive
+  }
+  keepSatsTotal.value = keepSatsTotal.value / 1000
 }
 
 async function getKeepSatsReasons() {
