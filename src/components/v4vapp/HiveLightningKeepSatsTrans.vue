@@ -79,15 +79,25 @@
     <div class="col-auto">
       <!-- Keep Sats Table -->
       <div class="keepsats-table-outer q-pa-sm"></div>
-
-      <div class="reasons-select q-px-sm">
-        <q-select
-          v-model="keepSatsDataFilter"
-          @update:model-value="updateKeepSatsDataFiltered"
-          :options="keepSatsDataReasons"
-          label="Reason"
-          dense
-        ></q-select>
+      <div class="category-reasons-selectors flex ">
+        <div class="category-select q-px-sm col-grow">
+          <q-select
+            v-model="keepSatsDataCategoryFilter"
+            @update:model-value="updateKeepSatsDataFiltered"
+            :options="keepSatsDataCategories"
+            label="Category"
+            dense
+          ></q-select>
+        </div>
+        <div class="reasons-select q-px-sm col-grow">
+          <q-select
+            v-model="keepSatsDataReasonFilter"
+            @update:model-value="updateKeepSatsDataFiltered"
+            :options="keepSatsDataReasons"
+            label="Reason"
+            dense
+          ></q-select>
+        </div>
       </div>
       <div class="keepsats-table" v-if="keepSatsDataFiltered">
         KeepSats
@@ -184,8 +194,10 @@ const data = ref([])
 const dataDays = ref({ label: "7 days", value: 7 })
 const totals = ref({ totalHive: 0, totalSats: 0 })
 
-const keepSatsDataFilter = ref("All")
+const keepSatsDataReasonFilter = ref("All")
 const keepSatsDataReasons = ref([])
+const keepSatsDataCategoryFilter = ref("All")
+const keepSatsDataCategories = ref(["All"])
 const keepSatsDataFiltered = ref([])
 
 const t = useI18n().t
@@ -337,20 +349,29 @@ async function fetchData(newValue = dataDays.value) {
   console.log("data", data.value)
   console.log("keepSatsData", keepSatsData.value)
   await getKeepSatsReasons()
+  await getKeepSatsCategories()
   await updateKeepSatsDataFiltered()
   await updateKeepSatsTotals()
   console.log("keepsatsDataFiltered", keepSatsDataFiltered.value)
 }
 
 async function updateKeepSatsDataFiltered() {
-  console.log("calling update keepSatsDataFilter", keepSatsDataFilter.value)
-  if (keepSatsDataFilter.value === "All") {
+  console.log("calling update keepSatsDataFilter", keepSatsDataReasonFilter.value)
+  // filter categories first
+  if (keepSatsDataCategoryFilter.value !== "All") {
+    keepSatsDataFiltered.value = keepSatsData.value.filter(
+      (trx) => trx.category === keepSatsDataCategoryFilter.value
+    )
+  } else {
     keepSatsDataFiltered.value = keepSatsData.value
+  }
+  await getKeepSatsReasons()
+  if (keepSatsDataReasonFilter.value === "All") {
     return
   }
-  console.log("checking for reason: ", keepSatsDataFilter.value)
-  keepSatsDataFiltered.value = keepSatsData.value.filter(
-    (trx) => trx.reason === keepSatsDataFilter.value
+  console.log("checking for reason: ", keepSatsDataReasonFilter.value)
+  keepSatsDataFiltered.value = keepSatsDataFiltered.value.filter(
+    (trx) => trx.reason === keepSatsDataReasonFilter.value
   )
   console.log("keepSatsDataFiltered", keepSatsDataFiltered.value)
   await updateKeepSatsTotals()
@@ -371,12 +392,20 @@ async function getKeepSatsReasons() {
   // extract a list of reasons from the keepsats data
   keepSatsDataReasons.value = ["All"]
   keepSatsDataReasons.value = keepSatsDataReasons.value.concat(
-    keepSatsData.value.map((trx) => trx.reason)
+    keepSatsDataFiltered.value.map((trx) => trx.reason)
   )
   // remove duplicates from list
   keepSatsDataReasons.value = Array.from(new Set(keepSatsDataReasons.value))
-  console.log("keepSatsDataReasons", keepSatsDataReasons.value)
-  console.log("keepSatsDataFiltered", keepSatsDataFiltered.value)
+}
+
+async function getKeepSatsCategories() {
+  // extract a list of categories from the keepsats data
+  keepSatsDataCategories.value = ["All"]
+  keepSatsDataCategories.value = keepSatsDataCategories.value.concat(
+    keepSatsData.value.map((trx) => trx.category)
+  )
+  // remove duplicates from list
+  keepSatsDataCategories.value = Array.from(new Set(keepSatsDataCategories.value))
 }
 
 onMounted(() => {
