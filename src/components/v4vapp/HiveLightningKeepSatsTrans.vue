@@ -59,7 +59,7 @@
                 </a>
               </q-td>
             </template>
-            <template v-slot:bottom-row v-if="data.length > 0">
+            <template v-slot:bottom-row v-if="data?.length > 0">
               <q-tr class="text-bold">
                 <q-td colspan="2" class="text-left">Total</q-td>
                 <q-td class="text-right">
@@ -78,11 +78,32 @@
     </div>
     <div class="col-auto">
       <!-- Keep Sats Table -->
-      <div class="keepsats-table">
+      <div class="keepsats-table-outer q-pa-sm"></div>
+      <div class="category-reasons-selectors flex ">
+        <div class="category-select q-px-sm col-grow">
+          <q-select
+            v-model="keepSatsDataCategoryFilter"
+            @update:model-value="updateKeepSatsDataFiltered"
+            :options="keepSatsDataCategories"
+            label="Category"
+            dense
+          ></q-select>
+        </div>
+        <div class="reasons-select q-px-sm col-grow">
+          <q-select
+            v-model="keepSatsDataReasonFilter"
+            @update:model-value="updateKeepSatsDataFiltered"
+            :options="keepSatsDataReasons"
+            label="Reason"
+            dense
+          ></q-select>
+        </div>
+      </div>
+      <div class="keepsats-table" v-if="keepSatsDataFiltered">
         KeepSats
         <q-table
           dense
-          :rows="keepSatsData"
+          :rows="keepSatsDataFiltered"
           :columns="keepSatsColumns"
           v-model:expanded="rowsExpanded"
           row-key="group_id"
@@ -139,7 +160,7 @@
           </template>
 
           <!-- Show total for this age range at the bottom -->
-          <template v-slot:bottom-row v-if="keepSatsData.length > 0">
+          <template v-slot:bottom-row v-if="keepSatsDataFiltered?.length > 0">
             <q-tr class="text-bold">
               <q-td class="text-left" colspan="2">Total</q-td>
               <q-td class="text-right">
@@ -173,10 +194,15 @@ const data = ref([])
 const dataDays = ref({ label: "7 days", value: 7 })
 const totals = ref({ totalHive: 0, totalSats: 0 })
 
+const keepSatsDataReasonFilter = ref("All")
+const keepSatsDataReasons = ref([])
+const keepSatsDataCategoryFilter = ref("All")
+const keepSatsDataCategories = ref(["All"])
+const keepSatsDataFiltered = ref([])
+
 const t = useI18n().t
 
 const rowsExpanded = ref([])
-
 
 const props = defineProps({
   adminOverride: Boolean,
@@ -300,27 +326,17 @@ async function fetchData(newValue = dataDays.value) {
     useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
     useKeepSats(false, true, props.adminOverride),
   ])
+
+  // Process the KeepSats transactions
   if (keepSats.summary_transactions) {
     const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
     keepSatsData.value = keepSats.summary_transactions.filter(
       (trx) => trx.reason !== "Fees" && trx.timestamp > oldTimestamp
     )
-
-    const tempTotal = keepSats.summary_transactions.filter(
-      (trx) => trx.timestamp > oldTimestamp
-    )
-    keepSatsTotal.value = 0
-    keepHiveTotal.value = 0
-    for (let i = 0; i < tempTotal.length; i++) {
-      keepSatsTotal.value += tempTotal[i].msats
-      keepHiveTotal.value += tempTotal[i].hive
-    }
-
-    keepSatsTotal.value = keepSatsTotal.value / 1000
   }
-
   data.value = satsHistory
 
+  // Process the Hive sats transactions
   // calculate totals for hive and sats
   if (data.value) {
     totals.value.totalHive = 0
@@ -330,8 +346,66 @@ async function fetchData(newValue = dataDays.value) {
       totals.value.totalSats += data.value[i].sats
     }
   }
-  console.log('data', data.value)
-  console.log('keepSatsData', keepSatsData.value)
+  console.log("data", data.value)
+  console.log("keepSatsData", keepSatsData.value)
+  await getKeepSatsReasons()
+  await getKeepSatsCategories()
+  await updateKeepSatsDataFiltered()
+  await updateKeepSatsTotals()
+  console.log("keepsatsDataFiltered", keepSatsDataFiltered.value)
+}
+
+async function updateKeepSatsDataFiltered() {
+  console.log("calling update keepSatsDataFilter", keepSatsDataReasonFilter.value)
+  // filter categories first
+  if (keepSatsDataCategoryFilter.value !== "All") {
+    keepSatsDataFiltered.value = keepSatsData.value.filter(
+      (trx) => trx.category === keepSatsDataCategoryFilter.value
+    )
+  } else {
+    keepSatsDataFiltered.value = keepSatsData.value
+  }
+  await getKeepSatsReasons()
+  if (keepSatsDataReasonFilter.value === "All") {
+    return
+  }
+  console.log("checking for reason: ", keepSatsDataReasonFilter.value)
+  keepSatsDataFiltered.value = keepSatsDataFiltered.value.filter(
+    (trx) => trx.reason === keepSatsDataReasonFilter.value
+  )
+  console.log("keepSatsDataFiltered", keepSatsDataFiltered.value)
+  await updateKeepSatsTotals()
+}
+
+async function updateKeepSatsTotals() {
+  const tempTotal = keepSatsDataFiltered.value
+  keepSatsTotal.value = 0
+  keepHiveTotal.value = 0
+  for (let i = 0; i < tempTotal.length; i++) {
+    keepSatsTotal.value += tempTotal[i].msats
+    keepHiveTotal.value += tempTotal[i].hive
+  }
+  keepSatsTotal.value = keepSatsTotal.value / 1000
+}
+
+async function getKeepSatsReasons() {
+  // extract a list of reasons from the keepsats data
+  keepSatsDataReasons.value = ["All"]
+  keepSatsDataReasons.value = keepSatsDataReasons.value.concat(
+    keepSatsDataFiltered.value.map((trx) => trx.reason)
+  )
+  // remove duplicates from list
+  keepSatsDataReasons.value = Array.from(new Set(keepSatsDataReasons.value))
+}
+
+async function getKeepSatsCategories() {
+  // extract a list of categories from the keepsats data
+  keepSatsDataCategories.value = ["All"]
+  keepSatsDataCategories.value = keepSatsDataCategories.value.concat(
+    keepSatsData.value.map((trx) => trx.category)
+  )
+  // remove duplicates from list
+  keepSatsDataCategories.value = Array.from(new Set(keepSatsDataCategories.value))
 }
 
 onMounted(() => {
@@ -361,5 +435,4 @@ function expandAll() {
 .keepsats-table .q-table__container .q-table tbody tr td {
   padding: 5px;
 }
-
 </style>
