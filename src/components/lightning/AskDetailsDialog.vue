@@ -2,7 +2,6 @@
   <div v-if="dInvoice">
     <q-dialog class="q-ma-lg" v-model="dInvoice.askDetails" @show="showDialog">
       <q-card
-        bordered
         class="q-pa-none"
         :style="{
           backgroundImage: q.dark.isActive

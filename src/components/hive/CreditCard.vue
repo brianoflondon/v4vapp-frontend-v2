@@ -31,16 +31,16 @@
       class="credit-card-strip absolute-bottom q-py-xs q-px-sm text-subtitle2 text-left"
       :style="creditCardStripStyle"
     >
-      <div class="row items-top justify-between">
+      <div class="credit-card-text row items-top justify-between">
         <!-- Name avatar and buttons -->
-        <div class="col-7 flex items-center">
+        <div class="profile-details col-7 flex items-center">
           <div class="credit-card-avatar">
             <q-avatar rounded size="lg">
               <HiveAvatar :hiveAccname="storeUser.hiveAccname" />
             </q-avatar>
           </div>
           <div class="credit-card-text q-pl-sm">
-            <div class="text-h7 embossed-text">
+            <div class="profile-name text-h7 embossed-text">
               {{ storeUser.profileName }}
             </div>
             <div class="text-subtitle2">
@@ -339,6 +339,11 @@ watch([() => storeUser.localCurrency, () => storeUser.pos.fixedRate], () => {
 <style lang="scss" scoped>
 .div-border {
   border: 1px solid black;
+}
+
+.profile-name {
+  font-weight: bold;
+  word-wrap: break-word;
 }
 
 .card-spacer {

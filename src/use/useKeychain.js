@@ -65,10 +65,6 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
   // Fetch the avatar for the user
   const t = i18n.global.t
   let userToLogin = hiveAccObj.value
-  if (storeUser.currentUser === "v4vapp.dev") {
-    userToLogin = storeUser.currentUser
-  }
-
   // changes to hiveAccObj object DO flow back to the
   // reactive object in the component
   const avatarUrl = useHiveAvatarURL({ hiveAccname: hiveAccObj.value })

@@ -1,13 +1,13 @@
 <template>
   <div class="flex column text-center items-center q-pa-none">
-    <div v-if="comingSoon" class="text-h3">Coming Soon DON'T USE</div>
+    <div v-if="isClosed" class="text-h3">Coming Soon DON'T USE</div>
     <div class="content-container">
       <!-- MARK: Main page start -->
       <div class="main-content">
         <div class="flex column text-center items-center q-pa-none">
           <!-- MARK: NUMBERs -->
           <p class="text-h6" style="word-wrap: break-word">
-            Install Hive Keychain first.
+            {{ t("install_keychain") }}. {{ t("use_desktop") }}
           </p>
           <StepNumbers :num-items="4" :active-item="activeItem" />
           <transition
@@ -17,7 +17,7 @@
             leave-active-class="animated fadeOutUp"
           >
             <q-form @submit="handleSubmit" @reset="handleReset">
-              <div class="text-h6">1. Pick Hive Name</div>
+              <div class="text-h6">1. {{ t("pick_hive_name") }}</div>
               <q-input
                 class="large-font"
                 v-model="accountName"
@@ -84,12 +84,12 @@
                 </div>
               </div>
               <div>
-                <div class="text-h6">2. Download Keys</div>
+                <div class="text-h6">2. {{ t("download_keys") }}</div>
               </div>
               <div class="flex row wrap justify-center">
                 <div class="q-ma-sm">
                   <q-btn
-                    label="Download Keys"
+                    :label="t('download_keys')"
                     :disable="activeItem < 2"
                     icon="download"
                     :color="buttonActiveNot(!activeItem < 2).color"
@@ -99,7 +99,7 @@
                 </div>
                 <div class="q-ma-sm">
                   <q-btn
-                    label="Copy Keys"
+                    :label="t('copy_keys')"
                     :disable="activeItem < 2"
                     icon="content_copy"
                     :color="buttonActiveNot(!activeItem < 2).color"
@@ -112,7 +112,7 @@
                 <div class="text-h6 q-pa-md">3. Confirm Download</div>
                 <q-checkbox
                   v-model="downloadedKeys"
-                  label="YES! I have downloaded and saved my keys"
+                  :label="t('keys_downloaded')"
                   :text-color="buttonActiveNot(!activeItem < 3).textColor"
                   :disable="activeItem < 3"
                   @update:model-value="downloadedKeys"
@@ -123,20 +123,43 @@
                 <div
                   class="flex col wrap justify-center items-center content-start"
                 >
-                  <div class="q-px-md">
+                  <div class="q-px-md" v-if="false">
                     <q-input label="Voucher" v-model="voucher" outlined dense>
                     </q-input>
                   </div>
-                  <div class="q-px-md" v-if="!comingSoon">
+                  <div class="q-px-md" v-if="!isClosed">
                     <q-btn
                       :label="payButton"
                       icon="bolt"
-                      :disable="activeItem < 4 && !comingSoon"
+                      :disable="activeItem < 4 && !isClosed"
                       :color="buttonActiveNot(!activeItem < 4).color"
                       :text-color="buttonActiveNot(!activeItem < 4).textColor"
                       type="submit"
                     />
                   </div>
+                </div>
+                <div class="flex justify-center q-pa-md">
+                  <table>
+                    <tr class="q-pb-sm">
+                      <td style="text-align: left">
+                        {{ t("you_will_be_charged") }}:
+                      </td>
+                      <td colspan="2" class="border-bottom">{{ payButton }}</td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: left">{{ t("receive_back") }}:</td>
+                      <td style="text-align: right">
+                        {{ tidyNumber(newAccountCost?.hive_back, 3) }}<br />
+                        {{ tidyNumber(newAccountCost?.hbd_back, 3) }}<br />
+                        {{ tidyNumber(newAccountCost?.sats_back, 0) }}
+                      </td>
+                      <td>
+                        Hive<br />
+                        HBD<br />
+                        sats
+                      </td>
+                    </tr>
+                  </table>
                 </div>
               </div>
             </q-form>
@@ -207,13 +230,13 @@
 
       <q-card-actions align="right" justify="end">
         <q-btn
-          label="Paid"
+          :label="t('paid')"
           icon="check"
           color="positive"
           @click="checkPayment(false)"
         />
         <q-btn
-          label="Cancel"
+          :label="t('cancel')"
           icon="cancel"
           color="negative"
           @click="handleCancel"
@@ -263,14 +286,8 @@ const t = useI18n().t
 const storeUser = useStoreUser()
 const q = useQuasar()
 
-const comingSoon = computed(() => {
-  if (window.location.hostname === "localhost") {
-    return false
-  }
-  if (window.location.hostname === "v4v.app") {
-    return true
-  }
-  return true
+const isClosed = computed(() => {
+  return !newAccountCost.value?.isOpen
 })
 
 // Define the account name and master password
@@ -297,9 +314,9 @@ const newAccountCost = ref({})
 const payButton = computed(() => {
   return (
     newAccountCost.value.hive +
-    " Hive | " +
+    " Hive (" +
     tidyNumber(newAccountCost.value.sats, 0) +
-    " sats"
+    " sats)"
   )
 })
 
@@ -536,6 +553,7 @@ async function handlePaid() {
         timeout: 5000,
       })
       accountConfirm.value = true
+      invoicePaid.value = false
     } else {
       Notify.create({
         message: t("account_not_created"),
@@ -543,12 +561,15 @@ async function handlePaid() {
         position: "top",
         timeout: 5000,
       })
+      invoicePaid.value = false
     }
   } catch (error) {
+    invoicePaid.value = false
     console.error("error", error)
   }
   paymentRequest.value = ""
   progress.value = 1
+  invoicePaid.value = false
   // Copy the ke
 }
 
@@ -732,5 +753,9 @@ const keysText = computed(() => {
 
 .animated {
   animation-duration: 1s; /* Adjust this value to change the animation speed */
+}
+
+.border-bottom {
+  border-bottom: 1px solid black;
 }
 </style>
