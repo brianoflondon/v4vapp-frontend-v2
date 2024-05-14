@@ -546,7 +546,6 @@ function checkInvoiceProgress(timeLeft) {
 }
 
 function receiveNewInvoice(val) {
-  console.log("receiveNewInvoice", val)
   if (val?.v4vapp?.type === "hiveAccname") {
     // we have a Hive account to send to.
     dInvoice.value = val
@@ -832,7 +831,6 @@ function showPaying() {
 }
 
 async function payWithApi() {
-  console.log("payWithApi")
   showPaying()
   try {
     let response
@@ -843,11 +841,8 @@ async function payWithApi() {
         dInvoice.value.v4vapp.comment
       )
     } else {
-      console.log("dInvoice.value", dInvoice.value)
       response = await useKeepSatsInvoice(dInvoice.value.paymentRequest)
     }
-    console.log("->>>>>> payment response: ", response?.message)
-    console.log("response", response)
     // extract the message from this response
     paymentInProgressDialog.value.hide()
     if (response.success) {
@@ -1037,8 +1032,6 @@ watch(
         const transactions = await useGetHiveTransactionHistory("v4vapp")
         // get most recent trxId  from transactions
         const trx_id = transactions[0].trx_id
-        console.log("transactions", transactions)
-        console.log("trx_id", trx_id)
         const message = t("payment_sent_hive_keychain")
         const notif = q.notify({
           avatar: "/site-logo/v4vapp-logo.svg",
@@ -1051,7 +1044,6 @@ watch(
         dInvoice.value.progress.push(message)
         dInvoice.value.progress.push(`${t("check_lightning")}`)
         KeychainDialog.value = { show: false }
-        console.log(dInvoice.value)
         checkHiveTransaction("v4vapp", trx_id, notif)
       } else {
         // Ignore the result
@@ -1064,7 +1056,6 @@ watch(
 
 async function checkHiveTransaction(username, trx_id, notif) {
   if (trx_id == null) {
-    console.log("checkHiveTransaction trx_id is null")
     return
   }
   const maxRetries = 20
@@ -1108,11 +1099,9 @@ async function checkHiveTransaction(username, trx_id, notif) {
       position: "top",
     })
   } else {
-    console.log("transaction_found", transaction_found)
     memo = `${t("transfer")}: ${transaction_found?.op[1].amount}\n${
       transaction_found?.op[1].memo
     }`
-    console.log("memo", memo)
     dInvoice.value.progress.push(memo)
 
     // check if the transaction contains the string "Your Lightning Invoice of 1234 sats has been paid"
@@ -1133,11 +1122,9 @@ async function checkHiveTransaction(username, trx_id, notif) {
         position: "top",
       })
     } else {
-      console.log("match", match)
       // extract the text after the : ""Something went wrong with paying the Lightning Invoice: invoice is already paid, returning all Hive funds"
       regex = /Something went wrong with paying the Lightning Invoice: (.*)/
       match = transaction_found?.op[1].memo.match(regex)
-      console.log("match", match)
       if (match && match[1]) {
         // if match exists and match[1] has a value, include it in the message
         memo = `${t("transfer")}: ${t("lightning_failed")}: ${match[1]}`
@@ -1165,9 +1152,7 @@ async function checkHiveTransaction(username, trx_id, notif) {
     voteOptions.value.showButton = true
     voteOptions.value.showDialog = false
     // pause for 5 seconds to allow the transaction to be found
-    console.log("transaction_found waiting 10 seconds")
     await new Promise((resolve) => setTimeout(resolve, 10000))
-    console.log("clearing form")
     clearReset()
     return
   }

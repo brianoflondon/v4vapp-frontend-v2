@@ -130,11 +130,8 @@ const props = defineProps({
 })
 
 onMounted(() => {
-  console.log("props", props)
   accountNameForm.value = props.accountName
   masterPasswordForm.value = props.masterPassword
-  console.log("accountNameForm", accountNameForm.value)
-  console.log("masterPasswordForm", masterPasswordForm.value)
 })
 
 function closeDialog() {

@@ -273,7 +273,6 @@ function calcFees(amount) {
   const fee =
     rawSats * apiStatus.config.conv_fee_percent + apiStatus.config.conv_fee_sats
 
-  console.log("fee", fee, exchangeRate)
   return { currency: fee / exchangeRate, sats: fee }
 }
 
@@ -287,7 +286,6 @@ function copyText() {
 }
 
 async function makePayment(method) {
-  console.log("makePayment")
   if (destination.value === "sats") {
     return
   }
@@ -315,7 +313,6 @@ async function makePayment(method) {
       destination.value.toUpperCase(),
       memo
     )
-    console.log("pay result", result)
     if (result.success) {
       q.notify({
         avatar: "/site-logo/v4vapp-logo.svg",
@@ -374,14 +371,12 @@ watch(
   { deep: true }
 )
 async function checkForSats(oldNetSats = 0, count = 0) {
-  console.log("checkForSats", oldNetSats, count)
   let currentSatsBalance = 0
   if (oldNetSats === 0) {
     currentSatsBalance = storeUser.currentKeepSats.net_sats
   } else {
     currentSatsBalance = oldNetSats
   }
-  console.log("currentSatsBalance", currentSatsBalance)
   await storeUser.updateSatsBalance(false)
   if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
     q.notify({

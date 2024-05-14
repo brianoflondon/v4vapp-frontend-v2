@@ -613,10 +613,10 @@ async function retryPending(props) {
  */
 async function updateTransactions() {
   // show where this function was called from
-  console.log(
-    "updateTransactions called from",
-    new Error().stack.split("\n")[2]
-  )
+  // console.log(
+  //   "updateTransactions called from",
+  //   new Error().stack.split("\n")[2]
+  // )
   const trans = await useGetHiveTransactionHistory(
     KeychainDialog.value.hiveAccTo,
     200

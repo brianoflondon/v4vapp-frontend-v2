@@ -198,12 +198,10 @@ const headerIcon = computed(() => {
 })
 
 const hiveAvatar = computed(() => {
-  console.log("computing hiveAvatar", dInvoice.value.v4vapp.sendTo)
   if (!dInvoice.value?.v4vapp?.sendTo) {
     return
   }
   const ans = useHiveAvatarURL({ hiveAccname: dInvoice.value.v4vapp.sendTo })
-  console.log(ans)
   return ans
 })
 

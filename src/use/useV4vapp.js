@@ -126,7 +126,6 @@ export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
   try {
     const response = await apiLogin.post("/v1/v4vapp/keepsats/transfer", data)
     if (response.status === 200) {
-      console.log(response.data)
       return response.data
     }
   } catch (error) {
@@ -142,7 +141,6 @@ export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
  * @returns {Promise<any>} - The response data from the server.
  */
 export async function useKeepSatsInvoice(paymentRequest) {
-  console.log("useKeepSatsInvoice", paymentRequest)
   try {
     const data = {
       memo: paymentRequest,
@@ -165,7 +163,6 @@ export async function useKeepSatsInvoice(paymentRequest) {
  * @returns {Promise<any>} - A promise that resolves to the converted amount or rejects with an error.
  */
 export async function useKeepSatsConvert(satsToConvert, currency, memo = "") {
-  console.log("useKeepSatsConvert", satsToConvert, currency)
   try {
     const data = {
       sats: satsToConvert,

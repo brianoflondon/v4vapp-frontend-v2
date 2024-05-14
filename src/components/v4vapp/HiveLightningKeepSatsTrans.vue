@@ -346,17 +346,13 @@ async function fetchData(newValue = dataDays.value) {
       totals.value.totalSats += data.value[i].sats
     }
   }
-  console.log("data", data.value)
-  console.log("keepSatsData", keepSatsData.value)
   await getKeepSatsReasons()
   await getKeepSatsCategories()
   await updateKeepSatsDataFiltered()
   await updateKeepSatsTotals()
-  console.log("keepsatsDataFiltered", keepSatsDataFiltered.value)
 }
 
 async function updateKeepSatsDataFiltered() {
-  console.log("calling update keepSatsDataFilter", keepSatsDataReasonFilter.value)
   // filter categories first
   if (keepSatsDataCategoryFilter.value !== "All") {
     keepSatsDataFiltered.value = keepSatsData.value.filter(
@@ -369,11 +365,9 @@ async function updateKeepSatsDataFiltered() {
   if (keepSatsDataReasonFilter.value === "All") {
     return
   }
-  console.log("checking for reason: ", keepSatsDataReasonFilter.value)
   keepSatsDataFiltered.value = keepSatsDataFiltered.value.filter(
     (trx) => trx.reason === keepSatsDataReasonFilter.value
   )
-  console.log("keepSatsDataFiltered", keepSatsDataFiltered.value)
   await updateKeepSatsTotals()
 }
 

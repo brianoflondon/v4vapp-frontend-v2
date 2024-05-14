@@ -163,7 +163,6 @@ const runningTotal = ref({
 })
 const runningTotalAwait = ref(false)
 const payButtonLabel = computed(() => {
-  console.log("payButtonLabel", runningTotal.value)
   return (
     t("pay") +
     " " +

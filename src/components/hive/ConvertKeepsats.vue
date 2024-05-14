@@ -115,7 +115,6 @@ function updateDestination(val) {
 }
 
 async function payWithApi() {
-  console.log("payWithApi")
   try {
     let response
     response = await useKeepSatsConvert(
@@ -123,7 +122,6 @@ async function payWithApi() {
       destination.value.toUpperCase()
     )
 
-    console.log("->>>>>> payment response: ", response)
     // extract the message from this response
     // paymentInProgressDialog.value.hide()
     if (response.success) {
