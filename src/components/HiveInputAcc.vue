@@ -116,8 +116,6 @@ function clearInput() {
 }
 
 function toggleLock() {
-  console.log("toggleLock")
-  console.log("modelValue", modelValue.value)
   if (!modelValue.value.value) {
     clearInput()
     modelValue.value.fixedUser = false

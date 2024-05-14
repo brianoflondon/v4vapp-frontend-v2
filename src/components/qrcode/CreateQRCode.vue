@@ -213,7 +213,6 @@ async function newQRCode() {
 }
 
 function openLinkInNewWindow() {
-  console.log("No Link: ", props.noLink)
   if (props.noLink) {
     return
   }

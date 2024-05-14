@@ -322,7 +322,6 @@ const payButton = computed(() => {
 
 onMounted(async () => {
   newAccountCost.value = await useNewAccountCost()
-  console.log("newAccountCost", newAccountCost.value)
 })
 
 // Watch for changes in downloadedKeys

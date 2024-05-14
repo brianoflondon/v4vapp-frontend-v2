@@ -404,10 +404,8 @@ async function generateLightningQRCode() {
    *
    * @returns {string} The currency to send.
    */
-  console.log("keepSats", keepSats.value)
   const cur = KeychainDialog.value.currencyToSend
   const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
-  console.log("receiveCurrency", receiveCurrency)
   const storeLndKey = cur + receiveCurrency
 
   if (
