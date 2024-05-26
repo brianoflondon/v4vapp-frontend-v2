@@ -91,7 +91,6 @@ const smallScreen = computed(() => {
 // run on mounted
 onMounted(async () => {
   try {
-    await storeAPIStatus.update()
     scheduleUpdate()
   } catch (err) {
     console.error("PriceBar err", err)
