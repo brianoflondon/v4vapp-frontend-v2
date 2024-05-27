@@ -261,7 +261,7 @@ const fees = computed(() => {
     showLightning.value === null ||
     KeychainDialog.value.currencyToSend === "sats"
   ) {
-    return t("no_fees")
+    return t("no_fees") 
   }
   if (!KeychainDialog.value.lndData[storeLndKey]) {
     return t("calculating_fees")
