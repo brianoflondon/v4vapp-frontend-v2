@@ -191,7 +191,7 @@ export default {
   no_account: 'No Hive account to send to',
   old_page: 'Old Hive Page',
   new_page: 'New Receive Hive Page',
-  no_fees: 'No Fees for Hive or HBD',
+  no_fees: 'No Fees for Hive, HBD or KeepSats',
   Fees: 'Fees',
   list_received_payments: 'Received Payments',
   memo: 'Memo',
