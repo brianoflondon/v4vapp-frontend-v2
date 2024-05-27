@@ -22,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3 # Update to use Node.js 16-compatible version
+        uses: actions/checkout@v4 # Updated to use Node.js 20-compatible version
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3 # Update to use Node.js 16-compatible version
+        uses: docker/setup-qemu-action@v3 # This action doesn't need to be updated
       - name: Docker Setup Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3 # This action doesn't need to be updated
       - name: Docker Metadata action
         id: meta
         uses: docker/metadata-action@v5
@@ -39,7 +39,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest
       - name: Login to DockerHub
-        uses: docker/login-action@v2.1.0
+        uses: docker/login-action@v2.2.0 # Updated to use Node.js 20-compatible version
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
