@@ -80,6 +80,7 @@ export async function useDecodeLightningInvoice(invoice) {
   // if the invoice starts with lnbc the bolt11 library can decode it
   if (invoice.startsWith("lnbc")) {
     decodedInvoice = await bolt11Decode(invoice)
+    console.log("decodedInvoice", decodedInvoice)
     if (decodedInvoice) {
       // Adds error messages to the decoded invoice if
       await validateInvoice(decodedInvoice)
@@ -132,12 +133,12 @@ function validateInvoice(decodedInvoice) {
   if (!decodedInvoice) {
     return null
   }
-
+  decodedInvoice.payWithSatsOnly = false
   if (decodedInvoice.payeeNodeKey === myNodePubKey) {
-    // if we fail this test, no need to do any other tests
-    decodedInvoice.errors.self_payment = true
-    decodedInvoice.errors.text.push("self_payment")
-    return
+    // if this is a self payment i.e. going to the v4v.app node
+    // only pay it with KeepSats
+    console.log("decodedInvoice.payeeNodeKey", decodedInvoice.payeeNodeKey)
+    // decodedInvoice.payWithSatsOnly = true
   }
   const amount = Math.floor(decodedInvoice.millisatoshis / 1000)
   const minimumPayment =
@@ -145,7 +146,6 @@ function validateInvoice(decodedInvoice) {
   const maximumPayment =
     storeAPIStatus.apiStatus.config.maximum_invoice_payment_sats
   // need to add check to see if user has a sats balance
-  decodedInvoice.payWithSatsOnly = false
   if (amount < minimumPayment && storeUser.keepSatsBalanceNum < amount) {
     decodedInvoice.errors.too_low = true
     decodedInvoice.errors.text.push("invoice_too_low")

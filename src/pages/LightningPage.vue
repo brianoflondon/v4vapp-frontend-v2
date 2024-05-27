@@ -631,6 +631,10 @@ async function onDecode(content) {
   }
 }
 
+/**
+ * Decodes an invoice.
+ * @returns {Promise<void>} A promise that resolves when the invoice is decoded.
+ */
 async function decodeInvoice() {
   invoiceChecking.value = true
   invoiceValid.value = null
