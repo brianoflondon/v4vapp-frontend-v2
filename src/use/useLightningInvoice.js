@@ -138,7 +138,7 @@ function validateInvoice(decodedInvoice) {
     // if this is a self payment i.e. going to the v4v.app node
     // only pay it with KeepSats
     console.log("decodedInvoice.payeeNodeKey", decodedInvoice.payeeNodeKey)
-    decodedInvoice.payWithSatsOnly = true
+    // decodedInvoice.payWithSatsOnly = true
   }
   const amount = Math.floor(decodedInvoice.millisatoshis / 1000)
   const minimumPayment =
