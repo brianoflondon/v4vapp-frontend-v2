@@ -24,17 +24,26 @@
       <!-- Hive or Lightning button toggle -->
       <q-card-section>
         <!-- Hive HBD Button Toggle -->
-        <div class="text-center flex" :style="{ width: maxUseableWidth + 'px' }">
+        <div
+          class="text-center flex"
+          :style="{ width: maxUseableWidth + 'px' }"
+        >
           <q-btn-toggle
             spread
             v-model="KeychainDialog.currencyToSend"
             push
+            no-caps
             @update:model-value="updateQRCode()"
             toggle-color="primary"
             :options="[
               { label: '', value: 'hbd', slot: 'hbd' },
               { label: '', value: 'hive', slot: 'hive' },
-              { label: '', value: 'sats', slot: 'sats', disabled: !showLightning },
+              {
+                label: '',
+                value: 'sats',
+                slot: 'sats',
+                disabled: !showLightning,
+              },
             ]"
           >
             <!-- HBD Button -->
@@ -84,7 +93,7 @@
                     class="text-center"
                     style="font-size: 0.5rem; margin: -8px"
                   >
-                    Sats
+                    KeepSats
                   </div>
                 </div>
                 <div class="q-px-md" style="font-size: 1rem">
@@ -248,7 +257,10 @@ const fees = computed(() => {
   const cur = KeychainDialog.value.currencyToSend
   const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
   const storeLndKey = cur + receiveCurrency
-  if (showLightning.value === null) {
+  if (
+    showLightning.value === null ||
+    KeychainDialog.value.currencyToSend === "sats"
+  ) {
     return t("no_fees")
   }
   if (!KeychainDialog.value.lndData[storeLndKey]) {
