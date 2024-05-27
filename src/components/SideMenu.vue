@@ -19,9 +19,9 @@
     <div class="q-py-lg">
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
+    <div class="q-pa-xs text-caption text-center">{{ appName }} - {{ appVersion }}</div>
     <div v-if="isDev || isLocalhost">
       <div class="q-pa-xs text-caption">{{ useAppStr() }}</div>
-      <div class="q-pa-xs text-caption">{{ appName }} - {{ appVersion }}</div>
       <div class="q-pa-xs text-caption">{{ serverHiveAccount }}</div>
       <div class="q-pa-xs text-caption">{{ storeUser.currentUser }}</div>
       <div class="q-pa-xs text-caption">{{ api?.defaults?.baseURL }}</div>

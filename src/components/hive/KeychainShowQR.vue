@@ -24,7 +24,7 @@
       <!-- Hive or Lightning button toggle -->
       <q-card-section>
         <!-- Hive HBD Button Toggle -->
-        <div class="text-center">
+        <div class="text-center flex" :style="{ width: maxUseableWidth + 'px' }">
           <q-btn-toggle
             spread
             v-model="KeychainDialog.currencyToSend"
@@ -34,7 +34,7 @@
             :options="[
               { label: '', value: 'hbd', slot: 'hbd' },
               { label: '', value: 'hive', slot: 'hive' },
-              // { label: 'other', value: 'other' },
+              { label: '', value: 'sats', slot: 'sats', disabled: !showLightning },
             ]"
           >
             <!-- HBD Button -->
@@ -58,7 +58,7 @@
             <!-- Hive Button -->
             <template #hive>
               <div
-                class="column items-center q-pa-none"
+                class="flex column items-center q-pa-none"
                 style="font-size: 2.05rem"
               >
                 <div><i class="fa-brands fa-hive" /></div>
@@ -71,6 +71,25 @@
               </div>
               <div class="q-px-md" style="font-size: 1.2rem">
                 {{ tidyNumber(KeychainDialog.currencyCalc.hive, 2) }}
+              </div>
+            </template>
+            <template #sats>
+              <div class="flex column">
+                <div
+                  class="column items-center q-pa-none"
+                  style="font-size: 2.05rem"
+                >
+                  <div><i class="fa-brands fa-btc" /></div>
+                  <div
+                    class="text-center"
+                    style="font-size: 0.5rem; margin: -8px"
+                  >
+                    Sats
+                  </div>
+                </div>
+                <div class="q-px-md" style="font-size: 1rem">
+                  {{ tidyNumber(KeychainDialog.currencyCalc.sats, 0) }}
+                </div>
               </div>
             </template>
           </q-btn-toggle>
@@ -245,10 +264,15 @@ const fees = computed(() => {
 })
 
 const requesting = computed(() => {
+  console.log("KeychainDialog.value", KeychainDialog.value)
+  let amountString = KeychainDialog.value.amountString
+  if (KeychainDialog.value.currencyToSend === "sats") {
+    amountString = tidyNumber(KeychainDialog.value.amountToSend, 0) + " sats"
+  }
   return (
     t("scan_to_send") +
     " " +
-    KeychainDialog.value.amountString +
+    amountString +
     " " +
     t("to") +
     " " +
@@ -607,6 +631,11 @@ function findTransactionWithCheckCode(transactions, checkCode) {
 
 .overlay-container {
   position: relative;
+}
+
+.border-div {
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 .overlay-container::after {
