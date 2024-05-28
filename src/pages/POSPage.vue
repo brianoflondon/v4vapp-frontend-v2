@@ -195,7 +195,7 @@
         <q-btn
           color="deep-orange-14"
           @click="showPaymentQR('sats')"
-          :disable="!isPaymentValid"
+          :disable="CurrencyCalc.outOfRange"
           no-caps
         >
           <div class="column items-center q-pa-none" style="font-size: 2.05rem">
@@ -212,6 +212,9 @@
           </div>
         </q-btn>
         <!-- Alternate currencies  -->
+        <pre>
+          {{ CurrencyCalc }}
+        </pre>
         <div class="pad-max-width full-width q-px-md" v-if="isPaymentValid">
           <AlternateCurrency
             v-model="CurrencyCalc"
@@ -289,6 +292,7 @@ const CurrencyCalc = ref({
   hive: 0,
   hbd: 0,
   local: 0,
+  outOfRange: true,
 })
 
 const amount = ref({
