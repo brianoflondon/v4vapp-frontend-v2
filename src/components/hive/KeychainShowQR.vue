@@ -280,7 +280,6 @@ const fees = computed(() => {
 })
 
 const requesting = computed(() => {
-  console.log("KeychainDialog.value", KeychainDialog.value)
   let amountString = KeychainDialog.value.amountString
   if (KeychainDialog.value.currencyToSend === "sats") {
     amountString = tidyNumber(KeychainDialog.value.amountToSend, 0) + " sats"
@@ -314,7 +313,6 @@ const dotColor = computed(() => {
 })
 
 onBeforeMount(() => {
-  console.log("onBeforeMount")
   KeychainDialog.value.checkCode = useGetCheckCode()
   KeychainDialog.value.loading = true
   KeychainDialog.value.paid = false
@@ -342,7 +340,6 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  console.log("onBeforeUnmount")
   showLightning.value = false
 })
 

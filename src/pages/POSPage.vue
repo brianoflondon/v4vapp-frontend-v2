@@ -212,9 +212,6 @@
           </div>
         </q-btn>
         <!-- Alternate currencies  -->
-        <pre>
-          {{ CurrencyCalc }}
-        </pre>
         <div class="pad-max-width full-width q-px-md" v-if="isPaymentValid">
           <AlternateCurrency
             v-model="CurrencyCalc"

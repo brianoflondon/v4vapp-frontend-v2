@@ -170,8 +170,5 @@ async function calcAllAmounts() {
   } else if (CurrencyCalc.value.sats > storeAPIStatus.minMax.sats.max) {
     CurrencyCalc.value.outOfRange = true
   }
-  console.log("storeAPIStatus.minMax.sats.min", storeAPIStatus.minMax.sats.min)
-  console.log("CurrencyCalc.value.sats", CurrencyCalc.value.sats)
-  console.log("CurrencyCalc.value.outOfRange", CurrencyCalc.value.outOfRange)
 }
 </script>
