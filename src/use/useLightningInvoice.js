@@ -16,6 +16,16 @@ export async function useGetLightingHiveInvoice(
   expiry = 300,
   receiveCurrency = ""
 ) {
+  console.log(
+    "useGetLightingHiveInvoice",
+    hiveAccname,
+    amount,
+    currency,
+    memo,
+    checkCode,
+    expiry,
+    receiveCurrency
+  )
   try {
     if (expiry > 600) {
       expiry = 600

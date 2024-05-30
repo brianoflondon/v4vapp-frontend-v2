@@ -10,7 +10,10 @@
         tidyNumber(CurrencyCalc.hive, 3)
       }}
     </div>
-    <div class="text-center q-pa-xs" @click="emitEvent(storeUser.localCurrency.value)">
+    <div
+      class="text-center q-pa-xs"
+      @click="emitEvent(storeUser.localCurrency.value)"
+    >
       {{ storeUser.localCurrency.unit }}{{ tidyNumber(CurrencyCalc.local, 2) }}
     </div>
     <div class="text-center q-pa-xs" @click="emitEvent('sats')">
@@ -160,6 +163,12 @@ async function calcAllAmounts() {
       CurrencyCalc.value.sats =
         (CurrencyCalc.value.hive * storeAPIStatus.hiveSatsNumber) / adustRate
       CurrencyCalc.value.local = CurrencyCalc.value.amount
+  }
+  CurrencyCalc.value.outOfRange = false
+  if (CurrencyCalc.value.sats < storeAPIStatus.minMax.sats.min) {
+    CurrencyCalc.value.outOfRange = true
+  } else if (CurrencyCalc.value.sats > storeAPIStatus.minMax.sats.max) {
+    CurrencyCalc.value.outOfRange = true
   }
 }
 </script>

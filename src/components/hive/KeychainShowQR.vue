@@ -42,7 +42,6 @@
                 label: '',
                 value: 'sats',
                 slot: 'sats',
-                disabled: !showLightning,
               },
             ]"
           >
@@ -107,21 +106,16 @@
           class="text-center q-pt-md"
           v-if="titleOptions[KeychainDialog.display].showHiveLightning"
         >
-          <!-- Removed this options for now, don't want to re-write the entire
-             history page -->
-          <q-toggle
-            v-if="false"
-            v-model="keepSats"
-            :label="t('keepsats')"
-            @update:model-value="generateLightningQRCode()"
-          >
-          </q-toggle>
+          <!-- Lightning toggle -->
           <q-btn-toggle
             v-model="showLightning"
+            color="deep-orange-3"
+            text-color="text-primary"
+            toggle-color="deep-orange-14"
             icon="fa-sharp fa-solid fa-bolt"
             spread
             clearable
-            @update:model-value="generateLightningQRCode()"
+            @update:model-value="toggleLightning()"
             :options="[{ label: '', value: true, slot: 'lightning' }]"
           >
             <template #lightning>
@@ -219,6 +213,7 @@ import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
 import { encodeOp, Parameters } from "hive-uri"
+import { onUnmounted } from "vue"
 
 const hiveCheckTime = 1 // seconds between each check
 const hiveCheckTimer = ref(100)
@@ -240,7 +235,7 @@ const storeApiStatus = useStoreAPIStatus()
 const storeSales = useStoreSales()
 const qrCode = ref(null)
 
-const showLightning = ref(null)
+const showLightning = ref(false)
 
 const titleOptions = ref({
   pos: {
@@ -261,7 +256,7 @@ const fees = computed(() => {
     showLightning.value === null ||
     KeychainDialog.value.currencyToSend === "sats"
   ) {
-    return t("no_fees") 
+    return t("no_fees")
   }
   if (!KeychainDialog.value.lndData[storeLndKey]) {
     return t("calculating_fees")
@@ -276,7 +271,6 @@ const fees = computed(() => {
 })
 
 const requesting = computed(() => {
-  console.log("KeychainDialog.value", KeychainDialog.value)
   let amountString = KeychainDialog.value.amountString
   if (KeychainDialog.value.currencyToSend === "sats") {
     amountString = tidyNumber(KeychainDialog.value.amountToSend, 0) + " sats"
@@ -314,10 +308,16 @@ onBeforeMount(() => {
   KeychainDialog.value.loading = true
   KeychainDialog.value.paid = false
   KeychainDialog.value.lndData = {}
-  updateQRCode()
 })
 
 onMounted(async () => {
+  if (KeychainDialog.value.showLightning) {
+    showLightning.value = true
+    // generateLightningQRCode()
+  } else {
+    showLightning.value = false
+  }
+  updateQRCode()
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
       KeychainDialog.value.transactions = val
@@ -328,6 +328,10 @@ onMounted(async () => {
       startCountdown()
     }
   )
+})
+
+onBeforeUnmount(() => {
+  showLightning.value = false
 })
 
 function updateStoreSales() {
@@ -397,6 +401,9 @@ function calcFees() {
  * This function is asynchronous and might require awaiting when called.
  */
 async function updateQRCode() {
+  if (KeychainDialog.value.currencyToSend === "sats") {
+    showLightning.value = true
+  }
   KeychainDialog.value.amountToSend =
     KeychainDialog.value.currencyCalc[KeychainDialog.value.currencyToSend]
 
@@ -434,16 +441,38 @@ async function updateQRCode() {
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
 }
 
+async function toggleLightning() {
+  console.log("showLightning before", showLightning.value)
+  if (showLightning.value) {
+    await generateLightningQRCode()
+  } else if (
+    !showLightning.value &&
+    KeychainDialog.value.currencyToSend == "sats"
+  ) {
+    KeychainDialog.value.loading = true
+    KeychainDialog.value.currencyToSend = "hbd"
+    await updateQRCode()
+    KeychainDialog.value.loading = false
+  }
+  await generateLightningQRCode()
+}
+
 async function generateLightningQRCode() {
   /**
    * Retrieves the currency to send from the KeychainDialog value.
    *
    * @returns {string} The currency to send.
    */
+  // if (!showLightning.value && KeychainDialog.value.currencyToSend == "sats") {
+  //   KeychainDialog.value.currencyToSend = "hbd"
+  // }
   const cur = KeychainDialog.value.currencyToSend
   const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
   const storeLndKey = cur + receiveCurrency
-
+  console.log()
+  console.log("generateLightningQRCode", showLightning.value)
+  console.log("storeLndKey", storeLndKey)
+  console.log("KeychainDialog.value", KeychainDialog.value)
   if (
     showLightning.value &&
     KeychainDialog.value?.lndData[storeLndKey] == null

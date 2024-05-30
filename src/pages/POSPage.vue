@@ -191,6 +191,26 @@
             <q-icon name="qr_code_2"></q-icon>
           </div>
         </q-btn>
+        <!-- Sats Button -->
+        <q-btn
+          color="deep-orange-14"
+          @click="showPaymentQR('sats')"
+          :disable="CurrencyCalc.outOfRange"
+          no-caps
+        >
+          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
+            <div><i class="fa-brands fa-btc" /></div>
+            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+              KeepSats
+            </div>
+          </div>
+          <div class="q-px-md" style="font-size: 1.2rem">
+            {{ tidyNumber(CurrencyCalc.sats, 0) }}
+          </div>
+          <div class="q-px-none">
+            <q-icon name="qr_code_2"></q-icon>
+          </div>
+        </q-btn>
         <!-- Alternate currencies  -->
         <div class="pad-max-width full-width q-px-md" v-if="isPaymentValid">
           <AlternateCurrency
@@ -269,6 +289,7 @@ const CurrencyCalc = ref({
   hive: 0,
   hbd: 0,
   local: 0,
+  outOfRange: true,
 })
 
 const amount = ref({
@@ -581,6 +602,10 @@ function showPaymentQR(payWith) {
   if (!isPaymentValid.value) {
     return
   }
+  if (payWith === "sats") {
+    KeychainDialog.value.showLightning = true
+  }
+
   KeychainDialog.value.memo = memoInput.value
   KeychainDialog.value.currencyToSend = payWith
   KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
