@@ -158,9 +158,9 @@
             @message="(val) => (timeMessage = val)"
             @time-left="(val) => checkInvoiceProgress(val)"
           />
-        <div v-show="CurrencyCalc.amount" class="full-width q-px-md">
-          <AlternateCurrency v-model="CurrencyCalc" />
-        </div>
+          <div v-show="CurrencyCalc.amount" class="full-width q-px-md">
+            <AlternateCurrency v-model="CurrencyCalc" />
+          </div>
         </div>
         <!-- Payment Buttons -->
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
@@ -623,6 +623,12 @@ async function decodeInvoice() {
     // decode the invoice
     if (invoiceText.value.startsWith("@")) {
       invoiceText.value = invoiceText.value.substring(1)
+    }
+    // check if the string has the substring "@.*v4v.app"
+    // convert to a Hive account so we don't do a pointless lightning
+    // self payment
+    if (invoiceText.value.match(/.*@sats.v4v.app/)) {
+      invoiceText.value = invoiceText.value.replace(/@sats.v4v.app/, "")
     }
     // trim invoiceText
     invoiceText.value = invoiceText.value.trim()
