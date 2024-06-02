@@ -18,9 +18,9 @@
         glossy
         toggle-color="primary"
         :options="[
+          { label: '', value: 'sats', slot: 'lightning' },
           { label: '', value: 'hbd', slot: 'hbd' },
           { label: '', value: 'hive', slot: 'hive' },
-          { label: '', value: 'sats', slot: 'lightning' },
         ]"
         @update:model-value="(val) => updateDestination(val)"
       >
@@ -179,7 +179,7 @@ const HASDialog = ref({ show: false })
 const storeUser = useStoreUser()
 const storeApiStatus = useStoreAPIStatus()
 const loading = ref(false)
-const destination = ref("hbd")
+const destination = ref("sats")
 const qrCode = ref("") // QrCode object emitted from CreateQRCode
 const privateMemo = ref(false)
 
