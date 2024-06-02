@@ -2,13 +2,15 @@
   <q-page>
     <div class="flex column text-center items-center q-pa-none">
       <q-tabs v-model="currentTab" align="justify" dense animated>
-        <q-tab name="wallet" :label="$t('wallet')" />
+        <q-icon name="fa-solid fa-bolt" size="1em" color="yellow-9" />
+        <q-tab name="realWallet" :label="$t('wallet')" />
+        <q-tab name="wallet" :label="$t('send')" />
         <q-tab
-          name="deposit"
-          :label="$t('deposit')"
+          name="receive"
+          :label="$t('receive')"
           :disable="!storeUser.currentUser"
         >
-          <q-tooltip>{{ $t("deposit_sats_on_v4vapp") }}</q-tooltip>
+          <q-tooltip>{{ $t("receive_sats_on_v4vapp") }}</q-tooltip>
         </q-tab>
         <q-tab
           name="convert"
@@ -40,10 +42,10 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
-        <q-tab-panel name="deposit">
+        <q-tab-panel name="receive">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
-              <DepositKeepsats />
+              <ReceiveKeepsats />
             </div>
           </q-slide-transition>
         </q-tab-panel>
@@ -61,12 +63,8 @@
     <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
       <!-- Camera  -->
       <div v-if="!cameraShow" class="q-pb-lg">
-        <CreditCard />
-        <div
-          v-show="CurrencyCalc.amount"
-          class="pad-max-width full-width q-px-md"
-        >
-          <AlternateCurrency v-model="CurrencyCalc" />
+        <div v-if="currentTab === 'realWallet'">
+          <CreditCard />
         </div>
       </div>
       <div v-if="cameraShow">
@@ -83,7 +81,7 @@
       </div>
       <!-- End Progress screen -->
       <!-- Payment buttons Camera Toggle, paste and invoice input -->
-      <div class="camera-toggle-invoice">
+      <div class="camera-toggle-invoice" v-if="currentTab === 'wallet'">
         <div class="column flex-center">
           <div class="row justify-between items-center q-gutter-lg">
             <div class="camera-toggle">
@@ -160,40 +158,9 @@
             @message="(val) => (timeMessage = val)"
             @time-left="(val) => checkInvoiceProgress(val)"
           />
-          <!-- Amounts Display HIDDEN -->
-          <div v-if="false" class="amounts-display flex justify-evenly">
-            <div class="q-pa-xs input-amount-readonly">
-              <q-input
-                readonly
-                input-class="text-right"
-                dense
-                filled
-                v-model="sats"
-                label="Sats"
-              ></q-input>
-            </div>
-            <div class="q-pa-xs input-amount-readonly">
-              <q-input
-                readonly
-                input-class="text-right"
-                dense
-                filled
-                v-model="HBD"
-                label="HBD"
-              ></q-input>
-            </div>
-            <div class="q-pa-xs input-amount-readonly">
-              <q-input
-                readonly
-                input-class="text-right"
-                dense
-                filled
-                v-model="Hive"
-                label="Hive"
-              ></q-input>
-            </div>
-          </div>
-          <!-- End Amounts Display -->
+        <div v-show="CurrencyCalc.amount" class="full-width q-px-md">
+          <AlternateCurrency v-model="CurrencyCalc" />
+        </div>
         </div>
         <!-- Payment Buttons -->
         <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
@@ -279,7 +246,7 @@
         <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
         <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
         <!-- Vote Button -->
-        <div class="vote-button q-pa-lg text-center">
+        <div v-if="false" class="vote-button q-pa-lg text-center">
           <VoteProposal v-model="voteOptions" />
           <div style="max-width: 265px">
             <ExplanationBox class="q-pt-md"></ExplanationBox>
@@ -347,7 +314,7 @@ import ExplanationBox from "components/utils/ExplanationBox.vue"
 import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HiveLightningKeepSatsTrans from "src/components/v4vapp/HiveLightningKeepSatsTrans.vue"
-import DepositKeepsats from "src/components/hive/DepositKeepsats.vue"
+import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
 import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 

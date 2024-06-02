@@ -2,8 +2,8 @@
   <div class="tab-bar-selector">
     <div class="q-gutter-y-md" style="max-width: 400px">
       <q-tabs v-model="mainTab" dense>
-        <q-route-tab name="send" to="/lnd" :label="$t('send')" />
-        <q-route-tab name="receive" to="/pos" :label="$t('receive')" />
+        <q-route-tab name="move" to="/lnd" :label="$t('move')" />
+        <q-route-tab name="sales" to="/pos" :label="$t('sales')" />
         <q-route-tab name="map" to="/map" icon="fa-solid fa-map-marked-alt" />
         <!-- <q-route-tab disabled name="pods" to="/pods" :label="$t('pods')" /> -->
       </q-tabs>
@@ -16,7 +16,7 @@ import { useI18n } from "vue-i18n"
 const t = useI18n().t
 import { ref } from "vue"
 
-const mainTab = ref("send")
+const mainTab = ref("move")
 </script>
 
 <style lang="scss" scoped></style>

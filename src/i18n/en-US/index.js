@@ -159,12 +159,12 @@ export default {
   The 'Send' tab allows you to pay any Lightning invoice or Lightning Address. In addition you can deposit sats to be stored as 'KeepSats' on v4v.app and use those to pay Lightning invoices or send to other Hive users. At any time you can convert the sats to Hive or HBD.\n
   The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive. This can act as a Point of Sale in a shop and let you collect payment instantly from people paying with Hive, HBD or Lightning.\n
   You can store a small amount of Sats on V4V.app: your KeepSats balance. This balance is shown on your credit card when logged in. It's the big number.\n`,
-  keepsats_deposit_title: `How to get KeepSats on v4v.app`,
+  keepsats_deposit_title: `How to receive KeepSats on v4v.app`,
   keepsats_deposit_text: `To store KeepSats on v4v.app, there are two ways.:\n
   1. Deposit Hive or HBD and they will be converted and stored as a KeepSats balance\n
   2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by \@sats.v4v.app\n
   A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
-  keepsats_convert_title: `How to convert KeepSats to Hive`,
+  keepsats_convert_title: `How to convert KeepSats to Hive or HBD`,
   keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
   A fee applies when converting sats to Hive or HBD.`,
   // Receive Page
@@ -218,10 +218,11 @@ export default {
   login_to_see_history: 'Login to see your history',
   reason: 'Reason',
   deposit: 'Deposit',
+  receive: 'Receive',
   withdraw: 'Withdraw',
   convert: 'Convert',
   convert_sats_to_hive: 'Convert sats to Hive',
-  deposit_sats_on_v4vapp: 'Deposit sats on v4v.app',
+  receive_sats_on_v4vapp: 'Receive sats on v4v.app',
   convert_sats_from_v4vapp: 'Convert sats to Hive',
   payment_failed: 'Payment failed',
   // Loading messages
