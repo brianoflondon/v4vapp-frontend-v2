@@ -4,7 +4,7 @@
       <q-tabs v-model="mainTab" dense>
         <q-route-tab name="move" to="/lnd" :label="$t('move')" />
         <q-route-tab name="sales" to="/pos" :label="$t('sales')" />
-        <q-route-tab name="map" to="/map" icon="fa-solid fa-map-marked-alt" />
+        <!-- <q-route-tab name="map" disabled to="/map" icon="fa-solid fa-map-marked-alt" /> -->
         <!-- <q-route-tab disabled name="pods" to="/pods" :label="$t('pods')" /> -->
       </q-tabs>
     </div>
