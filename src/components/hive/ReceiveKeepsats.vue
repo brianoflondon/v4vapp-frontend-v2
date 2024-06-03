@@ -17,11 +17,7 @@
         dense
         glossy
         toggle-color="primary"
-        :options="[
-          { label: '', value: 'sats', slot: 'lightning' },
-          { label: '', value: 'hbd', slot: 'hbd' },
-          { label: '', value: 'hive', slot: 'hive' },
-        ]"
+        :options="options"
         @update:model-value="(val) => updateDestination(val)"
       >
         <template #lightning>
@@ -155,7 +151,7 @@
 </template>
 
 <script setup>
-import { computed, watch, ref, onMounted } from "vue"
+import { computed, watch, ref, onMounted, defineProps } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
@@ -174,6 +170,8 @@ import AmountSlider from "src/components/utils/AmountSlider.vue"
 
 const t = useI18n().t
 const q = useQuasar()
+
+const options = ref([{ label: "", value: "sats", slot: "lightning" }])
 
 const HASDialog = ref({ show: false })
 const storeUser = useStoreUser()
@@ -228,7 +226,22 @@ const qrCodeSats = computed(() => {
   return bech32.value
 })
 
+const props = defineProps({
+  justHive: {
+    type: Boolean,
+    default: false,
+  },
+})
+
 onMounted(async () => {
+  console.log("ReceiveKeepsats.vue mounted", props.justHive)
+  if (props.justHive) {
+    options.value = [
+      { label: "", value: "hbd", slot: "hbd" },
+      { label: "", value: "hive", slot: "hive" },
+    ]
+    destination.value = "hbd"
+  }
   updateDestination()
 })
 

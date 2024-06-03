@@ -12,7 +12,7 @@
         <ConvertKeepsats />
       </q-tab-panel>
       <q-tab-panel name="toSats">
-        <ReceiveKeepsats />
+        <ReceiveKeepsats justHive="true" />
       </q-tab-panel>
     </q-tab-panels>
   </div>
@@ -26,4 +26,8 @@ import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
 const convertTab = ref("toHive")
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.bordered-div {
+    border: 1px solid #ccc;
+}
+</style>

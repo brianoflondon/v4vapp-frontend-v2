@@ -36,7 +36,6 @@
         </q-tabs>
       </div>
       <!-- Q-tab-panels -->
-
       <q-tab-panels v-model="currentTab">
         <q-tab-panel name="realWallet">
           <q-slide-transition appear disappear :duration="500">
@@ -277,7 +276,6 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
-
         <q-tab-panel name="receive">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
