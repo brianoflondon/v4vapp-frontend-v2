@@ -32,7 +32,11 @@ export async function useCheckApiTokenValid(username, apiToken) {
  * @param {boolean} adminOverride - Flag indicating whether to override the admin check or not. Default is false.
  * @returns {Promise} - A promise that resolves to the keepsats data.
  */
-export async function useKeepSats(useCache = true, transactions = true, adminOverride = false) {
+export async function useKeepSats(
+  useCache = true,
+  transactions = true,
+  adminOverride = false
+) {
   // if (!apiToken) return null
   // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
   try {
@@ -48,12 +52,11 @@ export async function useKeepSats(useCache = true, transactions = true, adminOve
   } catch (error) {
     console.error("useKeepSats", error)
     Notify.create({
-      message: "Need to re-authenticate",
+      message: "Communication issues, try again soon",
       color: "negative",
       position: "bottom",
       timeout: 2000,
     })
-    useStoreUser().logout()
     return null
   }
 }
