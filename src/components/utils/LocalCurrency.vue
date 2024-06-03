@@ -231,6 +231,11 @@ onMounted(async () => {
   } else {
     fixedRate.value = null
   }
+  if (storeUser.pos.receiveCurrency) {
+    receiveCurrency.value = storeUser.pos.receiveCurrency
+  } else {
+    receiveCurrency.value = "hbd"
+  }
 })
 </script>
 
