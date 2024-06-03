@@ -154,63 +154,77 @@
       <!-- Pay buttons -->
       <div class="pad-max-width full-width q-px-md q-py-md q-gutter-sm">
         <!-- HBD Button -->
-        <q-btn
-          color="secondary"
-          @click="showPaymentQR('hbd')"
-          :disable="!isPaymentValid"
-        >
-          <div class="column items-center q-pa-none" style="font-size: 1.2rem">
-            <div><HbdLogoIcon /></div>
-            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-              HBD
+        <div v-if="storeUser.pos.receiveCurrency === 'hbd'">
+          <q-btn
+            color="secondary"
+            @click="showPaymentQR('hbd')"
+            :disable="!isPaymentValid"
+          >
+            <div
+              class="column items-center q-px-md"              style="font-size: 1.2rem"
+            >
+              <div><HbdLogoIcon /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                HBD
+              </div>
             </div>
-          </div>
-          <div class="q-px-md" style="font-size: 1.2rem">
-            {{ tidyNumber(CurrencyCalc.hbd, 2) }}
-          </div>
-          <div class="q-px-none">
-            <q-icon name="qr_code_2"></q-icon>
-          </div>
-        </q-btn>
+            <div class="q-px-md" style="font-size: 1.2rem">
+              {{ tidyNumber(CurrencyCalc.hbd, 2) }}
+            </div>
+            <div class="q-px-none">
+              <q-icon name="qr_code_2"></q-icon>
+            </div>
+          </q-btn>
+        </div>
         <!-- Hive Button -->
-        <q-btn
-          color="primary"
-          @click="showPaymentQR('hive')"
-          :disable="!isPaymentValid"
-        >
-          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
-            <div><i class="fa-brands fa-hive" /></div>
-            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-              Hive
+        <div v-else-if="storeUser.pos.receiveCurrency === 'hive'">
+          <q-btn
+            color="primary"
+            @click="showPaymentQR('hive')"
+            :disable="!isPaymentValid"
+          >
+            <div
+              class="column items-center q-pa-none"
+              style="font-size: 2.05rem"
+            >
+              <div><i class="fa-brands fa-hive" /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                Hive
+              </div>
             </div>
-          </div>
-          <div class="q-px-md" style="font-size: 1.2rem">
-            {{ tidyNumber(CurrencyCalc.hive, 2) }}
-          </div>
-          <div class="q-px-none">
-            <q-icon name="qr_code_2"></q-icon>
-          </div>
-        </q-btn>
+            <div class="q-px-md" style="font-size: 1.2rem">
+              {{ tidyNumber(CurrencyCalc.hive, 2) }}
+            </div>
+            <div class="q-px-none">
+              <q-icon name="qr_code_2"></q-icon>
+            </div>
+          </q-btn>
+        </div>
         <!-- Sats Button -->
-        <q-btn
-          color="deep-orange-14"
-          @click="showPaymentQR('sats')"
-          :disable="CurrencyCalc.outOfRange"
-          no-caps
-        >
-          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
-            <div><i class="fa-brands fa-btc" /></div>
-            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-              KeepSats
+        <div v-else-if="storeUser.pos.receiveCurrency === 'sats'">
+          <q-btn
+            color="deep-orange-14"
+            @click="showPaymentQR('sats')"
+            :disable="CurrencyCalc.outOfRange"
+            no-caps
+          >
+            <div
+              class="column items-center q-pa-none"
+              style="font-size: 2.05rem"
+            >
+              <div><i class="fa-brands fa-btc" /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                KeepSats
+              </div>
             </div>
-          </div>
-          <div class="q-px-md" style="font-size: 1.2rem">
-            {{ tidyNumber(CurrencyCalc.sats, 0) }}
-          </div>
-          <div class="q-px-none">
-            <q-icon name="qr_code_2"></q-icon>
-          </div>
-        </q-btn>
+            <div class="q-px-md" style="font-size: 1.2rem">
+              {{ tidyNumber(CurrencyCalc.sats, 0) }}
+            </div>
+            <div class="q-px-none">
+              <q-icon name="qr_code_2"></q-icon>
+            </div>
+          </q-btn>
+        </div>
         <!-- Alternate currencies  -->
         <div class="pad-max-width full-width q-px-md" v-if="isPaymentValid">
           <AlternateCurrency
