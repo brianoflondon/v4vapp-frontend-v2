@@ -1,36 +1,40 @@
 <template>
   <q-page>
     <div class="flex column text-center items-center q-pa-none">
-      <q-tabs v-model="currentTab" align="justify" dense animated>
-        <q-icon name="fa-solid fa-bolt" size="1em" color="yellow-9" />
-        <q-tab name="realWallet" :label="$t('wallet')" />
-        <q-tab name="send" :label="$t('send')" />
-        <q-tab
-          name="receive"
-          :label="$t('receive')"
-          :disable="!storeUser.currentUser"
-        >
-          <q-tooltip>{{ $t("receive_sats_on_v4vapp") }}</q-tooltip>
-        </q-tab>
-        <q-tab
-          name="convert"
-          :label="$t('convert')"
-          :disable="
-            !storeUser.currentUser ||
-            storeUser?.keepSatsBalanceNum < storeApiStatus?.minMax?.sats.min
-          "
-        >
-          <q-tooltip>{{ $t("convert_sats_from_v4vapp") }}</q-tooltip>
-        </q-tab>
-        <q-tab
-          name="history"
-          :label="$t('history')"
-          :disable="!storeUser.currentUser"
-        >
-          <q-tooltip>{{ $t("login_to_see_history") }}</q-tooltip>
-        </q-tab>
-        <!-- <q-tab name="other" :label="$t('other')" /> -->
-      </q-tabs>
+      <div class="pad-max-width full-width">
+        <q-tabs v-model="currentTab" align="justify" dense animated>
+          <q-tab name="realWallet" icon="wallet" />
+          <q-tab name="send" icon="payments" :label="$t('send')" />
+          <q-tab
+            name="receive"
+            icon="request_quote"
+            :label="$t('receive')"
+            :disable="!storeUser.currentUser"
+          >
+            <q-tooltip>{{ $t("receive_sats_on_v4vapp") }}</q-tooltip>
+          </q-tab>
+          <q-tab
+            name="convert"
+            icon="currency_exchange"
+            :label="$t('convert')"
+            :disable="
+              !storeUser.currentUser ||
+              storeUser?.keepSatsBalanceNum < storeApiStatus?.minMax?.sats.min
+            "
+          >
+            <q-tooltip>{{ $t("convert_sats_from_v4vapp") }}</q-tooltip>
+          </q-tab>
+          <q-tab
+            name="history"
+            icon="receipt_long"
+            :label="$t('history')"
+            :disable="!storeUser.currentUser"
+          >
+            <q-tooltip>{{ $t("login_to_see_history") }}</q-tooltip>
+          </q-tab>
+          <!-- <q-tab name="other" :label="$t('other')" /> -->
+        </q-tabs>
+      </div>
       <!-- Q-tab-panels -->
 
       <q-tab-panels v-model="currentTab">

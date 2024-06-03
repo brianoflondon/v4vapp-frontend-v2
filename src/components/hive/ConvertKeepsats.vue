@@ -1,7 +1,16 @@
 <template>
   <div class="q-pa-sm col justify-evenly">
+    <div class="q-pa-sm">
+      <q-tabs v-model="convertTab">
+        <q-tab name="toHive" label="Sats to Hive" class="text-center"></q-tab>
+        <q-tab name="toSats" label="Hive to Sats" class="text-center" />
+      </q-tabs>
+    </div>
     <div class="explanation-box text-justify q-pa-s">
-      <ExplanationBox :title="t('keepsats_convert_title')" :text="t('keepsats_convert_text')" />
+      <ExplanationBox
+        :title="t('keepsats_convert_title')"
+        :text="t('keepsats_convert_text')"
+      />
     </div>
     <div class="destination-toggle pad-max-width">
       <!-- HBD Hive and Sats toggle -->
@@ -81,6 +90,8 @@ import AmountSlider from "src/components/utils/AmountSlider.vue"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
+
+const convertTab = ref("toHive")
 
 const HASDialog = ref({ show: false })
 const CurrencyCalc = ref({ amount: 1000, currency: "sats" })
@@ -238,6 +249,4 @@ async function checkForSats(oldNetSats = 0, count = 0) {
 .explanation-box {
   max-width: 400px;
 }
-
-
 </style>
