@@ -362,6 +362,7 @@ function updateStoreSales() {
   })
 }
 
+
 // Calculates the fees charged in the same currency Hive/HBD as
 // the amount being sent.
 function calcFees() {
