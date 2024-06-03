@@ -160,9 +160,7 @@
             @click="showPaymentQR('hbd')"
             :disable="!isPaymentValid"
           >
-            <div
-              class="column items-center q-px-md"              style="font-size: 1.2rem"
-            >
+            <div class="column items-center q-px-md" style="font-size: 1.2rem">
               <div><HbdLogoIcon /></div>
               <div class="text-center" style="font-size: 0.5rem; margin: -8px">
                 HBD
@@ -255,7 +253,7 @@
       </div>
     </div>
     <!-- Show the QR dialog -->
-    <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
+    <KeychainShowQR v-model="KeychainDialog" />
     <!-- Show the settings dialog -->
   </q-page>
 </template>
@@ -543,17 +541,6 @@ function bookmarkSite() {
   // inform the user how to bookmark the page manually.
   // jump to a different url
   window.location.href = "/pos/sales/@" + hiveAccTo.value.value
-  // wait for the page to load
-  // setTimeout(() => {
-  //   // scroll to the bottom of the page
-  //   alert(
-  //     "To bookmark this page, press " +
-  //       (navigator.userAgent.toLowerCase().indexOf("mac") != -1
-  //         ? "Command/Cmd"
-  //         : "CTRL") +
-  //       " + D on your keyboard."
-  //   )
-  // }, 1000)
 }
 
 function parseLocalizedFloat(val) {
@@ -612,14 +599,19 @@ function clearAmount() {
 
 const memoInput = ref("")
 
+/**
+ * Displays the payment QR code.
+ *
+ * @param {string} payWith - The payment method to use.
+ */
 function showPaymentQR(payWith) {
+  console.log("showPaymentQR", payWith, memoInput.value)
   if (!isPaymentValid.value) {
     return
   }
   if (payWith === "sats") {
     KeychainDialog.value.showLightning = true
   }
-
   KeychainDialog.value.memo = memoInput.value
   KeychainDialog.value.currencyToSend = payWith
   KeychainDialog.value.hiveAccTo = hiveAccTo.value.value

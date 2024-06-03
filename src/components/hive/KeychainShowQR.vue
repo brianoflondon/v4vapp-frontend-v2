@@ -1,5 +1,9 @@
 <template>
-  <q-dialog v-model="KeychainDialog.show">
+  <q-dialog
+    v-model="KeychainDialog.show"
+    @hide="dialogClose"
+    @show="updateQRCode"
+  >
     <q-card>
       <q-toolbar>
         <!-- Title Bar -->
@@ -13,13 +17,7 @@
           color="primary"
           class="q-ma-md"
         />
-        <q-btn
-          flat
-          round
-          dense
-          icon="close"
-          @click="KeychainDialog.show = false"
-        />
+        <q-btn flat round dense icon="close" @click="dialogClose" />
       </q-toolbar>
       <!-- Hive or Lightning button toggle -->
       <q-card-section>
@@ -29,6 +27,7 @@
           :style="{ width: maxUseableWidth + 'px' }"
         >
           <q-btn-toggle
+            v-if="false"
             spread
             v-model="KeychainDialog.currencyToSend"
             push
@@ -247,13 +246,11 @@ const titleOptions = ref({
 })
 
 const fees = computed(() => {
+  console.log("fees calc", KeychainDialog.value.currencyToSend)
   const cur = KeychainDialog.value.currencyToSend
   const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
   const storeLndKey = cur + receiveCurrency
-  if (
-    showLightning.value === null ||
-    KeychainDialog.value.currencyToSend === "sats"
-  ) {
+  if (!showLightning.value || KeychainDialog.value.currencyToSend === "sats") {
     return t("no_fees")
   }
   if (!KeychainDialog.value.lndData[storeLndKey]) {
@@ -332,6 +329,12 @@ onBeforeUnmount(() => {
   showLightning.value = false
 })
 
+function dialogClose() {
+  console.log("showQrCodeDialog Close")
+  showLightning.value = false
+  KeychainDialog.value.show = false
+}
+
 function updateStoreSales() {
   /**
    * Represents the currency variable used in the KeychainShowQR component.
@@ -399,6 +402,11 @@ function calcFees() {
  * This function is asynchronous and might require awaiting when called.
  */
 async function updateQRCode() {
+  console.log("updateQrCode")
+  console.log(KeychainDialog.value)
+  if (KeychainDialog.value.loading || !KeychainDialog.value.show) {
+    return
+  }
   if (KeychainDialog.value.currencyToSend === "sats") {
     showLightning.value = true
   }
