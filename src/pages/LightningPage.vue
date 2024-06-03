@@ -288,7 +288,7 @@
         <q-tab-panel name="convert">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
-              <ConvertKeepsats />
+              <ConvertWrapper />
             </div>
           </q-slide-transition>
         </q-tab-panel>
@@ -370,7 +370,7 @@ import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HiveLightningKeepSatsTrans from "src/components/v4vapp/HiveLightningKeepSatsTrans.vue"
 import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
-import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
+import ConvertWrapper from "src/components/hive/ConvertWrapper.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 
 const invoiceText = ref(null)

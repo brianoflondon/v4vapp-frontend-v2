@@ -1,11 +1,5 @@
 <template>
   <div class="q-pa-sm col justify-evenly">
-    <div class="q-pa-sm">
-      <q-tabs v-model="convertTab">
-        <q-tab name="toHive" label="Sats to Hive" class="text-center"></q-tab>
-        <q-tab name="toSats" label="Hive to Sats" class="text-center" />
-      </q-tabs>
-    </div>
     <div class="explanation-box text-justify q-pa-s">
       <ExplanationBox
         :title="t('keepsats_convert_title')"
@@ -13,6 +7,7 @@
       />
     </div>
     <div class="destination-toggle pad-max-width">
+      <AmountSlider v-model="CurrencyCalc" />
       <!-- HBD Hive and Sats toggle -->
       <q-btn-toggle
         spread
@@ -47,7 +42,6 @@
         </template>
       </q-btn-toggle>
       <!-- End HBD Hive and Sats toggle -->
-      <AmountSlider v-model="CurrencyCalc" />
 
       <!-- Payment buttons -->
       <div>
@@ -91,8 +85,6 @@ import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import { useI18n } from "vue-i18n"
 const t = useI18n().t
 
-const convertTab = ref("toHive")
-
 const HASDialog = ref({ show: false })
 const CurrencyCalc = ref({ amount: 1000, currency: "sats" })
 
@@ -100,7 +92,7 @@ const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
 const q = useQuasar()
 
-const destination = ref("hive")
+const destination = ref("hbd")
 
 const privateMemo = ref(false)
 
