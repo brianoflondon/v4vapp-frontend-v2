@@ -26,6 +26,7 @@
           class="text-center flex"
           :style="{ width: maxUseableWidth + 'px' }"
         >
+          <!-- Hide this toggle for now -->
           <q-btn-toggle
             v-if="false"
             spread
@@ -100,33 +101,39 @@
               </div>
             </template>
           </q-btn-toggle>
+          <!-- End of Hive HBD Button Toggle -->
         </div>
         <div
           class="text-center q-pt-md"
           v-if="titleOptions[KeychainDialog.display].showHiveLightning"
         >
           <!-- Lightning toggle -->
-          <q-btn-toggle
-            v-model="showLightning"
-            color="deep-orange-3"
-            text-color="text-primary"
-            toggle-color="deep-orange-14"
-            icon="fa-sharp fa-solid fa-bolt"
-            spread
-            clearable
-            @update:model-value="toggleLightning()"
-            :options="[{ label: '', value: true, slot: 'lightning' }]"
-          >
-            <template #lightning>
-              <div class="row items-center q-pa-none" style="font-size: 1.2rem">
-                <div><i class="fa-sharp fa-solid fa-bolt" /></div>
-                <div class="text-center q-px-md" style="font-size: 1.2rem">
-                  {{ t("lightning") }}
+          <div v-if="KeychainDialog.currencyToSend != 'sats'">
+            <q-btn-toggle
+              v-model="showLightning"
+              color="deep-orange-3"
+              text-color="text-primary"
+              toggle-color="deep-orange-14"
+              icon="fa-sharp fa-solid fa-bolt"
+              spread
+              clearable
+              @update:model-value="toggleLightning()"
+              :options="[{ label: '', value: true, slot: 'lightning' }]"
+            >
+              <template #lightning>
+                <div
+                  class="row items-center q-pa-none"
+                  style="font-size: 1.2rem"
+                >
+                  <div><i class="fa-sharp fa-solid fa-bolt" /></div>
+                  <div class="text-center q-px-md" style="font-size: 1.2rem">
+                    {{ t("lightning") }}
+                  </div>
+                  <div><i class="fa-brands fa-btc" /></div>
                 </div>
-                <div><i class="fa-brands fa-btc" /></div>
-              </div>
-            </template>
-          </q-btn-toggle>
+              </template>
+            </q-btn-toggle>
+          </div>
         </div>
       </q-card-section>
       <!-- Text description of request -->
@@ -361,7 +368,6 @@ function updateStoreSales() {
     paid: false,
   })
 }
-
 
 // Calculates the fees charged in the same currency Hive/HBD as
 // the amount being sent.
