@@ -1,6 +1,6 @@
 <template>
-  <div class="fit row wrap justify-start items-start content-start q-gutter-xs">
-    <div class="col-12">
+  <div class="bordered-div row wrap justify-between content-start q-gutter-xs">
+    <div class="bordered-div col-8">
       <q-select
         use-input
         fill-input
@@ -12,7 +12,7 @@
         clearable
       />
     </div>
-    <div class="col-12">
+    <div class="bordered-div col-3">
       <q-input
         :label="`${usdToCurrency}`"
         v-model="formattedFixedRate"
@@ -29,14 +29,72 @@
         </template>
       </q-input>
     </div>
+    <div class="fit row wrap justify-center q-pt-sm">
+      <div class="bordered-div col-12">
+        <div class="text-caption text-left q-pb-sm">
+          {{ t("receive_currency") }}
+        </div>
+        <q-btn-toggle
+          spread
+          v-model="receiveCurrency"
+          push
+          no-caps
+          dense
+          @update:model-value="selectReceiveCurrency($event)"
+          toggle-color="primary"
+          unelevated
+          :options="[
+            { label: '', value: 'hbd', slot: 'hbd' },
+            { label: '', value: 'hive', slot: 'hive' },
+            {
+              label: '',
+              value: 'sats',
+              slot: 'sats',
+            },
+          ]"
+        >
+          <!-- HBD Button -->
+          <template #hbd>
+            <div
+              class="row items-center justify-start content-between q-pa-none"
+              style="font-size: 1.2rem"
+            >
+              <div><HbdLogoIcon /></div>
+              <div class="q-px-sm" style="font-size: 1rem">HBD</div>
+            </div>
+          </template>
+          <!-- Hive Button -->
+          <template #hive>
+            <div
+              class="row items-center justify-start q-pa-none"
+              style="font-size: 2.05rem"
+            >
+              <div><i class="fa-brands fa-hive" /></div>
+              <div class="q-px-sm" style="font-size: 1rem">Hive</div>
+            </div>
+          </template>
+          <template #sats>
+            <div class="flex column">
+              <div
+                class="row items-center justify-start q-pa-none"
+                style="font-size: 2.05rem"
+              >
+                <div><i class="fa-brands fa-btc" /></div>
+                <div class="q-px-sm" style="font-size: 1rem">KeepSats</div>
+              </div>
+            </div>
+          </template>
+        </q-btn-toggle>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
-// import { getCoingeckoRates } from "src/use/useCoinGecko"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber } from "src/use/useUtils"
 const t = useI18n().t
@@ -47,6 +105,8 @@ const coingeckoRates = ref([])
 const currencyOptions = ref([])
 const currencyOptionsFiltered = ref([])
 const currency = ref({ label: "US Dollar", value: "usd" })
+
+const receiveCurrency = ref("hbd")
 
 // This is where the actual numeric value is stored
 const fixedRate = ref(null)
@@ -118,6 +178,17 @@ watch(
   }
 )
 
+async function selectReceiveCurrency(val) {
+  console.log(val)
+  if (val === "hbd") {
+    storeUser.pos.receiveCurrency = "hbd"
+  } else if (val === "hive") {
+    storeUser.pos.receiveCurrency = "hive"
+  } else if (val === "sats") {
+    storeUser.pos.receiveCurrency = "sats"
+  }
+}
+
 async function filterFnAutoselect(val, update, abort) {
   update(() => {
     if (val === "" || val === null || val === undefined) {
@@ -163,4 +234,9 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.bordered-div {
+  border: 0px solid;
+  border-color: black;
+}
+</style>
