@@ -42,6 +42,7 @@ import { computed, onMounted, ref, defineEmits } from "vue"
 import { useI18n } from "vue-i18n"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import { getMinMax } from "src/use/useUtils"
 
 const t = useI18n().t
 const storeUser = useStoreUser()
@@ -72,6 +73,9 @@ const isDisabled = computed(() => {
 
 const sliderMinMax = computed(() => {
   let dest = AmountCurrency.value.currency.toUpperCase()
+  const minMax = getMinMax(dest)
+  return minMax
+
   if (storeApiStatus.minMax) {
     let min = 1
     let max = 400
