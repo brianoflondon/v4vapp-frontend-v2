@@ -82,7 +82,7 @@ import { ref } from "vue"
 import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
 import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
-import { getMinMax } from "src/use/useUtils"
+// import { getMinMax } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 
 const t = useI18n().t
@@ -124,9 +124,9 @@ async function syncToFromCurrency(val, direction) {
 
 async function updateMinMax() {
   const dest = CurrencyCalcFrom.value.currency.toUpperCase()
-  console.log("dest", dest)
-  minMax.value = getMinMax(dest)
-  console.log("minMax", minMax.value)
+  // console.log("dest", dest)
+  // minMax.value = getMinMax(dest)
+  // console.log("minMax", minMax.value)
 }
 
 async function amountUpdated(val, direction) {

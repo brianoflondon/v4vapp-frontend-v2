@@ -7,8 +7,6 @@
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
 import { apiLogin } from "boot/axios"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useStoreUser } from "src/stores/storeUser"
 import { productName, version } from "../../package.json"
 
 /**
@@ -330,41 +328,4 @@ export async function useGetChallenge(hiveAccName, clientId) {
     },
   })
   return getChallenge
-}
-
-export function getMinMax(dest) {
-  const storeApiStatus = useStoreAPIStatus()
-  const storeUser = useStoreUser()
-  console.log("dest", dest)
-  if (storeApiStatus.minMax) {
-    let min = 1
-    let max = 400
-    if (dest === "SATS") {
-      dest = "sats"
-      min = storeApiStatus.minMax.sats.min
-      max = Math.min(
-        storeUser.keepSatsBalanceNum,
-        storeApiStatus.minMax.sats.max
-      )
-    } else {
-      min = storeApiStatus.minMax[dest].min
-      max = storeApiStatus.minMax[dest].max
-
-      min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()])
-      max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()])
-    }
-    const diff = max - min
-
-    // Divide the difference by 100 to get the initial step size
-    let step = diff / 100
-
-    // Calculate the power of 10 for the step size
-    const power = Math.floor(Math.log10(step))
-
-    // Round the step size to the nearest power of 10
-    step = Math.pow(10, power)
-    const mid = diff / 2 + min
-    return { min: min, max: max, step: step, mid: mid }
-  }
-  return { min: 1, max: 400, step: 1, diff: 200 }
 }
