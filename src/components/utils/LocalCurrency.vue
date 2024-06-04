@@ -56,11 +56,13 @@
           <!-- HBD Button -->
           <template #hbd>
             <div
-              class="row items-center justify-start content-between q-pa-none"
+              class="flex bordered-div items-center flex q-pa-none"
               style="font-size: 1.2rem"
             >
               <div><HbdLogoIcon /></div>
-              <div class="q-px-sm" style="font-size: 1rem">HBD</div>
+              <div class="flex col bordered-div q-ml-xs">
+                <div class="q-px-sm" style="font-size: 1rem">HBD</div>
+              </div>
             </div>
           </template>
           <!-- Hive Button -->
@@ -70,17 +72,22 @@
               style="font-size: 2.05rem"
             >
               <div><i class="fa-brands fa-hive" /></div>
-              <div class="q-px-sm" style="font-size: 1rem">Hive</div>
+              <div class="flex col bordered-div q-ml-xs">
+                <div class="q-px-sm" style="font-size: 1rem">Hive</div>
+              </div>
             </div>
           </template>
           <template #sats>
-            <div class="flex column">
-              <div
-                class="row items-center justify-start q-pa-none"
-                style="font-size: 2.05rem"
-              >
-                <div><i class="fa-brands fa-btc" /></div>
-                <div class="q-px-sm" style="font-size: 1rem">KeepSats</div>
+            <div
+              class="flex bordered-div items-center flex q-pa-none"
+              style="font-size: 2.05rem"
+            >
+              <div class="flex row bordered-div text-center">
+                <i class="fa-brands fa-btc" />
+              </div>
+              <div class="flex col bordered-div q-ml-xs">
+                <div class="" style="font-size: 1rem">Keep</div>
+                <div class="" style="font-size: 1rem">Sats</div>
               </div>
             </div>
           </template>
@@ -175,6 +182,13 @@ watch(
     // reset stored fixedRate to null when currency changes
     storeUser.pos.fixedRate = null
     fixedRate.value = exchangeRate()
+  }
+)
+
+watch(
+  () => storeUser.pos.receiveCurrency,
+  () => {
+    receiveCurrency.value = storeUser.pos.receiveCurrency
   }
 )
 
