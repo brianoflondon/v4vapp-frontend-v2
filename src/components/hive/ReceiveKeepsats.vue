@@ -151,7 +151,7 @@
 </template>
 
 <script setup>
-import { computed, watch, ref, onMounted, defineProps } from "vue"
+import { computed, watch, ref, onMounted } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
