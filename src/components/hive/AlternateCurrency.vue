@@ -165,15 +165,19 @@ async function calcAllAmounts() {
       CurrencyCalc.value.local = CurrencyCalc.value.amount
   }
   CurrencyCalc.value.outOfRange = false
-  if (CurrencyCalc.value.sats < storeAPIStatus.minMax.sats.min) {
-    CurrencyCalc.value.outOfRange = true
-  } else if (CurrencyCalc.value.sats > storeAPIStatus.minMax.sats.max) {
-    CurrencyCalc.value.outOfRange = true
+  if (storeAPIStatus.minMax) {
+    if (CurrencyCalc.value.sats < storeAPIStatus.minMax.sats.min) {
+      CurrencyCalc.value.outOfRange = true
+    } else if (CurrencyCalc.value.sats > storeAPIStatus.minMax.sats.max) {
+      CurrencyCalc.value.outOfRange = true
+    }
+    console.log(CurrencyCalc.value.currency)
+    if (CurrencyCalc.value.currency) {
+      CurrencyCalc.value.minMax = getMinMax(
+        CurrencyCalc.value.currency.toUpperCase()
+      )
+    }
   }
-  CurrencyCalc.value.minMax = getMinMax(
-    CurrencyCalc.value.currency.toUpperCase()
-  )
-  console.log(CurrencyCalc.value.minMax)
 }
 
 function getMinMax(dest) {

@@ -83,9 +83,10 @@
             :text-color="buttonColor.textColor"
             size="md"
             rounded
-            :disabled="validateRange(CurrencyCalcFrom.amount)"
+            :disabled="!validateRange()"
             icon-right="img:/site-logo/v4vapp-logo-shadows.svg"
           />
+          {{ validateRange() }}
         </div>
       </div>
     </div>
@@ -136,12 +137,12 @@ const options = {
   hbd: { label: "HBD", value: "hbd" },
   hive: { label: "HIVE", value: "hive" },
 }
-const CurrencyCalcFrom = ref({ amount: 0, currency: "sats" })
-const CurrencyCalcTo = ref({ amount: 0, currency: "hbd" })
+const CurrencyCalcFrom = ref({ amount: 0, currency: "hbd" })
+const CurrencyCalcTo = ref({ amount: 0, currency: "sats" })
 
 const convertTab = ref("toHive")
-const fromCurrency = ref(options["sats"])
-const toCurrency = ref(options["hbd"])
+const fromCurrency = ref(options["hbd"])
+const toCurrency = ref(options["sats"])
 
 const buttonColors = {
   // dark mode is true, light mode is false
@@ -160,23 +161,21 @@ const buttonColor = computed(() => {
   return colours
 })
 
-let validationRule = computed(() => [(val) => validateRange(val)])
+let validationRule = computed(() => [
+  (val) => validateRange(val) || validationFailMessage.value,
+])
 
 function validateRange(val) {
   console.log("validateRange", val)
-  if (
-    val === 0 ||
-    val === "" ||
-    val === "0" ||
-    !CurrencyCalcFrom.value.minMax
-  ) {
-    return true
+  console.log("minMax", CurrencyCalcFrom.value.minMax)
+  if (val === null || val === undefined || val === "" || val === 0) {
+    val = CurrencyCalcFrom.value[CurrencyCalcFrom.value.currency]
   }
+  console.log("testing val", val)
   return (
-    (CurrencyCalcFrom.value.minMax &&
-      val >= CurrencyCalcFrom.value.minMax.min &&
-      val <= CurrencyCalcFrom.value.minMax.max) ||
-    validationFailMessage.value
+    CurrencyCalcFrom.value.minMax &&
+    val >= CurrencyCalcFrom.value.minMax.min &&
+    val <= CurrencyCalcFrom.value.minMax.max
   )
 }
 
