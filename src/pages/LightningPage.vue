@@ -337,7 +337,11 @@ import {
   useHiveAccountExists,
   useHiveAvatarURL,
 } from "src/use/useHive.js"
-import { useKeepSatsTransfer, useKeepSatsInvoice } from "src/use/useV4vapp"
+import {
+  useKeepSatsTransfer,
+  useKeepSatsInvoice,
+  useConfirmPayWithApi,
+} from "src/use/useV4vapp"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
@@ -846,84 +850,83 @@ function showPaying() {
   })
 }
 
-function confirmPayWithApi(message) {
-  // const message = `You are about to convert ${CurrencyCalcFrom.value.amount} ${CurrencyCalcFrom.value.currency} to ${CurrencyCalcTo.value.amount} ${CurrencyCalcTo.value.currency}`
-  if (!message) {
-    message = t("confirm")
+async function confirmPayWithApi(message) {
+  let apiPayData = {}
+  if (dInvoice.value?.v4vapp.type === "hiveAccname") {
+    apiPayData = {
+      type: "hiveAccname",
+      sendTo: dInvoice.value.v4vapp.sendTo,
+      sats: dInvoice.value.satoshis,
+      comment: dInvoice.value.v4vapp.comment,
+    }
+  } else {
+    apiPayData = {
+      type: "bolt11",
+      paymentRequest: dInvoice.value.paymentRequest,
+    }
   }
-  q.dialog({
-    title: t("confirm"),
-    message: message,
-    cancel: true,
-    persistent: true,
-  })
-    .onOk(() => {
-      console.log("OK")
-      showPaying()
-      payWithApi()
-    })
-    .onCancel(() => {
-      console.log("Cancel")
-      return false
-    })
-    .onDismiss(() => {
-      return false
-    })
-}
-
-async function payWithApi() {
-  try {
-    let response
-    if (dInvoice.value?.v4vapp.type === "hiveAccname") {
-      response = await useKeepSatsTransfer(
-        dInvoice.value.v4vapp.sendTo,
-        dInvoice.value.satoshis,
-        dInvoice.value.v4vapp.comment
-      )
-    } else {
-      response = await useKeepSatsInvoice(dInvoice.value.paymentRequest)
-    }
-    // extract the message from this response
-    paymentInProgressDialog.value.hide()
-    if (response.success) {
-      q.notify({
-        color: "positive",
-        timeout: 5000,
-        message: response.message,
-        position: "top",
-      })
-    } else {
-      const message = `${t("payment_failed")} - ${response?.message}`
-      q.notify({
-        color: "negative",
-        timeout: 5000,
-        message: message,
-        position: "top",
-        actions: [
-          {
-            label: "OK",
-            color: "white",
-            handler: () => {
-              return
-            },
-          },
-        ],
-      })
-    }
-    // wait 2 seconds then clear the form
+  let response = useConfirmPayWithApi(message, apiPayData)
+  if (response) {
     storeUser.updateSatsBalance(false)
     await new Promise((resolve) => setTimeout(resolve, 4000))
     clearReset()
-  } catch (e) {
-    console.error("Error in payWithApi", e)
-    q.notify({
-      color: "negative",
-      timeout: 5000,
-      message: t("payment_failed"),
-      position: "top",
-    })
   }
+  return
 }
+
+// async function payWithApi() {
+//   try {
+//     let response
+//     if (dInvoice.value?.v4vapp.type === "hiveAccname") {
+//       response = await useKeepSatsTransfer(
+//         dInvoice.value.v4vapp.sendTo,
+//         dInvoice.value.satoshis,
+//         dInvoice.value.v4vapp.comment
+//       )
+//     } else {
+//       response = await useKeepSatsInvoice(dInvoice.value.paymentRequest)
+//     }
+//     // extract the message from this response
+//     paymentInProgressDialog.value.hide()
+//     if (response.success) {
+//       q.notify({
+//         color: "positive",
+//         timeout: 5000,
+//         message: response.message,
+//         position: "top",
+//       })
+//     } else {
+//       const message = `${t("payment_failed")} - ${response?.message}`
+//       q.notify({
+//         color: "negative",
+//         timeout: 5000,
+//         message: message,
+//         position: "top",
+//         actions: [
+//           {
+//             label: "OK",
+//             color: "white",
+//             handler: () => {
+//               return
+//             },
+//           },
+//         ],
+//       })
+//     }
+//     // wait 2 seconds then clear the form
+//     storeUser.updateSatsBalance(false)
+//     await new Promise((resolve) => setTimeout(resolve, 4000))
+//     clearReset()
+//   } catch (e) {
+//     console.error("Error in payWithApi", e)
+//     q.notify({
+//       color: "negative",
+//       timeout: 5000,
+//       message: t("payment_failed"),
+//       position: "top",
+//     })
+//   }
+// }
 
 /**
  * Pay the invoice using the specified currency and method.

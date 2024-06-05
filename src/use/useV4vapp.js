@@ -1,10 +1,12 @@
 // useV4vapp.js
 //
 
-import { Notify } from "quasar"
+import { Notify, Dialog, QSpinnerGears } from "quasar"
 import { api, apiLogin } from "src/boot/axios"
-import { useStoreUser } from "src/stores/storeUser"
 import { checkCache, putInCache } from "src/use/useUtils"
+import { i18n } from "boot/i18n"
+
+let paymentInProgressDialog = null
 
 /**
  * Checks if the API token is valid.
@@ -134,6 +136,111 @@ export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
   } catch (error) {
     console.error(error)
     return error
+  }
+}
+
+function showPaying() {
+  const t = i18n.global.t
+
+  paymentInProgressDialog = Dialog.create({
+    title: t("processing"),
+
+    progress: {
+      spinner: QSpinnerGears,
+      color: "amber",
+    },
+    persistent: true, // we want the user to not be able to close it
+    ok: false, // we want the user to not be able to close it
+  })
+}
+
+export function useConfirmPayWithApi(message, apiPayData) {
+  const t = i18n.global.t
+
+  if (!message) {
+    message = t("confirm")
+  }
+  Dialog.create({
+    title: t("confirm"),
+    message: message,
+    cancel: true,
+    persistent: true,
+  })
+    .onOk(() => {
+      console.log("OK")
+      showPaying()
+      return payWithApi(apiPayData)
+    })
+    .onCancel(() => {
+      console.log("Cancel")
+      Notify.create({
+        color: "negative",
+        timeout: 3000,
+        message: t("payment_cancelled"),
+        position: "top",
+        dismissable: true,
+      })
+      return false
+    })
+    .onDismiss(() => {
+      return false
+    })
+}
+
+async function payWithApi(apiPayData) {
+  const t = i18n.global.t
+  console.log("apiPayData", apiPayData)
+  try {
+    let response
+    if (apiPayData.type === "hiveAccname") {
+      response = await useKeepSatsTransfer(
+        apiPayData.sendTo,
+        apiPayData.sats,
+        apiPayData.comment
+      )
+    } else {
+      response = await useKeepSatsInvoice(apiPayData.paymentRequest)
+    }
+    // extract the message from this response
+    paymentInProgressDialog.hide()
+    if (response.success) {
+      Notify.create({
+        color: "positive",
+        timeout: 5000,
+        message: response.message,
+        position: "top",
+      })
+      return response
+    } else {
+      const message = `${t("payment_failed")} - ${response?.message}`
+      Notify.create({
+        color: "negative",
+        timeout: 5000,
+        message: message,
+        position: "top",
+        actions: [
+          {
+            label: "OK",
+            color: "white",
+            handler: () => {
+              return
+            },
+          },
+        ],
+      })
+    }
+    // // wait 2 seconds then clear the form
+    // storeUser.updateSatsBalance(false)
+    // await new Promise((resolve) => setTimeout(resolve, 4000))
+    // clearReset()
+  } catch (e) {
+    console.error("Error in payWithApi", e)
+    Notify.create({
+      color: "negative",
+      timeout: 5000,
+      message: t("payment_failed"),
+      position: "top",
+    })
   }
 }
 

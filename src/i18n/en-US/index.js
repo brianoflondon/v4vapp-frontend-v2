@@ -115,6 +115,8 @@ export default {
   invoice_provider_not_working:
     "Lightning Invoice provider is not working right now, try later or check the address",
   requesting: "Requesting",
+  payment_cancelled: "Payment Cancelled",
+  processing: "Processing",
   // HAS Process
   logged_in_as: "Logged in as",
   open_HAS_auth: "Please open your HAS app and authorize the transaction.",
