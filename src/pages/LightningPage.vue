@@ -13,15 +13,7 @@
           >
             <q-tooltip>{{ $t("receive_sats_on_v4vapp") }}</q-tooltip>
           </q-tab>
-          <q-tab
-            name="convert"
-            icon="currency_exchange"
-            :label="$t('convert')"
-            :disable="
-              !storeUser.currentUser ||
-              storeUser?.keepSatsBalanceNum < storeApiStatus?.minMax?.sats.min
-            "
-          >
+          <q-tab name="convert" icon="currency_exchange" :label="$t('convert')">
             <q-tooltip>{{ $t("convert_sats_from_v4vapp") }}</q-tooltip>
           </q-tab>
           <q-tab
@@ -39,13 +31,9 @@
       <q-tab-panels v-model="currentTab">
         <q-tab-panel name="realWallet">
           <q-slide-transition appear disappear :duration="500">
-            <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
-              <!-- Credit Card Display -->
-              <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
-                <CreditCard />
-              </div>
-              <!-- End Credit Card Display -->
-            </div>
+            <div
+              class="div flex row pad-max-width full-width q-px-xs q-py-xs"
+            ></div>
           </q-slide-transition>
         </q-tab-panel>
         <q-tab-panel name="history">
@@ -293,10 +281,8 @@
       </q-tab-panels>
       <!-- End Q-tab-panels -->
       <!-- Credit Card Display -->
-      <div v-if="currentTab != 'realWallet'">
-        <div class="lower-credit-card row justify-center q-gutter-sm q-pt-lg">
-          <CreditCard />
-        </div>
+      <div class="lower-credit-card row justify-center q-gutter-sm q-pt-lg">
+        <CreditCard />
       </div>
       <!-- End Credit Card Display -->
     </div>
