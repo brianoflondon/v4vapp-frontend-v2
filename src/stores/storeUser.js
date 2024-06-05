@@ -269,6 +269,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         hive: parseFloat(this.currentDetails.balance),
         hbd: parseFloat(this.currentDetails.hbd_balance),
         keepSats: this.currentKeepSats?.net_sats,
+        sats: this.currentKeepSats?.net_sats,
       }
     },
     hiveBalance() {
