@@ -154,6 +154,13 @@ function showPaying() {
   })
 }
 
+/**
+ * A custom hook that displays a confirmation dialog and performs an API payment when confirmed.
+ *
+ * @param {string} message - The message to display in the confirmation dialog.
+ * @param {object} apiPayData - The data required for the API payment.
+ * @returns {boolean} - Returns `true` if the payment is confirmed and successful, otherwise `false`.
+ */
 export function useConfirmPayWithApi(message, apiPayData) {
   const t = i18n.global.t
 
@@ -187,6 +194,20 @@ export function useConfirmPayWithApi(message, apiPayData) {
     })
 }
 
+/**
+ * Makes a payment using the API.
+ *
+ * @param {Object} apiPayData - The payment data.
+ * @param {string} apiPayData.type - The type of payment.
+ * @param {string} apiPayData.sendTo - The recipient of the payment (applicable for type "hiveAccname").
+ * @param {number} apiPayData.sats - The amount of satoshis to send (applicable for types "hiveAccname" and "convertSats").
+ * @param {string} apiPayData.comment - The comment for the payment (applicable for type "hiveAccname").
+ * @param {string} apiPayData.paymentRequest - The payment request (applicable for type "bolt11").
+ * @param {string} apiPayData.currency - The currency to convert the satoshis to (applicable for type "convertSats").
+ * @param {string} apiPayData.memo - The memo for the conversion (applicable for type "convertSats").
+ * @returns {Promise<Object>} - A promise that resolves to the payment response.
+ * @throws {Error} - If an error occurs during the payment process.
+ */
 async function payWithApi(apiPayData) {
   const t = i18n.global.t
   console.log("apiPayData", apiPayData)
@@ -198,8 +219,14 @@ async function payWithApi(apiPayData) {
         apiPayData.sats,
         apiPayData.comment
       )
-    } else {
+    } else if (apiPayData.type === "bolt11") {
       response = await useKeepSatsInvoice(apiPayData.paymentRequest)
+    } else if (apiPayData.type === "convertSats") {
+      response = await useKeepSatsConvert(
+        apiPayData.sats,
+        apiPayData.currency,
+        apiPayData.memo
+      )
     }
     // extract the message from this response
     paymentInProgressDialog.hide()

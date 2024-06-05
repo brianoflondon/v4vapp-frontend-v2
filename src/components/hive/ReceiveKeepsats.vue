@@ -298,6 +298,8 @@ function copyText() {
   })
 }
 
+
+// TODO: #214 move this to the Hive payment component
 async function makePayment(method) {
   if (destination.value === "sats") {
     return

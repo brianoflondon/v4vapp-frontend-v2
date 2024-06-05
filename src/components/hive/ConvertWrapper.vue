@@ -31,9 +31,10 @@
       />
     </div>
     <!-- Swap Symbol -->
-    <div class="flex row justify-center q-pa-sm">
+    <div class="flex row justify-center q-pa-none">
       <q-btn
         size="1.5rem"
+        dense
         flat
         icon="swap_vertical_circle"
         @click="swapCurrencies"
@@ -69,12 +70,13 @@
       />
     </div>
     <!-- Payment buttons -->
-    <div>
+    <div v-if="CurrencyCalcFrom.currency === 'sats'">
+      <!-- KeepSats convert button -->
       <div class="row justify-center q-pa-sm">
-        <div class="paywithsats-button flex column">
+        <div class="paywithsats-button flex">
           <q-btn
             class="payment-button-sats q-ma-sm"
-            @click="confirmPayWithApi"
+            @click="confirmMakePayment"
             :loading="false"
             :disable="false"
             icon="fa-brands fa-btc"
@@ -86,7 +88,41 @@
             :disabled="!validateRange()"
             icon-right="img:/site-logo/v4vapp-logo-shadows.svg"
           />
-          {{ validateRange() }}
+        </div>
+      </div>
+    </div>
+    <div v-else>
+      <!-- Hive Payment buttons -->
+      <div class="payment-buttons flex row justify-evenly items-center">
+        <div class="q-pa-sm">
+          <q-btn
+            class="payment-button-hive q-ma-sm"
+            @click="makeHivePayment('HiveKeychain')"
+            :loading="false"
+            :disable="false"
+            icon="img:/keychain/hive-keychain-round.svg"
+            icon-right="img:avatars/hive_logo_dark.svg"
+            label="Keychain"
+            :color="buttonColor.buttonColor"
+            :text-color="buttonColor.textColor"
+            size="md"
+            rounded
+          />
+        </div>
+        <div class="q-pa-sm">
+          <q-btn
+            class="payment-button-hive"
+            @click="makeHivePayment('HAS')"
+            :loading="false"
+            :disable="false"
+            icon="img:/has/hive-auth-logo.svg"
+            icon-right="img:avatars/hive_logo_dark.svg"
+            label="HAS"
+            :color="buttonColor.buttonColor"
+            :text-color="buttonColor.textColor"
+            size="md"
+            rounded
+          />
         </div>
       </div>
     </div>
@@ -113,6 +149,7 @@
       </q-tab-panels>
     </div>
   </div>
+  <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
 </template>
 
 <script setup>
@@ -120,8 +157,13 @@ import { ref, computed } from "vue"
 import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
 import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
+import AskHASDialog from "src/components/hive/AskHASDialog.vue"
+
 import { useKeepSatsConvert } from "src/use/useV4vapp"
 import { useStoreUser } from "src/stores/storeUser"
+import { useStoreAPIStatus } from "src/stores/storeApiStatus"
+import { useConfirmPayWithApi } from "src/use/useV4vapp"
+import { useHiveKeychainTransfer } from "src/use/useKeychain"
 
 // import { getMinMax } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
@@ -131,6 +173,9 @@ import { tidyNumber } from "src/use/useUtils"
 const t = useI18n().t
 const q = useQuasar()
 const storeUser = useStoreUser()
+const storeAPIStatus = useStoreAPIStatus()
+
+const HASDialog = ref({ show: false })
 
 const options = {
   sats: { label: "SATS", value: "sats" },
@@ -252,28 +297,97 @@ async function amountUpdated(val, direction) {
   }
 }
 
-function confirmPayWithApi() {
-  const message = `You are about to convert ${CurrencyCalcFrom.value.amount} ${CurrencyCalcFrom.value.currency} to ${CurrencyCalcTo.value.amount} ${CurrencyCalcTo.value.currency}`
+function confirmMakePayment() {
+  if (CurrencyCalcFrom.value.currency === "sats") {
+    // converting from sats to hbd
+    const message = `You are about to convert ${CurrencyCalcFrom.value.amount} ${CurrencyCalcFrom.value.currency} to ${CurrencyCalcTo.value.amount} ${CurrencyCalcTo.value.currency}`
+    const apiPayData = {
+      type: "convertSats",
+      sats: CurrencyCalcFrom.value.sats,
+      currency: CurrencyCalcTo.value.currency.toUpperCase(),
+    }
+    const response = useConfirmPayWithApi(message, apiPayData)
+  } else {
+    console.log("not converting from sats")
+  }
+}
 
-  const askConfirm = q
-    .dialog({
-      title: "Confirm",
-      message: message,
-      cancel: true,
-      persistent: true,
+// TODO: #214 move this to the Hive payment component
+async function makeHivePayment(method) {
+  const fixedAmount = CurrencyCalcFrom.value.amount
+
+  // Adds encryption to the memo 2024-02-23
+  let memo = `${storeUser.currentUser} Deposit to #SATS`
+  // if (privateMemo.value) {
+  //   memo = "#" + memo
+  // }
+
+  if (method === "HiveKeychain") {
+    if (!storeAPIStatus.isKeychainIn) {
+      q.notify({
+        message: t("keychain_not_installed"),
+        color: "negative",
+        icon: "error",
+      })
+      return
+    }
+    const result = await useHiveKeychainTransfer(
+      storeUser.currentUser,
+      fixedAmount,
+      CurrencyCalcFrom.value.currency.toUpperCase(),
+      memo
+    )
+    if (result.success) {
+      q.notify({
+        avatar: "/site-logo/v4vapp-logo.svg",
+        message: result.message,
+        color: "positive",
+        icon: "check_circle",
+      })
+      checkForSats()
+    } else {
+      q.notify({
+        message: result.message,
+        color: "negative",
+        icon: "error",
+      })
+    }
+  }
+  if (method === "HAS") {
+    HASDialog.value.show = true
+    HASDialog.value.payment = {
+      username: storeUser.currentUser,
+      amount: fixedAmount,
+      currency: CurrencyCalcFrom.value.currency.toUpperCase(),
+      memo: memo,
+    }
+  }
+}
+
+async function checkForSats(oldNetSats = 0, count = 0) {
+  let currentSatsBalance = 0
+  if (oldNetSats === 0) {
+    currentSatsBalance = storeUser.currentKeepSats.net_sats
+  } else {
+    currentSatsBalance = oldNetSats
+  }
+  await storeUser.updateSatsBalance(false)
+  if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
+    q.notify({
+      message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,
+      color: "positive",
+      icon: "check_circle",
     })
-    .onOk(() => {
-      console.log("OK")
-      payWithApi()
-    })
-    .onCancel(() => {
-      console.log("Cancel")
-      return false
-    })
-    .onDismiss(() => {
-      console.log("I am triggered on both OK and Cancel")
-      return false
-    })
+    // quit checking
+    return
+  }
+
+  if (count > 10) {
+    return
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 1000 * 5))
+  return checkForSats(currentSatsBalance, count + 1)
 }
 
 async function payWithApi() {
