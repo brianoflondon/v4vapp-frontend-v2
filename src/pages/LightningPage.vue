@@ -166,7 +166,7 @@
                       <div class="paywithsats-button flex column">
                         <q-btn
                           class="payment-button-sats q-ma-sm"
-                          @click="payWithApi()"
+                          @click="confirmPayWithApi(payWithSatsButton)"
                           :loading="storeApiStatus.payInvoice"
                           :disable="storeApiStatus.payInvoice"
                           icon="fa-brands fa-btc"
@@ -846,8 +846,32 @@ function showPaying() {
   })
 }
 
+function confirmPayWithApi(message) {
+  // const message = `You are about to convert ${CurrencyCalcFrom.value.amount} ${CurrencyCalcFrom.value.currency} to ${CurrencyCalcTo.value.amount} ${CurrencyCalcTo.value.currency}`
+  if (!message) {
+    message = t("confirm")
+  }
+  q.dialog({
+    title: t("confirm"),
+    message: message,
+    cancel: true,
+    persistent: true,
+  })
+    .onOk(() => {
+      console.log("OK")
+      showPaying()
+      payWithApi()
+    })
+    .onCancel(() => {
+      console.log("Cancel")
+      return false
+    })
+    .onDismiss(() => {
+      return false
+    })
+}
+
 async function payWithApi() {
-  showPaying()
   try {
     let response
     if (dInvoice.value?.v4vapp.type === "hiveAccname") {
