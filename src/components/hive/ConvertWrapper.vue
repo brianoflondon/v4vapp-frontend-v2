@@ -2,7 +2,9 @@
   <div class="q-pa-sm col justify-evenly">
     <div class="flex row justify-between text-caption">
       <div>{{ t("from") }}</div>
-      <div>Balance: {{ storeUser.keepSatsBalance }}</div>
+      <div>
+        Balance: {{ storeUser.balancesDisplay[CurrencyCalcFrom.currency] }}
+      </div>
     </div>
     <div class="flex justify-between">
       <q-input
@@ -39,7 +41,9 @@
     </div>
     <div class="flex row justify-between text-caption">
       <div>{{ t("to") }}</div>
-      <div>Balance: {{ storeUser.keepSatsBalance }}</div>
+      <div>
+        Balance: {{ storeUser.balancesDisplay[CurrencyCalcTo.currency] }}
+      </div>
     </div>
     <div class="flex justify-between">
       <q-input

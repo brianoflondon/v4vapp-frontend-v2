@@ -272,6 +272,15 @@ export const useStoreUser = defineStore("useStoreUser", {
         sats: this.currentKeepSats?.net_sats,
       }
     },
+    balancesDisplay() {
+      if (!this.currentDetails) return null
+      return {
+        hive: tidyNumber(parseFloat(this.currentDetails.balance), 3),
+        hbd: tidyNumber(parseFloat(this.currentDetails.hbd_balance), 3),
+        keepSats: tidyNumber(this.currentKeepSats?.net_sats, 0),
+        sats: tidyNumber(this.currentKeepSats?.net_sats, 0),
+      }
+    },
     hiveBalance() {
       if (!this.currentDetails) return "💰💰💰"
       const balNum = parseFloat(this.currentDetails.balance).toFixed(3)
