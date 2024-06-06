@@ -171,7 +171,6 @@ async function calcAllAmounts() {
     } else if (CurrencyCalc.value.sats > storeAPIStatus.minMax.sats.max) {
       CurrencyCalc.value.outOfRange = true
     }
-    console.log(CurrencyCalc.value.currency)
     if (CurrencyCalc.value.currency) {
       CurrencyCalc.value.minMax = getMinMax(
         CurrencyCalc.value.currency.toUpperCase()
@@ -181,7 +180,6 @@ async function calcAllAmounts() {
 }
 
 function getMinMax(dest) {
-  console.log("dest", dest)
   if (storeAPIStatus.minMax) {
     let min = 1
     let max = 400

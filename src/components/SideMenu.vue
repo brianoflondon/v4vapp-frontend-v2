@@ -70,10 +70,6 @@ watch(storeUser, async (val) => {
     value: val.hiveAccname,
     caption: val.profileName,
   }
-  console.log(
-    "storeUser.currentKeepSats?.admin",
-    storeUser.currentKeepSats?.admin
-  )
   addAdminMenu()
 })
 function addAdminMenu() {

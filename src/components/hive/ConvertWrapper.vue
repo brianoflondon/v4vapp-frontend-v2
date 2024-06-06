@@ -136,10 +136,15 @@
       </div>
       <!-- End Payment buttons -->
     </div>
-    <AlternateCurrency
-      v-model="CurrencyCalcFrom"
-      @currencyClicked="(val) => console.log('currencyClicked: ', val)"
-    />
+    <div>
+      <AlternateCurrency
+        v-model="CurrencyCalcFrom"
+        @currencyClicked="(val) => console.log('currencyClicked: ', val)"
+      />
+    </div>
+    <div>
+      <AlternateCurrency v-model="CurrencyCalcTo" />
+    </div>
     {{ convertFees }}
     <div v-if="false">
       <div class="q-pa-sm">
@@ -164,7 +169,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, nextTick } from "vue"
 import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
 import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
@@ -224,12 +229,9 @@ let validationRule = computed(() => [
 ])
 
 function validateRange(val) {
-  console.log("validateRange", val)
-  console.log("minMax", CurrencyCalcFrom.value.minMax)
   if (val === null || val === undefined || val === "" || val === 0) {
     val = CurrencyCalcFrom.value[CurrencyCalcFrom.value.currency]
   }
-  console.log("testing val", val)
   return (
     CurrencyCalcFrom.value.minMax &&
     val >= CurrencyCalcFrom.value.minMax.min &&
@@ -277,8 +279,7 @@ async function syncToFromCurrency(val, direction) {
 }
 
 async function amountUpdated(val, direction) {
-  // wait for a tik
-  // tidy up val and remove extra spaces and 0
+  await nextTick()
   console.log("val changed:", val)
   if (!val || val === "" || val === "0") {
     val = ""
@@ -287,15 +288,15 @@ async function amountUpdated(val, direction) {
   }
   console.log("updated: ", val)
 
-  await new Promise((resolve) => setTimeout(resolve, 200))
-
   if (direction === "from") {
     CurrencyCalcFrom.value.amount = val
+    await nextTick()
     CurrencyCalcTo.value.amount = CurrencyCalcFrom.value[toCurrency.value.value]
     CurrencyCalcTo.value.currency = toCurrency.value.value
     // limit number to 3 decimal places
   } else {
     CurrencyCalcTo.value.amount = val
+    await nextTick()
     CurrencyCalcFrom.value.amount =
       CurrencyCalcTo.value[fromCurrency.value.value]
     CurrencyCalcFrom.value.currency = fromCurrency.value.value
@@ -336,6 +337,7 @@ function reformatValues() {
 }
 
 async function confirmMakePayment() {
+  console.log("confirmMakePayment")
   if (CurrencyCalcFrom.value.currency === "sats") {
     // converting from sats to hbd
     const message = `${t("convert_confirm")} ${tidyNumber(
@@ -344,22 +346,24 @@ async function confirmMakePayment() {
     )} ${CurrencyCalcFrom.value.currency} to ${tidyNumber(
       CurrencyCalcTo.value.amount,
       3
-    )} ${CurrencyCalcTo.value.currency}`
+    )} ${CurrencyCalcTo.value.currency.toUpperCase()}`
     const apiPayData = {
       type: "convertSats",
       sats: CurrencyCalcFrom.value.sats,
-      currency: CurrencyCalcTo.value.currency.toUpperCase(),
+      currency: CurrencyCalcTo.value.currency,
     }
-    const response = useConfirmPayWithApi(message, apiPayData)
-    if (response) {
-      // wait 2 seconds then clear the form
-      await new Promise((resolve) => setTimeout(resolve, 4000))
-      storeUser.update()
-      CurrencyCalcFrom.value.amount = 0
-      CurrencyCalcTo.value.amount = 0
+    try {
+      const response = await useConfirmPayWithApi(message, apiPayData)
+      console.log("response", response)
+      if (response) {
+        await new Promise((resolve) => setTimeout(resolve, 10000))
+        storeUser.update()
+        amountUpdated(0, "from")
+        console.log("cleared")
+      }
+    } catch (error) {
+      console.log("error", error)
     }
-  } else {
-    console.log("not converting from sats")
   }
 }
 
@@ -387,6 +391,7 @@ async function makeHivePayment(method) {
       KeychainDialog.value.display = "convert"
       KeychainDialog.value.currencyCalc = CurrencyCalcFrom.value
       KeychainDialog.value.show = true
+      checkForSats()
       break
 
     case "HiveKeychain":
@@ -456,11 +461,14 @@ async function checkForSats(oldNetSats = 0, count = 0) {
         {
           icon: "close",
           round: true,
+          color: 'white',
           handler: () => {},
         },
       ],
     })
     // quit checking
+    amountUpdated(0, "from")
+    storeUser.update()
     return
   }
 

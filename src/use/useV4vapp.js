@@ -155,50 +155,54 @@ function showPaying() {
 }
 
 /**
- * A custom hook that displays a confirmation dialog and performs an API payment when confirmed.
+ * Prompts the user to confirm payment and performs the payment using an API.
  *
  * @param {string} message - The message to display in the confirmation dialog.
  * @param {object} apiPayData - The data required for the API payment.
- * @returns {boolean} - Returns `true` if the payment is confirmed and successful, otherwise `false`.
+ * @returns {Promise<boolean>} A promise that resolves to `true` if the payment is successful, or `false` if the payment is cancelled or encounters an error.
  */
-export function useConfirmPayWithApi(message, apiPayData) {
+export async function useConfirmPayWithApi(message, apiPayData) {
+  console.log("useConfirmPayWithApi", message, apiPayData)
   const t = i18n.global.t
 
   if (!message) {
     message = t("confirm")
   }
-  Dialog.create({
-    title: t("confirm"),
-    message: message,
-    cancel: true,
-    persistent: true,
-  })
-    .onOk(() => {
-      console.log("OK")
-      showPaying()
-      return payWithApi(apiPayData)
-      updateSatsBalance()
+
+  return new Promise((resolve, reject) => {
+    Dialog.create({
+      title: t("confirm"),
+      message: message,
+      cancel: true,
+      persistent: true,
     })
-    .onCancel(() => {
-      console.log("Cancel")
-      Notify.create({
-        color: "negative",
-        timeout: 3000,
-        message: t("payment_cancelled"),
-        position: "top",
-        actions: [
-          {
-            icon: "close",
-            round: true,
-            handler: () => {},
-          },
-        ],
+      .onOk(() => {
+        console.log("OK")
+        showPaying()
+        payWithApi(apiPayData).then(resolve(true)).catch(reject)
       })
-      return false
-    })
-    .onDismiss(() => {
-      return false
-    })
+      .onCancel(() => {
+        console.log("Cancel")
+        Notify.create({
+          color: "negative",
+          timeout: 3000,
+          message: t("payment_cancelled"),
+          position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
+        })
+        resolve(false)
+      })
+      .onDismiss(() => {
+        resolve(false)
+      })
+  })
 }
 
 /**
@@ -212,7 +216,7 @@ export function useConfirmPayWithApi(message, apiPayData) {
  * @param {string} apiPayData.paymentRequest - The payment request (applicable for type "bolt11").
  * @param {string} apiPayData.currency - The currency to convert the satoshis to (applicable for type "convertSats").
  * @param {string} apiPayData.memo - The memo for the conversion (applicable for type "convertSats").
- * @returns {Promise<Object>} - A promise that resolves to the payment response.
+ * @returns {boolean} - A getBooleanEnvVariable
  * @throws {Error} - If an error occurs during the payment process.
  */
 async function payWithApi(apiPayData) {
@@ -243,8 +247,16 @@ async function payWithApi(apiPayData) {
         timeout: 5000,
         message: response.message,
         position: "top",
+        actions: [
+          {
+            icon: "close",
+            round: true,
+            color: "white",
+            handler: () => {},
+          },
+        ],
       })
-      return response
+      return true
     } else {
       const message = `${t("payment_failed")} - ${response?.message}`
       Notify.create({
@@ -262,6 +274,7 @@ async function payWithApi(apiPayData) {
           },
         ],
       })
+      return false
     }
   } catch (e) {
     console.error("Error in payWithApi", e)
@@ -271,6 +284,7 @@ async function payWithApi(apiPayData) {
       message: t("payment_failed"),
       position: "top",
     })
+    return false
   }
 }
 
