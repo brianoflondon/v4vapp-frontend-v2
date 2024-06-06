@@ -253,7 +253,7 @@
       </div>
     </div>
     <!-- Show the QR dialog -->
-    <KeychainShowQR v-model="KeychainDialog" />
+    <POSKeychainShowQR v-model="KeychainDialog" />
     <!-- Show the settings dialog -->
   </q-page>
 </template>
@@ -262,7 +262,7 @@
 import { ref, onMounted, watch, computed, nextTick } from "vue"
 import { tidyNumber, useUsernameFromRouteParam } from "src/use/useUtils"
 import { useQuasar } from "quasar"
-import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
+import POSKeychainShowQR from "src/components/hive/POSKeychainShowQR.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import SetRateBar from "src/components/utils/SetRateBar.vue"
 import { useStoreUser } from "src/stores/storeUser"

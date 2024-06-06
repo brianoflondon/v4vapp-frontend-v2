@@ -150,6 +150,7 @@
     </div>
   </div>
   <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
+  <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
 </template>
 
 <script setup>
@@ -158,13 +159,14 @@ import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
 import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import AskHASDialog from "src/components/hive/AskHASDialog.vue"
+import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 
 import { useKeepSatsConvert } from "src/use/useV4vapp"
 import { useStoreUser } from "src/stores/storeUser"
-import { useStoreAPIStatus } from "src/stores/storeApiStatus"
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useConfirmPayWithApi } from "src/use/useV4vapp"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
-
+import { serverHiveAccount } from "boot/axios"
 // import { getMinMax } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
@@ -175,6 +177,7 @@ const q = useQuasar()
 const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
 
+const KeychainDialog = ref({ show: false })
 const HASDialog = ref({ show: false })
 
 const options = {
@@ -322,45 +325,55 @@ async function makeHivePayment(method) {
   //   memo = "#" + memo
   // }
 
-  if (method === "HiveKeychain") {
-    if (!storeAPIStatus.isKeychainIn) {
-      q.notify({
-        message: t("keychain_not_installed"),
-        color: "negative",
-        icon: "error",
-      })
-      return
-    }
-    const result = await useHiveKeychainTransfer(
-      storeUser.currentUser,
-      fixedAmount,
-      CurrencyCalcFrom.value.currency.toUpperCase(),
-      memo
-    )
-    if (result.success) {
-      q.notify({
-        avatar: "/site-logo/v4vapp-logo.svg",
-        message: result.message,
-        color: "positive",
-        icon: "check_circle",
-      })
-      checkForSats()
-    } else {
-      q.notify({
-        message: result.message,
-        color: "negative",
-        icon: "error",
-      })
-    }
+  if (method === "HiveKeychain" && !storeAPIStatus.isKeychainIn) {
+    method = "HiveKeychainQR"
   }
-  if (method === "HAS") {
-    HASDialog.value.show = true
-    HASDialog.value.payment = {
-      username: storeUser.currentUser,
-      amount: fixedAmount,
-      currency: CurrencyCalcFrom.value.currency.toUpperCase(),
-      memo: memo,
-    }
+
+  method = "HiveKeychainQR"
+
+  switch (method) {
+    case "HiveKeychainQR":
+      KeychainDialog.value.memo = memo
+      KeychainDialog.value.currencyToSend =
+        CurrencyCalcFrom.value.currency.toLowerCase()
+      KeychainDialog.value.hiveAccTo = serverHiveAccount
+      KeychainDialog.value.display = "hive"
+      KeychainDialog.value.currencyCalc = CurrencyCalcFrom.value
+      KeychainDialog.value.show = true
+      console.log(KeychainDialog.value)
+      break
+
+    case "HiveKeychain":
+      const result = await useHiveKeychainTransfer(
+        storeUser.currentUser,
+        fixedAmount,
+        CurrencyCalcFrom.value.currency.toUpperCase(),
+        memo
+      )
+      if (result.success) {
+        q.notify({
+          avatar: "/site-logo/v4vapp-logo.svg",
+          message: result.message,
+          color: "positive",
+          icon: "check_circle",
+        })
+        checkForSats()
+      } else {
+        q.notify({
+          message: result.message,
+          color: "negative",
+          icon: "error",
+        })
+      }
+    case "HAS":
+      HASDialog.value.show = true
+      HASDialog.value.payment = {
+        username: storeUser.currentUser,
+        amount: fixedAmount,
+        currency: CurrencyCalcFrom.value.currency.toUpperCase(),
+        memo: memo,
+      }
+      break
   }
 }
 
