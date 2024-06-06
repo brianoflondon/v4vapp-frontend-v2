@@ -304,6 +304,24 @@ async function amountUpdated(val, direction) {
   KeychainDialog.value.currencyToSend =
     CurrencyCalcFrom.value.currency.toLowerCase()
   KeychainDialog.value.amountToSend = CurrencyCalcFrom.value.amount
+  reformatValues()
+}
+
+function truncateDecimal(number, decimalPlaces) {
+  const factor = Math.pow(10, decimalPlaces)
+  return Math.floor(number * factor) / factor
+}
+
+function reformatValues() {
+  // reformat the values to the correct number of decimal places
+  console.log('reformat values')
+  if (CurrencyCalcFrom.value.currency === "sats") {
+    CurrencyCalcFrom.value.amount = truncateDecimal(CurrencyCalcFrom.value.amount, 0)
+    CurrencyCalcTo.value.amount = truncateDecimal(CurrencyCalcTo.value.amount, 3)
+  } else {
+    CurrencyCalcFrom.value.amount = truncateDecimal(CurrencyCalcFrom.value.amount, 3)
+    CurrencyCalcTo.value.amount = truncateDecimal(CurrencyCalcTo.value.amount, 0)
+  }
 }
 
 async function confirmMakePayment() {
@@ -423,13 +441,13 @@ async function checkForSats(oldNetSats = 0, count = 0) {
       message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,
       color: "positive",
       icon: "check_circle",
-        actions: [
-          {
-            icon: "close",
-            round: true,
-            handler: () => {},
-          },
-        ],
+      actions: [
+        {
+          icon: "close",
+          round: true,
+          handler: () => {},
+        },
+      ],
     })
     // quit checking
     return
