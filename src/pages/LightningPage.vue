@@ -945,12 +945,14 @@ async function payInvoice(currency, method) {
   // Add 6 Hive to the amount to cover the fee or 2 HBD
   let amountNum = 0
   if (currency == "HIVE") {
-    amountNum = parseFloat(Hive.value) + 4 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
-    amountNum = parseFloat(HBD.value) + 1.5 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(HBD.value) + 1 + 0.002 * parseFloat(HBD.value)
   }
   CurrencyCalc.value.amount = amountNum
   CurrencyCalc.value.currency = currency.toLowerCase()
+  // next tick which allows currency calc to catch up.
+  await new Promise((resolve) => setTimeout(resolve, 0))
   let amount = amountNum.toFixed(3)
 
   // if payWithSats is true add #paywithsats to the end of the memo
