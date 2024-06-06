@@ -383,6 +383,7 @@ export async function useGetHiveTransactionHistory(
 export function useGetHiveAmountString(amount, currency) {
   // Returns a string with the amount and currency
   // convert currency to uppercase
+  console.log("useGetHiveAmountString", amount, currency)
   currency = currency.toUpperCase()
   if (!["HIVE", "HBD"].includes(currency)) {
     return null

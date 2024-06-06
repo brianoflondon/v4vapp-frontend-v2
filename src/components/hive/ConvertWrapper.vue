@@ -271,7 +271,7 @@ async function amountUpdated(val, direction) {
   // tidy up val and remove extra spaces and 0
   console.log("val changed:", val)
   if (!val || val === "" || val === "0") {
-    val = 0
+    val = ""
   } else {
     val = parseFloat(val)
   }
@@ -291,13 +291,13 @@ async function amountUpdated(val, direction) {
     CurrencyCalcFrom.value.currency = fromCurrency.value.value
   }
 
-  if (CurrencyCalcFrom.value.currency === "sats") {
-    CurrencyCalcFrom.value.amount = CurrencyCalcFrom.value.amount.toFixed(0)
-    CurrencyCalcTo.value.amount = CurrencyCalcTo.value.amount.toFixed(3)
-  } else {
-    CurrencyCalcFrom.value.amount = CurrencyCalcFrom.value.amount.toFixed(3)
-    CurrencyCalcTo.value.amount = CurrencyCalcTo.value.amount.toFixed(0)
-  }
+  // if (CurrencyCalcFrom.value.currency === "sats") {
+  //   CurrencyCalcFrom.value.amount = CurrencyCalcFrom.value.amount
+  //   CurrencyCalcTo.value.amount = CurrencyCalcTo.value.amount
+  // } else {
+  //   CurrencyCalcFrom.value.amount = CurrencyCalcFrom.value.amount
+  //   CurrencyCalcTo.value.amount = CurrencyCalcTo.value.amount
+  // }
 }
 
 function confirmMakePayment() {
@@ -337,6 +337,8 @@ async function makeHivePayment(method) {
       KeychainDialog.value.currencyToSend =
         CurrencyCalcFrom.value.currency.toLowerCase()
       KeychainDialog.value.hiveAccTo = serverHiveAccount
+      KeychainDialog.value.amountToSend = CurrencyCalcFrom.value.amount
+      KeychainDialog.value.currencyToSend = CurrencyCalcFrom.value.currency
       KeychainDialog.value.display = "hive"
       KeychainDialog.value.currencyCalc = CurrencyCalcFrom.value
       KeychainDialog.value.show = true

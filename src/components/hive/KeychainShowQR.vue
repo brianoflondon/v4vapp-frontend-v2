@@ -349,6 +349,7 @@ function calcFees() {
  * This function is asynchronous and might require awaiting when called.
  */
 async function updateQRCode() {
+  console.log('updateQRCode', KeychainDialog.value)
   KeychainDialog.value.amountToSend =
     KeychainDialog.value.currencyCalc[KeychainDialog.value.currencyToSend]
 

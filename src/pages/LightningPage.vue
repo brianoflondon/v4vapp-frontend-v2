@@ -976,7 +976,7 @@ async function payInvoice(currency, method) {
         position: "top",
       })
       KeychainDialog.value.memo = memo
-      KeychainDialog.value.currencyToSend = currency.toLowerCase()
+      KeychainDialog.value.currencyToSend = currency
       KeychainDialog.value.hiveAccTo = serverHiveAccount
       KeychainDialog.value.display = "hive"
       KeychainDialog.value.currencyCalc = CurrencyCalc.value
