@@ -137,6 +137,9 @@
         >
           {{ fees }}
         </div>
+        <div v-if="true" class="text-center q-pt-sm">
+          {{ convertFees }}
+        </div>
       </q-card-section>
       <q-card-section>
         <div class="flex q-gutter-sm items-center">
@@ -230,6 +233,19 @@ const fees = computed(() => {
     calcFees().currency,
     3
   )} ${KeychainDialog.value.currencyToSend})`
+})
+
+const convertFees = computed(() => {
+  const feesCalc = calcFees()
+  return (
+    t("fees") +
+    " " +
+    tidyNumber(feesCalc.sats, 0) +
+    " sats - " +
+    tidyNumber(feesCalc.currency, 3) +
+    " " +
+    KeychainDialog.value.currencyToSend
+  )
 })
 
 const requesting = computed(() => {
@@ -349,9 +365,11 @@ function calcFees() {
  * This function is asynchronous and might require awaiting when called.
  */
 async function updateQRCode() {
-  console.log('updateQRCode', KeychainDialog.value)
+  KeychainDialog.value.currencyToSend =
+    KeychainDialog.value.currencyToSend.toLowerCase()
   KeychainDialog.value.amountToSend =
     KeychainDialog.value.currencyCalc[KeychainDialog.value.currencyToSend]
+  console.log("updateQRCode", KeychainDialog.value)
 
   KeychainDialog.value.amountString = useGetHiveAmountString(
     KeychainDialog.value.amountToSend,

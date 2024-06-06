@@ -177,6 +177,7 @@ export function useConfirmPayWithApi(message, apiPayData) {
       console.log("OK")
       showPaying()
       return payWithApi(apiPayData)
+      updateSatsBalance()
     })
     .onCancel(() => {
       console.log("Cancel")
@@ -256,10 +257,7 @@ async function payWithApi(apiPayData) {
         ],
       })
     }
-    // // wait 2 seconds then clear the form
-    // storeUser.updateSatsBalance(false)
-    // await new Promise((resolve) => setTimeout(resolve, 4000))
-    // clearReset()
+
   } catch (e) {
     console.error("Error in payWithApi", e)
     Notify.create({

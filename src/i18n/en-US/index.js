@@ -175,6 +175,8 @@ export default {
   keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
   A fee applies when converting sats to Hive or HBD.`,
   // Receive Page
+  // Convert
+  convert_confirm: "You are about to convert",
   // Credit Card
   savings: "Savings",
   savings_tooltip:

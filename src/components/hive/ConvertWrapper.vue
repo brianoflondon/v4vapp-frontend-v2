@@ -6,131 +6,142 @@
         Balance: {{ storeUser.balancesDisplay[CurrencyCalcFrom.currency] }}
       </div>
     </div>
-    <div class="flex justify-between">
-      <q-input
-        outlined
-        v-model="CurrencyCalcFrom.amount"
-        inputmode="decimal"
-        pattern="\d*"
-        :label="$t('amount')"
-        clearable
-        @update:modelValue="(val) => amountUpdated(val, 'from')"
-        debounce="1000"
-        :rules="validationRule"
-      />
-      <q-select
-        outlined
-        name="fromCurrency"
-        v-model="fromCurrency"
-        :options="[
-          { label: 'HBD', value: 'hbd' },
-          { label: 'HIVE', value: 'hive' },
-          { label: 'SATS', value: 'sats' },
-        ]"
-        :onUpdate:modelValue="(val) => syncToFromCurrency(val, 'from')"
-      />
-    </div>
-    <!-- Swap Symbol -->
-    <div class="flex row justify-center q-pa-none">
-      <q-btn
-        size="1.5rem"
-        dense
-        flat
-        icon="swap_vertical_circle"
-        @click="swapCurrencies"
-      ></q-btn>
-    </div>
-    <div class="flex row justify-between text-caption">
-      <div>{{ t("to") }}</div>
-      <div>
-        Balance: {{ storeUser.balancesDisplay[CurrencyCalcTo.currency] }}
+
+    <div class="exchange-amounts credit-card-width">
+      <div class="flex justify-between">
+        <q-input
+          outlined
+          dense
+          v-model="CurrencyCalcFrom.amount"
+          inputmode="decimal"
+          pattern="\d*"
+          :label="$t('amount')"
+          clearable
+          @update:modelValue="(val) => amountUpdated(val, 'from')"
+          debounce="1000"
+          :rules="validationRule"
+        />
+        <q-select
+          outlined
+          dense
+          name="fromCurrency"
+          v-model="fromCurrency"
+          :options="[
+            { label: 'HBD', value: 'hbd' },
+            { label: 'HIVE', value: 'hive' },
+            { label: 'SATS', value: 'sats' },
+          ]"
+          :onUpdate:modelValue="(val) => syncToFromCurrency(val, 'from')"
+        />
       </div>
-    </div>
-    <div class="flex justify-between">
-      <q-input
-        outlined
-        v-model="CurrencyCalcTo.amount"
-        inputmode="decimal"
-        pattern="\d*"
-        :label="$t('amount')"
-        clearable
-        @update:modelValue="(val) => amountUpdated(val, 'to')"
-        debounce="1000"
-      />
-      <q-select
-        outlined
-        name="toCurrency"
-        v-model="toCurrency"
-        :options="[
-          { label: 'HBD', value: 'hbd' },
-          { label: 'HIVE', value: 'hive' },
-          { label: 'SATS', value: 'sats' },
-        ]"
-        :onUpdate:modelValue="(val) => syncToFromCurrency(val, 'to')"
-      />
-    </div>
-    <!-- Payment buttons -->
-    <div v-if="CurrencyCalcFrom.currency === 'sats'">
-      <!-- KeepSats convert button -->
-      <div class="row justify-center q-pa-sm">
-        <div class="paywithsats-button flex">
-          <q-btn
-            class="payment-button-sats q-ma-sm"
-            @click="confirmMakePayment"
-            :loading="false"
-            :disable="false"
-            icon="fa-brands fa-btc"
-            :label="t('convert')"
-            :color="buttonColor.buttonColor"
-            :text-color="buttonColor.textColor"
-            size="md"
-            rounded
-            :disabled="!validateRange()"
-            icon-right="img:/site-logo/v4vapp-logo-shadows.svg"
-          />
+      <!-- Swap Symbol -->
+      <div class="flex row justify-center q-pa-none">
+        <q-btn
+          size="1.5rem"
+          dense
+          flat
+          icon="swap_vertical_circle"
+          @click="swapCurrencies"
+        ></q-btn>
+      </div>
+      <div class="flex row justify-between text-caption">
+        <div>{{ t("to") }}</div>
+        <div>
+          Balance: {{ storeUser.balancesDisplay[CurrencyCalcTo.currency] }}
         </div>
       </div>
-    </div>
-    <div v-else>
-      <!-- Hive Payment buttons -->
-      <div class="payment-buttons flex row justify-evenly items-center">
-        <div class="q-pa-sm">
-          <q-btn
-            class="payment-button-hive q-ma-sm"
-            @click="makeHivePayment('HiveKeychain')"
-            :loading="false"
-            :disable="false"
-            icon="img:/keychain/hive-keychain-round.svg"
-            icon-right="img:avatars/hive_logo_dark.svg"
-            label="Keychain"
-            :color="buttonColor.buttonColor"
-            :text-color="buttonColor.textColor"
-            size="md"
-            rounded
-          />
-        </div>
-        <div class="q-pa-sm">
-          <q-btn
-            class="payment-button-hive"
-            @click="makeHivePayment('HAS')"
-            :loading="false"
-            :disable="false"
-            icon="img:/has/hive-auth-logo.svg"
-            icon-right="img:avatars/hive_logo_dark.svg"
-            label="HAS"
-            :color="buttonColor.buttonColor"
-            :text-color="buttonColor.textColor"
-            size="md"
-            rounded
-          />
-        </div>
+      <div class="flex justify-between">
+        <q-input
+          outlined
+          dense
+          v-model="CurrencyCalcTo.amount"
+          inputmode="decimal"
+          pattern="\d*"
+          :label="$t('amount')"
+          clearable
+          @update:modelValue="(val) => amountUpdated(val, 'to')"
+          debounce="1000"
+        />
+        <q-select
+          outlined
+          dense
+          name="toCurrency"
+          v-model="toCurrency"
+          :options="[
+            { label: 'HBD', value: 'hbd' },
+            { label: 'HIVE', value: 'hive' },
+            { label: 'SATS', value: 'sats' },
+          ]"
+          :onUpdate:modelValue="(val) => syncToFromCurrency(val, 'to')"
+        />
       </div>
     </div>
-    <!-- End Payment buttons -->
+
+    <div class="payment-buttons">
+      <!-- Payment buttons -->
+      <div v-if="CurrencyCalcFrom.currency === 'sats'">
+        <!-- KeepSats convert button -->
+        <div class="row justify-center q-pa-sm">
+          <div class="paywithsats-button flex">
+            <q-btn
+              class="payment-button-sats q-ma-sm"
+              @click="confirmMakePayment"
+              :loading="false"
+              :disable="false"
+              icon="fa-brands fa-btc"
+              :label="t('convert')"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+              :disabled="!validateRange()"
+              icon-right="img:/site-logo/v4vapp-logo-shadows.svg"
+            />
+          </div>
+        </div>
+      </div>
+      <div v-else>
+        <!-- Hive Payment buttons -->
+        <div class="payment-buttons flex row justify-evenly items-center">
+          <div class="q-pa-sm">
+            <q-btn
+              class="payment-button-hive q-ma-sm"
+              @click="makeHivePayment('HiveKeychain')"
+              :loading="false"
+              :disable="false"
+              icon="img:/keychain/hive-keychain-round.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              label="Keychain"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+          </div>
+          <div class="q-pa-sm">
+            <q-btn
+              class="payment-button-hive"
+              @click="makeHivePayment('HAS')"
+              :loading="false"
+              :disable="false"
+              icon="img:/has/hive-auth-logo.svg"
+              icon-right="img:avatars/hive_logo_dark.svg"
+              label="HAS"
+              :color="buttonColor.buttonColor"
+              :text-color="buttonColor.textColor"
+              size="md"
+              rounded
+            />
+          </div>
+        </div>
+      </div>
+      <!-- End Payment buttons -->
+    </div>
     <AlternateCurrency
       v-model="CurrencyCalcFrom"
       @currencyClicked="(val) => console.log('currencyClicked: ', val)"
     />
+    {{ convertFees }}
     <div v-if="false">
       <div class="q-pa-sm">
         <q-tabs v-model="convertTab">
@@ -290,26 +301,34 @@ async function amountUpdated(val, direction) {
       CurrencyCalcTo.value[fromCurrency.value.value]
     CurrencyCalcFrom.value.currency = fromCurrency.value.value
   }
-
-  // if (CurrencyCalcFrom.value.currency === "sats") {
-  //   CurrencyCalcFrom.value.amount = CurrencyCalcFrom.value.amount
-  //   CurrencyCalcTo.value.amount = CurrencyCalcTo.value.amount
-  // } else {
-  //   CurrencyCalcFrom.value.amount = CurrencyCalcFrom.value.amount
-  //   CurrencyCalcTo.value.amount = CurrencyCalcTo.value.amount
-  // }
+  KeychainDialog.value.currencyToSend =
+    CurrencyCalcFrom.value.currency.toLowerCase()
+  KeychainDialog.value.amountToSend = CurrencyCalcFrom.value.amount
 }
 
-function confirmMakePayment() {
+async function confirmMakePayment() {
   if (CurrencyCalcFrom.value.currency === "sats") {
     // converting from sats to hbd
-    const message = `You are about to convert ${CurrencyCalcFrom.value.amount} ${CurrencyCalcFrom.value.currency} to ${CurrencyCalcTo.value.amount} ${CurrencyCalcTo.value.currency}`
+    const message = `${t("convert_confirm")} ${tidyNumber(
+      CurrencyCalcFrom.value.amount,
+      0
+    )} ${CurrencyCalcFrom.value.currency} to ${tidyNumber(
+      CurrencyCalcTo.value.amount,
+      3
+    )} ${CurrencyCalcTo.value.currency}`
     const apiPayData = {
       type: "convertSats",
       sats: CurrencyCalcFrom.value.sats,
       currency: CurrencyCalcTo.value.currency.toUpperCase(),
     }
     const response = useConfirmPayWithApi(message, apiPayData)
+    if (response) {
+      // wait 2 seconds then clear the form
+      storeUser.updateSatsBalance(false)
+      await new Promise((resolve) => setTimeout(resolve, 4000))
+      CurrencyCalcFrom.value.amount = 0
+      CurrencyCalcTo.value.amount = 0
+    }
   } else {
     console.log("not converting from sats")
   }
@@ -338,11 +357,9 @@ async function makeHivePayment(method) {
         CurrencyCalcFrom.value.currency.toLowerCase()
       KeychainDialog.value.hiveAccTo = serverHiveAccount
       KeychainDialog.value.amountToSend = CurrencyCalcFrom.value.amount
-      KeychainDialog.value.currencyToSend = CurrencyCalcFrom.value.currency
       KeychainDialog.value.display = "hive"
       KeychainDialog.value.currencyCalc = CurrencyCalcFrom.value
       KeychainDialog.value.show = true
-      console.log(KeychainDialog.value)
       break
 
     case "HiveKeychain":
@@ -405,45 +422,54 @@ async function checkForSats(oldNetSats = 0, count = 0) {
   return checkForSats(currentSatsBalance, count + 1)
 }
 
-async function payWithApi() {
-  console.log("paying....")
-  return
-  try {
-    let response
+const convertFees = computed(() => {
+  const feesCalc = calcFees()
+  return (
+    t("Fees") +
+    " " +
+    tidyNumber(feesCalc.satsFee, 0) +
+    " sats - " +
+    tidyNumber(feesCalc.currencyFee, 3) +
+    " " +
+    feesCalc.currencyExchange +
+    " " +
+    feesCalc.percentString
+  )
+})
 
-    response = await useKeepSatsConvert(
-      CurrencyCalc.value.sats,
-      destination.value.toUpperCase()
-    )
+// Calculates the fees charged in the same currency Hive/HBD as
+// the amount being sent.
+function calcFees() {
+  /**
+   * Retrieves the currency to send and the amount to send from the KeychainDialog value.
+   *
+   * @type {string} currencyToSend - The currency to send.
+   * @type {number} amountToSend - The amount to send.
+   */
+  const currencyExchange =
+    CurrencyCalcFrom.value.currency !== "sats"
+      ? CurrencyCalcFrom.value.currency
+      : CurrencyCalcTo.value.currency
+  const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeAPIStatus
 
-    // extract the message from this response
-    // paymentInProgressDialog.value.hide()
-    if (response.success) {
-      q.notify({
-        color: "positive",
-        timeout: 5000,
-        message: response?.message,
-        position: "top",
-      })
-    } else {
-      const message = `${t("payment_failed")} - ${response?.message}`
-      q.notify({
-        color: "negative",
-        timeout: 5000,
-        message: message,
-        position: "top",
-      })
-    }
-    await new Promise((resolve) => setTimeout(resolve, 4000))
-    await storeUser.update(false) // update the user bypass the cache
-  } catch (e) {
-    console.error("Error in payWithApi", e)
-    q.notify({
-      color: "negative",
-      timeout: 5000,
-      message: t("payment_failed"),
-      position: "top",
-    })
+  const satsValue = CurrencyCalcFrom.value.sats
+  const fee =
+    satsValue * apiStatus.config.conv_fee_percent +
+    apiStatus.config.conv_fee_sats
+
+  const exchangeRate =
+    currencyExchange === "hbd" ? HBDSatsNumber : hiveSatsNumber
+
+  let percentString = ""
+  if (satsValue > 0) {
+    const percent = (fee / satsValue) * 100
+    percentString = "(" + percent.toFixed(2) + "%)"
+  }
+  return {
+    currencyFee: fee / exchangeRate,
+    currencyExchange: currencyExchange,
+    satsFee: fee,
+    percentString: percentString,
   }
 }
 </script>
@@ -451,5 +477,13 @@ async function payWithApi() {
 <style lang="scss" scoped>
 .bordered-div {
   border: 1px solid #ccc;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.credit-card-width {
+  width: 365px;
 }
 </style>
