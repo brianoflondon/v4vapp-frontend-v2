@@ -388,6 +388,21 @@ watch(
   }
 )
 
+// watch(
+//   () => storeUser.pos.receiveCurrency,
+//   () => {
+//     if (storeUser.pos.receiveCurrency === "hbd") {
+//       handleCurrencyClicked("hbd")
+//     } else if (storeUser.pos.receiveCurrency === "hive") {
+//       handleCurrencyClicked("hive")
+//     } else if (storeUser.pos.receiveCurrency === "sats") {
+//       handleCurrencyClicked("sats")
+//     } else {
+//       handleCurrencyClicked("hbd")
+//     }
+//   }
+// )
+
 const isPaymentValid = computed(() => {
   // Returns True if this payment screen can produce a QR code
   // Check if there is a running total, if that is 0 use the amount
@@ -415,6 +430,12 @@ const memoHasPipe = computed(() => {
 })
 
 onMounted(() => {
+  if (!storeUser.pos?.receiveCurrency) {
+    console.log("no pos receive currency set")
+    storeUser.pos.receiveCurrency = "hbd"
+  }
+  // give me the first item in the currencyOptions list
+
   const path = route.path
   if (path.includes("/sales")) {
     currentTab.value = "sales"
@@ -450,9 +471,8 @@ onMounted(() => {
     currencySelected.value = storeUser.pos.currencySelected
     CurrencyCalc.value.currency = currencySelected.value
   } else {
-    // give me the first item in the currencyOptions list
-    currencySelected.value = currencyOptions.value[0].value
-    storeUser.pos.currencySelected = currencySelected.value
+    currencySelected.value = "hbd"
+    CurrencyCalc.value.currency = "hbd"
   }
 })
 

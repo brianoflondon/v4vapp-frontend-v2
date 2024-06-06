@@ -583,6 +583,9 @@ function startHiveCheckTimer() {
 }
 
 async function checkHiveTransaction(count = 0) {
+  if (!KeychainDialog.value.show) {
+    return
+  }
   try {
     while (count < maxChecks) {
       count += 1

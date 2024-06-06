@@ -140,7 +140,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       unit: "$",
     }),
     users: useStorage("users", {}),
-    pos: useStorage("pos", {}),
+    pos: useStorage("pos", {receiveCurrency: "hbd"}),
     clientId: useStorage("clientId", generateUUID()),
   }),
 
