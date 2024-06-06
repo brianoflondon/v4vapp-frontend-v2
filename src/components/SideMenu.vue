@@ -19,7 +19,9 @@
     <div class="q-py-lg">
       <ExplanationBox class="q-pt-md"></ExplanationBox>
     </div>
-    <div class="q-pa-xs text-caption text-center">{{ appName }} - {{ appVersion }}</div>
+    <div class="q-pa-xs text-caption text-center">
+      {{ appName }} - {{ appVersion }}
+    </div>
     <div v-if="isDev || isLocalhost">
       <div class="q-pa-xs text-caption">{{ useAppStr() }}</div>
       <div class="q-pa-xs text-caption">{{ serverHiveAccount }}</div>
@@ -56,50 +58,7 @@ const isDev = ref()
 const isLocalhost = ref()
 const t = useI18n().t
 const waxVersion = ref("")
-const linkList = ref([
-  {
-    title: "Sign Up",
-    caption: "Sign Up",
-    icon: "fa-solid fa-user-plus",
-    link: "/signup",
-  },
-  {
-    title: t("map"),
-    caption: t("map"),
-    icon: "fa-solid fa-map-marked-alt",
-    link: "/map",
-  },
-  {
-    title: t("lightning"),
-    caption: t("lightning"),
-    icon: "fa-sharp fa-solid fa-bolt",
-    link: "/lnd",
-  },
-  {
-    title: t("receive"),
-    caption: t("point_of_sale"),
-    icon: "fa-solid fa-cash-register",
-    link: "/pos",
-  },
-  {
-    title: t("hive"),
-    caption: t("hive"),
-    icon: "fa-brands fa-hive",
-    link: "/hive",
-  },
-  {
-    title: t("transfer"),
-    caption: t("transfer"),
-    icon: "double_arrow",
-    link: "/transfer",
-  },
-  {
-    title: t("status"),
-    caption: t("status"),
-    icon: "circle",
-    link: "/status",
-  },
-])
+const linkList = ref([])
 const hiveUsername = ref("")
 
 const label = ref(t("hive_account"))
@@ -111,7 +70,81 @@ watch(storeUser, async (val) => {
     value: val.hiveAccname,
     caption: val.profileName,
   }
+  console.log(
+    "storeUser.currentKeepSats?.admin",
+    storeUser.currentKeepSats?.admin
+  )
+  addAdminMenu()
 })
+function addAdminMenu() {
+  if (storeUser.currentKeepSats?.admin) {
+    linkList.value = [
+      {
+        title: t("transfer"),
+        caption: t("transfer"),
+        icon: "double_arrow",
+        link: "/transfer",
+      },
+      {
+        title: "Sign Up",
+        caption: "Sign Up",
+        icon: "fa-solid fa-user-plus",
+        link: "/signup",
+      },
+      {
+        title: t("lightning"),
+        caption: t("lightning"),
+        icon: "fa-sharp fa-solid fa-bolt",
+        link: "/lnd",
+      },
+      {
+        title: t("receive"),
+        caption: t("point_of_sale"),
+        icon: "fa-solid fa-cash-register",
+        link: "/pos",
+      },
+      {
+        title: t("hive"),
+        caption: t("hive"),
+        icon: "fa-brands fa-hive",
+        link: "/hive",
+      },
+      {
+        title: t("map"),
+        caption: t("map"),
+        icon: "fa-solid fa-map-marked-alt",
+        link: "/map",
+      },
+      {
+        title: t("status"),
+        caption: t("status"),
+        icon: "circle",
+        link: "/status",
+      },
+    ]
+  } else {
+    linkList.value = [
+      {
+        title: "Sign Up",
+        caption: "Sign Up",
+        icon: "fa-solid fa-user-plus",
+        link: "/signup",
+      },
+      {
+        title: t("map"),
+        caption: t("map"),
+        icon: "fa-solid fa-map-marked-alt",
+        link: "/map",
+      },
+      {
+        title: t("status"),
+        caption: t("status"),
+        icon: "circle",
+        link: "/status",
+      },
+    ]
+  }
+}
 
 onBeforeMount(async () => {
   isDev.value = window.location.href.includes("dev.v4v.app")
@@ -126,6 +159,7 @@ onBeforeMount(async () => {
   // waxVersion.value = wax.getVersion()
   // console.log("waxVersion", waxVersion.value)
   // console.log("wax", wax)
+  addAdminMenu()
 })
 
 onMounted(() => {})
