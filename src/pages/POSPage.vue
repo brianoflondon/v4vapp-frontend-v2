@@ -4,12 +4,13 @@
       <ConfettiExplosion v-if="visible" />
     </div>
     <div class="flex column text-center items-center q-pa-none">
-      <q-tabs v-model="currentTab" align="justify" dense animated swipeable>
+      <q-tabs v-model="currentTab" align="center" dense animated swipeable>
         <q-route-tab
           :to="`/pos/sales${
             route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
           }`"
           name="sales"
+          icon="storefront"
           :label="$t('sales')"
         />
         <q-route-tab
@@ -17,6 +18,7 @@
             route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
           }`"
           name="history"
+         icon="receipt_long"
           :label="$t('history')"
         />
         <q-route-tab
@@ -24,6 +26,7 @@
             route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
           }`"
           name="currency"
+          icon="currency_exchange"
           :label="$t('currency')"
         />
       </q-tabs>

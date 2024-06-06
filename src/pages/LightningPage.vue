@@ -2,7 +2,7 @@
   <q-page>
     <div class="flex column text-center items-center q-pa-none">
       <div class="pad-max-width full-width">
-        <q-tabs v-model="currentTab" align="justify" dense animated outside-arrows mobile-arrows>
+        <q-tabs v-model="currentTab" align="center" dense animated outside-arrows mobile-arrows>
           <q-tab name="realWallet" icon="wallet" />
           <q-tab name="send" icon="payments" :label="$t('send')" />
           <q-tab
