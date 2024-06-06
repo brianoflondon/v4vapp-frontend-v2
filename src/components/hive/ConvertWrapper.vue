@@ -77,8 +77,8 @@
       </div>
     </div>
 
+    <!-- Payment buttons -->
     <div class="payment-buttons">
-      <!-- Payment buttons -->
       <div v-if="CurrencyCalcFrom.currency === 'sats'">
         <!-- KeepSats convert button -->
         <div class="row justify-center q-pa-sm">
@@ -87,7 +87,6 @@
               class="payment-button-sats q-ma-sm"
               @click="confirmMakePayment"
               :loading="false"
-              :disable="false"
               icon="fa-brands fa-btc"
               :label="t('convert')"
               :color="buttonColor.buttonColor"
@@ -105,10 +104,10 @@
         <div class="payment-buttons flex row justify-evenly items-center">
           <div class="q-pa-sm">
             <q-btn
-              class="payment-button-hive q-ma-sm"
+              class="payment-button-hivekeychain q-ma-sm"
               @click="makeHivePayment('HiveKeychain')"
               :loading="false"
-              :disable="false"
+              :disabled="!validateRange()"
               icon="img:/keychain/hive-keychain-round.svg"
               icon-right="img:avatars/hive_logo_dark.svg"
               label="Keychain"
@@ -120,10 +119,10 @@
           </div>
           <div class="q-pa-sm">
             <q-btn
-              class="payment-button-hive"
+              class="payment-button-hivehas"
               @click="makeHivePayment('HAS')"
               :loading="false"
-              :disable="false"
+              :disabled="!validateRange()"
               icon="img:/has/hive-auth-logo.svg"
               icon-right="img:avatars/hive_logo_dark.svg"
               label="HAS"
@@ -314,13 +313,25 @@ function truncateDecimal(number, decimalPlaces) {
 
 function reformatValues() {
   // reformat the values to the correct number of decimal places
-  console.log('reformat values')
+  console.log("reformat values")
   if (CurrencyCalcFrom.value.currency === "sats") {
-    CurrencyCalcFrom.value.amount = truncateDecimal(CurrencyCalcFrom.value.amount, 0)
-    CurrencyCalcTo.value.amount = truncateDecimal(CurrencyCalcTo.value.amount, 3)
+    CurrencyCalcFrom.value.amount = truncateDecimal(
+      CurrencyCalcFrom.value.amount,
+      0
+    )
+    CurrencyCalcTo.value.amount = truncateDecimal(
+      CurrencyCalcTo.value.amount,
+      3
+    )
   } else {
-    CurrencyCalcFrom.value.amount = truncateDecimal(CurrencyCalcFrom.value.amount, 3)
-    CurrencyCalcTo.value.amount = truncateDecimal(CurrencyCalcTo.value.amount, 0)
+    CurrencyCalcFrom.value.amount = truncateDecimal(
+      CurrencyCalcFrom.value.amount,
+      3
+    )
+    CurrencyCalcTo.value.amount = truncateDecimal(
+      CurrencyCalcTo.value.amount,
+      0
+    )
   }
 }
 
