@@ -1,6 +1,12 @@
 <template>
-  <q-dialog v-model="KeychainDialog.show">
+  <q-dialog
+    v-model="KeychainDialog.show"
+    @hide="dialogClose($event)"
+    @before-hide="dialogClose($event)"
+    @show="dialogShow($event)"
+  >
     <q-card>
+      {{ KeychainDialog.currencyToSend }}
       <q-toolbar>
         <!-- Title Bar -->
         <q-toolbar-title>
@@ -13,13 +19,7 @@
           color="primary"
           class="q-ma-md"
         />
-        <q-btn
-          flat
-          round
-          dense
-          icon="close"
-          @click="KeychainDialog.show = false"
-        />
+        <q-btn flat round dense icon="close" @click="dialogClose" />
       </q-toolbar>
       <!-- Hive or Lightning button toggle -->
       <q-card-section>
@@ -281,15 +281,13 @@ const dotColor = computed(() => {
   return QRLightningHiveColor(showLightning.value, KeychainDialog.value.loading)
 })
 
-onBeforeMount(() => {
+function dialogShow(event) {
+  console.log("showQrCodeDialog", event)
   KeychainDialog.value.checkCode = useGetCheckCode()
   KeychainDialog.value.loading = true
   KeychainDialog.value.paid = false
   KeychainDialog.value.lndData = {}
   updateQRCode()
-})
-
-onMounted(async () => {
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
       KeychainDialog.value.transactions = val
@@ -300,7 +298,17 @@ onMounted(async () => {
       startCountdown()
     }
   )
-})
+}
+
+function dialogClose(event) {
+  console.log("showQrCodeDialog Close", event)
+  KeychainDialog.value.lndData = null
+  if (intervalRef.value) {
+    intervalRef.value.forEach((interval) => clearInterval(interval))
+  }
+  showLightning.value = false
+  KeychainDialog.value.show = false
+}
 
 function updateStoreSales() {
   /**
@@ -451,13 +459,13 @@ async function generateLightningQRCode() {
       timeout: 2000,
       message: "Error: " + message,
       position: "top",
-        actions: [
-          {
-            icon: "close",
-            round: true,
-            handler: () => {},
-          },
-        ],
+      actions: [
+        {
+          icon: "close",
+          round: true,
+          handler: () => {},
+        },
+      ],
     })
     showLightning.value = null
     return
@@ -472,11 +480,6 @@ async function generateLightningQRCode() {
     KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   }
 }
-
-onBeforeUnmount(() => {
-  KeychainDialog.value.lndData = null
-  intervalRef.value.forEach((interval) => clearInterval(interval))
-})
 
 function downloadQR(filetype) {
   let fileName = KeychainDialog.value.hiveAccTo
@@ -607,6 +610,7 @@ async function checkHiveTransaction(count = 0) {
  * @returns {Object} The found transaction object, or undefined if no transaction with a matching checkCode is found.
  */
 function findTransactionWithCheckCode(transactions, checkCode) {
+  console.log("checking transactions", checkCode)
   if (!transactions || !checkCode) {
     console.error(
       "findTransactionWithCheckCode: missing transactions or checkCode"

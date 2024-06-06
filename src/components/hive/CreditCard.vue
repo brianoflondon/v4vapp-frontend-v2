@@ -234,6 +234,7 @@ watch(
           {
             icon: "close",
             round: true,
+            color: "white",
             handler: () => {},
           },
         ],

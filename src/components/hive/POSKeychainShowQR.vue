@@ -338,6 +338,10 @@ onBeforeUnmount(() => {
 
 function dialogClose() {
   console.log("showQrCodeDialog Close")
+  if (intervalRef.value) {
+    clearInterval(intervalRef.value)
+    intervalRef.value = null
+  }
   showLightning.value = false
   KeychainDialog.value.show = false
 }

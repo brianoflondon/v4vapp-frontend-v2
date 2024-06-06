@@ -252,10 +252,7 @@
                   </div>
                   <!-- End Payment Buttons -->
                   <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
-                  <KeychainShowQR
-                    v-if="KeychainDialog.show"
-                    v-model="KeychainDialog"
-                  />
+                  <KeychainShowQR v-model="KeychainDialog" />
                   <!-- Vote Button -->
                   <div v-if="false" class="vote-button q-pa-lg text-center">
                     <VoteProposal v-model="voteOptions" />
@@ -981,6 +978,14 @@ async function payInvoice(currency, method) {
         timeout: 2000,
         message: t("keychain_missing"),
         position: "top",
+        actions: [
+          {
+            icon: "close",
+            round: true,
+            color: "white",
+            handler: () => {},
+          },
+        ],
       })
       KeychainDialog.value.hiveAccFrom = storeUser.currentUser
         ? storeUser.currentUser
@@ -1018,6 +1023,14 @@ async function payInvoice(currency, method) {
           timeout: 2000,
           message: result.message,
           position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
         })
         return
       }
@@ -1051,6 +1064,14 @@ watch(
           timeout: 5000,
           message: message,
           position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
         })
       }
       if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_ack") {
@@ -1063,6 +1084,14 @@ watch(
           timeout: 0,
           message: message,
           position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
         })
         await checkHiveTransaction(
           value.payment.username,
@@ -1093,6 +1122,14 @@ watch(
           timeout: 0,
           message: message,
           position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
         })
         dInvoice.value.progress.push(message)
         dInvoice.value.progress.push(`${t("check_lightning")}`)
@@ -1138,6 +1175,14 @@ async function checkHiveTransaction(username, trx_id, notif) {
       timeout: 0,
       message: message,
       position: "top",
+      actions: [
+        {
+          icon: "close",
+          round: true,
+          color: "white",
+          handler: () => {},
+        },
+      ],
     })
   }
   let memo = ""
