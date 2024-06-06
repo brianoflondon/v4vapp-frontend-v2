@@ -13,7 +13,12 @@
           >
             <q-tooltip>{{ $t("receive_sats_on_v4vapp") }}</q-tooltip>
           </q-tab>
-          <q-tab name="convert" icon="currency_exchange" :label="$t('convert')">
+          <q-tab
+            name="convert"
+            icon="currency_exchange"
+            :label="$t('convert')"
+            :disable="!storeUser.currentUser"
+          >
             <q-tooltip>{{ $t("convert_sats_from_v4vapp") }}</q-tooltip>
           </q-tab>
           <q-tab
@@ -975,6 +980,9 @@ async function payInvoice(currency, method) {
         message: t("keychain_missing"),
         position: "top",
       })
+      KeychainDialog.value.hiveAccFrom = storeUser.currentUser
+        ? storeUser.currentUser
+        : ""
       KeychainDialog.value.memo = memo
       KeychainDialog.value.currencyToSend = currency
       KeychainDialog.value.hiveAccTo = serverHiveAccount

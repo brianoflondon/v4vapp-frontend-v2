@@ -324,8 +324,8 @@ async function confirmMakePayment() {
     const response = useConfirmPayWithApi(message, apiPayData)
     if (response) {
       // wait 2 seconds then clear the form
-      storeUser.updateSatsBalance(false)
       await new Promise((resolve) => setTimeout(resolve, 4000))
+      storeUser.update()
       CurrencyCalcFrom.value.amount = 0
       CurrencyCalcTo.value.amount = 0
     }
@@ -347,17 +347,15 @@ async function makeHivePayment(method) {
   if (method === "HiveKeychain" && !storeAPIStatus.isKeychainIn) {
     method = "HiveKeychainQR"
   }
-
-  method = "HiveKeychainQR"
-
   switch (method) {
     case "HiveKeychainQR":
       KeychainDialog.value.memo = memo
       KeychainDialog.value.currencyToSend =
         CurrencyCalcFrom.value.currency.toLowerCase()
+      KeychainDialog.value.hiveAccFrom = storeUser.currentUser
       KeychainDialog.value.hiveAccTo = serverHiveAccount
       KeychainDialog.value.amountToSend = CurrencyCalcFrom.value.amount
-      KeychainDialog.value.display = "hive"
+      KeychainDialog.value.display = "convert"
       KeychainDialog.value.currencyCalc = CurrencyCalcFrom.value
       KeychainDialog.value.show = true
       break
@@ -375,6 +373,13 @@ async function makeHivePayment(method) {
           message: result.message,
           color: "positive",
           icon: "check_circle",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              handler: () => {},
+            },
+          ],
         })
         checkForSats()
       } else {
@@ -382,8 +387,16 @@ async function makeHivePayment(method) {
           message: result.message,
           color: "negative",
           icon: "error",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              handler: () => {},
+            },
+          ],
         })
       }
+      break
     case "HAS":
       HASDialog.value.show = true
       HASDialog.value.payment = {
@@ -394,6 +407,7 @@ async function makeHivePayment(method) {
       }
       break
   }
+  storeUser.update()
 }
 
 async function checkForSats(oldNetSats = 0, count = 0) {
@@ -409,6 +423,13 @@ async function checkForSats(oldNetSats = 0, count = 0) {
       message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,
       color: "positive",
       icon: "check_circle",
+        actions: [
+          {
+            icon: "close",
+            round: true,
+            handler: () => {},
+          },
+        ],
     })
     // quit checking
     return
@@ -451,6 +472,14 @@ function calcFees() {
       ? CurrencyCalcFrom.value.currency
       : CurrencyCalcTo.value.currency
   const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeAPIStatus
+  if (!apiStatus?.config) {
+    return {
+      currencyFee: 0,
+      currencyExchange: currencyExchange,
+      satsFee: 0,
+      percentString: "",
+    }
+  }
 
   const satsValue = CurrencyCalcFrom.value.sats
   const fee =

@@ -216,6 +216,10 @@ const titleOptions = ref({
     title: t("scan_for_keychain"),
     showHiveLightning: false,
   },
+  convert: {
+    title: t("convert"),
+    showHiveLightning: false,
+  },
 })
 
 const fees = computed(() => {
@@ -380,8 +384,16 @@ async function updateQRCode() {
     await generateLightningQRCode()
     return
   }
+
+  // When we are doing a conversion not a sale, we put in the
+  // sending account
+
+  const sendingAccount = KeychainDialog.value.hiveAccFrom
+    ? KeychainDialog.value?.hiveAccFrom
+    : ""
+
   KeychainDialog.value.op = useGenerateHiveTransferOp(
-    "",
+    sendingAccount,
     KeychainDialog.value.hiveAccTo,
     KeychainDialog.value.amountToSend,
     KeychainDialog.value.currencyToSend,
@@ -439,6 +451,13 @@ async function generateLightningQRCode() {
       timeout: 2000,
       message: "Error: " + message,
       position: "top",
+        actions: [
+          {
+            icon: "close",
+            round: true,
+            handler: () => {},
+          },
+        ],
     })
     showLightning.value = null
     return
@@ -538,6 +557,13 @@ async function checkHiveTransaction(count = 0) {
         timeout: 10000,
         message: message,
         position: "top",
+        actions: [
+          {
+            icon: "close",
+            round: true,
+            handler: () => {},
+          },
+        ],
       })
       KeychainDialog.value.paid = true
       // wait hiveCheckTime seconds before closing the dialog
@@ -555,6 +581,13 @@ async function checkHiveTransaction(count = 0) {
       timeout: 5000,
       message: memo,
       position: "top",
+      actions: [
+        {
+          icon: "close",
+          round: true,
+          handler: () => {},
+        },
+      ],
     })
     KeychainDialog.value.show = false
     return // Exit the function if the transaction is not found after maxChecks

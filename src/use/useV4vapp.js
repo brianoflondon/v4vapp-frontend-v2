@@ -186,7 +186,13 @@ export function useConfirmPayWithApi(message, apiPayData) {
         timeout: 3000,
         message: t("payment_cancelled"),
         position: "top",
-        dismissable: true,
+        actions: [
+          {
+            icon: "close",
+            round: true,
+            handler: () => {},
+          },
+        ],
       })
       return false
     })
@@ -257,7 +263,6 @@ async function payWithApi(apiPayData) {
         ],
       })
     }
-
   } catch (e) {
     console.error("Error in payWithApi", e)
     Notify.create({

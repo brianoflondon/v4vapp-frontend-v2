@@ -133,6 +133,7 @@ async function payWithApi() {
         timeout: 5000,
         message: response?.message,
         position: "top",
+        dismissable: true,
       })
     } else {
       const message = `${t("payment_failed")} - ${response?.message}`
