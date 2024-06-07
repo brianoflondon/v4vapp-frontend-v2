@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-sm col justify-evenly">
     <div class="flex row justify-between text-caption">
-      <div>{{ t("from") }}</div>
+      <div>{{ t("From") }}</div>
       <div>
         Balance: {{ storeUser.balancesDisplay[CurrencyCalcFrom.currency] }}
       </div>
@@ -45,7 +45,7 @@
         ></q-btn>
       </div>
       <div class="flex row justify-between text-caption">
-        <div>{{ t("to") }}</div>
+        <div>{{ t("To") }}</div>
         <div>
           Balance: {{ storeUser.balancesDisplay[CurrencyCalcTo.currency] }}
         </div>
@@ -136,16 +136,22 @@
       </div>
       <!-- End Payment buttons -->
     </div>
-    <div>
-      <AlternateCurrency
-        v-model="CurrencyCalcFrom"
-        @currencyClicked="(val) => console.log('currencyClicked: ', val)"
-      />
+    <div class="fee-display q-pb-sm">
+      {{ convertFees }}
     </div>
-    <div>
-      <AlternateCurrency v-model="CurrencyCalcTo" />
+    <!-- Alternate currency calculations -->
+    <div class="alternate-currency-calculations">
+      <div>
+        <AlternateCurrency
+          v-model="CurrencyCalcFrom"
+          @currencyClicked="(val) => console.log('currencyClicked: ', val)"
+        />
+      </div>
+      <div v-show="false">
+        <AlternateCurrency v-model="CurrencyCalcTo" />
+      </div>
     </div>
-    {{ convertFees }}
+    <!-- End Alternate currency calculations -->
     <div v-if="false">
       <div class="q-pa-sm">
         <q-tabs v-model="convertTab">
