@@ -1,4 +1,5 @@
 <template>
+  
   <div class="q-pa-sm col justify-evenly">
     <div class="flex row justify-between text-caption">
       <div>{{ t("From") }}</div>
