@@ -38,92 +38,105 @@
               />
             </div>
           </div>
-          <!-- SATS INPUT -->
-          <div class="row q-pb-none input-amounts justify-around">
-            <div class="input-sats input-amount q-pa-none">
-              <q-input
-                v-model="amounts.sats"
-                type="text"
-                inputmode="decimal"
-                pattern="\d*"
-                label="Sats"
-                stack-label
-                debounce="1000"
-                v-autofocus
-                :input-style="{ 'text-align': 'right' }"
-                @update:model-value="(val) => updateAmounts(val, 'sats')"
-                @keyup.enter="createInvoice"
-                :error-message="errorMessage"
-                :error="errorState"
-                tabindex="1"
-              />
-            </div>
-            <!-- USD INPUT -->
-            <div class="input-hbd input-amount q-pa-none">
-              <q-input
-                v-model="amounts.hbd"
-                type="text"
-                pattern="\d*"
-                inputmode="decimal"
-                label="HUSD"
-                stack-label
-                debounce="1000"
-                :input-style="{ 'text-align': 'right' }"
-                @update:model-value="(val) => updateAmounts(val, 'hbd')"
-              />
-            </div>
-            <!-- USD INPUT -->
-            <div class="input-hive input-amount q-pa-none">
-              <q-input
-                v-model="amounts.hive"
-                type="text"
-                pattern="\d*"
-                inputmode="decimal"
-                label="Hive"
-                stack-label
-                debounce="1000"
-                :input-style="{ 'text-align': 'right' }"
-                @update:model-value="(val) => updateAmounts(val, 'hive')"
-              />
-            </div>
-          </div>
-          <div v-if="true" class="row amount-buttons q-py-sm q-gutter-sm">
-            <NumberButtons
-              @button-pressed="(val) => updateAmounts(val, 'hbd')"
-            />
-          </div>
-          <div class="row hbd-slider q-py-sm">
-            <q-badge color="green-10"> HUSD: </q-badge>
-            <q-slider
-              v-model="amounts.hbdNum"
-              color="green-10"
-              :min="
-                dInvoice.v4vapp.metadata.minSats / storeAPIStatus.HBDSatsNumber
-              "
-              :max="
-                dInvoice.v4vapp.metadata.maxSats /
-                  storeAPIStatus.HBDSatsNumber -
-                3
-              "
-              label
-              switch-label-side
-              @update:model-value="(val) => updateAmounts(val, 'hbd')"
-            ></q-slider>
-          </div>
-          <div class="row sats-slider q-py-sm">
-            <q-badge color="primary"> Sats: </q-badge>
-            <q-slider
-              v-model="amounts.satsNum"
-              color="primary"
-              :min="dInvoice.v4vapp.metadata.minSats"
-              :max="dInvoice.v4vapp.metadata.maxSats"
-              :step="100"
-              label
-              switch-label-side
-              @update:model-value="(val) => updateAmounts(val, 'sats')"
-            ></q-slider>
-          </div>
         </q-card-section>
+        <div v-if="true">
+          <q-card-section>
+            <!-- SATS INPUT -->
+            <div class="row q-pb-none input-amounts justify-around">
+              <div class="input-sats input-amount q-pa-none">
+                <q-input
+                  v-model="amounts.sats"
+                  type="text"
+                  inputmode="decimal"
+                  pattern="\d*"
+                  label="Sats"
+                  stack-label
+                  debounce="1000"
+                  v-autofocus
+                  :input-style="{ 'text-align': 'right' }"
+                  @update:model-value="(val) => updateAmounts(val, 'sats')"
+                  @keyup.enter="createInvoice"
+                  :error-message="errorMessage"
+                  :error="errorState"
+                  tabindex="1"
+                />
+              </div>
+              <!-- USD INPUT -->
+              <div class="input-hbd input-amount q-pa-none">
+                <q-input
+                  v-model="amounts.hbd"
+                  type="text"
+                  pattern="\d*"
+                  inputmode="decimal"
+                  label="HUSD"
+                  stack-label
+                  debounce="1000"
+                  :input-style="{ 'text-align': 'right' }"
+                  @update:model-value="(val) => updateAmounts(val, 'hbd')"
+                />
+              </div>
+              <!-- USD INPUT -->
+              <div class="input-hive input-amount q-pa-none">
+                <q-input
+                  v-model="amounts.hive"
+                  type="text"
+                  pattern="\d*"
+                  inputmode="decimal"
+                  label="Hive"
+                  stack-label
+                  debounce="1000"
+                  :input-style="{ 'text-align': 'right' }"
+                  @update:model-value="(val) => updateAmounts(val, 'hive')"
+                />
+              </div>
+            </div>
+            <div v-if="true" class="row amount-buttons q-py-sm q-gutter-sm">
+              <NumberButtons
+                @button-pressed="(val) => updateAmounts(val, 'hbd')"
+              />
+            </div>
+            <div class="row hbd-slider q-py-sm">
+              <q-badge color="green-10"> HUSD: </q-badge>
+              <q-slider
+                v-model="amounts.hbdNum"
+                color="green-10"
+                :min="
+                  dInvoice.v4vapp.metadata.minSats /
+                  storeAPIStatus.HBDSatsNumber
+                "
+                :max="
+                  dInvoice.v4vapp.metadata.maxSats /
+                    storeAPIStatus.HBDSatsNumber -
+                  3
+                "
+                label
+                switch-label-side
+                @update:model-value="(val) => updateAmounts(val, 'hbd')"
+              ></q-slider>
+            </div>
+            <div class="row sats-slider q-py-sm">
+              <q-badge color="primary"> Sats: </q-badge>
+              <q-slider
+                v-model="amounts.satsNum"
+                color="primary"
+                :min="dInvoice.v4vapp.metadata.minSats"
+                :max="dInvoice.v4vapp.metadata.maxSats"
+                :step="100"
+                label
+                switch-label-side
+                @update:model-value="(val) => updateAmounts(val, 'sats')"
+              ></q-slider>
+            </div>
+          </q-card-section>
+        </div>
+        <div v-else>
+          <q-card-section>
+            <AmountCurrencyInput
+              @amount="updateAmounts"
+              @currency="updateAmounts"
+            />
+          </q-card-section>
+        </div>
         <q-card-section
           v-if="dInvoice?.v4vapp?.metadata?.commentLength"
           class="q-pa-sm"
@@ -144,6 +157,8 @@
           />
         </q-card-section>
         <q-card-actions align="right">
+          <q-toggle class="q-px-md" v-model="oldStyle" label="Old Style" />
+
           <q-btn
             :label="$t('cancel')"
             color="primary"
@@ -172,8 +187,12 @@ import { tidyNumber } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 import { useHiveAvatarURL } from "src/use/useHive"
 import NumberButtons from "components/utils/NumberButtons.vue"
+import AmountCurrencyInput from "components/hive/AmountCurrencyInput.vue"
 const t = useI18n().t
 const q = useQuasar()
+
+// Use the old style dialog box.
+const oldStyle = ref(false)
 
 const storeAPIStatus = useStoreAPIStatus()
 const dInvoice = defineModel()
@@ -234,6 +253,7 @@ function calcSatsFeeOnly(sats) {
 }
 
 function updateAmounts(amount, currency) {
+  console.log("updateAmounts", amount, currency)
   if (amount === "") {
     amount = "1"
   }

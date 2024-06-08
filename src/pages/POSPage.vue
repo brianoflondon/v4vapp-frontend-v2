@@ -18,7 +18,7 @@
             route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
           }`"
           name="history"
-         icon="receipt_long"
+          icon="receipt_long"
           :label="$t('history')"
         />
         <q-route-tab
@@ -317,6 +317,13 @@ const decimalEntry = ref(0)
 const currencyOptions = ref()
 
 function resetCurrencyOptions(localCurrency) {
+  /**
+   * FILEPATH: /Users/bol/Documents/dev/v4vapp/v4vapp-frontend-v2/src/pages/POSPage.vue
+   *
+   * Sets the value of the currencyOptions variable.
+   *
+   * @param {Array} value - The new value for the currencyOptions variable.
+   */
   currencyOptions.value = [
     { label: "HBD", value: "hbd" },
     { label: "HIVE", value: "hive" },
@@ -406,6 +413,11 @@ watch(
 //   }
 // )
 
+/**
+ * Computed property that checks if the payment is valid.
+ *
+ * @returns {boolean} True if the payment is valid, false otherwise.
+ */
 const isPaymentValid = computed(() => {
   // Returns True if this payment screen can produce a QR code
   // Check if there is a running total, if that is 0 use the amount
@@ -521,7 +533,11 @@ function useLoggedInUser() {
   }
 }
 
-// When the amount is updated manually deal with that here
+/**
+ * Updates the amounts based on the given value.
+ *
+ * @param {any} val - The value used to update the amounts.
+ */
 function updateAmounts(val) {
   if (val === "" || val === null) {
     amount.value.num = 0

@@ -180,7 +180,8 @@ async function calcAllAmounts() {
 }
 
 function getMinMax(dest) {
-  if (storeAPIStatus.minMax) {
+  console.log('dest', dest)
+  if (storeAPIStatus?.minMax) {
     let min = 1
     let max = 400
     if (dest === "SATS") {

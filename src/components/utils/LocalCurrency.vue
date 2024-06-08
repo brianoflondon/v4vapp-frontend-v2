@@ -59,9 +59,9 @@
               class="flex bordered-div items-center flex q-pa-none"
               style="font-size: 1.2rem"
             >
-              <div><HbdLogoIcon /></div>
+              <div class="q-px-none"><HbdLogoIcon /></div>
               <div class="flex col bordered-div q-ml-xs">
-                <div class="q-px-sm" style="font-size: 1rem">HUSD</div>
+                <div class="q-px-none" style="font-size: 1rem">HUSD</div>
               </div>
             </div>
           </template>
