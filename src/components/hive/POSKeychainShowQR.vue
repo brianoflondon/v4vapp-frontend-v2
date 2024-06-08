@@ -537,8 +537,10 @@ async function generateLightningQRCode() {
 }
 
 onBeforeUnmount(() => {
+  if (intervalRef.value) {
+    intervalRef.value.forEach((interval) => clearInterval(interval))
+  }
   KeychainDialog.value.lndData = null
-  intervalRef.value.forEach((interval) => clearInterval(interval))
 })
 
 function downloadQR(filetype) {

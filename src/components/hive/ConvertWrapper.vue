@@ -26,7 +26,11 @@
           dense
           name="fromCurrency"
           v-model="fromCurrency"
-          :options="options"
+          :options="[
+            { label: 'HUSD', value: 'hbd' },
+            { label: 'HIVE', value: 'hive' },
+            { label: 'SATS', value: 'sats' },
+          ]"
           :onUpdate:modelValue="(val) => syncToFromCurrency(val, 'from')"
         />
       </div>
@@ -63,7 +67,11 @@
           dense
           name="toCurrency"
           v-model="toCurrency"
-          :options="options"
+          :options="[
+            { label: 'HUSD', value: 'hbd' },
+            { label: 'HIVE', value: 'hive' },
+            { label: 'SATS', value: 'sats' },
+          ]"
           :onUpdate:modelValue="(val) => syncToFromCurrency(val, 'to')"
         />
       </div>

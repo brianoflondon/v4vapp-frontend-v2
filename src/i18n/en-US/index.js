@@ -18,6 +18,8 @@ export default {
   prices_fetched: "Prices fetched",
   from: "from",
   to: "to",
+  From: "From",
+  To: "To",
   local_currency: "Local Currency",
   currency: "Currency",
   receive_currency: "Receive Payments as",
