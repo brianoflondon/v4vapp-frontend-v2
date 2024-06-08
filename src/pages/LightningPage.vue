@@ -2,8 +2,15 @@
   <q-page>
     <div class="flex column text-center items-center q-pa-none">
       <div class="pad-max-width full-width">
-        <q-tabs v-model="currentTab" align="center" dense animated outside-arrows mobile-arrows>
-          <q-tab name="realWallet" icon="wallet" />
+        <q-tabs
+          v-model="currentTab"
+          align="center"
+          dense
+          animated
+          outside-arrows
+          mobile-arrows
+        >
+          <q-tab name="realWallet" icon="wallet" :label="t('wallet')" />
           <q-tab name="send" icon="payments" :label="$t('send')" />
           <q-tab
             name="receive"
@@ -50,6 +57,7 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
+        <!-- Send pannel -->
         <q-tab-panel name="send">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
@@ -92,7 +100,7 @@
                         size="md"
                         rounded
                         :label="t('paste')"
-                        toggle-aria-label="Paste in a Lightning invoice from your clipboard"
+                        :aria-label="t('paste_tooltip')"
                       />
                       <div>
                         <q-toggle
@@ -108,42 +116,71 @@
                       </div>
                     </div>
                     <!-- Invoice and multipurpose input box -->
-                    <div class="column flex-center q-pt-sm q-px-sm">
-                      <q-input
-                        for="invoice"
-                        name="invoice"
-                        class="invoice-input"
-                        :label="invoiceLabel"
-                        data-1p-ignore
-                        v-model="invoiceText"
-                        @clear="clearReset"
-                        autogrow
-                        :placeholder="$t('enter_invoice')"
-                        debounce="1000"
-                        filled
-                        :loading="invoiceChecking"
-                        clearable
-                        @update:model-value="decodeInvoice"
-                        :error-message="errorMessage"
-                        :error="invoiceValid === false"
-                        :bg-color="invoiceColor"
-                        @keyup.esc="clearReset"
-                        :hint="invoiceHint"
-                        hide-bottom-space
+                    <div class="q-py-sm" v-if="dInvoice?.askDetailsButton">
+                      <q-btn
+                        icon="price_check"
+                        color="secondary"
+                        size="md"
+                        rounded
+                        :label="t('set_amount')"
+                        aria-label="Set the amount"
+                        @click="dInvoice.askDetails = true"
                       >
-                        <template
-                          v-if="dInvoice?.v4vapp?.sendTo"
-                          v-slot:prepend
+                        <q-tooltip>{{ $t("set_amount") }}</q-tooltip>
+                      </q-btn>
+                    </div>
+                    <div class="column flex q-pt-sm q-px-sm">
+                      <div class="multi-input-q-input">
+                        <q-input
+                          for="invoice"
+                          name="invoice"
+                          class="invoice-input"
+                          :label="invoiceLabel"
+                          data-1p-ignore
+                          v-model="invoiceText"
+                          @clear="clearReset"
+                          autogrow
+                          :placeholder="$t('enter_invoice')"
+                          debounce="1000"
+                          filled
+                          :loading="invoiceChecking"
+                          clearable
+                          @update:model-value="decodeInvoice"
+                          :error-message="errorMessage"
+                          :error="invoiceValid === false"
+                          :bg-color="invoiceColor"
+                          @keyup.esc="clearReset"
+                          :hint="invoiceHint"
+                          hide-bottom-space
                         >
-                          <q-avatar rounded size="md">
-                            <HiveAvatar
-                              :hiveAccname="dInvoice?.v4vapp?.sendTo"
-                            />
-                          </q-avatar>
-                        </template>
-                        <!-- hide-bottom-space: stops the animation for the hint text-->
-                      </q-input>
-                      {{ dInvoice?.v4vapp?.sendTo }}
+                          <template
+                            v-if="dInvoice?.v4vapp?.sendTo"
+                            v-slot:prepend
+                          >
+                            <q-avatar rounded size="md">
+                              <HiveAvatar
+                                :hiveAccname="dInvoice?.v4vapp?.sendTo"
+                              />
+                            </q-avatar>
+                          </template>
+                          <template
+                            v-slot:append
+                            v-if="dInvoice?.askDetailsButton"
+                          >
+                            <q-btn
+                              icon="price_check"
+                              color="secondary"
+                              size="md"
+                              rounded
+                              aria-label="Set the amount"
+                              @click="dInvoice.askDetails = true"
+                            >
+                              <q-tooltip>{{ $t("set_amount") }}</q-tooltip>
+                            </q-btn>
+                          </template>
+                          <!-- hide-bottom-space: stops the animation for the hint text-->
+                        </q-input>
+                      </div>
                     </div>
                     <!-- End Invoice and multipurpose input box -->
                     <CountdownBar
@@ -266,6 +303,7 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
+        <!-- End Send pannel -->
         <q-tab-panel name="receive">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
@@ -303,6 +341,7 @@
     <AskDetailsDialog
       v-model="dInvoice"
       @newInvoice="(val) => receiveNewInvoice(val)"
+      @closeAskDialog="(val) => closeAskDialog(val)"
     />
   </q-page>
 </template>
@@ -462,7 +501,7 @@ const HBD = computed(() => {
   if (dInvoice.value?.millisatoshis) {
     const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
     const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(3)
-    return tidyNumber(HBD) + " HBD"
+    return tidyNumber(HBD) + " HUSD"
   }
   return "---"
 })
@@ -542,6 +581,11 @@ const invoiceLabel = computed(() => {
   return invoiceLabels[invoiceType()]
 })
 
+function closeAskDialog(val) {
+  console.log("closeAskDialog closed received in LightningPage", val)
+  invoiceChecking.value = false
+}
+
 function checkInvoiceProgress(timeLeft) {
   dInvoice.value.timeLeft = timeLeft
   if (timeLeft < 0) {
@@ -558,6 +602,7 @@ function checkInvoiceProgress(timeLeft) {
 }
 
 function receiveNewInvoice(val) {
+  console.log("receiveNewInvoice received in LightningPage", val)
   if (val?.v4vapp?.type === "hiveAccname") {
     // we have a Hive account to send to.
     dInvoice.value = val
@@ -686,8 +731,7 @@ async function decodeInvoice() {
     if (isHiveAccount.exists) {
       if (!storeUser.keepSatsBalanceNum) {
         // TODO: replace with translation
-        errorMessage.value =
-          "You need to be logged in with a KeepSats balance to send sats to a Hive user"
+        errorMessage.value = t("keepssats_error")
         dInvoice.value = {
           v4vapp: {
             type: "hiveAccname",
@@ -711,6 +755,7 @@ async function decodeInvoice() {
       invoiceValid.value = true
       errorMessage.value = ""
       const amountToSend = storeUser.keepsatsBalanceNum > 1000 ? 1 : 1000
+      invoiceChecking.value = true
       dInvoice.value = {
         v4vapp: {
           type: "hiveAccname",
@@ -729,7 +774,7 @@ async function decodeInvoice() {
           amountToSend: amountToSend,
         },
         sending: true,
-        askDetails: true,
+        askDetailsButton: true,
       }
       return
     } else if (dInvoice.value) {
@@ -747,7 +792,9 @@ async function decodeInvoice() {
         invoiceValid.value = null
         errorMessage.value = ""
         dInvoice.value.sending = true // Flag to show this is for sending Hive to Lightning
-        dInvoice.value.askDetails = true
+        invoiceChecking.value = true
+        dInvoice.value.askDetailsButton = true
+        // dInvoice.value.askDetails = true
         return
       } else {
         if (dInvoice.value?.errors.text.length > 0) {
@@ -835,21 +882,6 @@ function onError(error) {
 function toggleCamera() {
   invoiceChecking.value = !invoiceChecking.value
   cameraShow.value = cameraOn.value
-}
-
-const paymentInProgressDialog = ref()
-
-function showPaying() {
-  paymentInProgressDialog.value = q.dialog({
-    title: "Processing...",
-
-    progress: {
-      spinner: QSpinnerGears,
-      color: "amber",
-    },
-    persistent: true, // we want the user to not be able to close it
-    ok: false, // we want the user to not be able to close it
-  })
 }
 
 async function confirmPayWithApi(message) {

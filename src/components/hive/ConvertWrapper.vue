@@ -26,11 +26,7 @@
           dense
           name="fromCurrency"
           v-model="fromCurrency"
-          :options="[
-            { label: 'HBD', value: 'hbd' },
-            { label: 'HIVE', value: 'hive' },
-            { label: 'SATS', value: 'sats' },
-          ]"
+          :options="options"
           :onUpdate:modelValue="(val) => syncToFromCurrency(val, 'from')"
         />
       </div>
@@ -67,11 +63,7 @@
           dense
           name="toCurrency"
           v-model="toCurrency"
-          :options="[
-            { label: 'HBD', value: 'hbd' },
-            { label: 'HIVE', value: 'hive' },
-            { label: 'SATS', value: 'sats' },
-          ]"
+          :options="options"
           :onUpdate:modelValue="(val) => syncToFromCurrency(val, 'to')"
         />
       </div>
@@ -203,7 +195,7 @@ const HASDialog = ref({ show: false })
 
 const options = {
   sats: { label: "SATS", value: "sats" },
-  hbd: { label: "HBD", value: "hbd" },
+  hbd: { label: "HUSD", value: "hbd" },
   hive: { label: "HIVE", value: "hive" },
 }
 const CurrencyCalcFrom = ref({ amount: 0, currency: "hbd" })
@@ -467,7 +459,7 @@ async function checkForSats(oldNetSats = 0, count = 0) {
         {
           icon: "close",
           round: true,
-          color: 'white',
+          color: "white",
           handler: () => {},
         },
       ],

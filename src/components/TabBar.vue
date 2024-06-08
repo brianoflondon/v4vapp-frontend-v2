@@ -2,8 +2,8 @@
   <div class="tab-bar-selector">
     <div class="q-gutter-y-md" style="max-width: 400px">
       <q-tabs v-model="mainTab" dense animated outside-arrows mobile-arrows inline-label>
-        <q-route-tab icon="bolt" name="move" to="/lnd" label="" />
-        <q-route-tab icon="storefront" name="" to="/pos" label="" />
+        <q-route-tab icon="bolt" name="move" to="/lnd" :label="t('wallet')" />
+        <q-route-tab icon="storefront" name="" to="/pos" :label="t('sales')" />
         <!-- <q-route-tab name="map" disabled to="/map" icon="fa-solid fa-map-marked-alt" /> -->
         <!-- <q-route-tab disabled name="pods" to="/pods" :label="$t('pods')" /> -->
       </q-tabs>

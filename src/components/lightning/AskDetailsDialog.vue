@@ -1,6 +1,11 @@
 <template>
   <div v-if="dInvoice">
-    <q-dialog class="q-ma-lg" v-model="dInvoice.askDetails" @show="showDialog">
+    <q-dialog
+      class="q-ma-lg"
+      v-model="dInvoice.askDetails"
+      @show="showDialog"
+      @hide="hideDialog"
+    >
       <q-card
         class="q-pa-none"
         :style="{
@@ -60,7 +65,7 @@
                 type="text"
                 pattern="\d*"
                 inputmode="decimal"
-                label="HBD"
+                label="HUSD"
                 stack-label
                 debounce="1000"
                 :input-style="{ 'text-align': 'right' }"
@@ -88,7 +93,7 @@
             />
           </div>
           <div class="row hbd-slider q-py-sm">
-            <q-badge color="green-10"> HBD: </q-badge>
+            <q-badge color="green-10"> HUSD: </q-badge>
             <q-slider
               v-model="amounts.hbdNum"
               color="green-10"
@@ -172,7 +177,7 @@ const q = useQuasar()
 
 const storeAPIStatus = useStoreAPIStatus()
 const dInvoice = defineModel()
-const emit = defineEmits(["newInvoice", "amounts"])
+const emit = defineEmits(["newInvoice", "amounts", "closeAskDialog"])
 const errorMessage = ref("")
 const errorState = ref(false)
 const amounts = ref({
@@ -214,6 +219,11 @@ function showDialog() {
   if (dInvoice.value.v4vapp.amountToSend) {
     updateAmounts(dInvoice.value.v4vapp.amountToSend, "sats")
   }
+}
+
+function hideDialog() {
+  console.log("hideDialog")
+  emit("closeAskDialog", "true")
 }
 
 function calcSatsFeeOnly(sats) {
