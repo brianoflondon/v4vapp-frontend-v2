@@ -61,7 +61,7 @@
             >
               <div><HbdLogoIcon /></div>
               <div class="flex col bordered-div q-ml-xs">
-                <div class="q-px-sm" style="font-size: 1rem">HBD</div>
+                <div class="q-px-sm" style="font-size: 1rem">HUSD</div>
               </div>
             </div>
           </template>
