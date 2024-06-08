@@ -6,7 +6,6 @@
         Balance: {{ storeUser.balancesDisplay[CurrencyCalcFrom.currency] }}
       </div>
     </div>
-    {{ CurrencyCalcFrom.minMax }}
     <div class="exchange-amounts credit-card-width">
       <div class="flex justify-between">
         <q-input
