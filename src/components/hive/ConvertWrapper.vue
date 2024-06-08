@@ -6,7 +6,7 @@
         Balance: {{ storeUser.balancesDisplay[CurrencyCalcFrom.currency] }}
       </div>
     </div>
-
+    {{ CurrencyCalcFrom.minMax }}
     <div class="exchange-amounts credit-card-width">
       <div class="flex justify-between">
         <q-input
@@ -182,13 +182,11 @@ import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import AskHASDialog from "src/components/hive/AskHASDialog.vue"
 import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
 
-import { useKeepSatsConvert } from "src/use/useV4vapp"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useConfirmPayWithApi } from "src/use/useV4vapp"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { serverHiveAccount } from "boot/axios"
-// import { getMinMax } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 import { useQuasar } from "quasar"
 import { tidyNumber } from "src/use/useUtils"
