@@ -166,7 +166,7 @@
             <div class="column items-center q-px-md" style="font-size: 1.2rem">
               <div><HbdLogoIcon /></div>
               <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-                HBD
+                HUSD
               </div>
             </div>
             <div class="q-px-md" style="font-size: 1.2rem">
