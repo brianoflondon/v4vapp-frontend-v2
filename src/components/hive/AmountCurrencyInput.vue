@@ -17,6 +17,8 @@
         @keyup.esc="clearAmount(false)"
         :input-style="{ 'text-align': 'right' }"
         :rules="[(val) => !!val || t('no_amount')]"
+        :error-message="errorMessage"
+        :error="errorState"
       >
         <!-- Use my Own code for the clearable button -->
         <template v-if="amount.txt" v-slot:append>
@@ -50,17 +52,39 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, defineEmits, watch } from "vue"
+import {
+  ref,
+  onMounted,
+  computed,
+  defineEmits,
+  watch,
+  nextTick,
+  defineProps,
+} from "vue"
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreUser } from "src/stores/storeUser"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 
 const t = useI18n().t
 const q = useQuasar()
 
+const emit = defineEmits(["amount", "currency", "amountCurrency"])
+const props = defineProps({
+  defaultCurrency: {
+    type: String,
+    default: "",
+  },
+  errorState: {
+    type: Boolean,
+    default: false,
+  },
+  errorMessage: {
+    type: String,
+    default: "",
+  },
+})
 const storeUser = useStoreUser()
 
 const currencyOptions = ref()
@@ -80,8 +104,6 @@ const CurrencyCalc = ref({
   outOfRange: true,
 })
 
-const emit = defineEmits(["amount", "currency"])
-
 onMounted(() => {
   if (!storeUser.pos?.receiveCurrency) {
     console.log("no pos receive currency set")
@@ -98,6 +120,10 @@ onMounted(() => {
     currencySelected.value = "hbd"
     CurrencyCalc.value.currency = "hbd"
   }
+  if (props.defaultCurrency) {
+    currencySelected.value = props.defaultCurrency
+    CurrencyCalc.value.currency = props.defaultCurrency
+  }
 })
 
 /**
@@ -109,6 +135,9 @@ function updateCurrencySelected(val) {
   currencySelected.value = val.value
   CurrencyCalc.value.currency = val.value
   storeUser.pos.currencySelected = val.value
+  nextTick(() => {
+    emitEverything()
+  })
 }
 
 /**
@@ -231,7 +260,25 @@ function updateAmounts(val) {
   }
   amount.value.num = parseLocalizedFloat(val)
   CurrencyCalc.value.amount = amount.value.num
-  emit("amount", amount.value.num, "currency", currencySelected.value)
+  nextTick(() => {
+    emitEverything()
+  })
+}
+
+function emitEverything() {
+  emit("amount", amount.value.num)
+  emit("currency", currencySelected.value)
+  if (["hbd", "hive", "sats"].includes(currencySelected.value)) {
+    emit("amountCurrency", {
+      amount: amount.value.num,
+      currency: currencySelected.value,
+    })
+  } else {
+    emit("amountCurrency", {
+      amount: CurrencyCalc.value.sats,
+      currency: "sats",
+    })
+  }
 }
 </script>
 
