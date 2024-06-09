@@ -18,8 +18,11 @@ export default {
   prices_fetched: 'Preços obtidos',
   from: 'de',
   to: 'para',
+  From: 'From',
+  To: 'To',
   local_currency: 'Moeda Local',
   currency: 'Moeda',
+  receive_currency: 'Receive Payments as',
   confirm: 'Confirm',
   yes: 'Yes',
   no: 'No',
@@ -41,9 +44,12 @@ export default {
   hive: 'Hive',
   transfer: 'Enviar',
   not_found: 'Não encontrado',
+  set_amount: 'Amount to Send',
   lightning_failed: 'Falha no pagamento Lightning',
   Progress: 'Progresso',
   private_memo: 'Use a Private Hive Transfer Memo (needs a Memo key)',
+  paste_tooltip: 'Paste in a Lightning invoice from your clipboard',
+  keepssats_error: 'You need to be logged in with a KeepSats balance to send sats to a Hive user',
   // Login
   keychain_not_installed: 'Aplicativo Keychain não está instalado',
   enter_hive_account: 'Por favor insira sua Conta Hive',
@@ -91,8 +97,8 @@ export default {
   sats: 'satoshis (1/1000,000,000 BTC)',
   failure: 'Falhou',
   working: 'Processando',
-  keychain_installed: 'Keychain está instalado',
-  keychain_missing: 'Instale o app Hive Keychain',
+  keychain_installed: 'Keychain is Installed',
+  keychain_missing: 'Keychain is Missing',
   reload_prices: 'Atualizar preços',
   // Invoice
   invoice: 'Fatura',
@@ -112,6 +118,8 @@ export default {
   check_lightning: 'Verifique sua carteira Lightning, o pagamento foi enviado',
   invoice_provider_not_working: 'O serviço de faturas Lightning não está funcionando agora. Tente novamente ou verifique o endereço',
   requesting: 'Solicitando',
+  payment_cancelled: 'Payment Cancelled',
+  processing: 'Processing',
   // HAS Process
   logged_in_as: 'Entrou como',
   open_HAS_auth: 'Por favor abra seu app HAS e autorize essa transação.',
@@ -127,10 +135,13 @@ export default {
   vote_proposal: 'Vote em minha proposta no DHF',
   thank_you: 'Obrigado por ter votado!',
   // Tab Bar
-  send: 'Enviar',
-  receive: 'Receber',
-  podcasts: 'Podcasts',
-  pods: 'Pods',
+  send: 'send',
+  receive: 'receive',
+  podcasts: 'podcasts',
+  pods: 'pods',
+  move: 'move',
+  wallet: 'wallet',
+  store: 'store',
   // Ask Details dialog
   send_to_hive: 'Send to Hive',
   send_to_lightning: 'Send to Lightning',
@@ -159,15 +170,17 @@ export default {
   The 'Send' tab allows you to pay any Lightning invoice or Lightning Address. In addition you can deposit sats to be stored as 'KeepSats' on v4v.app and use those to pay Lightning invoices or send to other Hive users. At any time you can convert the sats to Hive or HBD.\n
   The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive. This can act as a Point of Sale in a shop and let you collect payment instantly from people paying with Hive, HBD or Lightning.\n
   You can store a small amount of Sats on V4V.app: your KeepSats balance. This balance is shown on your credit card when logged in. It's the big number.\n`,
-  keepsats_deposit_title: `How to get KeepSats on v4v.app`,
+  keepsats_deposit_title: `How to receive KeepSats on v4v.app`,
   keepsats_deposit_text: `To store KeepSats on v4v.app, there are two ways.:\n
   1. Deposit Hive or HBD and they will be converted and stored as a KeepSats balance\n
   2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by \@sats.v4v.app\n
   A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
-  keepsats_convert_title: `How to convert KeepSats to Hive`,
+  keepsats_convert_title: `How to convert KeepSats to Hive or HBD`,
   keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
   A fee applies when converting sats to Hive or HBD.`,
   // Receive Page
+  // Convert
+  convert_confirm: 'You are about to convert',
   // Credit Card
   savings: 'Poupança',
   savings_tooltip: 'Mostrar os valores HBD e Hive armazenados nas contas de poupança da Hive blockchain',
@@ -218,30 +231,31 @@ export default {
   login_to_see_history: 'Login to see your history',
   reason: 'Reason',
   deposit: 'Deposit',
+  receive: 'Receber',
   withdraw: 'Withdraw',
   convert: 'Convert',
   convert_sats_to_hive: 'Convert sats to Hive',
-  deposit_sats_on_v4vapp: 'Deposit sats on v4v.app',
+  receive_sats_on_v4vapp: 'Receive sats on v4v.app',
   convert_sats_from_v4vapp: 'Convert sats to Hive',
   payment_failed: 'Payment failed',
   // Loading messages
   new_content: 'New content is available; please quit the app or refresh.',
   // New account
-  'use_desktop': 'This process works on mobile, but is easier on a desktop.',
-  'install_keychain': 'Install Hive Keychain first',
-  'pick_hive_name': 'Pick a Hive Name',
-  'copy_keys': 'Copy Keys to clipboard',
-  'download_keys': 'Download Keys',
-  'copy_master_password': 'Copy Master Password',
-  'confirm_download': 'Confirm Download',
-  'invoice_canceled': 'Invoice Canceled',
-  'keys_downloaded': 'YES! I have downloaded and saved my keys',
-  'you_will_be_charged': 'You will be charged',
-  'receive_back': 'Receive back',
-  'account_created': 'Your Account has been created',
-  'last_chance': 'This is the last chance to save your keys!',
-  'recommendation': 'Recommendation:',
-  'put_into_keychain': 'Put Username and Master Password direct into Hive Keychain.',
-  'store_safely': 'Store the master password safely in a Password manager.',
-  'no_forgot_option': 'There is no "I forgot my keys option" on Hive.'
+  use_desktop: 'This process works on mobile, but is easier on a desktop.',
+  install_keychain: 'Install Hive Keychain first',
+  pick_hive_name: 'Pick a Hive Name',
+  copy_keys: 'Copy Keys to clipboard',
+  download_keys: 'Download Keys',
+  copy_master_password: 'Copy Master Password',
+  confirm_download: 'Confirm Download',
+  invoice_canceled: 'Invoice Canceled',
+  keys_downloaded: 'YES! I have downloaded and saved my keys',
+  you_will_be_charged: 'You will be charged',
+  receive_back: 'Receive back',
+  account_created: 'Your Account has been created',
+  last_chance: 'This is the last chance to save your keys!',
+  recommendation: 'Recommendation:',
+  put_into_keychain: 'Put Username and Master Password direct into Hive Keychain.',
+  store_safely: 'Store the master password safely in a Password manager.',
+  no_forgot_option: 'There is no "I forgot my keys option" on Hive.'
 };
