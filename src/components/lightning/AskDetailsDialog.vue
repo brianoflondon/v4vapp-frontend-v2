@@ -39,7 +39,7 @@
             </div>
           </div>
         </q-card-section>
-        <div v-if="true">
+        <div v-if="oldStyle">
           <q-card-section>
             <!-- SATS INPUT -->
             <div class="row q-pb-none input-amounts justify-around">
@@ -129,11 +129,16 @@
             </div>
           </q-card-section>
         </div>
-        <div v-else>
+        <div>
           <q-card-section>
             <AmountCurrencyInput
-              @amount="updateAmounts"
-              @currency="updateAmounts"
+              :error-state="errorState"
+              :error-message="errorMessage"
+              defaultCurrency="sats"
+              @amountCurrency="
+                (amountCurrency) =>
+                  updateAmounts(amountCurrency.amount, amountCurrency.currency)
+              "
             />
           </q-card-section>
         </div>
@@ -305,14 +310,18 @@ function updateAmounts(amount, currency) {
       return
   }
   dInvoice.value.v4vapp.amountToSend = parseInt(sats)
+  const allowedRange = `${tidyNumber(
+    dInvoice.value.v4vapp.metadata.minSats,
+    0
+  )} - ${tidyNumber(dInvoice.value.v4vapp.metadata.maxSats, 0)} sats`
   if (sats < dInvoice.value.v4vapp.metadata.minSats) {
-    errorMessage.value = t("too_low")
+    errorMessage.value = allowedRange
     errorState.value = true
   } else if (sats > dInvoice.value.v4vapp.metadata.maxSats) {
-    errorMessage.value = t("too_high")
+    errorMessage.value = allowedRange
     errorState.value = true
   } else {
-    errorMessage.value = ""
+    errorMessage.value = allowedRange
     errorState.value = false
   }
   amounts.value.satsNum = parseFloat(sats.toFixed(0))
