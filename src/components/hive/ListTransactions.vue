@@ -540,6 +540,7 @@ const deleteLocalSalesConfirm = (row) => {
       storeSales.removeSale(row.checkCode)
     } else {
       storeSales.clearSales()
+      importFromHive()
     }
   })
 }

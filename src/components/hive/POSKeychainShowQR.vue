@@ -1,12 +1,10 @@
 <template>
   <q-dialog
     v-model="KeychainDialog.show"
-    @hide="dialogClose($event)"
-    @before-hide="dialogClose($event)"
-    @show="dialogShow($event)"
+    @hide="dialogClose"
+    @show="updateQRCode"
   >
     <q-card>
-      {{ KeychainDialog.currencyToSend }}
       <q-toolbar>
         <!-- Title Bar -->
         <q-toolbar-title>
@@ -24,17 +22,27 @@
       <!-- Hive or Lightning button toggle -->
       <q-card-section>
         <!-- Hive HBD Button Toggle -->
-        <div class="text-center">
+        <div
+          class="text-center flex"
+          :style="{ width: maxUseableWidth + 'px' }"
+        >
+          <!-- Hide this toggle for now -->
           <q-btn-toggle
+            v-if="false"
             spread
             v-model="KeychainDialog.currencyToSend"
             push
+            no-caps
             @update:model-value="updateQRCode()"
             toggle-color="primary"
             :options="[
               { label: '', value: 'hbd', slot: 'hbd' },
               { label: '', value: 'hive', slot: 'hive' },
-              // { label: 'other', value: 'other' },
+              {
+                label: '',
+                value: 'sats',
+                slot: 'sats',
+              },
             ]"
           >
             <!-- HBD Button -->
@@ -58,7 +66,7 @@
             <!-- Hive Button -->
             <template #hive>
               <div
-                class="column items-center q-pa-none"
+                class="flex column items-center q-pa-none"
                 style="font-size: 2.05rem"
               >
                 <div><i class="fa-brands fa-hive" /></div>
@@ -73,30 +81,59 @@
                 {{ tidyNumber(KeychainDialog.currencyCalc.hive, 2) }}
               </div>
             </template>
+            <template #sats>
+              <div class="flex column">
+                <div
+                  class="column items-center q-pa-none"
+                  style="font-size: 2.05rem"
+                >
+                  <div><i class="fa-brands fa-btc" /></div>
+                  <div
+                    class="text-center"
+                    style="font-size: 0.5rem; margin: -8px"
+                  >
+                    KeepSats
+                  </div>
+                </div>
+                <div class="q-px-md" style="font-size: 1rem">
+                  {{ tidyNumber(KeychainDialog.currencyCalc.sats, 0) }}
+                </div>
+              </div>
+            </template>
           </q-btn-toggle>
+          <!-- End of Hive HBD Button Toggle -->
         </div>
         <div
           class="text-center q-pt-md"
           v-if="titleOptions[KeychainDialog.display].showHiveLightning"
         >
-          <q-btn-toggle
-            v-model="showLightning"
-            icon="fa-sharp fa-solid fa-bolt"
-            spread
-            clearable
-            @update:model-value="generateLightningQRCode()"
-            :options="[{ label: '', value: true, slot: 'lightning' }]"
-          >
-            <template #lightning>
-              <div class="row items-center q-pa-none" style="font-size: 1.2rem">
-                <div><i class="fa-sharp fa-solid fa-bolt" /></div>
-                <div class="text-center q-px-md" style="font-size: 1.2rem">
-                  {{ t("lightning") }}
+          <!-- Lightning toggle -->
+          <div v-if="KeychainDialog.currencyToSend != 'sats'">
+            <q-btn-toggle
+              v-model="showLightning"
+              color="deep-orange-3"
+              text-color="text-primary"
+              toggle-color="deep-orange-14"
+              icon="fa-sharp fa-solid fa-bolt"
+              spread
+              clearable
+              @update:model-value="toggleLightning()"
+              :options="[{ label: '', value: true, slot: 'lightning' }]"
+            >
+              <template #lightning>
+                <div
+                  class="row items-center q-pa-none"
+                  style="font-size: 1.2rem"
+                >
+                  <div><i class="fa-sharp fa-solid fa-bolt" /></div>
+                  <div class="text-center q-px-md" style="font-size: 1.2rem">
+                    {{ t("lightning") }}
+                  </div>
+                  <div><i class="fa-brands fa-btc" /></div>
                 </div>
-                <div><i class="fa-brands fa-btc" /></div>
-              </div>
-            </template>
-          </q-btn-toggle>
+              </template>
+            </q-btn-toggle>
+          </div>
         </div>
       </q-card-section>
       <!-- Text description of request -->
@@ -137,9 +174,6 @@
         >
           {{ fees }}
         </div>
-        <div v-if="true" class="text-center q-pt-sm">
-          {{ convertFees }}
-        </div>
       </q-card-section>
       <q-card-section>
         <div class="flex q-gutter-sm items-center">
@@ -170,7 +204,6 @@
 import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreSales } from "src/stores/storeSales"
-
 import { useQuasar, copyToClipboard } from "quasar"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useTruncateLnbc } from "src/use/useUtils.js"
@@ -184,7 +217,7 @@ import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
-import { encodeOp, Parameters } from "hive-uri"
+import { encodeOp } from "hive-uri"
 
 const hiveCheckTime = 1 // seconds between each check
 const hiveCheckTimer = ref(100)
@@ -201,11 +234,12 @@ const q = useQuasar()
 const t = useI18n().t
 
 const KeychainDialog = defineModel()
+const keepSats = ref(false)
 const storeApiStatus = useStoreAPIStatus()
 const storeSales = useStoreSales()
 const qrCode = ref(null)
 
-const showLightning = ref(null)
+const showLightning = ref(false)
 
 const titleOptions = ref({
   pos: {
@@ -216,22 +250,21 @@ const titleOptions = ref({
     title: t("scan_for_keychain"),
     showHiveLightning: false,
   },
-  convert: {
-    title: t("convert"),
-    showHiveLightning: false,
-  },
 })
 
 const fees = computed(() => {
+  console.log("fees calc", KeychainDialog.value.currencyToSend)
   const cur = KeychainDialog.value.currencyToSend
-  if (showLightning.value === null) {
+  const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
+  const storeLndKey = cur + receiveCurrency
+  if (!showLightning.value || KeychainDialog.value.currencyToSend === "sats") {
     return t("no_fees")
   }
-  if (!KeychainDialog.value.lndData[cur]) {
+  if (!KeychainDialog.value.lndData[storeLndKey]) {
     return t("calculating_fees")
   }
   return `sats: ${tidyNumber(
-    KeychainDialog.value?.lndData[cur]?.amount,
+    KeychainDialog.value?.lndData[storeLndKey]?.amount,
     0
   )} - ${t("Fees")}: ${tidyNumber(calcFees().sats, 0)} (${tidyNumber(
     calcFees().currency,
@@ -239,24 +272,15 @@ const fees = computed(() => {
   )} ${KeychainDialog.value.currencyToSend})`
 })
 
-const convertFees = computed(() => {
-  const feesCalc = calcFees()
-  return (
-    t("fees") +
-    " " +
-    tidyNumber(feesCalc.sats, 0) +
-    " sats - " +
-    tidyNumber(feesCalc.currency, 3) +
-    " " +
-    KeychainDialog.value.currencyToSend
-  )
-})
-
 const requesting = computed(() => {
+  let amountString = KeychainDialog.value.amountString
+  if (KeychainDialog.value.currencyToSend === "sats") {
+    amountString = tidyNumber(KeychainDialog.value.amountToSend, 0) + " sats"
+  }
   return (
     t("scan_to_send") +
     " " +
-    KeychainDialog.value.amountString +
+    amountString +
     " " +
     t("to") +
     " " +
@@ -281,12 +305,20 @@ const dotColor = computed(() => {
   return QRLightningHiveColor(showLightning.value, KeychainDialog.value.loading)
 })
 
-function dialogShow(event) {
-  console.log("showQrCodeDialog", event)
+onBeforeMount(() => {
   KeychainDialog.value.checkCode = useGetCheckCode()
   KeychainDialog.value.loading = true
   KeychainDialog.value.paid = false
   KeychainDialog.value.lndData = {}
+})
+
+onMounted(async () => {
+  if (KeychainDialog.value.showLightning) {
+    showLightning.value = true
+    // generateLightningQRCode()
+  } else {
+    showLightning.value = false
+  }
   updateQRCode()
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
@@ -298,13 +330,17 @@ function dialogShow(event) {
       startCountdown()
     }
   )
-}
+})
 
-function dialogClose(event) {
-  console.log("showQrCodeDialog Close", event)
-  KeychainDialog.value.lndData = null
+onBeforeUnmount(() => {
+  showLightning.value = false
+})
+
+function dialogClose() {
+  console.log("showQrCodeDialog Close")
   if (intervalRef.value) {
-    intervalRef.value.forEach((interval) => clearInterval(interval))
+    clearInterval(intervalRef.value)
+    intervalRef.value = null
   }
   showLightning.value = false
   KeychainDialog.value.show = false
@@ -377,11 +413,16 @@ function calcFees() {
  * This function is asynchronous and might require awaiting when called.
  */
 async function updateQRCode() {
-  KeychainDialog.value.currencyToSend =
-    KeychainDialog.value.currencyToSend.toLowerCase()
+  console.log("updateQrCode")
+  console.log(KeychainDialog.value)
+  if (KeychainDialog.value.loading || !KeychainDialog.value.show) {
+    return
+  }
+  if (KeychainDialog.value.currencyToSend === "sats") {
+    showLightning.value = true
+  }
   KeychainDialog.value.amountToSend =
     KeychainDialog.value.currencyCalc[KeychainDialog.value.currencyToSend]
-  console.log("updateQRCode", KeychainDialog.value)
 
   KeychainDialog.value.amountString = useGetHiveAmountString(
     KeychainDialog.value.amountToSend,
@@ -392,16 +433,8 @@ async function updateQRCode() {
     await generateLightningQRCode()
     return
   }
-
-  // When we are doing a conversion not a sale, we put in the
-  // sending account
-
-  const sendingAccount = KeychainDialog.value.hiveAccFrom
-    ? KeychainDialog.value?.hiveAccFrom
-    : ""
-
   KeychainDialog.value.op = useGenerateHiveTransferOp(
-    sendingAccount,
+    "",
     KeychainDialog.value.hiveAccTo,
     KeychainDialog.value.amountToSend,
     KeychainDialog.value.currencyToSend,
@@ -425,14 +458,42 @@ async function updateQRCode() {
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
 }
 
+async function toggleLightning() {
+  console.log("showLightning before", showLightning.value)
+  if (showLightning.value) {
+    await generateLightningQRCode()
+  } else if (
+    !showLightning.value &&
+    KeychainDialog.value.currencyToSend == "sats"
+  ) {
+    KeychainDialog.value.loading = true
+    KeychainDialog.value.currencyToSend = "hbd"
+    await updateQRCode()
+    KeychainDialog.value.loading = false
+  }
+  await generateLightningQRCode()
+}
+
 async function generateLightningQRCode() {
   /**
    * Retrieves the currency to send from the KeychainDialog value.
    *
    * @returns {string} The currency to send.
    */
+  // if (!showLightning.value && KeychainDialog.value.currencyToSend == "sats") {
+  //   KeychainDialog.value.currencyToSend = "hbd"
+  // }
   const cur = KeychainDialog.value.currencyToSend
-  if (showLightning.value && KeychainDialog.value?.lndData[cur] == null) {
+  const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
+  const storeLndKey = cur + receiveCurrency
+  console.log()
+  console.log("generateLightningQRCode", showLightning.value)
+  console.log("storeLndKey", storeLndKey)
+  console.log("KeychainDialog.value", KeychainDialog.value)
+  if (
+    showLightning.value &&
+    KeychainDialog.value?.lndData[storeLndKey] == null
+  ) {
     KeychainDialog.value.loading = true
     const lndData = await useGetLightingHiveInvoice(
       KeychainDialog.value.hiveAccTo,
@@ -440,18 +501,18 @@ async function generateLightningQRCode() {
       cur,
       KeychainDialog.value.memo,
       KeychainDialog.value.checkCode,
-      checkTimeTotal
+      checkTimeTotal,
+      receiveCurrency
     )
-    KeychainDialog.value.lndData[cur] = lndData
-
+    KeychainDialog.value.lndData[storeLndKey] = lndData
     KeychainDialog.value.loading = false
   }
   if (
-    KeychainDialog.value.lndData[cur]?.error ||
+    KeychainDialog.value.lndData[storeLndKey]?.error ||
     KeychainDialog.value.lndData == null
   ) {
-    const message = KeychainDialog.value.lndData[cur]?.error
-      ? KeychainDialog.value.lndData[cur]?.error
+    const message = KeychainDialog.value.lndData[storeLndKey]?.error
+      ? KeychainDialog.value.lndData[storeLndKey]?.error
       : t("lightning_invoice_not_created")
     q.notify({
       color: "negative",
@@ -459,20 +520,14 @@ async function generateLightningQRCode() {
       timeout: 2000,
       message: "Error: " + message,
       position: "top",
-      actions: [
-        {
-          icon: "close",
-          round: true,
-          handler: () => {},
-        },
-      ],
     })
     showLightning.value = null
     return
   }
   if (showLightning.value) {
     KeychainDialog.value.qrCodeTextLightning =
-      "lightning:" + KeychainDialog.value?.lndData[cur]["payment_request"]
+      "lightning:" +
+      KeychainDialog.value?.lndData[storeLndKey]["payment_request"]
     KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextLightning
     storeSales.markAsLightning(KeychainDialog.value.checkCode)
   } else {
@@ -480,6 +535,13 @@ async function generateLightningQRCode() {
     KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
   }
 }
+
+onBeforeUnmount(() => {
+  if (intervalRef.value) {
+    intervalRef.value.forEach((interval) => clearInterval(interval))
+  }
+  KeychainDialog.value.lndData = null
+})
 
 function downloadQR(filetype) {
   let fileName = KeychainDialog.value.hiveAccTo
@@ -523,6 +585,9 @@ function startHiveCheckTimer() {
 }
 
 async function checkHiveTransaction(count = 0) {
+  if (!KeychainDialog.value.show) {
+    return
+  }
   try {
     while (count < maxChecks) {
       count += 1
@@ -542,7 +607,7 @@ async function checkHiveTransaction(count = 0) {
       )
       hiveCheckTimer.value = 100
       const transactionFound = findTransactionWithCheckCode(
-        KeychainDialog.value.transactions,
+        KeychainDialog.value?.transactions,
         KeychainDialog.value.checkCode
       )
       if (!transactionFound) {
@@ -560,13 +625,6 @@ async function checkHiveTransaction(count = 0) {
         timeout: 10000,
         message: message,
         position: "top",
-        actions: [
-          {
-            icon: "close",
-            round: true,
-            handler: () => {},
-          },
-        ],
       })
       KeychainDialog.value.paid = true
       // wait hiveCheckTime seconds before closing the dialog
@@ -575,6 +633,7 @@ async function checkHiveTransaction(count = 0) {
         intervalRef.value.push(watchingInterval)
       })
       KeychainDialog.value.show = false
+      storeUser.update()
       return // Exit the function if the transaction is found
     } // End of the While Loop
     const memo = `${t("transfer")}: ${t("not_found")}:`
@@ -584,13 +643,6 @@ async function checkHiveTransaction(count = 0) {
       timeout: 5000,
       message: memo,
       position: "top",
-      actions: [
-        {
-          icon: "close",
-          round: true,
-          handler: () => {},
-        },
-      ],
     })
     KeychainDialog.value.show = false
     return // Exit the function if the transaction is not found after maxChecks
@@ -610,7 +662,6 @@ async function checkHiveTransaction(count = 0) {
  * @returns {Object} The found transaction object, or undefined if no transaction with a matching checkCode is found.
  */
 function findTransactionWithCheckCode(transactions, checkCode) {
-  console.log("checking transactions", checkCode)
   if (!transactions || !checkCode) {
     console.error(
       "findTransactionWithCheckCode: missing transactions or checkCode"
@@ -643,6 +694,11 @@ function findTransactionWithCheckCode(transactions, checkCode) {
 
 .overlay-container {
   position: relative;
+}
+
+.border-div {
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 .overlay-container::after {

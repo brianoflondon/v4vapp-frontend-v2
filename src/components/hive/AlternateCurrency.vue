@@ -10,7 +10,10 @@
         tidyNumber(CurrencyCalc.hive, 3)
       }}
     </div>
-    <div class="text-center q-pa-xs" @click="emitEvent(storeUser.localCurrency.value)">
+    <div
+      class="text-center q-pa-xs"
+      @click="emitEvent(storeUser.localCurrency.value)"
+    >
       {{ storeUser.localCurrency.unit }}{{ tidyNumber(CurrencyCalc.local, 2) }}
     </div>
     <div class="text-center q-pa-xs" @click="emitEvent('sats')">
@@ -161,5 +164,55 @@ async function calcAllAmounts() {
         (CurrencyCalc.value.hive * storeAPIStatus.hiveSatsNumber) / adustRate
       CurrencyCalc.value.local = CurrencyCalc.value.amount
   }
+  CurrencyCalc.value.outOfRange = false
+  if (storeAPIStatus.minMax) {
+    if (CurrencyCalc.value.sats < storeAPIStatus.minMax.sats.min) {
+      CurrencyCalc.value.outOfRange = true
+    } else if (CurrencyCalc.value.sats > storeAPIStatus.minMax.sats.max) {
+      CurrencyCalc.value.outOfRange = true
+    }
+    if (CurrencyCalc.value.currency) {
+      CurrencyCalc.value.minMax = getMinMax(
+        CurrencyCalc.value.currency.toUpperCase()
+      )
+    }
+  }
+}
+
+function getMinMax(dest) {
+  // check if dest is hive hbd or sats
+  if (["hive", "hbd", "sats"].includes(dest.toLowerCase())) {
+    if (storeAPIStatus?.minMax) {
+      let min = 1
+      let max = 400
+      if (dest === "SATS") {
+        dest = "sats"
+        min = storeAPIStatus.minMax.sats.min
+        max = Math.min(
+          storeUser.keepSatsBalanceNum,
+          storeAPIStatus.minMax.sats.max
+        )
+      } else {
+        min = storeAPIStatus.minMax[dest].min
+        max = storeAPIStatus.minMax[dest].max
+
+        min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()])
+        max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()])
+      }
+      const diff = max - min
+
+      // Divide the difference by 100 to get the initial step size
+      let step = diff / 100
+
+      // Calculate the power of 10 for the step size
+      const power = Math.floor(Math.log10(step))
+
+      // Round the step size to the nearest power of 10
+      step = Math.pow(10, power)
+      const mid = diff / 2 + min
+      return { min: min, max: max, step: step, mid: mid }
+    }
+  }
+  return { min: 1, max: 400, step: 1, diff: 200 }
 }
 </script>
