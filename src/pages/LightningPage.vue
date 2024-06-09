@@ -582,7 +582,6 @@ const invoiceLabel = computed(() => {
 })
 
 function closeAskDialog(val) {
-  console.log("closeAskDialog closed received in LightningPage", val)
   invoiceChecking.value = false
 }
 
@@ -602,7 +601,6 @@ function checkInvoiceProgress(timeLeft) {
 }
 
 function receiveNewInvoice(val) {
-  console.log("receiveNewInvoice received in LightningPage", val)
   if (val?.v4vapp?.type === "hiveAccname") {
     // we have a Hive account to send to.
     dInvoice.value = val

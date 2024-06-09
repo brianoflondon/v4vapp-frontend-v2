@@ -162,7 +162,6 @@ function showPaying() {
  * @returns {Promise<boolean>} A promise that resolves to `true` if the payment is successful, or `false` if the payment is cancelled or encounters an error.
  */
 export async function useConfirmPayWithApi(message, apiPayData) {
-  console.log("useConfirmPayWithApi", message, apiPayData)
   const t = i18n.global.t
 
   if (!message) {
@@ -177,12 +176,10 @@ export async function useConfirmPayWithApi(message, apiPayData) {
       persistent: true,
     })
       .onOk(() => {
-        console.log("OK")
         showPaying()
         payWithApi(apiPayData).then(resolve(true)).catch(reject)
       })
       .onCancel(() => {
-        console.log("Cancel")
         Notify.create({
           color: "negative",
           timeout: 3000,
@@ -221,7 +218,6 @@ export async function useConfirmPayWithApi(message, apiPayData) {
  */
 async function payWithApi(apiPayData) {
   const t = i18n.global.t
-  console.log("apiPayData", apiPayData)
   try {
     let response
     if (apiPayData.type === "hiveAccname") {

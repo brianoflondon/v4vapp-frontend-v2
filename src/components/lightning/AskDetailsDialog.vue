@@ -246,7 +246,6 @@ function showDialog() {
 }
 
 function hideDialog() {
-  console.log("hideDialog")
   emit("closeAskDialog", "true")
 }
 
@@ -258,7 +257,6 @@ function calcSatsFeeOnly(sats) {
 }
 
 function updateAmounts(amount, currency) {
-  console.log("updateAmounts", amount, currency)
   if (amount === "") {
     amount = "1"
   }

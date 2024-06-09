@@ -180,11 +180,9 @@ async function calcAllAmounts() {
 }
 
 function getMinMax(dest) {
-  console.log("dest", dest)
   // check if dest is hive hbd or sats
   if (["hive", "hbd", "sats"].includes(dest.toLowerCase())) {
     if (storeAPIStatus?.minMax) {
-      console.log("storeAPIStatus.minMax", storeAPIStatus.minMax)
       let min = 1
       let max = 400
       if (dest === "SATS") {
@@ -195,7 +193,6 @@ function getMinMax(dest) {
           storeAPIStatus.minMax.sats.max
         )
       } else {
-        console.log("dest", dest)
         min = storeAPIStatus.minMax[dest].min
         max = storeAPIStatus.minMax[dest].max
 

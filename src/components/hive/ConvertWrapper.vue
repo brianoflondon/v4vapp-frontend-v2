@@ -1,5 +1,5 @@
 <template>
-  
+
   <div class="q-pa-sm col justify-evenly">
     <div class="flex row justify-between text-caption">
       <div>{{ t("From") }}</div>
@@ -284,13 +284,11 @@ async function syncToFromCurrency(val, direction) {
 
 async function amountUpdated(val, direction) {
   await nextTick()
-  console.log("val changed:", val)
   if (!val || val === "" || val === "0") {
     val = ""
   } else {
     val = parseFloat(val)
   }
-  console.log("updated: ", val)
 
   if (direction === "from") {
     CurrencyCalcFrom.value.amount = val
@@ -318,7 +316,6 @@ function truncateDecimal(number, decimalPlaces) {
 
 function reformatValues() {
   // reformat the values to the correct number of decimal places
-  console.log("reformat values")
   if (CurrencyCalcFrom.value.currency === "sats") {
     CurrencyCalcFrom.value.amount = truncateDecimal(
       CurrencyCalcFrom.value.amount,
@@ -341,7 +338,6 @@ function reformatValues() {
 }
 
 async function confirmMakePayment() {
-  console.log("confirmMakePayment")
   if (CurrencyCalcFrom.value.currency === "sats") {
     // converting from sats to hbd
     const message = `${t("convert_confirm")} ${tidyNumber(
@@ -358,15 +354,13 @@ async function confirmMakePayment() {
     }
     try {
       const response = await useConfirmPayWithApi(message, apiPayData)
-      console.log("response", response)
       if (response) {
         await new Promise((resolve) => setTimeout(resolve, 10000))
         storeUser.update()
         amountUpdated(0, "from")
-        console.log("cleared")
       }
     } catch (error) {
-      console.log("error", error)
+      console.error("error", error)
     }
   }
 }

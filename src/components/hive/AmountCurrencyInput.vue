@@ -106,7 +106,6 @@ const CurrencyCalc = ref({
 
 onMounted(() => {
   if (!storeUser.pos?.receiveCurrency) {
-    console.log("no pos receive currency set")
     storeUser.pos.receiveCurrency = "hbd"
   }
   // Is there a local currency set? Add it to
