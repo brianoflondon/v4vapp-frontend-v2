@@ -1,9 +1,13 @@
 <template>
   <div class="q-pa-sm col justify-evenly">
     <div class="explanation-box text-justify q-pa-s">
-      <ExplanationBox :title="t('keepsats_convert_title')" :text="t('keepsats_convert_text')" />
+      <ExplanationBox
+        :title="t('keepsats_convert_title')"
+        :text="t('keepsats_convert_text')"
+      />
     </div>
     <div class="destination-toggle pad-max-width">
+      <AmountSlider v-model="CurrencyCalc" />
       <!-- HBD Hive and Sats toggle -->
       <q-btn-toggle
         spread
@@ -38,7 +42,6 @@
         </template>
       </q-btn-toggle>
       <!-- End HBD Hive and Sats toggle -->
-      <AmountSlider v-model="CurrencyCalc" />
 
       <!-- Payment buttons -->
       <div>
@@ -89,7 +92,7 @@ const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
 const q = useQuasar()
 
-const destination = ref("hive")
+const destination = ref("hbd")
 
 const privateMemo = ref(false)
 
@@ -130,6 +133,7 @@ async function payWithApi() {
         timeout: 5000,
         message: response?.message,
         position: "top",
+        dismissable: true,
       })
     } else {
       const message = `${t("payment_failed")} - ${response?.message}`
@@ -238,6 +242,4 @@ async function checkForSats(oldNetSats = 0, count = 0) {
 .explanation-box {
   max-width: 400px;
 }
-
-
 </style>

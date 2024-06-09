@@ -17,11 +17,7 @@
         dense
         glossy
         toggle-color="primary"
-        :options="[
-          { label: '', value: 'hbd', slot: 'hbd' },
-          { label: '', value: 'hive', slot: 'hive' },
-          { label: '', value: 'sats', slot: 'lightning' },
-        ]"
+        :options="options"
         @update:model-value="(val) => updateDestination(val)"
       >
         <template #lightning>
@@ -175,11 +171,13 @@ import AmountSlider from "src/components/utils/AmountSlider.vue"
 const t = useI18n().t
 const q = useQuasar()
 
+const options = ref([{ label: "", value: "sats", slot: "lightning" }])
+
 const HASDialog = ref({ show: false })
 const storeUser = useStoreUser()
 const storeApiStatus = useStoreAPIStatus()
 const loading = ref(false)
-const destination = ref("hbd")
+const destination = ref("sats")
 const qrCode = ref("") // QrCode object emitted from CreateQRCode
 const privateMemo = ref(false)
 
@@ -228,7 +226,22 @@ const qrCodeSats = computed(() => {
   return bech32.value
 })
 
+const props = defineProps({
+  justHive: {
+    type: Boolean,
+    default: false,
+  },
+})
+
 onMounted(async () => {
+  console.log("ReceiveKeepsats.vue mounted", props.justHive)
+  if (props.justHive) {
+    options.value = [
+      { label: "", value: "hbd", slot: "hbd" },
+      { label: "", value: "hive", slot: "hive" },
+    ]
+    destination.value = "hbd"
+  }
   updateDestination()
 })
 
@@ -285,6 +298,8 @@ function copyText() {
   })
 }
 
+
+// TODO: #214 move this to the Hive payment component
 async function makePayment(method) {
   if (destination.value === "sats") {
     return

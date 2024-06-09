@@ -26,7 +26,7 @@
       </span>
       <span class="price-bar-item api-status-indicator q-pl-md q-pa-xs">
         <q-btn
-          @click="alert = true"
+          @click="clearLocalStorage"
           flat
           dense
           :title="storeAPIStatus.apiError ? $t('failure') : $t('working')"
@@ -75,7 +75,7 @@
 import { onMounted, onUnmounted, computed } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
-import { useQuasar } from "quasar"
+import { useQuasar, Dialog } from "quasar"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 
 const storeAPIStatus = useStoreAPIStatus()
@@ -115,6 +115,24 @@ const paddingBottom = computed(() => {
 
   return isPWA && isIphone ? "padding-bottom: 20px;" : ""
 })
+
+function clearLocalStorage() {
+  Dialog.create({
+    title: t("clear_local_storage"),
+    message: t("clear_local_storage_message"),
+    ok: {
+      label: t("yes"),
+      color: "negative",
+    },
+    cancel: {
+      label: t("no"),
+      color: "primary",
+    },
+  }).onOk(() => {
+    localStorage.clear()
+    location.reload()
+  })
+}
 </script>
 
 <style lang="scss" scoped>

@@ -72,6 +72,9 @@ const isDisabled = computed(() => {
 
 const sliderMinMax = computed(() => {
   let dest = AmountCurrency.value.currency.toUpperCase()
+  const minMax = getMinMax(dest)
+  return minMax
+
   if (storeApiStatus.minMax) {
     let min = 1
     let max = 400
@@ -104,6 +107,41 @@ const sliderMinMax = computed(() => {
   }
   return { min: 1, max: 400, step: 1, diff: 200 }
 })
+
+function getMinMax(dest) {
+  console.log("dest", dest)
+  if (storeApiStatus.minMax) {
+    let min = 1
+    let max = 400
+    if (dest === "SATS") {
+      dest = "sats"
+      min = storeApiStatus.minMax.sats.min
+      max = Math.min(
+        storeUser.keepSatsBalanceNum,
+        storeApiStatus.minMax.sats.max
+      )
+    } else {
+      min = storeApiStatus.minMax[dest].min
+      max = storeApiStatus.minMax[dest].max
+
+      min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()])
+      max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()])
+    }
+    const diff = max - min
+
+    // Divide the difference by 100 to get the initial step size
+    let step = diff / 100
+
+    // Calculate the power of 10 for the step size
+    const power = Math.floor(Math.log10(step))
+
+    // Round the step size to the nearest power of 10
+    step = Math.pow(10, power)
+    const mid = diff / 2 + min
+    return { min: min, max: max, step: step, mid: mid }
+  }
+  return { min: 1, max: 400, step: 1, diff: 200 }
+}
 
 function panStart(val) {
   if (val == "start") {

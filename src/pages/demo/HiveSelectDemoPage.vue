@@ -1,5 +1,11 @@
 <template>
   <q-page>
+    <AmountCurrencyInput
+      @amount="(val) => console.log(val)"
+      @currency="(val) => console.log(val)"
+      @amountCurrency="(val) => console.log('amountCurrency', val)"
+    />
+
     <div class="q-pa-md row items-start q-gutter-md"></div>
     <div>
       <div v-if="hiveAccname">{{ hiveAccname }}</div>
@@ -64,6 +70,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import { ref, onMounted } from "vue"
 import * as webauthn from "@github/webauthn-json"
 import { apiLogin } from "src/boot/axios"
+import AmountCurrencyInput from "components/hive/AmountCurrencyInput.vue"
 
 const deviceName = ref("")
 const keyList = ref()

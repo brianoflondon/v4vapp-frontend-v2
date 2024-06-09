@@ -1,36 +1,53 @@
 <template>
   <q-page>
     <div class="flex column text-center items-center q-pa-none">
-      <q-tabs v-model="currentTab" align="justify" dense animated>
-        <q-tab name="wallet" :label="$t('wallet')" />
-        <q-tab
-          name="deposit"
-          :label="$t('deposit')"
-          :disable="!storeUser.currentUser"
+      <div class="pad-max-width full-width">
+        <q-tabs
+          v-model="currentTab"
+          align="center"
+          dense
+          animated
+          outside-arrows
+          mobile-arrows
         >
-          <q-tooltip>{{ $t("deposit_sats_on_v4vapp") }}</q-tooltip>
-        </q-tab>
-        <q-tab
-          name="convert"
-          :label="$t('convert')"
-          :disable="
-            !storeUser.currentUser ||
-            storeUser?.keepSatsBalanceNum < storeApiStatus?.minMax?.sats.min
-          "
-        >
-          <q-tooltip>{{ $t("convert_sats_from_v4vapp") }}</q-tooltip>
-        </q-tab>
-        <q-tab
-          name="history"
-          :label="$t('history')"
-          :disable="!storeUser.currentUser"
-        >
-          <q-tooltip>{{ $t("login_to_see_history") }}</q-tooltip>
-        </q-tab>
-        <!-- <q-tab name="other" :label="$t('other')" /> -->
-      </q-tabs>
+          <q-tab name="realWallet" icon="wallet" :label="t('wallet')" />
+          <q-tab name="send" icon="payments" :label="$t('send')" />
+          <q-tab
+            name="receive"
+            icon="request_quote"
+            :label="$t('receive')"
+            :disable="!storeUser.currentUser"
+          >
+            <q-tooltip>{{ $t("receive_sats_on_v4vapp") }}</q-tooltip>
+          </q-tab>
+          <q-tab
+            name="convert"
+            icon="currency_exchange"
+            :label="$t('convert')"
+            :disable="!storeUser.currentUser"
+          >
+            <q-tooltip>{{ $t("convert_sats_from_v4vapp") }}</q-tooltip>
+          </q-tab>
+          <q-tab
+            name="history"
+            icon="receipt_long"
+            :label="$t('history')"
+            :disable="!storeUser.currentUser"
+          >
+            <q-tooltip>{{ $t("login_to_see_history") }}</q-tooltip>
+          </q-tab>
+          <!-- <q-tab name="other" :label="$t('other')" /> -->
+        </q-tabs>
+      </div>
       <!-- Q-tab-panels -->
       <q-tab-panels v-model="currentTab">
+        <q-tab-panel name="realWallet">
+          <q-slide-transition appear disappear :duration="500">
+            <div
+              class="div flex row pad-max-width full-width q-px-xs q-py-xs"
+            ></div>
+          </q-slide-transition>
+        </q-tab-panel>
         <q-tab-panel name="history">
           <q-slide-transition appear disappear :duration="1500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
@@ -40,266 +57,292 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
-        <q-tab-panel name="deposit">
+        <!-- Send pannel -->
+        <q-tab-panel name="send">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
-              <DepositKeepsats />
+              <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
+                <!-- Camera  -->
+                <div v-if="!cameraShow" class="q-pb-lg"></div>
+                <div v-if="cameraShow">
+                  <qrcode-stream
+                    @detect="onDecode"
+                    @camera-on="onReady"
+                    @error="onError"
+                  ></qrcode-stream>
+                </div>
+                <!-- End Camera -->
+                <!-- Progress screen -->
+                <div class="progress-screen">
+                  <ShowProgress v-model="dInvoice" />
+                </div>
+                <!-- End Progress screen -->
+                <!-- Payment buttons Camera Toggle, paste and invoice input -->
+                <div class="camera-toggle-invoice" v-if="currentTab === 'send'">
+                  <div class="column flex-center">
+                    <div class="row justify-between items-center q-gutter-lg">
+                      <div class="camera-toggle">
+                        <q-toggle
+                          v-model="cameraOn"
+                          @update:model-value="toggleCamera()"
+                          icon="qr_code"
+                          size="xl"
+                          color="primary"
+                          dense
+                          flat
+                          toggle-aria-label="Capture QR code with your camera"
+                        />
+                      </div>
+                      <q-btn
+                        @click="pasteClipboard()"
+                        icon="content_paste_go"
+                        color="primary"
+                        size="md"
+                        rounded
+                        :label="t('paste')"
+                        :aria-label="t('paste_tooltip')"
+                      />
+                      <div>
+                        <q-toggle
+                          v-model="privateMemo"
+                          icon="lock"
+                          size="xl"
+                          color="primary"
+                          dense
+                          flat
+                          toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
+                        />
+                        <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
+                      </div>
+                    </div>
+                    <!-- Invoice and multipurpose input box -->
+                    <div class="q-py-sm" v-if="dInvoice?.askDetailsButton">
+                      <q-btn
+                        icon="price_check"
+                        color="secondary"
+                        size="md"
+                        rounded
+                        :label="t('set_amount')"
+                        aria-label="Set the amount"
+                        @click="dInvoice.askDetails = true"
+                      >
+                        <q-tooltip>{{ $t("set_amount") }}</q-tooltip>
+                      </q-btn>
+                    </div>
+                    <div class="column flex q-pt-sm q-px-sm">
+                      <div class="multi-input-q-input">
+                        <q-input
+                          for="invoice"
+                          name="invoice"
+                          class="invoice-input"
+                          :label="invoiceLabel"
+                          data-1p-ignore
+                          v-model="invoiceText"
+                          @clear="clearReset"
+                          autogrow
+                          :placeholder="$t('enter_invoice')"
+                          debounce="1000"
+                          filled
+                          :loading="invoiceChecking"
+                          clearable
+                          @update:model-value="decodeInvoice"
+                          :error-message="errorMessage"
+                          :error="invoiceValid === false"
+                          :bg-color="invoiceColor"
+                          @keyup.esc="clearReset"
+                          :hint="invoiceHint"
+                          hide-bottom-space
+                        >
+                          <template
+                            v-if="dInvoice?.v4vapp?.sendTo"
+                            v-slot:prepend
+                          >
+                            <q-avatar rounded size="md">
+                              <HiveAvatar
+                                :hiveAccname="dInvoice?.v4vapp?.sendTo"
+                              />
+                            </q-avatar>
+                          </template>
+                          <template
+                            v-slot:append
+                            v-if="dInvoice?.askDetailsButton"
+                          >
+                            <q-btn
+                              icon="price_check"
+                              color="secondary"
+                              size="md"
+                              rounded
+                              aria-label="Set the amount"
+                              @click="dInvoice.askDetails = true"
+                            >
+                              <q-tooltip>{{ $t("set_amount") }}</q-tooltip>
+                            </q-btn>
+                          </template>
+                          <!-- hide-bottom-space: stops the animation for the hint text-->
+                        </q-input>
+                      </div>
+                    </div>
+                    <!-- End Invoice and multipurpose input box -->
+                    <CountdownBar
+                      class="q-pt-xs"
+                      :expiry="dInvoice?.timeExpireDate"
+                      @message="(val) => (timeMessage = val)"
+                      @time-left="(val) => checkInvoiceProgress(val)"
+                    />
+                    <div
+                      v-show="CurrencyCalc.amount"
+                      class="full-width q-px-md"
+                    >
+                      <AlternateCurrency v-model="CurrencyCalc" />
+                    </div>
+                  </div>
+                  <!-- Payment Buttons -->
+                  <div
+                    class="payment-buttons column q-pt-sm"
+                    v-show="invoiceValid"
+                  >
+                    <div
+                      class="row justify-center q-pa-sm"
+                      v-if="enoughKeepSats"
+                    >
+                      <div class="paywithsats-button flex column">
+                        <q-btn
+                          class="payment-button-sats q-ma-sm"
+                          @click="confirmPayWithApi(payWithSatsButton)"
+                          :loading="storeApiStatus.payInvoice"
+                          :disable="storeApiStatus.payInvoice"
+                          icon="fa-brands fa-btc"
+                          :label="payWithSatsButton"
+                          :color="buttonColor.buttonColor"
+                          :text-color="buttonColor.textColor"
+                          size="md"
+                          rounded
+                          icon-right="img:/site-logo/v4vapp-logo-shadows.svg"
+                        />
+                      </div>
+                    </div>
+                    <div
+                      v-if="
+                        dInvoice?.v4vapp?.type !== 'hiveAccname' &&
+                        !payWithSatsOnly
+                      "
+                    >
+                      <div
+                        class="keychain-buttons row flex-center q-pb-sm q-gutter-lg"
+                      >
+                        <q-btn
+                          class="payment-button-hbd"
+                          @click="payInvoice('HBD', 'HiveKeychain')"
+                          :loading="storeApiStatus.payInvoice"
+                          :disable="storeApiStatus.payInvoice"
+                          icon="img:/keychain/hive-keychain-round.svg"
+                          icon-right="img:/avatars/hbd_logo.svg"
+                          :label="HBD"
+                          :color="buttonColor.buttonColor"
+                          :text-color="buttonColor.textColor"
+                          size="md"
+                          rounded
+                        />
+                        <q-btn
+                          class="payment-button-hive"
+                          @click="payInvoice('HIVE', 'HiveKeychain')"
+                          :loading="storeApiStatus.payInvoice"
+                          :disable="storeApiStatus.payInvoice"
+                          icon="img:/keychain/hive-keychain-round.svg"
+                          icon-right="img:avatars/hive_logo_dark.svg"
+                          :label="Hive"
+                          :color="buttonColor.buttonColor"
+                          :text-color="buttonColor.textColor"
+                          size="md"
+                          rounded
+                        />
+                      </div>
+                      <div class="has-buttons row flex-center q-gutter-lg">
+                        <q-btn
+                          class="payment-button-hbd"
+                          @click="payInvoice('HBD', 'HAS')"
+                          :loading="storeApiStatus.payInvoice"
+                          :disable="storeApiStatus.payInvoice"
+                          icon="img:/has/hive-auth-logo.svg"
+                          icon-right="img:/avatars/hbd_logo.svg"
+                          :label="HBD"
+                          :color="buttonColor.buttonColor"
+                          :text-color="buttonColor.textColor"
+                          size="md"
+                          rounded
+                        />
+                        <q-btn
+                          class="payment-button-hive"
+                          @click="payInvoice('HIVE', 'HAS')"
+                          :loading="storeApiStatus.payInvoice"
+                          :disable="storeApiStatus.payInvoice"
+                          icon="img:/has/hive-auth-logo.svg"
+                          icon-right="img:avatars/hive_logo_dark.svg"
+                          :label="Hive"
+                          :color="buttonColor.buttonColor"
+                          :text-color="buttonColor.textColor"
+                          size="md"
+                          rounded
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <!-- End Payment Buttons -->
+                  <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
+                  <KeychainShowQR v-model="KeychainDialog" />
+                  <!-- Vote Button -->
+                  <div v-if="false" class="vote-button q-pa-lg text-center">
+                    <VoteProposal v-model="voteOptions" />
+                    <div style="max-width: 265px">
+                      <ExplanationBox class="q-pt-md"></ExplanationBox>
+                    </div>
+                  </div>
+                </div>
+                <!-- End Payment buttons Camera Toggle, paste and invoice input -->
+              </div>
+            </div>
+          </q-slide-transition>
+        </q-tab-panel>
+        <!-- End Send pannel -->
+        <q-tab-panel name="receive">
+          <q-slide-transition appear disappear :duration="500">
+            <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+              <ReceiveKeepsats />
             </div>
           </q-slide-transition>
         </q-tab-panel>
         <q-tab-panel name="convert">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
-              <ConvertKeepsats />
+              <ConvertWrapper />
             </div>
           </q-slide-transition>
         </q-tab-panel>
       </q-tab-panels>
       <!-- End Q-tab-panels -->
+      <!-- Credit Card Display -->
+      <div class="lower-credit-card row justify-center q-gutter-sm q-pt-lg">
+        <CreditCard />
+      </div>
+      <!-- End Credit Card Display -->
     </div>
     <!-- Main page content for wallet with credit card and invoice entry -->
-    <div class="outer-wrapper row justify-center q-gutter-sm q-pt-lg">
-      <!-- Camera  -->
-      <div v-if="!cameraShow" class="q-pb-lg">
-        <CreditCard />
-        <div
-          v-show="CurrencyCalc.amount"
-          class="pad-max-width full-width q-px-md"
-        >
-          <AlternateCurrency v-model="CurrencyCalc" />
-        </div>
-      </div>
-      <div v-if="cameraShow">
-        <qrcode-stream
-          @detect="onDecode"
-          @camera-on="onReady"
-          @error="onError"
-        ></qrcode-stream>
-      </div>
-      <!-- End Camera -->
-      <!-- Progress screen -->
-      <div class="progress-screen">
-        <ShowProgress v-model="dInvoice" />
-      </div>
-      <!-- End Progress screen -->
-      <!-- Payment buttons Camera Toggle, paste and invoice input -->
-      <div class="camera-toggle-invoice">
-        <div class="column flex-center">
-          <div class="row justify-between items-center q-gutter-lg">
-            <div class="camera-toggle">
-              <q-toggle
-                v-model="cameraOn"
-                @update:model-value="toggleCamera()"
-                icon="qr_code"
-                size="xl"
-                color="primary"
-                dense
-                flat
-                toggle-aria-label="Capture QR code with your camera"
-              />
-            </div>
-            <q-btn
-              @click="pasteClipboard()"
-              icon="content_paste_go"
-              color="primary"
-              size="md"
-              rounded
-              :label="t('paste')"
-              toggle-aria-label="Paste in a Lightning invoice from your clipboard"
-            />
-            <div>
-              <q-toggle
-                v-model="privateMemo"
-                icon="lock"
-                size="xl"
-                color="primary"
-                dense
-                flat
-                toggle-aria-label="Use a Private Hive Memo (needs Memo Key)"
-              />
-              <q-tooltip>{{ $t("private_memo") }} </q-tooltip>
-            </div>
-          </div>
-          <!-- Invoice and multipurpose input box -->
-          <div class="column flex-center q-pt-sm q-px-sm">
-            <q-input
-              for="invoice"
-              name="invoice"
-              class="invoice-input"
-              :label="invoiceLabel"
-              data-1p-ignore
-              v-model="invoiceText"
-              @clear="clearReset"
-              autogrow
-              :placeholder="$t('enter_invoice')"
-              debounce="1000"
-              filled
-              :loading="invoiceChecking"
-              clearable
-              @update:model-value="decodeInvoice"
-              :error-message="errorMessage"
-              :error="invoiceValid === false"
-              :bg-color="invoiceColor"
-              @keyup.esc="clearReset"
-              :hint="invoiceHint"
-              hide-bottom-space
-            >
-              <template v-if="dInvoice?.v4vapp?.sendTo" v-slot:prepend>
-                <q-avatar rounded size="md">
-                  <HiveAvatar :hiveAccname="dInvoice?.v4vapp?.sendTo" />
-                </q-avatar>
-              </template>
-              <!-- hide-bottom-space: stops the animation for the hint text-->
-            </q-input>
-            {{ dInvoice?.v4vapp?.sendTo }}
-          </div>
-          <!-- End Invoice and multipurpose input box -->
-          <CountdownBar
-            class="q-pt-xs"
-            :expiry="dInvoice?.timeExpireDate"
-            @message="(val) => (timeMessage = val)"
-            @time-left="(val) => checkInvoiceProgress(val)"
-          />
-          <!-- Amounts Display HIDDEN -->
-          <div v-if="false" class="amounts-display flex justify-evenly">
-            <div class="q-pa-xs input-amount-readonly">
-              <q-input
-                readonly
-                input-class="text-right"
-                dense
-                filled
-                v-model="sats"
-                label="Sats"
-              ></q-input>
-            </div>
-            <div class="q-pa-xs input-amount-readonly">
-              <q-input
-                readonly
-                input-class="text-right"
-                dense
-                filled
-                v-model="HBD"
-                label="HBD"
-              ></q-input>
-            </div>
-            <div class="q-pa-xs input-amount-readonly">
-              <q-input
-                readonly
-                input-class="text-right"
-                dense
-                filled
-                v-model="Hive"
-                label="Hive"
-              ></q-input>
-            </div>
-          </div>
-          <!-- End Amounts Display -->
-        </div>
-        <!-- Payment Buttons -->
-        <div class="payment-buttons column q-pt-sm" v-show="invoiceValid">
-          <div class="row justify-center q-pa-sm" v-if="enoughKeepSats">
-            <div class="paywithsats-button flex column">
-              <q-btn
-                class="payment-button-sats q-ma-sm"
-                @click="payWithApi()"
-                :loading="storeApiStatus.payInvoice"
-                :disable="storeApiStatus.payInvoice"
-                icon="fa-brands fa-btc"
-                :label="payWithSatsButton"
-                :color="buttonColor.buttonColor"
-                :text-color="buttonColor.textColor"
-                size="md"
-                rounded
-                icon-right="img:/site-logo/v4vapp-logo-shadows.svg"
-              />
-            </div>
-          </div>
-          <div
-            v-if="dInvoice?.v4vapp?.type !== 'hiveAccname' && !payWithSatsOnly"
-          >
-            <div class="keychain-buttons row flex-center q-pb-sm q-gutter-lg">
-              <q-btn
-                class="payment-button-hbd"
-                @click="payInvoice('HBD', 'HiveKeychain')"
-                :loading="storeApiStatus.payInvoice"
-                :disable="storeApiStatus.payInvoice"
-                icon="img:/keychain/hive-keychain-round.svg"
-                icon-right="img:/avatars/hbd_logo.svg"
-                :label="HBD"
-                :color="buttonColor.buttonColor"
-                :text-color="buttonColor.textColor"
-                size="md"
-                rounded
-              />
-              <q-btn
-                class="payment-button-hive"
-                @click="payInvoice('HIVE', 'HiveKeychain')"
-                :loading="storeApiStatus.payInvoice"
-                :disable="storeApiStatus.payInvoice"
-                icon="img:/keychain/hive-keychain-round.svg"
-                icon-right="img:avatars/hive_logo_dark.svg"
-                :label="Hive"
-                :color="buttonColor.buttonColor"
-                :text-color="buttonColor.textColor"
-                size="md"
-                rounded
-              />
-            </div>
-            <div class="has-buttons row flex-center q-gutter-lg">
-              <q-btn
-                class="payment-button-hbd"
-                @click="payInvoice('HBD', 'HAS')"
-                :loading="storeApiStatus.payInvoice"
-                :disable="storeApiStatus.payInvoice"
-                icon="img:/has/hive-auth-logo.svg"
-                icon-right="img:/avatars/hbd_logo.svg"
-                :label="HBD"
-                :color="buttonColor.buttonColor"
-                :text-color="buttonColor.textColor"
-                size="md"
-                rounded
-              />
-              <q-btn
-                class="payment-button-hive"
-                @click="payInvoice('HIVE', 'HAS')"
-                :loading="storeApiStatus.payInvoice"
-                :disable="storeApiStatus.payInvoice"
-                icon="img:/has/hive-auth-logo.svg"
-                icon-right="img:avatars/hive_logo_dark.svg"
-                :label="Hive"
-                :color="buttonColor.buttonColor"
-                :text-color="buttonColor.textColor"
-                size="md"
-                rounded
-              />
-            </div>
-          </div>
-        </div>
-        <!-- End Payment Buttons -->
-        <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
-        <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
-        <!-- Vote Button -->
-        <div class="vote-button q-pa-lg text-center">
-          <VoteProposal v-model="voteOptions" />
-          <div style="max-width: 265px">
-            <ExplanationBox class="q-pt-md"></ExplanationBox>
-          </div>
-        </div>
-      </div>
-      <!-- End Payment buttons Camera Toggle, paste and invoice input -->
-    </div>
-    <!-- End Main page content for wallet with credit card and invoice entry -->
-    <AskDetailsDialog
-      v-model="dInvoice"
-      @newInvoice="(val) => receiveNewInvoice(val)"
-    />
-    <div v-if="storeUser.currentKeepSats?.admin">
+    <div
+      class="outer-wrapper row justify-center q-gutter-sm q-pt-lg"
+      v-if="storeUser.currentKeepSats?.admin"
+    >
       <q-toggle
         v-model="adminOverride"
         label="Admin Override"
         color="primary"
       />
     </div>
+    <!-- End Main page content for wallet with credit card and invoice entry -->
+    <AskDetailsDialog
+      v-model="dInvoice"
+      @newInvoice="(val) => receiveNewInvoice(val)"
+      @closeAskDialog="(val) => closeAskDialog(val)"
+    />
   </q-page>
 </template>
 
@@ -318,6 +361,10 @@
     flex-direction: column;
   }
 }
+
+.lower-credit-card {
+  transform: scale(1);
+}
 </style>
 
 <script setup>
@@ -331,7 +378,11 @@ import {
   useHiveAccountExists,
   useHiveAvatarURL,
 } from "src/use/useHive.js"
-import { useKeepSatsTransfer, useKeepSatsInvoice } from "src/use/useV4vapp"
+import {
+  useKeepSatsTransfer,
+  useKeepSatsInvoice,
+  useConfirmPayWithApi,
+} from "src/use/useV4vapp"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
@@ -347,8 +398,8 @@ import ExplanationBox from "components/utils/ExplanationBox.vue"
 import { serverHiveAccount } from "boot/axios"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import HiveLightningKeepSatsTrans from "src/components/v4vapp/HiveLightningKeepSatsTrans.vue"
-import DepositKeepsats from "src/components/hive/DepositKeepsats.vue"
-import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
+import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
+import ConvertWrapper from "src/components/hive/ConvertWrapper.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 
 const invoiceText = ref(null)
@@ -450,7 +501,7 @@ const HBD = computed(() => {
   if (dInvoice.value?.millisatoshis) {
     const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
     const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(3)
-    return tidyNumber(HBD) + " HBD"
+    return tidyNumber(HBD) + " HUSD"
   }
   return "---"
 })
@@ -529,6 +580,10 @@ const invoiceLabels = {
 const invoiceLabel = computed(() => {
   return invoiceLabels[invoiceType()]
 })
+
+function closeAskDialog(val) {
+  invoiceChecking.value = false
+}
 
 function checkInvoiceProgress(timeLeft) {
   dInvoice.value.timeLeft = timeLeft
@@ -657,6 +712,12 @@ async function decodeInvoice() {
     if (invoiceText.value.startsWith("@")) {
       invoiceText.value = invoiceText.value.substring(1)
     }
+    // check if the string has the substring "@.*v4v.app"
+    // convert to a Hive account so we don't do a pointless lightning
+    // self payment
+    if (invoiceText.value.match(/.*@sats.v4v.app/)) {
+      invoiceText.value = invoiceText.value.replace(/@sats.v4v.app/, "")
+    }
     // trim invoiceText
     invoiceText.value = invoiceText.value.trim()
     const [isHiveAccount, dInvoiceValue] = await Promise.all([
@@ -668,8 +729,7 @@ async function decodeInvoice() {
     if (isHiveAccount.exists) {
       if (!storeUser.keepSatsBalanceNum) {
         // TODO: replace with translation
-        errorMessage.value =
-          "You need to be logged in with a KeepSats balance to send sats to a Hive user"
+        errorMessage.value = t("keepssats_error")
         dInvoice.value = {
           v4vapp: {
             type: "hiveAccname",
@@ -693,6 +753,7 @@ async function decodeInvoice() {
       invoiceValid.value = true
       errorMessage.value = ""
       const amountToSend = storeUser.keepsatsBalanceNum > 1000 ? 1 : 1000
+      invoiceChecking.value = true
       dInvoice.value = {
         v4vapp: {
           type: "hiveAccname",
@@ -711,7 +772,7 @@ async function decodeInvoice() {
           amountToSend: amountToSend,
         },
         sending: true,
-        askDetails: true,
+        askDetailsButton: true,
       }
       return
     } else if (dInvoice.value) {
@@ -729,7 +790,9 @@ async function decodeInvoice() {
         invoiceValid.value = null
         errorMessage.value = ""
         dInvoice.value.sending = true // Flag to show this is for sending Hive to Lightning
-        dInvoice.value.askDetails = true
+        invoiceChecking.value = true
+        dInvoice.value.askDetailsButton = true
+        // dInvoice.value.askDetails = true
         return
       } else {
         if (dInvoice.value?.errors.text.length > 0) {
@@ -819,75 +882,83 @@ function toggleCamera() {
   cameraShow.value = cameraOn.value
 }
 
-const paymentInProgressDialog = ref()
-
-function showPaying() {
-  paymentInProgressDialog.value = q.dialog({
-    title: "Processing...",
-
-    progress: {
-      spinner: QSpinnerGears,
-      color: "amber",
-    },
-    persistent: true, // we want the user to not be able to close it
-    ok: false, // we want the user to not be able to close it
-  })
-}
-
-async function payWithApi() {
-  showPaying()
-  try {
-    let response
-    if (dInvoice.value?.v4vapp.type === "hiveAccname") {
-      response = await useKeepSatsTransfer(
-        dInvoice.value.v4vapp.sendTo,
-        dInvoice.value.satoshis,
-        dInvoice.value.v4vapp.comment
-      )
-    } else {
-      response = await useKeepSatsInvoice(dInvoice.value.paymentRequest)
+async function confirmPayWithApi(message) {
+  let apiPayData = {}
+  if (dInvoice.value?.v4vapp.type === "hiveAccname") {
+    apiPayData = {
+      type: "hiveAccname",
+      sendTo: dInvoice.value.v4vapp.sendTo,
+      sats: dInvoice.value.satoshis,
+      comment: dInvoice.value.v4vapp.comment,
     }
-    // extract the message from this response
-    paymentInProgressDialog.value.hide()
-    if (response.success) {
-      q.notify({
-        color: "positive",
-        timeout: 5000,
-        message: response.message,
-        position: "top",
-      })
-    } else {
-      const message = `${t("payment_failed")} - ${response?.message}`
-      q.notify({
-        color: "negative",
-        timeout: 5000,
-        message: message,
-        position: "top",
-        actions: [
-          {
-            label: "OK",
-            color: "white",
-            handler: () => {
-              return
-            },
-          },
-        ],
-      })
+  } else {
+    apiPayData = {
+      type: "bolt11",
+      paymentRequest: dInvoice.value.paymentRequest,
     }
-    // wait 2 seconds then clear the form
+  }
+  let response = useConfirmPayWithApi(message, apiPayData)
+  if (response) {
     storeUser.updateSatsBalance(false)
     await new Promise((resolve) => setTimeout(resolve, 4000))
     clearReset()
-  } catch (e) {
-    console.error("Error in payWithApi", e)
-    q.notify({
-      color: "negative",
-      timeout: 5000,
-      message: t("payment_failed"),
-      position: "top",
-    })
   }
+  return
 }
+
+// async function payWithApi() {
+//   try {
+//     let response
+//     if (dInvoice.value?.v4vapp.type === "hiveAccname") {
+//       response = await useKeepSatsTransfer(
+//         dInvoice.value.v4vapp.sendTo,
+//         dInvoice.value.satoshis,
+//         dInvoice.value.v4vapp.comment
+//       )
+//     } else {
+//       response = await useKeepSatsInvoice(dInvoice.value.paymentRequest)
+//     }
+//     // extract the message from this response
+//     paymentInProgressDialog.value.hide()
+//     if (response.success) {
+//       q.notify({
+//         color: "positive",
+//         timeout: 5000,
+//         message: response.message,
+//         position: "top",
+//       })
+//     } else {
+//       const message = `${t("payment_failed")} - ${response?.message}`
+//       q.notify({
+//         color: "negative",
+//         timeout: 5000,
+//         message: message,
+//         position: "top",
+//         actions: [
+//           {
+//             label: "OK",
+//             color: "white",
+//             handler: () => {
+//               return
+//             },
+//           },
+//         ],
+//       })
+//     }
+//     // wait 2 seconds then clear the form
+//     storeUser.updateSatsBalance(false)
+//     await new Promise((resolve) => setTimeout(resolve, 4000))
+//     clearReset()
+//   } catch (e) {
+//     console.error("Error in payWithApi", e)
+//     q.notify({
+//       color: "negative",
+//       timeout: 5000,
+//       message: t("payment_failed"),
+//       position: "top",
+//     })
+//   }
+// }
 
 /**
  * Pay the invoice using the specified currency and method.
@@ -901,12 +972,14 @@ async function payInvoice(currency, method) {
   // Add 6 Hive to the amount to cover the fee or 2 HBD
   let amountNum = 0
   if (currency == "HIVE") {
-    amountNum = parseFloat(Hive.value) + 4 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
-    amountNum = parseFloat(HBD.value) + 1.5 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(HBD.value) + 1 + 0.002 * parseFloat(HBD.value)
   }
   CurrencyCalc.value.amount = amountNum
   CurrencyCalc.value.currency = currency.toLowerCase()
+  // next tick which allows currency calc to catch up.
+  await new Promise((resolve) => setTimeout(resolve, 0))
   let amount = amountNum.toFixed(3)
 
   // if payWithSats is true add #paywithsats to the end of the memo
@@ -935,9 +1008,20 @@ async function payInvoice(currency, method) {
         timeout: 2000,
         message: t("keychain_missing"),
         position: "top",
+        actions: [
+          {
+            icon: "close",
+            round: true,
+            color: "white",
+            handler: () => {},
+          },
+        ],
       })
+      KeychainDialog.value.hiveAccFrom = storeUser.currentUser
+        ? storeUser.currentUser
+        : ""
       KeychainDialog.value.memo = memo
-      KeychainDialog.value.currencyToSend = currency.toLowerCase()
+      KeychainDialog.value.currencyToSend = currency
       KeychainDialog.value.hiveAccTo = serverHiveAccount
       KeychainDialog.value.display = "hive"
       KeychainDialog.value.currencyCalc = CurrencyCalc.value
@@ -969,6 +1053,14 @@ async function payInvoice(currency, method) {
           timeout: 2000,
           message: result.message,
           position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
         })
         return
       }
@@ -1002,6 +1094,14 @@ watch(
           timeout: 5000,
           message: message,
           position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
         })
       }
       if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_ack") {
@@ -1014,6 +1114,14 @@ watch(
           timeout: 0,
           message: message,
           position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
         })
         await checkHiveTransaction(
           value.payment.username,
@@ -1044,6 +1152,14 @@ watch(
           timeout: 0,
           message: message,
           position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
         })
         dInvoice.value.progress.push(message)
         dInvoice.value.progress.push(`${t("check_lightning")}`)
@@ -1089,6 +1205,14 @@ async function checkHiveTransaction(username, trx_id, notif) {
       timeout: 0,
       message: message,
       position: "top",
+      actions: [
+        {
+          icon: "close",
+          round: true,
+          color: "white",
+          handler: () => {},
+        },
+      ],
     })
   }
   let memo = ""

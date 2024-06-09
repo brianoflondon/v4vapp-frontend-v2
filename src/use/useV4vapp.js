@@ -1,10 +1,12 @@
 // useV4vapp.js
 //
 
-import { Notify } from "quasar"
+import { Notify, Dialog, QSpinnerGears } from "quasar"
 import { api, apiLogin } from "src/boot/axios"
-import { useStoreUser } from "src/stores/storeUser"
 import { checkCache, putInCache } from "src/use/useUtils"
+import { i18n } from "boot/i18n"
+
+let paymentInProgressDialog = null
 
 /**
  * Checks if the API token is valid.
@@ -32,7 +34,11 @@ export async function useCheckApiTokenValid(username, apiToken) {
  * @param {boolean} adminOverride - Flag indicating whether to override the admin check or not. Default is false.
  * @returns {Promise} - A promise that resolves to the keepsats data.
  */
-export async function useKeepSats(useCache = true, transactions = true, adminOverride = false) {
+export async function useKeepSats(
+  useCache = true,
+  transactions = true,
+  adminOverride = false
+) {
   // if (!apiToken) return null
   // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
   try {
@@ -48,12 +54,11 @@ export async function useKeepSats(useCache = true, transactions = true, adminOve
   } catch (error) {
     console.error("useKeepSats", error)
     Notify.create({
-      message: "Need to re-authenticate",
+      message: "Communication issues, try again soon",
       color: "negative",
       position: "bottom",
       timeout: 2000,
     })
-    useStoreUser().logout()
     return null
   }
 }
@@ -131,6 +136,151 @@ export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
   } catch (error) {
     console.error(error)
     return error
+  }
+}
+
+function showPaying() {
+  const t = i18n.global.t
+
+  paymentInProgressDialog = Dialog.create({
+    title: t("processing"),
+
+    progress: {
+      spinner: QSpinnerGears,
+      color: "amber",
+    },
+    persistent: true, // we want the user to not be able to close it
+    ok: false, // we want the user to not be able to close it
+  })
+}
+
+/**
+ * Prompts the user to confirm payment and performs the payment using an API.
+ *
+ * @param {string} message - The message to display in the confirmation dialog.
+ * @param {object} apiPayData - The data required for the API payment.
+ * @returns {Promise<boolean>} A promise that resolves to `true` if the payment is successful, or `false` if the payment is cancelled or encounters an error.
+ */
+export async function useConfirmPayWithApi(message, apiPayData) {
+  const t = i18n.global.t
+
+  if (!message) {
+    message = t("confirm")
+  }
+
+  return new Promise((resolve, reject) => {
+    Dialog.create({
+      title: t("confirm"),
+      message: message,
+      cancel: true,
+      persistent: true,
+    })
+      .onOk(() => {
+        showPaying()
+        payWithApi(apiPayData).then(resolve(true)).catch(reject)
+      })
+      .onCancel(() => {
+        Notify.create({
+          color: "negative",
+          timeout: 3000,
+          message: t("payment_cancelled"),
+          position: "top",
+          actions: [
+            {
+              icon: "close",
+              round: true,
+              color: "white",
+              handler: () => {},
+            },
+          ],
+        })
+        resolve(false)
+      })
+      .onDismiss(() => {
+        resolve(false)
+      })
+  })
+}
+
+/**
+ * Makes a payment using the API.
+ *
+ * @param {Object} apiPayData - The payment data.
+ * @param {string} apiPayData.type - The type of payment.
+ * @param {string} apiPayData.sendTo - The recipient of the payment (applicable for type "hiveAccname").
+ * @param {number} apiPayData.sats - The amount of satoshis to send (applicable for types "hiveAccname" and "convertSats").
+ * @param {string} apiPayData.comment - The comment for the payment (applicable for type "hiveAccname").
+ * @param {string} apiPayData.paymentRequest - The payment request (applicable for type "bolt11").
+ * @param {string} apiPayData.currency - The currency to convert the satoshis to (applicable for type "convertSats").
+ * @param {string} apiPayData.memo - The memo for the conversion (applicable for type "convertSats").
+ * @returns {boolean} - A getBooleanEnvVariable
+ * @throws {Error} - If an error occurs during the payment process.
+ */
+async function payWithApi(apiPayData) {
+  const t = i18n.global.t
+  try {
+    let response
+    if (apiPayData.type === "hiveAccname") {
+      response = await useKeepSatsTransfer(
+        apiPayData.sendTo,
+        apiPayData.sats,
+        apiPayData.comment
+      )
+    } else if (apiPayData.type === "bolt11") {
+      response = await useKeepSatsInvoice(apiPayData.paymentRequest)
+    } else if (apiPayData.type === "convertSats") {
+      response = await useKeepSatsConvert(
+        apiPayData.sats,
+        apiPayData.currency,
+        apiPayData.memo
+      )
+    }
+    // extract the message from this response
+    paymentInProgressDialog.hide()
+    if (response.success) {
+      Notify.create({
+        color: "positive",
+        timeout: 5000,
+        message: response.message,
+        position: "top",
+        actions: [
+          {
+            icon: "close",
+            round: true,
+            color: "white",
+            handler: () => {},
+          },
+        ],
+      })
+      return true
+    } else {
+      const message = `${t("payment_failed")} - ${response?.message}`
+      Notify.create({
+        color: "negative",
+        timeout: 5000,
+        message: message,
+        position: "top",
+        actions: [
+          {
+            label: "OK",
+            color: "white",
+            handler: () => {
+              return
+            },
+          },
+        ],
+      })
+      return false
+    }
+  } catch (e) {
+    console.error("Error in payWithApi", e)
+    Notify.create({
+      color: "negative",
+      timeout: 5000,
+      message: t("payment_failed"),
+      position: "top",
+    })
+    return false
   }
 }
 

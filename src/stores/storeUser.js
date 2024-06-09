@@ -140,7 +140,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       unit: "$",
     }),
     users: useStorage("users", {}),
-    pos: useStorage("pos", {}),
+    pos: useStorage("pos", {receiveCurrency: "hbd"}),
     clientId: useStorage("clientId", generateUUID()),
   }),
 
@@ -269,6 +269,16 @@ export const useStoreUser = defineStore("useStoreUser", {
         hive: parseFloat(this.currentDetails.balance),
         hbd: parseFloat(this.currentDetails.hbd_balance),
         keepSats: this.currentKeepSats?.net_sats,
+        sats: this.currentKeepSats?.net_sats,
+      }
+    },
+    balancesDisplay() {
+      if (!this.currentDetails) return null
+      return {
+        hive: tidyNumber(parseFloat(this.currentDetails.balance), 3),
+        hbd: tidyNumber(parseFloat(this.currentDetails.hbd_balance), 3),
+        keepSats: tidyNumber(this.currentKeepSats?.net_sats, 0),
+        sats: tidyNumber(this.currentKeepSats?.net_sats, 0),
       }
     },
     hiveBalance() {

@@ -230,6 +230,14 @@ watch(
         position: "top-left",
         icon: "savings",
         timeout: 5000,
+        actions: [
+          {
+            icon: "close",
+            round: true,
+            color: "white",
+            handler: () => {},
+          },
+        ],
       })
     }
     // You can add your own code here to do something when `storeUser.keepSatsBalance` changes
