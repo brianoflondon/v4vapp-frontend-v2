@@ -16,16 +16,6 @@ export async function useGetLightingHiveInvoice(
   expiry = 300,
   receiveCurrency = ""
 ) {
-  console.log(
-    "useGetLightingHiveInvoice",
-    hiveAccname,
-    amount,
-    currency,
-    memo,
-    checkCode,
-    expiry,
-    receiveCurrency
-  )
   try {
     if (expiry > 600) {
       expiry = 600
@@ -90,7 +80,6 @@ export async function useDecodeLightningInvoice(invoice) {
   // if the invoice starts with lnbc the bolt11 library can decode it
   if (invoice.startsWith("lnbc")) {
     decodedInvoice = await bolt11Decode(invoice)
-    console.log("decodedInvoice", decodedInvoice)
     if (decodedInvoice) {
       // Adds error messages to the decoded invoice if
       await validateInvoice(decodedInvoice)
