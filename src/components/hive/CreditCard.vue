@@ -95,6 +95,9 @@
                     <q-tooltip>Bitcoin</q-tooltip>
                   </div>
                 </td>
+                <td class="keepsats-table-cell numeric-cell q-pl-sm">
+                  sats
+                </td>
               </tr>
               <tr>
                 <td class="numeric-cell">
@@ -106,6 +109,9 @@
                 <td>
                   <q-icon name="fa-brands fa-hive" />
                 </td>
+                <td class="keepsats-table-cell numeric-cell q-pl-sm">
+                  Hive
+                </td>
               </tr>
               <tr>
                 <td class="numeric-cell">
@@ -116,6 +122,9 @@
                 </td>
                 <td class="numeric-cell q-pl-sm">
                   <HbdLogoIcon />
+                </td>
+                <td class="keepsats-table-cell numeric-cell q-pl-sm">
+                  HUSD
                 </td>
               </tr>
               <!-- Lower summation of Hive amounts -->
