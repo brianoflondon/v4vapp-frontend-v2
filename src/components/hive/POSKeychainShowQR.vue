@@ -589,6 +589,12 @@ function startCountdown() {
     if (progress.value <= 0 || currentTime >= checkTimeTotal) {
       clearInterval(intervalId)
       currentTime = 0 // Reset currentTime for future runs
+
+      // Remove the interval ID from intervalRef.value
+      const index = intervalRef.value.indexOf(intervalId)
+      if (index !== -1) {
+        intervalRef.value.splice(index, 1)
+      }
     }
   }, 1000) // Update every second
 
@@ -603,11 +609,18 @@ function startHiveCheckTimer() {
     if (hiveCheckTimer.value <= 0) {
       clearInterval(intervalId)
       hiveCheckTimer.value = 100 // Reset currentTime for future runs
+
+      // Remove the interval ID from intervalRef.value
+      const index = intervalRef.value.indexOf(intervalId)
+      if (index !== -1) {
+        intervalRef.value.splice(index, 1)
+      }
     }
   }, (hiveCheckTime * 1000) / 50) // Update every hiveCheckTime/100 ms
 
   // Store the interval ID so it can be cleared later if needed
   intervalRef.value.push(intervalId)
+  console.log('intervalRef.value : ', intervalRef.value)
 }
 
 async function checkHiveTransaction(count = 0) {
@@ -688,6 +701,7 @@ async function checkHiveTransaction(count = 0) {
  * @returns {Object} The found transaction object, or undefined if no transaction with a matching checkCode is found.
  */
 function findTransactionWithCheckCode(transactions, checkCode) {
+  console.log('looking for : ', checkCode)
   if (!transactions || !checkCode) {
     console.error(
       "findTransactionWithCheckCode: missing transactions or checkCode"
@@ -697,7 +711,6 @@ function findTransactionWithCheckCode(transactions, checkCode) {
   const transactionFound = transactions.find((transaction) =>
     transaction.op[1].memo.endsWith(checkCode)
   )
-  console.log("transactionFound", transactionFound)
   if (transactionFound) {
     const trx_id = transactionFound?.trx_id
     // modify the transaction object to include the memo without the checkCode
