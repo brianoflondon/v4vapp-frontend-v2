@@ -338,6 +338,8 @@ onBeforeUnmount(() => {
 })
 
 function dialogShow() {
+  progress.value = 1
+  currentTime = 0
   KeychainDialog.value.show = true
   if (KeychainDialog.value.showLightning) {
     showLightning.value = true
@@ -620,7 +622,6 @@ function startHiveCheckTimer() {
 
   // Store the interval ID so it can be cleared later if needed
   intervalRef.value.push(intervalId)
-  console.log('intervalRef.value : ', intervalRef.value)
 }
 
 async function checkHiveTransaction(count = 0) {
@@ -701,7 +702,6 @@ async function checkHiveTransaction(count = 0) {
  * @returns {Object} The found transaction object, or undefined if no transaction with a matching checkCode is found.
  */
 function findTransactionWithCheckCode(transactions, checkCode) {
-  console.log('looking for : ', checkCode)
   if (!transactions || !checkCode) {
     console.error(
       "findTransactionWithCheckCode: missing transactions or checkCode"
