@@ -245,7 +245,7 @@ watch(
 )
 
 async function scheduleUpdate() {
-  await storeUser.update()
+  await storeUser.update(false)
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 5 * 60 * 1000)
 }
@@ -335,7 +335,7 @@ const creditCardShading = computed(() => {
 
 function changeBackground() {
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
-  storeUser.update()
+  storeUser.update(false)
   explode()
 }
 

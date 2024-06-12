@@ -673,7 +673,7 @@ async function checkHiveTransaction(count = 0) {
         intervalRef.value.push(watchingInterval)
       })
       KeychainDialog.value.show = false
-      storeUser.update()
+      storeUser.update(false)
       return // Exit the function if the transaction is found
     } // End of the While Loop
     const memo = `${t("transfer")}: ${t("not_found")}:`
