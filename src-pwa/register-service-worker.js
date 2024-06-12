@@ -54,7 +54,7 @@ register(process.env.SERVICE_WORKER_FILE, {
       progress: true,
       color: "positive",
       position: "bottom",
-      timeout: 5000, // Make the notification sticky
+      timeout: 0, // Make the notification sticky
       actions: [
         {
           // Add an "OK" button

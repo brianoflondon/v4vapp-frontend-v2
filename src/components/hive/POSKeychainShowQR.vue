@@ -2,7 +2,7 @@
   <q-dialog
     v-model="KeychainDialog.show"
     @hide="dialogClose"
-    @show="updateQRCode"
+    @show="dialogShow"
   >
     <q-card>
       <q-toolbar>
@@ -204,6 +204,7 @@
 import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreSales } from "src/stores/storeSales"
+import { useStoreUser } from "src/stores/storeUser"
 import { useQuasar, copyToClipboard } from "quasar"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useTruncateLnbc } from "src/use/useUtils.js"
@@ -237,6 +238,7 @@ const KeychainDialog = defineModel()
 const keepSats = ref(false)
 const storeApiStatus = useStoreAPIStatus()
 const storeSales = useStoreSales()
+const storeUser = useStoreUser()
 const qrCode = ref(null)
 
 const showLightning = ref(false)
@@ -253,7 +255,6 @@ const titleOptions = ref({
 })
 
 const fees = computed(() => {
-  console.log("fees calc", KeychainDialog.value.currencyToSend)
   const cur = KeychainDialog.value.currencyToSend
   const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
   const storeLndKey = cur + receiveCurrency
@@ -336,14 +337,48 @@ onBeforeUnmount(() => {
   showLightning.value = false
 })
 
-function dialogClose() {
-  console.log("showQrCodeDialog Close")
-  if (intervalRef.value) {
-    clearInterval(intervalRef.value)
-    intervalRef.value = null
+function dialogShow() {
+  progress.value = 1
+  currentTime = 0
+  KeychainDialog.value.show = true
+  if (KeychainDialog.value.showLightning) {
+    showLightning.value = true
+    // generateLightningQRCode()
+  } else {
+    showLightning.value = false
   }
+  updateQRCode()
+  useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
+    (val) => {
+      KeychainDialog.value.transactions = val
+      KeychainDialog.value.paid = false
+      KeychainDialog.value.loading = false
+      checkHiveTransaction()
+      KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+      startCountdown()
+    }
+  )
+}
+
+function dialogClose() {
+  if (intervalRef.value) {
+    intervalRef.value.forEach((interval) => clearInterval(interval))
+  }
+  intervalRef.value = []
+
   showLightning.value = false
   KeychainDialog.value.show = false
+  KeychainDialog.value.checkCode = useGetCheckCode()
+  KeychainDialog.value.loading = false
+  KeychainDialog.value.paid = false
+  KeychainDialog.value.lndData = {}
+  KeychainDialog.value.transactions = null
+  KeychainDialog.value.qrCodeText = ""
+  KeychainDialog.value.qrCodeTextHive = ""
+  KeychainDialog.value.op = null
+  KeychainDialog.value.currencyCalc = null
+  KeychainDialog.value.amountToSend = null
+  KeychainDialog.value.amountString = null
 }
 
 function updateStoreSales() {
@@ -413,8 +448,6 @@ function calcFees() {
  * This function is asynchronous and might require awaiting when called.
  */
 async function updateQRCode() {
-  console.log("updateQrCode")
-  console.log(KeychainDialog.value)
   if (KeychainDialog.value.loading || !KeychainDialog.value.show) {
     return
   }
@@ -459,7 +492,6 @@ async function updateQRCode() {
 }
 
 async function toggleLightning() {
-  console.log("showLightning before", showLightning.value)
   if (showLightning.value) {
     await generateLightningQRCode()
   } else if (
@@ -486,10 +518,6 @@ async function generateLightningQRCode() {
   const cur = KeychainDialog.value.currencyToSend
   const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
   const storeLndKey = cur + receiveCurrency
-  console.log()
-  console.log("generateLightningQRCode", showLightning.value)
-  console.log("storeLndKey", storeLndKey)
-  console.log("KeychainDialog.value", KeychainDialog.value)
   if (
     showLightning.value &&
     KeychainDialog.value?.lndData[storeLndKey] == null
@@ -563,6 +591,12 @@ function startCountdown() {
     if (progress.value <= 0 || currentTime >= checkTimeTotal) {
       clearInterval(intervalId)
       currentTime = 0 // Reset currentTime for future runs
+
+      // Remove the interval ID from intervalRef.value
+      const index = intervalRef.value.indexOf(intervalId)
+      if (index !== -1) {
+        intervalRef.value.splice(index, 1)
+      }
     }
   }, 1000) // Update every second
 
@@ -577,6 +611,12 @@ function startHiveCheckTimer() {
     if (hiveCheckTimer.value <= 0) {
       clearInterval(intervalId)
       hiveCheckTimer.value = 100 // Reset currentTime for future runs
+
+      // Remove the interval ID from intervalRef.value
+      const index = intervalRef.value.indexOf(intervalId)
+      if (index !== -1) {
+        intervalRef.value.splice(index, 1)
+      }
     }
   }, (hiveCheckTime * 1000) / 50) // Update every hiveCheckTime/100 ms
 
@@ -633,7 +673,7 @@ async function checkHiveTransaction(count = 0) {
         intervalRef.value.push(watchingInterval)
       })
       KeychainDialog.value.show = false
-      storeUser.update()
+      storeUser.update(false)
       return // Exit the function if the transaction is found
     } // End of the While Loop
     const memo = `${t("transfer")}: ${t("not_found")}:`

@@ -440,6 +440,10 @@ export const useStoreUser = defineStore("useStoreUser", {
   },
 
   actions: {
+    /**
+     * Updates the user details and profile.
+     * @param {boolean} useCache - Indicates whether to use cached data or not. Default is true.
+     */
     update(useCache = true) {
       const onOpen = async () => {
         if (this.currentUser === this.hiveDetails?.name) return

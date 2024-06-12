@@ -356,7 +356,7 @@ async function confirmMakePayment() {
       const response = await useConfirmPayWithApi(message, apiPayData)
       if (response) {
         await new Promise((resolve) => setTimeout(resolve, 10000))
-        storeUser.update()
+        storeUser.update(false)
         amountUpdated(0, "from")
       }
     } catch (error) {
@@ -439,7 +439,7 @@ async function makeHivePayment(method) {
       }
       break
   }
-  storeUser.update()
+  storeUser.update(false)
 }
 
 async function checkForSats(oldNetSats = 0, count = 0) {
@@ -466,7 +466,7 @@ async function checkForSats(oldNetSats = 0, count = 0) {
     })
     // quit checking
     amountUpdated(0, "from")
-    storeUser.update()
+    storeUser.update(false)
     return
   }
 

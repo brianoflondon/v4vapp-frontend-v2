@@ -95,6 +95,14 @@
                     <q-tooltip>Bitcoin</q-tooltip>
                   </div>
                 </td>
+                <td class="keepsats-table-cell numeric-cell q-pl-sm">
+                  <div v-if="!balances['bitcoinDisplay']">
+                    sats
+                  </div>
+                  <div v-else>
+                    BTC
+                  </div>
+                </td>
               </tr>
               <tr>
                 <td class="numeric-cell">
@@ -106,6 +114,9 @@
                 <td>
                   <q-icon name="fa-brands fa-hive" />
                 </td>
+                <td class="keepsats-table-cell numeric-cell q-pl-sm">
+                  Hive
+                </td>
               </tr>
               <tr>
                 <td class="numeric-cell">
@@ -116,6 +127,9 @@
                 </td>
                 <td class="numeric-cell q-pl-sm">
                   <HbdLogoIcon />
+                </td>
+                <td class="keepsats-table-cell numeric-cell q-pl-sm">
+                  HUSD
                 </td>
               </tr>
               <!-- Lower summation of Hive amounts -->
@@ -245,7 +259,7 @@ watch(
 )
 
 async function scheduleUpdate() {
-  await storeUser.update()
+  await storeUser.update(false)
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 5 * 60 * 1000)
 }
@@ -335,7 +349,7 @@ const creditCardShading = computed(() => {
 
 function changeBackground() {
   backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
-  storeUser.update()
+  storeUser.update(false)
   explode()
 }
 

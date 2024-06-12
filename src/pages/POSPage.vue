@@ -446,7 +446,6 @@ const memoHasPipe = computed(() => {
 
 onMounted(() => {
   if (!storeUser.pos?.receiveCurrency) {
-    console.log("no pos receive currency set")
     storeUser.pos.receiveCurrency = "hbd"
   }
   // give me the first item in the currencyOptions list
@@ -644,7 +643,6 @@ const memoInput = ref("")
  * @param {string} payWith - The payment method to use.
  */
 function showPaymentQR(payWith) {
-  console.log("showPaymentQR", payWith, memoInput.value)
   if (!isPaymentValid.value) {
     return
   }
