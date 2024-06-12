@@ -509,6 +509,7 @@ function startCountdown() {
 }
 
 function startHiveCheckTimer() {
+  console.log('startHiveCheckTimer')
   const intervalId = setInterval(() => {
     hiveCheckTimer.value -= 2 // Increment by 1 second
     // Stop the countdown when the progress reaches 0 or the maxChecks time is reached
@@ -523,6 +524,7 @@ function startHiveCheckTimer() {
 }
 
 async function checkHiveTransaction(count = 0) {
+  console.log('checkHiveTransaction', count)
   try {
     while (count < maxChecks) {
       count += 1

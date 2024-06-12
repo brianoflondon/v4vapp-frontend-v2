@@ -2,7 +2,7 @@
   <q-dialog
     v-model="KeychainDialog.show"
     @hide="dialogClose"
-    @show="updateQRCode"
+    @show="dialogShow"
   >
     <q-card>
       <q-toolbar>
@@ -204,6 +204,7 @@
 import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreSales } from "src/stores/storeSales"
+import { useStoreUser } from "src/stores/storeUser"
 import { useQuasar, copyToClipboard } from "quasar"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useTruncateLnbc } from "src/use/useUtils.js"
@@ -237,6 +238,7 @@ const KeychainDialog = defineModel()
 const keepSats = ref(false)
 const storeApiStatus = useStoreAPIStatus()
 const storeSales = useStoreSales()
+const storeUser = useStoreUser()
 const qrCode = ref(null)
 
 const showLightning = ref(false)
@@ -313,6 +315,7 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
+  console.log("onMounted POSKeychainShowQR")
   if (KeychainDialog.value.showLightning) {
     showLightning.value = true
     // generateLightningQRCode()
@@ -322,6 +325,7 @@ onMounted(async () => {
   updateQRCode()
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
+      console.log("after useGetHiveTransactionHistory")
       KeychainDialog.value.transactions = val
       KeychainDialog.value.paid = false
       KeychainDialog.value.loading = false
@@ -336,14 +340,51 @@ onBeforeUnmount(() => {
   showLightning.value = false
 })
 
+function dialogShow() {
+  console.log("showQrCodeDialog dialogShow")
+  KeychainDialog.value.show = true
+  if (KeychainDialog.value.showLightning) {
+    showLightning.value = true
+    // generateLightningQRCode()
+  } else {
+    showLightning.value = false
+  }
+  updateQRCode()
+  useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
+    (val) => {
+      console.log("after useGetHiveTransactionHistory")
+      KeychainDialog.value.transactions = val
+      KeychainDialog.value.paid = false
+      KeychainDialog.value.loading = false
+      checkHiveTransaction()
+      KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+      startCountdown()
+    }
+  )
+}
+
 function dialogClose() {
   console.log("showQrCodeDialog Close")
+  console.log("intervalRef", intervalRef.value)
   if (intervalRef.value) {
-    clearInterval(intervalRef.value)
-    intervalRef.value = null
+    console.log("intervalRef", intervalRef.value)
+    intervalRef.value.forEach((interval) => clearInterval(interval))
   }
+  intervalRef.value = []
+
   showLightning.value = false
   KeychainDialog.value.show = false
+  KeychainDialog.value.checkCode = useGetCheckCode()
+  KeychainDialog.value.loading = false
+  KeychainDialog.value.paid = false
+  KeychainDialog.value.lndData = {}
+  KeychainDialog.value.transactions = null
+  KeychainDialog.value.qrCodeText = ""
+  KeychainDialog.value.qrCodeTextHive = ""
+  KeychainDialog.value.op = null
+  KeychainDialog.value.currencyCalc = null
+  KeychainDialog.value.amountToSend = null
+  KeychainDialog.value.amountString = null
 }
 
 function updateStoreSales() {
@@ -585,11 +626,16 @@ function startHiveCheckTimer() {
 }
 
 async function checkHiveTransaction(count = 0) {
+  console.log(
+    "check hive transaction: KeychainDialog.value.show",
+    KeychainDialog.value.show
+  )
   if (!KeychainDialog.value.show) {
     return
   }
   try {
     while (count < maxChecks) {
+      console.log("checking", count)
       count += 1
 
       // Wait for hiveCheckTime seconds before checking again
@@ -671,6 +717,7 @@ function findTransactionWithCheckCode(transactions, checkCode) {
   const transactionFound = transactions.find((transaction) =>
     transaction.op[1].memo.endsWith(checkCode)
   )
+  console.log("transactionFound", transactionFound)
   if (transactionFound) {
     const trx_id = transactionFound?.trx_id
     // modify the transaction object to include the memo without the checkCode
