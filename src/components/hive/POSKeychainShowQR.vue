@@ -255,7 +255,6 @@ const titleOptions = ref({
 })
 
 const fees = computed(() => {
-  console.log("fees calc", KeychainDialog.value.currencyToSend)
   const cur = KeychainDialog.value.currencyToSend
   const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
   const storeLndKey = cur + receiveCurrency
@@ -315,7 +314,6 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
-  console.log("onMounted POSKeychainShowQR")
   if (KeychainDialog.value.showLightning) {
     showLightning.value = true
     // generateLightningQRCode()
@@ -325,7 +323,6 @@ onMounted(async () => {
   updateQRCode()
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
-      console.log("after useGetHiveTransactionHistory")
       KeychainDialog.value.transactions = val
       KeychainDialog.value.paid = false
       KeychainDialog.value.loading = false
@@ -341,7 +338,6 @@ onBeforeUnmount(() => {
 })
 
 function dialogShow() {
-  console.log("showQrCodeDialog dialogShow")
   KeychainDialog.value.show = true
   if (KeychainDialog.value.showLightning) {
     showLightning.value = true
@@ -352,7 +348,6 @@ function dialogShow() {
   updateQRCode()
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
-      console.log("after useGetHiveTransactionHistory")
       KeychainDialog.value.transactions = val
       KeychainDialog.value.paid = false
       KeychainDialog.value.loading = false
@@ -364,10 +359,7 @@ function dialogShow() {
 }
 
 function dialogClose() {
-  console.log("showQrCodeDialog Close")
-  console.log("intervalRef", intervalRef.value)
   if (intervalRef.value) {
-    console.log("intervalRef", intervalRef.value)
     intervalRef.value.forEach((interval) => clearInterval(interval))
   }
   intervalRef.value = []
@@ -454,8 +446,6 @@ function calcFees() {
  * This function is asynchronous and might require awaiting when called.
  */
 async function updateQRCode() {
-  console.log("updateQrCode")
-  console.log(KeychainDialog.value)
   if (KeychainDialog.value.loading || !KeychainDialog.value.show) {
     return
   }
@@ -500,7 +490,6 @@ async function updateQRCode() {
 }
 
 async function toggleLightning() {
-  console.log("showLightning before", showLightning.value)
   if (showLightning.value) {
     await generateLightningQRCode()
   } else if (
@@ -527,10 +516,6 @@ async function generateLightningQRCode() {
   const cur = KeychainDialog.value.currencyToSend
   const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
   const storeLndKey = cur + receiveCurrency
-  console.log()
-  console.log("generateLightningQRCode", showLightning.value)
-  console.log("storeLndKey", storeLndKey)
-  console.log("KeychainDialog.value", KeychainDialog.value)
   if (
     showLightning.value &&
     KeychainDialog.value?.lndData[storeLndKey] == null
@@ -626,16 +611,11 @@ function startHiveCheckTimer() {
 }
 
 async function checkHiveTransaction(count = 0) {
-  console.log(
-    "check hive transaction: KeychainDialog.value.show",
-    KeychainDialog.value.show
-  )
   if (!KeychainDialog.value.show) {
     return
   }
   try {
     while (count < maxChecks) {
-      console.log("checking", count)
       count += 1
 
       // Wait for hiveCheckTime seconds before checking again
