@@ -96,7 +96,12 @@
                   </div>
                 </td>
                 <td class="keepsats-table-cell numeric-cell q-pl-sm">
-                  sats
+                  <div v-if="!balances['bitcoinDisplay']">
+                    sats
+                  </div>
+                  <div v-else>
+                    BTC
+                  </div>
                 </td>
               </tr>
               <tr>
