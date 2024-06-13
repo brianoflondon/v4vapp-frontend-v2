@@ -2,6 +2,10 @@
   <div>
     <UserList @update="doClick" />
 
+    <HiveLogin v-model="hiveAccObj" key-type="Posting" label="label" />
+    <PasskeyManagement />
+    <HiveLogout />
+
     <div class="q-mt-md">
       <q-btn v-if="!loggedIn" color="primary" label="Login" @click="login" />
       <q-btn v-else color="primary" label="Authorize" @click="authorize" />
@@ -48,6 +52,9 @@ import { useHiveAvatarURL } from "src/use/useHive"
 import { api, apiLogin } from "src/boot/axios"
 import HiveAvatar from "src/components/utils/HiveAvatar.vue"
 import UserList from "src/components/hive/UserList.vue"
+import HiveLogin from "src/components/HiveLogin.vue"
+import HiveLogout from "src/components/HiveLogout.vue"
+import PasskeyManagement from "src/components/utils/PasskeyManagement.vue"
 
 const storeUser = useStoreUser()
 
@@ -61,6 +68,7 @@ const scopes = [
 ]
 const selectedScopes = ref([])
 
+const hiveAccObj = ref()
 const route = useRoute()
 const clientId = ref("")
 const redirectUri = ref("")
@@ -83,18 +91,22 @@ const scopesString = computed(() => {
 })
 
 onMounted(() => {
-  clientId.value = route.query.client_id
-  redirectUri.value = route.query.redirect_uri
-  scope.value = route.query.scope
-  responseType.value = route.query.response_type
-  responseMode.value = route.query.response_mode
-  codeChallengeMethod.value = route.query.code_challenge_method
-  codeChallenge.value = route.query.code_challenge
-  state.value = route.query.state
-  nonce.value = route.query.nonce
+  if (route.query) {
+    clientId.value = route.query.client_id
+    redirectUri.value = route.query.redirect_uri
+    scope.value = route.query.scope
+    responseType.value = route.query.response_type
+    responseMode.value = route.query.response_mode
+    codeChallengeMethod.value = route.query.code_challenge_method
+    codeChallenge.value = route.query.code_challenge
+    state.value = route.query.state
+    nonce.value = route.query.nonce
+    if (scope.value) {
+      selectedScopes.value = scope.value.split(" ")
+    }
+  }
   loggedIn.value = checkClientIdLoggedIn()
 
-  selectedScopes.value = scope.value.split(" ")
   console.log("apiLogin.defaults.headers", apiLogin.defaults.headers)
 })
 
