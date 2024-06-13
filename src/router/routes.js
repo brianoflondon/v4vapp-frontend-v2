@@ -36,7 +36,14 @@ const routes = [
         },
       },
       { path: "/signup", component: () => import("pages/SignUp.vue") },
-
+      {
+        path: "/oauth",
+        component: () => import("pages/OAuthPage.vue"),
+      },
+      {
+        path: "/oauth/authorizations/new",
+        component: () => import("pages/OAuthPage.vue"),
+      },
       // {
       //   path: "/pos/@:hiveAccTo(.*)", // Allow any character including dots after '@'
       //   component: () => import("pages/POSPage.vue"),

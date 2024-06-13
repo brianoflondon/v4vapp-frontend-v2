@@ -52,15 +52,7 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  onMounted,
-  computed,
-  defineEmits,
-  watch,
-  nextTick,
-  defineProps,
-} from "vue"
+import { ref, onMounted, computed, watch, nextTick } from "vue"
 import { useQuasar } from "quasar"
 import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
