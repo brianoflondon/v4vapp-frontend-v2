@@ -177,7 +177,7 @@
                     </div>
                   </div>
                   <div class="text-center q-px-md" style="font-size: 0.8rem">
-                    {{ t("husd") }}
+                    HUSD
                   </div>
                 </div>
               </template>
@@ -250,7 +250,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
+import {
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  onBeforeMount,
+  nextTick,
+} from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreSales } from "src/stores/storeSales"
 import { useStoreUser } from "src/stores/storeUser"
@@ -269,7 +276,7 @@ import { useI18n } from "vue-i18n"
 import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
 import { encodeOp } from "hive-uri"
 
-const hiveCheckTime = 1 // seconds between each check
+const hiveCheckTime = 2 // seconds between each check
 const hiveCheckTimer = ref(100)
 
 const maxChecks = 100 // 20 checks total
@@ -656,19 +663,20 @@ function startCountdown() {
 
 function startHiveCheckTimer() {
   const intervalId = setInterval(() => {
-    hiveCheckTimer.value -= 2 // Increment by 1 second
-    // Stop the countdown when the progress reaches 0 or the maxChecks time is reached
+    hiveCheckTimer.value -= 5 // Decrement by 1 every hiveCheckTime / 100 seconds
+    // Stop the countdown when the progress reaches 0
     if (hiveCheckTimer.value <= 0) {
+      hiveCheckTimer.value = 1
+      nextTick()
       clearInterval(intervalId)
       hiveCheckTimer.value = 100 // Reset currentTime for future runs
-
       // Remove the interval ID from intervalRef.value
       const index = intervalRef.value.indexOf(intervalId)
       if (index !== -1) {
         intervalRef.value.splice(index, 1)
       }
     }
-  }, (hiveCheckTime * 1000) / 50) // Update every hiveCheckTime/100 ms
+  }, (hiveCheckTime * 1000) / 20) // Update every hiveCheckTime/100 ms
 
   // Store the interval ID so it can be cleared later if needed
   intervalRef.value.push(intervalId)
