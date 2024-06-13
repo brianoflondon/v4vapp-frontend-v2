@@ -29,6 +29,14 @@
             nonce: {{ nonce }}
         </pre
     >
+    <q-btn
+      color="primary"
+      label="test_get_user_value4value"
+      @click="test_get_user_value4value"
+    />
+    <pre>
+      {{ userV4V }}
+    </pre>
   </div>
 </template>
 
@@ -63,6 +71,8 @@ const codeChallengeMethod = ref("")
 const codeChallenge = ref("")
 const state = ref("")
 const nonce = ref("")
+
+const userV4V = ref({})
 
 const loggedIn = computed(() => {
   return checkClientIdLoggedIn()
@@ -126,6 +136,17 @@ async function authorize() {
     } catch (error) {
       console.log(error)
     }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+async function test_get_user_value4value() {
+  try {
+    storeUser.switchUser(storeUser.currentUser)
+    const resp = await apiLogin.get("alby/user/value4value")
+    userV4V.value = resp.data
+    console.log(resp)
   } catch (error) {
     console.log(error)
   }
