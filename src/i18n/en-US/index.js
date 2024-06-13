@@ -49,7 +49,8 @@ export default {
   Progress: "Progress",
   private_memo: "Use a Private Hive Transfer Memo (needs a Memo key)",
   paste_tooltip: "Paste in a Lightning invoice from your clipboard",
-  keepssats_error: "You need to be logged in with a KeepSats balance to send sats to a Hive user",
+  keepssats_error:
+    "You need to be logged in with a KeepSats balance to send sats to a Hive user",
   // Login
   keychain_not_installed: "Keychain is not installed",
   enter_hive_account: "Please enter you Hive Account name",
@@ -193,6 +194,7 @@ export default {
   sending: "Sending",
   // Point of Sale POS
   point_of_sale: "Point of Sale",
+  pay_with: "Pay With",
   charge: "Charge",
   set_rate: "Set Rate",
   market_rate: "Market Rate",

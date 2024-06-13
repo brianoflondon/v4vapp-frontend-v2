@@ -103,6 +103,7 @@
           </q-btn-toggle>
           <!-- End of Hive HBD Button Toggle -->
         </div>
+        {{ t("pay_with") }}
         <div
           class="text-center q-pt-md"
           v-if="titleOptions[KeychainDialog.display].showHiveLightning"
@@ -111,14 +112,18 @@
           <div v-if="KeychainDialog.currencyToSend != 'sats'">
             <q-btn-toggle
               v-model="showLightning"
-              color="deep-orange-3"
               text-color="text-primary"
-              toggle-color="deep-orange-14"
-              icon="fa-sharp fa-solid fa-bolt"
               spread
               clearable
-              @update:model-value="toggleLightning()"
-              :options="[{ label: '', value: true, slot: 'lightning' }]"
+              @update:model-value="(val) => toggleLightning(val)"
+              :options="[
+                {
+                  label: '',
+                  value: false,
+                  slot: KeychainDialog.currencyToSend,
+                },
+                { label: '', value: true, slot: 'lightning' },
+              ]"
             >
               <template #lightning>
                 <div
@@ -126,10 +131,54 @@
                   style="font-size: 1.2rem"
                 >
                   <div><i class="fa-sharp fa-solid fa-bolt" /></div>
-                  <div class="text-center q-px-md" style="font-size: 1.2rem">
+                  <div><i class="fa-brands fa-btc" /></div>
+                  <div class="text-center q-px-md" style="font-size: 0.8rem">
                     {{ t("lightning") }}
                   </div>
-                  <div><i class="fa-brands fa-btc" /></div>
+                </div>
+              </template>
+              <template #hive>
+                <div
+                  class="row items-center q-pa-none"
+                  style="font-size: 1.2rem"
+                >
+                  <div
+                    class="column items-center q-pa-none"
+                    style="font-size: 2.05rem"
+                  >
+                    <div><i class="fa-brands fa-hive" /></div>
+                    <div
+                      class="text-center"
+                      style="font-size: 0.5rem; margin: -8px"
+                    >
+                      Hive
+                    </div>
+                  </div>
+                  <div class="text-center q-px-md" style="font-size: 0.8rem">
+                    {{ t("hive") }}
+                  </div>
+                </div>
+              </template>
+              <template #hbd>
+                <div
+                  class="row items-center q-pa-none"
+                  style="font-size: 1.2rem"
+                >
+                  <div
+                    class="column items-center q-px-md"
+                    style="font-size: 1.2rem"
+                  >
+                    <div><HbdLogoIcon /></div>
+                    <div
+                      class="text-center"
+                      style="font-size: 0.5rem; margin: -8px"
+                    >
+                      HUSD
+                    </div>
+                  </div>
+                  <div class="text-center q-px-md" style="font-size: 0.8rem">
+                    HUSD
+                  </div>
                 </div>
               </template>
             </q-btn-toggle>
@@ -201,7 +250,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
+import {
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  onBeforeMount,
+  nextTick,
+} from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreSales } from "src/stores/storeSales"
 import { useStoreUser } from "src/stores/storeUser"
@@ -220,7 +276,7 @@ import { useI18n } from "vue-i18n"
 import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
 import { encodeOp } from "hive-uri"
 
-const hiveCheckTime = 1 // seconds between each check
+const hiveCheckTime = 2 // seconds between each check
 const hiveCheckTimer = ref(100)
 
 const maxChecks = 100 // 20 checks total
@@ -491,7 +547,8 @@ async function updateQRCode() {
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
 }
 
-async function toggleLightning() {
+async function toggleLightning(val) {
+  console.log("toggleLightning", val)
   if (showLightning.value) {
     await generateLightningQRCode()
   } else if (
@@ -606,19 +663,20 @@ function startCountdown() {
 
 function startHiveCheckTimer() {
   const intervalId = setInterval(() => {
-    hiveCheckTimer.value -= 2 // Increment by 1 second
-    // Stop the countdown when the progress reaches 0 or the maxChecks time is reached
+    hiveCheckTimer.value -= 5 // Decrement by 1 every hiveCheckTime / 100 seconds
+    // Stop the countdown when the progress reaches 0
     if (hiveCheckTimer.value <= 0) {
+      hiveCheckTimer.value = 1
+      nextTick()
       clearInterval(intervalId)
       hiveCheckTimer.value = 100 // Reset currentTime for future runs
-
       // Remove the interval ID from intervalRef.value
       const index = intervalRef.value.indexOf(intervalId)
       if (index !== -1) {
         intervalRef.value.splice(index, 1)
       }
     }
-  }, (hiveCheckTime * 1000) / 50) // Update every hiveCheckTime/100 ms
+  }, (hiveCheckTime * 1000) / 20) // Update every hiveCheckTime/100 ms
 
   // Store the interval ID so it can be cleared later if needed
   intervalRef.value.push(intervalId)
