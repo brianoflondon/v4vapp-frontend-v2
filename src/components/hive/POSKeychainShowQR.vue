@@ -103,6 +103,7 @@
           </q-btn-toggle>
           <!-- End of Hive HBD Button Toggle -->
         </div>
+        {{ t("pay_with") }}
         <div
           class="text-center q-pt-md"
           v-if="titleOptions[KeychainDialog.display].showHiveLightning"
@@ -111,14 +112,18 @@
           <div v-if="KeychainDialog.currencyToSend != 'sats'">
             <q-btn-toggle
               v-model="showLightning"
-              color="deep-orange-3"
               text-color="text-primary"
-              toggle-color="deep-orange-14"
-              icon="fa-sharp fa-solid fa-bolt"
               spread
               clearable
-              @update:model-value="toggleLightning()"
-              :options="[{ label: '', value: true, slot: 'lightning' }]"
+              @update:model-value="(val) => toggleLightning(val)"
+              :options="[
+                {
+                  label: '',
+                  value: false,
+                  slot: KeychainDialog.currencyToSend,
+                },
+                { label: '', value: true, slot: 'lightning' },
+              ]"
             >
               <template #lightning>
                 <div
@@ -126,10 +131,54 @@
                   style="font-size: 1.2rem"
                 >
                   <div><i class="fa-sharp fa-solid fa-bolt" /></div>
-                  <div class="text-center q-px-md" style="font-size: 1.2rem">
+                  <div><i class="fa-brands fa-btc" /></div>
+                  <div class="text-center q-px-md" style="font-size: 0.8rem">
                     {{ t("lightning") }}
                   </div>
-                  <div><i class="fa-brands fa-btc" /></div>
+                </div>
+              </template>
+              <template #hive>
+                <div
+                  class="row items-center q-pa-none"
+                  style="font-size: 1.2rem"
+                >
+                  <div
+                    class="column items-center q-pa-none"
+                    style="font-size: 2.05rem"
+                  >
+                    <div><i class="fa-brands fa-hive" /></div>
+                    <div
+                      class="text-center"
+                      style="font-size: 0.5rem; margin: -8px"
+                    >
+                      Hive
+                    </div>
+                  </div>
+                  <div class="text-center q-px-md" style="font-size: 0.8rem">
+                    {{ t("hive") }}
+                  </div>
+                </div>
+              </template>
+              <template #hbd>
+                <div
+                  class="row items-center q-pa-none"
+                  style="font-size: 1.2rem"
+                >
+                  <div
+                    class="column items-center q-px-md"
+                    style="font-size: 1.2rem"
+                  >
+                    <div><HbdLogoIcon /></div>
+                    <div
+                      class="text-center"
+                      style="font-size: 0.5rem; margin: -8px"
+                    >
+                      HUSD
+                    </div>
+                  </div>
+                  <div class="text-center q-px-md" style="font-size: 0.8rem">
+                    {{ t("husd") }}
+                  </div>
                 </div>
               </template>
             </q-btn-toggle>
@@ -491,7 +540,8 @@ async function updateQRCode() {
   KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
 }
 
-async function toggleLightning() {
+async function toggleLightning(val) {
+  console.log("toggleLightning", val)
   if (showLightning.value) {
     await generateLightningQRCode()
   } else if (
