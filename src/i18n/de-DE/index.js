@@ -189,6 +189,7 @@ Für die Umwandlung von Sats in Hive oder HBD fällt eine Gebühr an.`,
   sending: 'Senden',
   // Point of Sale POS
   point_of_sale: 'Kasse (POS)',
+  pay_with: 'Pay With',
   charge: 'Tarif',
   set_rate: 'Rate einstellen',
   market_rate: 'Marktkurs',
