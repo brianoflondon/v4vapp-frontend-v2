@@ -36,8 +36,8 @@
     >
     <q-btn
       color="primary"
-      label="test_get_user_value4value"
-      @click="test_get_user_value4value"
+      label="test_get_user_me"
+      @click="test_get_user_me"
     />
     <pre>
       {{ userV4V }}
@@ -176,10 +176,11 @@ async function authorize() {
   }
 }
 
-async function test_get_user_value4value() {
+
+async function test_get_user_me() {
   try {
     storeUser.switchUser(storeUser.currentUser)
-    const resp = await apiLogin.get("alby/user/value4value")
+    const resp = await apiLogin.get("alby/user/me")
     userV4V.value = resp.data
     console.log(resp)
   } catch (error) {
