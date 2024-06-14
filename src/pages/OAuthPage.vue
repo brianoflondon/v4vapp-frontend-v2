@@ -31,6 +31,7 @@
             codeChallenge: {{ codeChallenge }}
             state: {{ state }}
             nonce: {{ nonce }}
+            pkce: {{ pkce }}
         </pre
     >
     <q-btn
@@ -79,6 +80,7 @@ const codeChallengeMethod = ref("")
 const codeChallenge = ref("")
 const state = ref("")
 const nonce = ref("")
+const pkce = ref(true)
 
 const userV4V = ref({})
 
@@ -101,6 +103,7 @@ onMounted(() => {
     codeChallenge.value = route.query.code_challenge
     state.value = route.query.state
     nonce.value = route.query.nonce
+    testingMatOnly()
     if (scope.value) {
       selectedScopes.value = scope.value.split(" ")
     }
@@ -122,12 +125,30 @@ function checkClientIdLoggedIn() {
   return false
 }
 
+async function testingMatOnly() {
+  if (
+    redirectUri.value ===
+      "https://tv.mattchristiansenmedia.com/plugins/lightning/router/callback" ||
+    redirectUri.value === "https://oauthdebugger.com/debug"
+  ) {
+    console.log("Don't use PKCE")
+    pkce.value = false
+    codeChallenge.value = clientId.value + "-" + storeUser.currentUser
+    try {
+      console.log("storeUser.currentUser", storeUser.currentUser)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+}
+
 async function authorize() {
   console.log("authorize")
   try {
     storeUser.switchUser(storeUser.currentUser)
     let params = {
       state: state.value,
+      clientId: clientId.value,
       code_challenge: codeChallenge.value,
       scope: scopesString.value,
     }
