@@ -126,10 +126,14 @@ function checkClientIdLoggedIn() {
 }
 
 async function testingMatOnly() {
+  if ((codeChallengeMethod.value = "S256")) {
+    return
+  }
   if (
-    redirectUri.value ===
+    (redirectUri.value ===
       "https://tv.mattchristiansenmedia.com/plugins/lightning/router/callback" ||
-    redirectUri.value === "https://oauthdebugger.com/debug"
+      redirectUri.value === "https://oauthdebugger.com/debug") &&
+    codeChallenge.value === ""
   ) {
     console.log("Don't use PKCE")
     pkce.value = false
