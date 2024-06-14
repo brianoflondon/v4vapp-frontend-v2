@@ -126,9 +126,6 @@ function checkClientIdLoggedIn() {
 }
 
 async function testingMatOnly() {
-  if ((codeChallengeMethod.value = "S256")) {
-    return
-  }
   if (
     (redirectUri.value ===
       "https://tv.mattchristiansenmedia.com/plugins/lightning/router/callback" ||
