@@ -34,11 +34,7 @@
             pkce: {{ pkce }}
         </pre
     >
-    <q-btn
-      color="primary"
-      label="test_get_user_me"
-      @click="test_get_user_me"
-    />
+    <q-btn color="primary" label="test_get_user_me" @click="test_get_user_me" />
     <pre>
       {{ userV4V }}
     </pre>
@@ -135,7 +131,7 @@ async function testingMatOnly() {
   ) {
     console.log("Don't use PKCE")
     pkce.value = false
-    codeChallenge.value = clientId.value + "-" + storeUser.currentUser
+    codeChallenge.value = state.value + "-" + storeUser.currentUser
     try {
       console.log("storeUser.currentUser", storeUser.currentUser)
     } catch (error) {
@@ -175,7 +171,6 @@ async function authorize() {
     console.log(error)
   }
 }
-
 
 async function test_get_user_me() {
   try {
