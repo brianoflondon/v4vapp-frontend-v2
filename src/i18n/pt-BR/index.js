@@ -189,6 +189,7 @@ export default {
   sending: 'Enviando',
   // Point of Sale POS
   point_of_sale: 'Ponto de Vendas',
+  pay_with: 'Pay With',
   charge: 'Cobrar',
   set_rate: 'Definir taxa',
   market_rate: 'Taxa do mercado',
