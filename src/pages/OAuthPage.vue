@@ -1,6 +1,6 @@
 <template>
   <div>
-    <UserList @update="doClick" />
+    <UserList @update="(val) => doClick(val)" />
 
     <HiveLogin v-model="hiveAccObj" key-type="Posting" label="label" />
     <PasskeyManagement />
@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue"
+import { ref, onMounted, computed, watch, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import { useStoreUser } from "src/stores/storeUser"
 import { useHiveAvatarURL } from "src/use/useHive"
@@ -89,6 +89,12 @@ const scopesString = computed(() => {
 })
 
 onMounted(() => {
+  readQueryParams()
+  console.log("apiLogin.defaults.headers", apiLogin.defaults.headers)
+})
+
+function readQueryParams() {
+  console.log("readQueryParams")
   if (route.query) {
     clientId.value = route.query.client_id
     redirectUri.value = route.query.redirect_uri
@@ -99,19 +105,23 @@ onMounted(() => {
     codeChallenge.value = route.query.code_challenge
     state.value = route.query.state
     nonce.value = route.query.nonce
-    testingMatOnly()
+    nonPKCEChallenge(storeUser.currentUser)
     if (scope.value) {
       selectedScopes.value = scope.value.split(" ")
     }
   }
   loggedIn.value = checkClientIdLoggedIn()
+}
 
-  console.log("apiLogin.defaults.headers", apiLogin.defaults.headers)
+watch(storeUser, (newVal) => {
+  nonPKCEChallenge(newVal.hiveAccname)
+  if (newVal.hiveAccname != storeUser.currentUser) {
+    console.log("watch storeUser.currentUser", newVal.hiveAccname)
+  }
 })
 
-function doClick() {
-  console.log("doClick")
-  console.log("apiLogin.defaults.headers", apiLogin.defaults.headers)
+function doClick(val) {
+  console.log("doClick", val)
 }
 
 function checkClientIdLoggedIn() {
@@ -121,7 +131,7 @@ function checkClientIdLoggedIn() {
   return false
 }
 
-async function testingMatOnly() {
+async function nonPKCEChallenge(hiveAccname) {
   console.log("codeChallengeMethod", codeChallengeMethod.value)
   if (
     codeChallengeMethod.value === "" ||
@@ -131,12 +141,7 @@ async function testingMatOnly() {
   ) {
     console.log("Don't use PKCE")
     pkce.value = false
-    codeChallenge.value = state.value + "-" + storeUser.currentUser
-    try {
-      console.log("storeUser.currentUser", storeUser.currentUser)
-    } catch (error) {
-      console.log(error)
-    }
+    codeChallenge.value = state.value + "-" + hiveAccname
   }
 }
 
