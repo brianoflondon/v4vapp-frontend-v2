@@ -1,5 +1,5 @@
 <template>
-  <q-card class="q-pb-sm">
+  <q-card class="q-pb-sm" style="max-width: 350px">
     <q-list>
       <q-expansion-item expand-separator icon="key" label="Passkey">
         <!-- Hive Account name input -->
