@@ -2,7 +2,7 @@
   <div>
     <UserList @update="(val) => doClick(val)" />
 
-    <HiveLogin v-model="hiveAccObj" key-type="Posting" label="label" />
+    <HiveLogin v-model="hiveAccObj" key-type="Active" label="label" />
     <PasskeyManagement />
     <HiveLogout />
 

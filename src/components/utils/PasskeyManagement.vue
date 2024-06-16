@@ -311,7 +311,7 @@ async function doPasskeyLogin() {
     expireDate.setDate(expireDate.getDate() + 7)
     await storeUser.login(
       hiveAccObj.value.value,
-      "posting",
+      "active",
       "webauthn",
       expireDate,
       null,

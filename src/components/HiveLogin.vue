@@ -151,7 +151,7 @@ const props = defineProps({
   },
   keyType: {
     type: String,
-    default: "Posting",
+    default: "Active",
   },
 })
 
