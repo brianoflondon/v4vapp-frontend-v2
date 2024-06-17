@@ -1,11 +1,13 @@
 import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
-import { useStorage, formatTimeAgo, tryOnMounted } from "@vueuse/core"
+import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
 import { apiLogin, api } from "src/boot/axios"
 import { useKeepSats } from "src/use/useV4vapp"
+import { Notify } from "quasar"
+import { i18n } from "boot/i18n"
 
 const storeAPIStatus = useStoreAPIStatus()
 const storeCoingecko = useCoingeckoStore()
@@ -140,7 +142,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       unit: "$",
     }),
     users: useStorage("users", {}),
-    pos: useStorage("pos", {receiveCurrency: "hbd"}),
+    pos: useStorage("pos", { receiveCurrency: "hbd" }),
     clientId: useStorage("clientId", generateUUID()),
   }),
 
@@ -563,9 +565,23 @@ export const useStoreUser = defineStore("useStoreUser", {
       // loop through users and check the expire time and if they
       // have expired, log them out.
       for (const user in this.users) {
+        const t = i18n.global.t
         if (this.users[user].expire < Date.now()) {
+          Notify.create({
+            message: t("expired_login") + " - " + t("need_to_logout_login"),
+            color: "negative",
+            position: "center",
+            timeout: 0,
+            actions: [
+              {
+                label: t("ok"),
+                color: "white",
+                handler: () => {},
+              },
+            ],
+          })
           console.debug("User expired", user)
-          delete this.users[user]
+          delete this.logout()
         }
       }
       if (this.users.length === 0 || Object.keys(this.users).length === 0) {
