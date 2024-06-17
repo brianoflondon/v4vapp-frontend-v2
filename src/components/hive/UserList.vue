@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md user-list" style="max-width: 350px">
+  <div class="q-pa-md user-list">
     <q-list>
       <q-item
         clickable

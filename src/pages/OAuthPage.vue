@@ -1,11 +1,11 @@
 <template>
-  <div>
-    <UserList @update="(val) => doClick(val)" />
-
-    <HiveLogin v-model="hiveAccObj" key-type="Active" label="label" />
-    <PasskeyManagement />
-    <HiveLogout />
-
+  <div class="">
+    <div class="flex column items-center">
+      <UserList @update="(val) => doClick(val)" />
+      <HiveLogin v-model="hiveAccObj" key-type="Active" label="label" />
+      <PasskeyManagement />
+      <HiveLogout />
+    </div>
     <div class="q-mt-md">
       <q-btn v-if="!loggedIn" color="primary" label="Login" @click="login" />
       <q-btn v-else color="primary" label="Authorize" @click="authorize" />

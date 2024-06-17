@@ -1,5 +1,5 @@
 <template>
-  <q-card>
+  <q-card class="q-pa-sm">
     <q-list>
       <q-item class="flex justify-center">
         <div class="text-center q-pa-sm">
