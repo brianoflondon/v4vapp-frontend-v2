@@ -28,6 +28,10 @@ export default {
   no: 'No',
   all: 'All',
   keepsats: 'KeepSats',
+  // Error
+  expired_login: 'Your login has expired',
+  need_to_logout_login: 'You need to logout and login again',
+
   // Dark Mode Selector
   change_light: 'Change to light mode',
   change_dark: 'Change to dark mode',
