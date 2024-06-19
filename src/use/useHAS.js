@@ -1,10 +1,8 @@
 import HAS from "hive-auth-wrapper"
-import { api, serverHiveAccount } from "boot/axios"
-
+import { apiLogin, serverHiveAccount } from "boot/axios"
 import { ref } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { v4 as uuidv4 } from "uuid"
-import { apiLogin } from "boot/axios"
 import { useGetChallenge } from "src/use/useUtils"
 
 const qrCodeTextHAS = ref("")
@@ -57,10 +55,10 @@ export function useCheckExistingHASAuth(username) {
  * Performs a login operation using the Hive Authentication System (HAS).
  *
  * @param {string} username - The Hive account name (without the @).
- * @param {string} keyType - The type of key to use for authentication (default: "posting").
+ * @param {string} keyType - The type of key to use for authentication (default: "active").
  * @returns {Promise<boolean>} - A promise that resolves to true if the login is successful, and false otherwise.
  */
-export async function useHASLogin(username = "", keyType = "posting") {
+export async function useHASLogin(username = "", keyType = "active") {
   // Your application information
   if (username === "") {
     console.error("username is empty")
@@ -100,7 +98,7 @@ export async function useHASLogin(username = "", keyType = "posting") {
     const challenge = await useGetChallenge(username, clientId)
     console.debug("challenge", challenge)
     let challenge_data = undefined
-    // optional - create a challenge to be signed with the posting key
+    // optional - create a challenge to be signed with the active key
     challenge_data = {
       key_type: keyType,
       challenge: challenge.data.challenge,
@@ -160,7 +158,7 @@ async function resolveAuth(res, auth, challenge_data) {
       data: {
         username: auth_payload.account,
         message: challenge_data.challenge,
-        key: "posting",
+        key: "active",
       },
     }
 
@@ -200,7 +198,11 @@ async function resolveAuth(res, auth, challenge_data) {
     // run the pending transaction AFTER a delay of 300ms to
     // allow the login to complete
     setTimeout(() => {
-      console.debug("pendingTransaction executing now ", Date.now() - start, "ms")
+      console.debug(
+        "pendingTransaction executing now ",
+        Date.now() - start,
+        "ms"
+      )
       pendingTransaction()
     }, 3000)
   }

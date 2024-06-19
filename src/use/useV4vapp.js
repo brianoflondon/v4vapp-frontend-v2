@@ -5,6 +5,8 @@ import { Notify, Dialog, QSpinnerGears } from "quasar"
 import { api, apiLogin } from "src/boot/axios"
 import { checkCache, putInCache } from "src/use/useUtils"
 import { i18n } from "boot/i18n"
+// import { useStoreUser } from "src/store/user"
+// const storeUser = useStoreUser()
 
 let paymentInProgressDialog = null
 
@@ -53,13 +55,31 @@ export async function useKeepSats(
     return resp.data
   } catch (error) {
     console.error("useKeepSats", error)
-    Notify.create({
-      message: "Communication issues, try again soon",
-      color: "negative",
-      position: "bottom",
-      timeout: 2000,
-    })
-    return null
+    const t = i18n.global.t
+    if (error.response.data.detail === "Hive Key authorization failure") {
+      Notify.create({
+        message: t("need_to_logout_login"),
+        color: "negative",
+        position: "center",
+        timeout: 0,
+        actions: [
+          {
+            label: t("ok"),
+            color: "white",
+            handler: () => {},
+          },
+        ],
+      })
+      return null
+    } else {
+      Notify.create({
+        message: "Communication issues, try again soon",
+        color: "negative",
+        position: "bottom",
+        timeout: 2000,
+      })
+      return null
+    }
   }
 }
 

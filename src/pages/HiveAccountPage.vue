@@ -125,7 +125,7 @@ async function loginToApi() {
 async function loginApiKeychain(username) {
   console.log("loginApiKeychain")
   let hiveAccObj = { value: username }
-  const props = { keyType: "posting" }
+  const props = { keyType: "active" }
   await useKeychainLoginFlow(hiveAccObj, props)
   return
 }

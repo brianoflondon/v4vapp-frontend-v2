@@ -325,6 +325,7 @@ export async function useGetChallenge(hiveAccName, clientId) {
     params: {
       clientId: clientId,
       appId: `${productName}-${version}`.replace(/\s+/g, ""),
+      scope: "hive:active",
     },
   })
   return getChallenge

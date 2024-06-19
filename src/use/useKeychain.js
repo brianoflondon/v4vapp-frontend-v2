@@ -26,7 +26,7 @@ export async function useIsHiveKeychainInstalled() {
 export async function useHiveKeychainLogin({
   hiveAccname,
   message = null,
-  keyType = "posting",
+  keyType = "active",
 }) {
   const isKeychainIn = keychain.isKeychainInstalled()
   if (!isKeychainIn || !hiveAccname) {
@@ -214,6 +214,7 @@ export async function useGetApiKeychainChallenge(hiveAccName, clientId) {
   const getChallenge = await apiLogin.get(`/auth/${hiveAccName}`, {
     params: {
       clientId: clientId,
+      scope: "hive:active",
     },
   })
   return getChallenge

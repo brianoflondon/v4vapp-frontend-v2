@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, defineEmits } from "vue"
+import { computed, onMounted, ref } from "vue"
 import { useI18n } from "vue-i18n"
 import { useStoreUser } from "src/stores/storeUser"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"

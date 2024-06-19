@@ -17,14 +17,10 @@
         <q-item dense class="justify-center">
           <q-btn
             style="width: 200px"
-            :disable="
-              typeof hiveAccObj === 'undefined' ||
-              hiveAccObj?.value === '' ||
-              hiveAccObj?.value === null ||
-              isKeychain === false
-            "
+            :disable="keychainButtonEnabled"
             align="left"
             rounded
+            :color="keychainButtonEnabled ? 'grey-9' : 'primary'"
             :label="t('hive_keychain')"
             icon="img:/keychain/hive-keychain-round.svg"
             @click="useKeychainLoginFlow(hiveAccObj, props)"
@@ -40,14 +36,10 @@
         <q-item class="justify-center">
           <q-btn
             style="width: 200px"
-            :disable="
-              typeof hiveAccObj === 'undefined' ||
-              hiveAccObj?.value === '' ||
-              hiveAccObj?.value === null // ||
-              // isHAS === false
-            "
+            :disable="hasButtonEnabled"
             label="HAS"
             align="left"
+            :color="hasButtonEnabled ? 'grey-9' : 'primary'"
             rounded
             icon="img:/has/hive-auth-logo.svg"
             @click="loginHAS(hiveAccObj?.value)"
@@ -80,8 +72,6 @@
       </q-expansion-item>
     </q-list>
   </q-card>
-
-  <div></div>
 </template>
 
 <style lang="scss" scoped></style>
@@ -98,7 +88,7 @@
  *
  */
 
-import { ref, watch, onMounted } from "vue"
+import { ref, watch, onMounted, computed } from "vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import {
@@ -130,6 +120,30 @@ if (Platform.is.mobile) {
 const isHAS = ref(true)
 const isKeychain = ref(true)
 
+// :disable="
+//   typeof hiveAccObj === 'undefined' ||
+//   hiveAccObj?.value === '' ||
+//   hiveAccObj?.value === null ||
+//   isKeychain === false
+// "
+
+const keychainButtonEnabled = computed(() => {
+  return (
+    typeof hiveAccObj.value === "undefined" ||
+    hiveAccObj.value.value === "" ||
+    hiveAccObj.value.value === null ||
+    isKeychain.value === false
+  )
+})
+
+const hasButtonEnabled = computed(() => {
+  return (
+    typeof hiveAccObj.value === "undefined" ||
+    hiveAccObj.value.value === "" ||
+    hiveAccObj.value.value === null
+  )
+})
+
 const props = defineProps({
   label: {
     type: String,
@@ -137,7 +151,7 @@ const props = defineProps({
   },
   keyType: {
     type: String,
-    default: "Posting",
+    default: "Active",
   },
 })
 
