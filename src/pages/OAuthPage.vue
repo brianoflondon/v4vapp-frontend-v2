@@ -34,9 +34,20 @@
             pkce: {{ pkce }}
         </pre
     >
-    <q-btn color="primary" label="test_get_user_me" @click="test_get_user_me" />
+    <q-btn color="primary" label="test_get_user_me" @click="runTests" />
     <pre>
+      {{ userBalance }}
       {{ userV4V }}
+    </pre>
+    <q-btn
+      color="primary"
+      label="test_send_payment"
+      @click="test_send_payment"
+    />
+    <pre>
+
+      {{ albyPayment }}
+
     </pre>
   </div>
 </template>
@@ -79,6 +90,8 @@ const nonce = ref("")
 const pkce = ref(true)
 
 const userV4V = ref({})
+const userBalance = ref({})
+const albyPayment = ref({})
 
 const loggedIn = computed(() => {
   return checkClientIdLoggedIn()
@@ -132,7 +145,6 @@ function checkClientIdLoggedIn() {
 }
 
 async function nonPKCEChallenge(hiveAccname) {
-  console.log("codeChallengeMethod", codeChallengeMethod.value)
   if (
     codeChallengeMethod.value === "" ||
     codeChallengeMethod.value === "none" ||
@@ -177,12 +189,49 @@ async function authorize() {
   }
 }
 
+function runTests() {
+  test_get_user_me()
+  test_get_balance()
+}
+
 async function test_get_user_me() {
   try {
     storeUser.switchUser(storeUser.currentUser)
     const resp = await apiLogin.get("alby/user/me")
     userV4V.value = resp.data
     console.log(resp)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+async function test_get_balance() {
+  try {
+    storeUser.switchUser(storeUser.currentUser)
+    const resp = await apiLogin.get("alby/balance")
+    userBalance.value = resp.data
+    console.log(resp)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+async function test_send_payment() {
+  try {
+    storeUser.switchUser(storeUser.currentUser)
+    const resp = await apiLogin.post("alby/payments/keysend", {
+      amount: 1,
+      destination:
+        "0396693dee59afd67f178af392990d907d3a9679fa7ce00e806b8e373ff6b70bd8",
+      memo: "Testing payments",
+      custom_records: {
+        818818: "v4vapp.dev",
+        7629169:
+          '{"guid":"1b7783c7-5089-5bd0-9a17-69db0bcb084e","podcast":"BrianofLondon 3Speak Video Podcast","feedID":1370490,"episode":"Offer and counter offer: dueling settlement offers in the Crypto Class Action law suit in Australia","itemID":24015005951,"episode_guid":"/@brianoflondon/srjsthqr","ts":59,"speed":"1","action":"stream","app_name":"CurioCaster","value_msat_total":22000,"url":"https://3speak.tv/rss/brianoflondon.xml","sender_name":"Sir Brian of London","sender_id":"brianoflondon@getalby.com","reply_address":"030a58b8653d32b99200a2334cfe913e51dc7d155aa0116c176657a4f1722677a3","reply_custom_key":696969,"reply_custom_value":"rxZduA9gl4wN22QRIodB","value_msat":22000,"name":"Dr Brian of London ✅"}',
+      },
+    })
+    console.log(resp)
+    albyPayment.value = resp.data
   } catch (error) {
     console.log(error)
   }
