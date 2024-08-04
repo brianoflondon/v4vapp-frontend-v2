@@ -85,6 +85,11 @@
           </div>
         </div>
       </div>
+      <div>
+        current locale: {{ q.lang.getLocale() }}
+        before: {{ beforeVal }}
+        after: {{ afterVal }}
+      </div>
       <!-- Amount Input -->
       <div
         class="flex row items-baseline amount-input-area pad-max-width full-width q-pa-sm"
@@ -581,6 +586,9 @@ function bookmarkSite() {
   window.location.href = "/pos/sales/@" + hiveAccTo.value.value
 }
 
+const beforeVal = ref("")
+const afterVal = ref("")
+
 function parseLocalizedFloat(val) {
 const commaLocales = [
   "de-DE",
@@ -609,7 +617,7 @@ const commaLocales = [
   "sl-SI", // Slovenia
   // Add or remove locales as required
 ]
-
+  beforeVal.value = val
   const currentLocale = q.lang.getLocale()
 
   // Check if the current locale is in the list of comma locales
@@ -618,6 +626,7 @@ const commaLocales = [
   }
 
   // Handle other locale-specific formats as necessary
+  afterVal.value = val
   return parseFloat(val)
 }
 
