@@ -86,9 +86,8 @@
         </div>
       </div>
       <div>
-        current locale: {{ q.lang.getLocale() }}
-        before: {{ beforeVal }}
-        after: {{ afterVal }}
+        current locale: {{ currentLocale }} before: {{ beforeVal }} after:
+        {{ afterVal }} afterParsed: {{ afterParsed }}
       </div>
       <!-- Amount Input -->
       <div
@@ -588,45 +587,54 @@ function bookmarkSite() {
 
 const beforeVal = ref("")
 const afterVal = ref("")
+const afterParsed = ref("")
+const currentLocale = ref("")
 
 function parseLocalizedFloat(val) {
-const commaLocales = [
-  "de-DE",
-  "fr-FR",
-  "it-IT",
-  "es-ES",
-  "nl-NL",
-  "pt-PT",
-  "ru-RU",
-  "tr-TR",
-  "pl-PL",
-  "sv-SE",
-  "da-DK",
-  "fi-FI",
-  "el-GR",
-  "lu-LU", // Luxembourg
-  "de-AT", // Austria
-  "fr-BE", "nl-BE", // Belgium
-  "hr-HR", // Croatia
-  "cs-CZ", // Czech Republic
-  "et-EE", // Estonia
-  "hu-HU", // Hungary
-  "lv-LV", // Latvia
-  "lt-LT", // Lithuania
-  "sk-SK", // Slovakia
-  "sl-SI", // Slovenia
-  // Add or remove locales as required
-]
+  const commaLocales = [
+    "de-DE",
+    "fr-FR",
+    "it-IT",
+    "es-ES",
+    "nl-NL",
+    "pt-PT",
+    "ru-RU",
+    "tr-TR",
+    "pl-PL",
+    "sv-SE",
+    "da-DK",
+    "fi-FI",
+    "el-GR",
+    "lu-LU", // Luxembourg
+    "de-AT", // Austria
+    "fr-BE",
+    "nl-BE", // Belgium
+    "hr-HR", // Croatia
+    "cs-CZ", // Czech Republic
+    "et-EE", // Estonia
+    "hu-HU", // Hungary
+    "lv-LV", // Latvia
+    "lt-LT", // Lithuania
+    "sk-SK", // Slovakia
+    "sl-SI", // Slovenia
+    // Add or remove locales as required
+  ]
   beforeVal.value = val
-  const currentLocale = q.lang.getLocale()
+
+  console.log("val", val)
+  console.log("parseFloat(val)", parseFloat(val))
+  currentLocale.value = q.lang.getLocale()
 
   // Check if the current locale is in the list of comma locales
-  if (commaLocales.includes(currentLocale)) {
+  console.log("current locale", currentLocale.value)
+  if (commaLocales.includes(currentLocale.value)) {
+    console.log("comma locale")
     val = val.replace(".", "").replace(",", ".")
   }
 
   // Handle other locale-specific formats as necessary
   afterVal.value = val
+  afterParsed.value = parseFloat(val)
   return parseFloat(val)
 }
 
