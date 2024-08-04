@@ -582,22 +582,33 @@ function bookmarkSite() {
 }
 
 function parseLocalizedFloat(val) {
-  const commaLocales = [
-    "de-DE",
-    "fr-FR",
-    "it-IT",
-    "es-ES",
-    "nl-NL",
-    "pt-PT",
-    "ru-RU",
-    "tr-TR",
-    "pl-PL",
-    "sv-SE",
-    "da-DK",
-    "fi-FI",
-    "el-GR",
-    // Add or remove locales as required
-  ]
+const commaLocales = [
+  "de-DE",
+  "fr-FR",
+  "it-IT",
+  "es-ES",
+  "nl-NL",
+  "pt-PT",
+  "ru-RU",
+  "tr-TR",
+  "pl-PL",
+  "sv-SE",
+  "da-DK",
+  "fi-FI",
+  "el-GR",
+  "lu-LU", // Luxembourg
+  "de-AT", // Austria
+  "fr-BE", "nl-BE", // Belgium
+  "hr-HR", // Croatia
+  "cs-CZ", // Czech Republic
+  "et-EE", // Estonia
+  "hu-HU", // Hungary
+  "lv-LV", // Latvia
+  "lt-LT", // Lithuania
+  "sk-SK", // Slovakia
+  "sl-SI", // Slovenia
+  // Add or remove locales as required
+]
 
   const currentLocale = q.lang.getLocale()
 
