@@ -18,7 +18,7 @@
         "<node_internals>/**"
       ],
       "runtimeArgs": [
-        "--lang=lu-LU" // Set the locale to Luxembourg
+        // "--lang=lu-LU" // Set the locale to Luxembourg
       ]
       // ENV set by .env file in project root
     },
