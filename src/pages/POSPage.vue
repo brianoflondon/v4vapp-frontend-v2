@@ -581,6 +581,11 @@ function bookmarkSite() {
   window.location.href = "/pos/sales/@" + hiveAccTo.value.value
 }
 
+const beforeVal = ref("")
+const afterVal = ref("")
+const afterParsed = ref("")
+const currentLocale = ref("")
+
 function parseLocalizedFloat(val) {
   const commaLocales = [
     "de-DE",
@@ -596,17 +601,30 @@ function parseLocalizedFloat(val) {
     "da-DK",
     "fi-FI",
     "el-GR",
+    "lu-LU", // Luxembourg
+    "de-AT", // Austria
+    "fr-BE",
+    "nl-BE", // Belgium
+    "hr-HR", // Croatia
+    "cs-CZ", // Czech Republic
+    "et-EE", // Estonia
+    "hu-HU", // Hungary
+    "lv-LV", // Latvia
+    "lt-LT", // Lithuania
+    "sk-SK", // Slovakia
+    "sl-SI", // Slovenia
     // Add or remove locales as required
   ]
-
-  const currentLocale = q.lang.getLocale()
-
+  beforeVal.value = val
+  currentLocale.value = q.lang.getLocale()
   // Check if the current locale is in the list of comma locales
-  if (commaLocales.includes(currentLocale)) {
+  if (commaLocales.includes(currentLocale.value)) {
     val = val.replace(".", "").replace(",", ".")
   }
 
   // Handle other locale-specific formats as necessary
+  afterVal.value = val
+  afterParsed.value = parseFloat(val)
   return parseFloat(val)
 }
 
