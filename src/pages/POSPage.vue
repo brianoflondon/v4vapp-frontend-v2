@@ -85,10 +85,6 @@
           </div>
         </div>
       </div>
-      <div>
-        current locale: {{ currentLocale }} before: {{ beforeVal }} after:
-        {{ afterVal }} afterParsed: {{ afterParsed }}
-      </div>
       <!-- Amount Input -->
       <div
         class="flex row items-baseline amount-input-area pad-max-width full-width q-pa-sm"
@@ -620,15 +616,9 @@ function parseLocalizedFloat(val) {
     // Add or remove locales as required
   ]
   beforeVal.value = val
-
-  console.log("val", val)
-  console.log("parseFloat(val)", parseFloat(val))
   currentLocale.value = q.lang.getLocale()
-
   // Check if the current locale is in the list of comma locales
-  console.log("current locale", currentLocale.value)
   if (commaLocales.includes(currentLocale.value)) {
-    console.log("comma locale")
     val = val.replace(".", "").replace(",", ".")
   }
 
