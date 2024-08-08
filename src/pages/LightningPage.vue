@@ -972,9 +972,9 @@ async function payInvoice(currency, method) {
   // Add 6 Hive to the amount to cover the fee or 2 HBD
   let amountNum = 0
   if (currency == "HIVE") {
-    amountNum = parseFloat(Hive.value) + 3 + 0.002 * parseFloat(Hive.value)
+    amountNum = parseFloat(Hive.value) + 6 + 0.002 * parseFloat(Hive.value)
   } else if (currency == "HBD") {
-    amountNum = parseFloat(HBD.value) + 1 + 0.002 * parseFloat(HBD.value)
+    amountNum = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(HBD.value)
   }
   CurrencyCalc.value.amount = amountNum
   CurrencyCalc.value.currency = currency.toLowerCase()
