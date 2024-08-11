@@ -378,11 +378,7 @@ import {
   useHiveAccountExists,
   useHiveAvatarURL,
 } from "src/use/useHive.js"
-import {
-  useKeepSatsTransfer,
-  useKeepSatsInvoice,
-  useConfirmPayWithApi,
-} from "src/use/useV4vapp"
+import { useConfirmPayWithApi } from "src/use/useV4vapp"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"

@@ -449,12 +449,10 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     update(useCache = true) {
       const onOpen = async () => {
-        this.dataLoading = true
         if (this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
         await this.updateSatsBalance(useCache)
         this.currentProfile = this.currentDetails?.profile
-        this.dataLoading = false
       }
       this.apiTokenSet()
       this.expireCheck()
