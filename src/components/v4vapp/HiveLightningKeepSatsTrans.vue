@@ -328,6 +328,7 @@ watch(
  * @returns {Promise} - A promise that resolves with the fetched data.
  */
 async function fetchData(newValue = dataDays.value) {
+  storeUser.dataLoading = true
   if (!storeUser.hiveAccname) {
     data.value = []
     keepSatsData.value = []
@@ -361,6 +362,7 @@ async function fetchData(newValue = dataDays.value) {
   await getKeepSatsCategories()
   await updateKeepSatsDataFiltered()
   await updateKeepSatsTotals()
+  storeUser.dataLoading = false
 }
 
 async function updateKeepSatsDataFiltered() {

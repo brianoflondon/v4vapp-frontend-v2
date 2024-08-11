@@ -144,7 +144,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     users: useStorage("users", {}),
     pos: useStorage("pos", { receiveCurrency: "hbd" }),
     clientId: useStorage("clientId", generateUUID()),
-    dataLoading: false,
+    dataLoading: useStorage("dataLoading", false),
   }),
 
   getters: {
@@ -540,6 +540,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     switchUser(hiveAccname) {
       try {
         console.debug("switchUser to ", hiveAccname, " from ", this.currentUser)
+        this.dataLoading = true
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
           this.apiTokenSet(hiveAccname)
@@ -623,9 +624,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         const params = { currency: currency, no_image: false, json: true }
         const url = `/lnurlp/bech32/${this.currentUser}`
         try {
-          this.dataLoading = true
           const res = await api.get(url, { params })
-          this.dataLoading = false
           return res.data
         } catch (err) {
           console.error(err)
