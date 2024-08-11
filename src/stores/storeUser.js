@@ -144,6 +144,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     users: useStorage("users", {}),
     pos: useStorage("pos", { receiveCurrency: "hbd" }),
     clientId: useStorage("clientId", generateUUID()),
+    dataLoading: false,
   }),
 
   getters: {
@@ -448,10 +449,12 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     update(useCache = true) {
       const onOpen = async () => {
+        this.dataLoading = true
         if (this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
         await this.updateSatsBalance(useCache)
         this.currentProfile = this.currentDetails?.profile
+        this.dataLoading = false
       }
       this.apiTokenSet()
       this.expireCheck()
@@ -467,7 +470,9 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (this.currentUser && this.apiToken) {
         const currentSatsBalance = this.currentKeepSats?.net_sats
         try {
+          this.dataLoading = true
           this.currentKeepSats = await useKeepSats(useCache, false)
+          this.dataLoading = false
           console.debug("currentKeepSats", this.currentKeepSats)
           if (this.currentKeepSats) {
             if (currentSatsBalance !== this.currentKeepSats.net_sats) {
@@ -500,7 +505,9 @@ export const useStoreUser = defineStore("useStoreUser", {
       apiToken = null
     ) {
       try {
+        this.dataLoading = true
         const hiveDetails = await useHiveDetails(hiveAccname)
+        this.dataLoading = false
         const profileName = hiveDetails?.profile?.name || hiveAccname
         if (hiveDetails) {
           const newUser = new HiveUser(
@@ -618,7 +625,9 @@ export const useStoreUser = defineStore("useStoreUser", {
         const params = { currency: currency, no_image: false, json: true }
         const url = `/lnurlp/bech32/${this.currentUser}`
         try {
+          this.dataLoading = true
           const res = await api.get(url, { params })
+          this.dataLoading = false
           return res.data
         } catch (err) {
           console.error(err)
