@@ -26,7 +26,7 @@
       width="365px"
       style="position: absolute; top: 0; left: 0; border-radius: 15px"
     />
-    <q-spinner
+    <q-spinner-rings
       v-if="storeUser.dataLoading"
       color="white"
       size="lg"
