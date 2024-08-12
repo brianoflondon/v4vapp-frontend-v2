@@ -26,6 +26,12 @@
       width="365px"
       style="position: absolute; top: 0; left: 0; border-radius: 15px"
     />
+    <q-spinner-rings
+      v-if="storeUser.dataLoading"
+      color="white"
+      size="lg"
+      style="position: absolute; top: 30%; left: 8%"
+    />
     <q-card-section
       v-if="storeUser.currentUser"
       class="credit-card-strip absolute-bottom q-py-xs q-px-sm text-subtitle2 text-left"
@@ -96,12 +102,8 @@
                   </div>
                 </td>
                 <td class="keepsats-table-cell numeric-cell q-pl-sm">
-                  <div v-if="!balances['bitcoinDisplay']">
-                    sats
-                  </div>
-                  <div v-else>
-                    BTC
-                  </div>
+                  <div v-if="!balances['bitcoinDisplay']">sats</div>
+                  <div v-else>BTC</div>
                 </td>
               </tr>
               <tr>
@@ -114,9 +116,7 @@
                 <td>
                   <q-icon name="fa-brands fa-hive" />
                 </td>
-                <td class="keepsats-table-cell numeric-cell q-pl-sm">
-                  Hive
-                </td>
+                <td class="keepsats-table-cell numeric-cell q-pl-sm">Hive</td>
               </tr>
               <tr>
                 <td class="numeric-cell">
@@ -128,9 +128,7 @@
                 <td class="numeric-cell q-pl-sm">
                   <HbdLogoIcon />
                 </td>
-                <td class="keepsats-table-cell numeric-cell q-pl-sm">
-                  HUSD
-                </td>
+                <td class="keepsats-table-cell numeric-cell q-pl-sm">HUSD</td>
               </tr>
               <!-- Lower summation of Hive amounts -->
               <tr v-if="false">

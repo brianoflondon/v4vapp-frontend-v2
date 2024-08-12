@@ -144,6 +144,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     users: useStorage("users", {}),
     pos: useStorage("pos", { receiveCurrency: "hbd" }),
     clientId: useStorage("clientId", generateUUID()),
+    dataLoading: useStorage("dataLoading", false),
   }),
 
   getters: {
@@ -467,7 +468,9 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (this.currentUser && this.apiToken) {
         const currentSatsBalance = this.currentKeepSats?.net_sats
         try {
+          this.dataLoading = true
           this.currentKeepSats = await useKeepSats(useCache, false)
+          this.dataLoading = false
           console.debug("currentKeepSats", this.currentKeepSats)
           if (this.currentKeepSats) {
             if (currentSatsBalance !== this.currentKeepSats.net_sats) {
@@ -500,7 +503,9 @@ export const useStoreUser = defineStore("useStoreUser", {
       apiToken = null
     ) {
       try {
+        this.dataLoading = true
         const hiveDetails = await useHiveDetails(hiveAccname)
+        this.dataLoading = false
         const profileName = hiveDetails?.profile?.name || hiveAccname
         if (hiveDetails) {
           const newUser = new HiveUser(
@@ -535,6 +540,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     switchUser(hiveAccname) {
       try {
         console.debug("switchUser to ", hiveAccname, " from ", this.currentUser)
+        this.dataLoading = true
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
           this.apiTokenSet(hiveAccname)

@@ -291,7 +291,7 @@ function calcFees(amount) {
 
 function copyText() {
   copyToClipboard(lightningAddress.value)
-  quasar.notify({
+  q.notify({
     message: t("copied"),
     color: "positive",
     icon: "check_circle",

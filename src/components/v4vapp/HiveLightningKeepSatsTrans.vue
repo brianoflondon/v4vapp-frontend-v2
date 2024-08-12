@@ -4,7 +4,12 @@
     <div class="col-auto">
       <div class="refresh-days-button-select row justify-evenly q-py-sm">
         <div class="refresh-button q-px-sm">
-          <q-btn label="Refresh" rounded @click="fetchData(dataDays)"></q-btn>
+          <q-btn
+            label="Refresh"
+            :loading="storeUser.dataLoading"
+            rounded
+            @click="fetchData(dataDays)"
+          ></q-btn>
         </div>
         <div class="days-select q-px-sm">
           <q-select
@@ -79,7 +84,7 @@
     <div class="col-auto">
       <!-- Keep Sats Table -->
       <div class="keepsats-table-outer q-pa-sm"></div>
-      <div class="category-reasons-selectors flex ">
+      <div class="category-reasons-selectors flex">
         <div class="category-select q-px-sm col-grow">
           <q-select
             v-model="keepSatsDataCategoryFilter"
@@ -316,7 +321,14 @@ watch(
   }
 )
 
+/**
+ * Fetches data from the server.
+ *
+ * @param {number} [newValue=dataDays.value] - The value to use for fetching data. Defaults to the value of `dataDays.value`.
+ * @returns {Promise} - A promise that resolves with the fetched data.
+ */
 async function fetchData(newValue = dataDays.value) {
+  storeUser.dataLoading = true
   if (!storeUser.hiveAccname) {
     data.value = []
     keepSatsData.value = []
@@ -350,6 +362,7 @@ async function fetchData(newValue = dataDays.value) {
   await getKeepSatsCategories()
   await updateKeepSatsDataFiltered()
   await updateKeepSatsTotals()
+  storeUser.dataLoading = false
 }
 
 async function updateKeepSatsDataFiltered() {
@@ -399,7 +412,9 @@ async function getKeepSatsCategories() {
     keepSatsData.value.map((trx) => trx.category)
   )
   // remove duplicates from list
-  keepSatsDataCategories.value = Array.from(new Set(keepSatsDataCategories.value))
+  keepSatsDataCategories.value = Array.from(
+    new Set(keepSatsDataCategories.value)
+  )
 }
 
 onMounted(() => {
