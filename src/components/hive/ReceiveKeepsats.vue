@@ -8,43 +8,104 @@
         />
       </div>
     </div>
+    <pre>
+      {{ dInvoice }}
+    </pre>
     <div class="destination-toggle pad-max-width">
+      <div class="action-buttons flex row q-pt-sm q-gutter-sm">
+        <q-btn
+          :label="amountButton"
+          icon="attach_money"
+          name="amount"
+          rounded
+          color="primary"
+          @click="setAmount"
+          class="btn-fixed-width"
+          align="between"
+        >
+          <q-tooltip>{{ $t("amount_to_send") }}</q-tooltip>
+        </q-btn>
+        <q-btn
+          :label="$t('copy')"
+          icon="content_copy"
+          name="copy"
+          rounded
+          color="primary"
+          @click="copyText"
+          class="btn-fixed-width"
+          align="between"
+        >
+          <q-tooltip>{{ $t("copy_qrcode") }}</q-tooltip>
+        </q-btn>
+        <q-btn
+          :label="$t('pay')"
+          icon="payment"
+          name="pay"
+          rounded
+          color="primary"
+          :href="qrText"
+          class="btn-fixed-width"
+          align="between"
+        >
+          <q-tooltip>{{ $t("pay_tooltip") }}</q-tooltip>
+        </q-btn>
+        <q-btn
+          :label="$t('download')"
+          icon="download"
+          name="download"
+          rounded
+          color="primary"
+          @click="downloadQRCode"
+          class="btn-fixed-width"
+          align="between"
+        >
+          <q-tooltip>{{ $t("download_tooltip") }}</q-tooltip>
+        </q-btn>
+      </div>
       <!-- HBD Hive and Sats toggle -->
-      <q-btn-toggle
-        spread
-        v-model="destination"
-        push
-        dense
-        glossy
-        toggle-color="primary"
-        :options="options"
-        @update:model-value="(val) => updateDestination(val)"
-      >
-        <template #lightning>
-          <div class="row items-center q-pa-none" style="font-size: 1.2rem">
-            <div><i class="fa-sharp fa-solid fa-bolt" /></div>
-            <div><i class="fa-brands fa-btc" /></div>
-          </div>
-        </template>
-        <!-- HBD Button -->
-        <template #hbd>
-          <div class="column items-center q-pa-none" style="font-size: 1.2rem">
-            <div><HbdLogoIcon /></div>
-            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-              HBD
+      <div v-if="false">
+        <q-btn-toggle
+          spread
+          v-model="destination"
+          push
+          dense
+          glossy
+          toggle-color="primary"
+          :options="options"
+          @update:model-value="(val) => updateDestination(val)"
+        >
+          <template #lightning>
+            <div class="row items-center q-pa-none" style="font-size: 1.2rem">
+              <div><i class="fa-sharp fa-solid fa-bolt" /></div>
+              <div><i class="fa-brands fa-btc" /></div>
             </div>
-          </div>
-        </template>
-        <!-- Hive Button -->
-        <template #hive>
-          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
-            <div><i class="fa-brands fa-hive" /></div>
-            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-              Hive
+          </template>
+          <!-- HBD Button -->
+          <template #hbd>
+            <div
+              class="column items-center q-pa-none"
+              style="font-size: 1.2rem"
+            >
+              <div><HbdLogoIcon /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                HBD
+              </div>
             </div>
-          </div>
-        </template>
-      </q-btn-toggle>
+          </template>
+          <!-- Hive Button -->
+          <template #hive>
+            <div
+              class="column items-center q-pa-none"
+              style="font-size: 2.05rem"
+            >
+              <div><i class="fa-brands fa-hive" /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                Hive
+              </div>
+            </div>
+          </template>
+        </q-btn-toggle>
+      </div>
       <!-- End HBD Hive and Sats toggle -->
       <q-slide-transition appear disappear :duration="500">
         <div v-if="destination != 'sats'">
@@ -147,7 +208,11 @@
       <AlternateCurrency v-model="CurrencyCalc" />
     </div>
   </div>
-  <AskHASDialog v-if="HASDialog.show" v-model="HASDialog" />
+  <AskDetailsDialog
+    v-model="dInvoice"
+    @amounts="(val) => receiveAmounts(val)"
+    @newInvoice="(val) => receiveNewInvoice(val)"
+  />
 </template>
 
 <script setup>
@@ -160,7 +225,7 @@ import { useI18n } from "vue-i18n"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { QRLightningHiveColor } from "src/use/useUtils"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
-import AskHASDialog from "src/components/hive/AskHASDialog.vue"
+import AskDetailsDialog from "src/components/lightning/AskDetailsDialog.vue"
 import { useGenerateHiveTransferOp } from "src/use/useHive"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { serverHiveAccount } from "src/boot/axios"
@@ -183,6 +248,8 @@ const privateMemo = ref(false)
 
 const bech32 = ref("")
 const amount = ref(0)
+const amountButton = ref("")
+const dInvoice = ref({})
 
 const CurrencyCalc = ref({ amount: 0, currency: "hbd" })
 
@@ -245,6 +312,19 @@ onMounted(async () => {
   updateDestination()
 })
 
+function setAmountButton() {
+  if (amounts.value?.sats) {
+    amountButton.value = amounts.value.sats + " sats"
+  } else {
+    amountButton.value = t("amount")
+  }
+}
+
+async function setAmount() {
+  dInvoice.value.makingInvoice = true
+  dInvoice.value.askDetails = true
+}
+
 watch(storeUser, (val) => {
   if (val) {
     updateDestination()
@@ -297,7 +377,6 @@ function copyText() {
     icon: "check_circle",
   })
 }
-
 
 // TODO: #214 move this to the Hive payment component
 async function makePayment(method) {

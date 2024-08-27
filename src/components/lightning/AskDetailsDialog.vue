@@ -28,11 +28,11 @@
               </p>
             </div>
             <div
-              v-if="dInvoice.v4vapp.metadata.imgUrl"
+              v-if="dInvoice.v4vapp?.metadata?.imgUrl"
               class="right-side-details col-5 q-gutter-md"
             >
               <q-img
-                :src="dInvoice.v4vapp.metadata.imgUrl"
+                :src="dInvoice.v4vapp?.metadata?.imgUrl"
                 spinner-color="red"
                 style="height: 150px; max-width: 150px"
               />
