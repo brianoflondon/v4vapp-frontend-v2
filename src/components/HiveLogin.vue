@@ -45,6 +45,18 @@
             @click="loginHAS(hiveAccObj?.value)"
           ></q-btn>
         </q-item>
+        <q-item class="justify-center">
+          <q-btn
+            style="width: 200px"
+            :disable="false"
+            :label="evmAddressLabel"
+            align="left"
+            :color="hasButtonEnabled ? 'grey-9' : 'primary'"
+            rounded
+            icon="fa-brands fa-ethereum"
+            @click="connectEVM"
+          ></q-btn>
+        </q-item>
         <q-item class="justify-center" clickable v-if="displayQRCode">
           <div class="flex column text-center justify-center">
             <div class="row text-center justify-center">
@@ -91,11 +103,14 @@
 import { ref, watch, onMounted, computed } from "vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
+import { useGetChallenge } from "src/use/useUtils"
 import {
   useIsHiveKeychainInstalled,
   useKeychainLoginFlow,
+  useValidateApi,
 } from "src/use/useKeychain"
 import { useHAS, useHASLogin, useIsHASAvailable } from "src/use/useHAS"
+import {} from "src/use/useEVM"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
@@ -180,6 +195,71 @@ async function loginHAS(username) {
   }
 }
 
+const evmConnected = ref("")
+const evmAddressLabel = ref("EVM Login")
+
+async function connectEVM() {
+  if (typeof window.ethereum !== "undefined") {
+    try {
+      await window.ethereum.request({ method: "eth_requestAccounts" })
+      // request account Address
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })
+      if (accounts.length > 0) {
+        evmConnected.value = accounts[0]
+        evmAddressLabel.value =
+          accounts[0].substring(0, 6) + "..." + accounts[0].substring(38)
+        console.log("Wallet connected", accounts)
+        console.log("evmConnected.value: ", evmConnected.value)
+        const clientId = storeUser.clientId
+        const challenge = await useGetChallenge(evmConnected.value, clientId)
+        console.log("challenge: ", challenge)
+        // now we have the challenge, we can sign it
+        const signature = await signMessage(
+          evmConnected.value,
+          challenge.data.challenge
+        )
+        console.log("signature: ", signature)
+        // now we can send the signature back to the server
+        const signatureData = {
+          success: true,
+          result: signature,
+          data: {
+            username: evmConnected.value,
+            message: challenge.data.challenge,
+          },
+          signature: signature,
+          account: evmConnected.value,
+        }
+        console.log("signatureData: ", signatureData)
+        try {
+          const validate = await useValidateApi(clientId, signatureData)
+          console.log("validate: ", validate)
+        } catch (error) {
+          console.error("Error validating signature: ", error)
+        }
+      }
+    } catch (error) {
+      console.error("User denied wallet connection", error)
+    }
+  } else {
+    console.log("No Ethereum wallet found")
+  }
+}
+
+async function signMessage(address, message) {
+  try {
+    const signature = await window.ethereum.request({
+      method: "personal_sign",
+      params: [message, address],
+    })
+    return signature
+  } catch (error) {
+    console.error("Error signing message:", error)
+  }
+}
+
 watch(qrCodeTextHAS, (newValue) => {
   console.debug("qrCodeTextHAS newValue: ", newValue)
   if (!newValue) {
@@ -194,8 +274,6 @@ onMounted(async () => {
   isKeychain.value = await useIsHiveKeychainInstalled()
   isHAS.value = await useIsHASAvailable()
 })
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // Review this later
 // TODO: #46 Review this later
