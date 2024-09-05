@@ -3,8 +3,7 @@
 // General utility functions
 //
 // ----------------------------------------------------------------------------
-
-import { useQuasar } from "quasar"
+import { useQuasar, Notify } from "quasar"
 import { useI18n } from "vue-i18n"
 import { apiLogin } from "boot/axios"
 import { productName, version } from "../../package.json"
