@@ -61,6 +61,13 @@ export async function useHiveKeychainLogin({
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+/**
+ * Performs the login flow using Hive Keychain.
+ *
+ * @param {Object} hiveAccObj - The Hive account object.
+ * @param {Object} props - The props object.
+ * @returns {void}
+ */
 export async function useKeychainLoginFlow(hiveAccObj, props) {
   // Fetch the avatar for the user
   const t = i18n.global.t
