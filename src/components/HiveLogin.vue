@@ -45,6 +45,7 @@
             @click="loginHAS(hiveAccObj?.value)"
           ></q-btn>
         </q-item>
+        <!-- EVM Button -->
         <q-item class="justify-center">
           <q-btn
             style="width: 200px"
@@ -103,7 +104,7 @@
 import { ref, watch, onMounted, computed } from "vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
-import { useGetChallenge } from "src/use/useUtils"
+import { useGetChallenge, useShortEvmAddress } from "src/use/useUtils"
 import {
   useIsHiveKeychainInstalled,
   useKeychainLoginFlow,
@@ -208,8 +209,7 @@ async function connectEVM() {
       })
       if (accounts.length > 0) {
         evmConnected.value = accounts[0]
-        evmAddressLabel.value =
-          accounts[0].substring(0, 6) + "..." + accounts[0].substring(38)
+        evmAddressLabel.value = useShortEvmAddress(evmConnected.value)
         console.log("Wallet connected", accounts)
         console.log("evmConnected.value: ", evmConnected.value)
         const clientId = storeUser.clientId
@@ -236,6 +236,17 @@ async function connectEVM() {
         try {
           const validate = await useValidateApi(clientId, signatureData)
           console.log("validate: ", validate)
+          console.log("logging in with EVM")
+          await storeUser.login(
+            evmConnected.value,
+            "EVM",
+            null,
+            validate.data?.expire * 1000,
+            null,
+            validate.data.access_token,
+            "evm"
+          )
+          console.log("storeUser.currentUser: ", storeUser.currentUser)
         } catch (error) {
           console.error("Error validating signature: ", error)
         }
