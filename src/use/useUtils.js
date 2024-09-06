@@ -328,3 +328,8 @@ export async function useGetChallenge(hiveAccName, clientId) {
   })
   return getChallenge
 }
+
+
+export function useShortEvmAddress(address) {
+  return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+}

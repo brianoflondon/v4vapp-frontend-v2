@@ -102,7 +102,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
     })
     return
   }
-  // Fetch the challenge message from the server
+  // Fetch the challenge message from the server API
   try {
     const clientId = storeUser.clientId
     const challenge = await useGetChallenge(hiveAccObj.value, clientId)
@@ -126,9 +126,9 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
       signedMessage.success &&
       signedMessage?.data?.message == challenge.data.challenge
     ) {
+      // Validate the signed message with the API
       const validate = await useValidateApi(clientId, signedMessage)
       // convert validate.data.expire to a date
-      const expireDate = new Date(validate.data.expire * 1000)
       // need to store this token in the storeUser store
       hiveAccObj["loggedIn"] = true
       hiveAccObj.caption = validate.data.access_token
@@ -138,8 +138,10 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         null,
         validate.data?.expire * 1000,
         null,
-        validate.data.access_token
+        validate.data.access_token,
+        "hive"  // loginType
       )
+      console.log("storeUser: ", storeUser.users)
       note({
         icon: "done", // we add an icon
         avatar: avatarUrl,
