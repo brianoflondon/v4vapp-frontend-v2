@@ -9,14 +9,16 @@
         :active="storeUser.currentUser === user.hiveAccname"
         active-class="user-list-active"
       >
-        <q-item-section avatar>
+        <q-item-section avatar v-if="user.loginType === 'hive'">
           <q-avatar>
             <HiveAvatar :hiveAccname="user.hiveAccname" />
           </q-avatar>
         </q-item-section>
         <q-item-section>
           <q-item-label>{{ user.profileName }}</q-item-label>
-          <q-item-label caption>@{{ user.hiveAccname }}</q-item-label>
+          <q-item-label v-if="user.loginType === 'hive'" caption
+            >@{{ user.hiveAccname }}</q-item-label
+          >
           <q-tooltip caption>
             {{ $t("Expires") }}
             <br />
@@ -30,17 +32,17 @@
             {{ storeUser.getUser(user.hiveAccname).hasApiToken }}
           </q-tooltip>
         </q-item-section>
-        <q-item-section
-          side
-          v-if="storeUser.getUser(user.hiveAccname).isHAS"
-        >
-            <q-icon name="img:/has/hive-auth-logo.svg" />
+        <q-item-section side v-if="storeUser.getUser(user.hiveAccname).isHAS">
+          <q-icon name="img:/has/hive-auth-logo.svg" />
         </q-item-section>
         <q-item-section
           side
-          v-if="storeUser.getUser(user.hiveAccname).isKeychain"
+          v-if="
+            storeUser.getUser(user.hiveAccname).isKeychain &&
+            user.loginType === 'hive'
+          "
         >
-            <q-icon name="img:/keychain/hive-keychain-round.svg" />
+          <q-icon name="img:/keychain/hive-keychain-round.svg" />
         </q-item-section>
       </q-item>
     </q-list>
