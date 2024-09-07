@@ -6,7 +6,7 @@ import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import {
   tidyNumber,
   generateUUID,
-  useShortEvmAddress,
+  useShortEVMAddress,
 } from "src/use/useUtils.js"
 import { apiLogin, api } from "src/boot/axios"
 import { useKeepSats } from "src/use/useV4vapp"
@@ -475,8 +475,6 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     update(useCache = true) {
       const onOpen = async () => {
-        console.log("update onOpen")
-        console.log("this.currentUser", this.currentUser)
         if (this.currentUser === this.hiveDetails?.name) return
         this.currentDetails = await useHiveDetails(this.currentUser)
         await this.updateSatsBalance(useCache)
@@ -552,7 +550,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           )
         } else {
           console.log("EVM login no Hive details")
-          const profileName = useShortEvmAddress(hiveAccname)
+          const profileName = useShortEVMAddress(hiveAccname)
           newUser = new HiveUser(
             hiveAccname,
             profileName,
