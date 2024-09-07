@@ -104,7 +104,7 @@
 import { ref, watch, onMounted, computed } from "vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
-import { useGetChallenge, useShortEvmAddress } from "src/use/useUtils"
+import { useGetChallenge, useShortEVMAddress } from "src/use/useUtils"
 import {
   useIsHiveKeychainInstalled,
   useKeychainLoginFlow,
@@ -209,7 +209,7 @@ async function connectEVM() {
       })
       if (accounts.length > 0) {
         evmConnected.value = accounts[0]
-        evmAddressLabel.value = useShortEvmAddress(evmConnected.value)
+        evmAddressLabel.value = useShortEVMAddress(evmConnected.value)
         console.log("Wallet connected", accounts)
         console.log("evmConnected.value: ", evmConnected.value)
         const clientId = storeUser.clientId

@@ -380,6 +380,7 @@ import {
 } from "src/use/useHive.js"
 import { useConfirmPayWithApi } from "src/use/useV4vapp"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
+import { useEVMAddressExists } from "src/use/useEVM"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
 import KeychainShowQR from "components/hive/KeychainShowQR.vue"
@@ -716,15 +717,14 @@ async function decodeInvoice() {
     }
     // trim invoiceText
     invoiceText.value = invoiceText.value.trim()
-    const [isHiveAccount, dInvoiceValue] = await Promise.all([
+    const [isHiveAccount, isEVMAccount, dInvoiceValue] = await Promise.all([
       useHiveAccountExists(invoiceText.value),
+      useEVMAddressExists(invoiceText.value),
       useDecodeLightningInvoice(invoiceText.value),
     ])
-
     dInvoice.value = dInvoiceValue
-    if (isHiveAccount.exists) {
+    if (isHiveAccount.exists || isEVMAccount.valid) {
       if (!storeUser.keepSatsBalanceNum) {
-        // TODO: replace with translation
         errorMessage.value = t("keepssats_error")
         dInvoice.value = {
           v4vapp: {
@@ -901,60 +901,6 @@ async function confirmPayWithApi(message) {
   }
   return
 }
-
-// async function payWithApi() {
-//   try {
-//     let response
-//     if (dInvoice.value?.v4vapp.type === "hiveAccname") {
-//       response = await useKeepSatsTransfer(
-//         dInvoice.value.v4vapp.sendTo,
-//         dInvoice.value.satoshis,
-//         dInvoice.value.v4vapp.comment
-//       )
-//     } else {
-//       response = await useKeepSatsInvoice(dInvoice.value.paymentRequest)
-//     }
-//     // extract the message from this response
-//     paymentInProgressDialog.value.hide()
-//     if (response.success) {
-//       q.notify({
-//         color: "positive",
-//         timeout: 5000,
-//         message: response.message,
-//         position: "top",
-//       })
-//     } else {
-//       const message = `${t("payment_failed")} - ${response?.message}`
-//       q.notify({
-//         color: "negative",
-//         timeout: 5000,
-//         message: message,
-//         position: "top",
-//         actions: [
-//           {
-//             label: "OK",
-//             color: "white",
-//             handler: () => {
-//               return
-//             },
-//           },
-//         ],
-//       })
-//     }
-//     // wait 2 seconds then clear the form
-//     storeUser.updateSatsBalance(false)
-//     await new Promise((resolve) => setTimeout(resolve, 4000))
-//     clearReset()
-//   } catch (e) {
-//     console.error("Error in payWithApi", e)
-//     q.notify({
-//       color: "negative",
-//       timeout: 5000,
-//       message: t("payment_failed"),
-//       position: "top",
-//     })
-//   }
-// }
 
 /**
  * Pay the invoice using the specified currency and method.
