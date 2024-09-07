@@ -68,6 +68,7 @@ import { ref, watch } from "vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import { useI18n } from "vue-i18n"
 import { useHiveProfile } from "src/use/useHive"
+import { useIsEVMAddress, useShortEVMAddress } from "src/use/useEVM"
 
 const props = defineProps({
   label: {
@@ -152,6 +153,15 @@ async function updateHiveAccTo(val, fixed) {
     isValidAccount.value = true
     if (simpleHiveInput.value) {
       simpleHiveInput.value.validate()
+    }
+  } else {
+    console.log("No Hive profile found for", val)
+    const isEVM = useIsEVMAddress(val)
+    if (isEVM) {
+      modelValue.value.caption = useShortEVMAddress(val)
+      modelValue.value.fixedUser = fixed
+      modelValue.value.valid = true
+      isValidAccount.value = true
     }
   }
 }
