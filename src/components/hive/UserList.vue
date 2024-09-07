@@ -9,7 +9,7 @@
         :active="storeUser.currentUser === user.hiveAccname"
         active-class="user-list-active"
       >
-        <q-item-section avatar v-if="user.loginType === 'hive'">
+        <q-item-section avatar>
           <q-avatar>
             <HiveAvatar :hiveAccname="user.hiveAccname" />
           </q-avatar>
