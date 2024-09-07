@@ -79,7 +79,7 @@
       >
         <q-btn
           spread
-          :label="lightningAddress"
+          :label="lightningAddressLabel"
           icon="content_copy"
           @click="copyText"
           name="amount"
@@ -159,6 +159,7 @@ import { useQuasar, copyToClipboard } from "quasar"
 import { useI18n } from "vue-i18n"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import { QRLightningHiveColor } from "src/use/useUtils"
+import { useShortEVMAddress } from "src/use/useEVM"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import AskHASDialog from "src/components/hive/AskHASDialog.vue"
 import { useGenerateHiveTransferOp } from "src/use/useHive"
@@ -209,6 +210,16 @@ const lightningAddress = computed(() => {
     destination.value === "hive" ? "v4v.app" : `${destination.value}.v4v.app`
   const address = `${storeUser.currentUser}@${path}`
   return address
+})
+
+const lightningAddressLabel = computed(() => {
+  if (!storeUser.currentUser) {
+    return ""
+  }
+  const path =
+    destination.value === "hive" ? "v4v.app" : `${destination.value}.v4v.app`
+  const name = useShortEVMAddress(storeUser.currentUser)
+  return `${name}@${path}`
 })
 
 const qrCodeHive = computed(() => {
@@ -297,7 +308,6 @@ function copyText() {
     icon: "check_circle",
   })
 }
-
 
 // TODO: #214 move this to the Hive payment component
 async function makePayment(method) {
