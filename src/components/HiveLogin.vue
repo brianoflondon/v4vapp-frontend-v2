@@ -104,7 +104,8 @@
 import { ref, watch, onMounted, computed } from "vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
-import { useGetChallenge, useShortEVMAddress } from "src/use/useUtils"
+import { useGetChallenge } from "src/use/useUtils"
+import { useShortEVMAddress } from "src/use/useEVM"
 import {
   useIsHiveKeychainInstalled,
   useKeychainLoginFlow,
