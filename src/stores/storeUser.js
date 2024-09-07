@@ -3,11 +3,8 @@ import { useHiveDetails } from "../use/useHive.js"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
-import {
-  tidyNumber,
-  generateUUID,
-  useShortEVMAddress,
-} from "src/use/useUtils.js"
+import { tidyNumber, generateUUID } from "src/use/useUtils.js"
+import { useShortEVMAddress } from "src/use/useEVM.js"
 import { apiLogin, api } from "src/boot/axios"
 import { useKeepSats } from "src/use/useV4vapp"
 import { Notify } from "quasar"
