@@ -208,6 +208,7 @@ import {
   usePasskeyDelete,
   usePasskeyUpdate,
 } from "src/use/usePasskeys"
+import { useIsEVMAddress } from "src/use/useEVM"
 import { useStoreUser } from "src/stores/storeUser"
 import { useI18n } from "vue-i18n"
 import HiveInputAcc from "components/HiveInputAcc.vue"
@@ -308,14 +309,17 @@ async function doPasskeyLogin() {
   const result = await usePasskeyLogin(hiveAccObj.value.value)
   if (result.success) {
     let expireDate = new Date()
+    const loginType = useIsEVMAddress(hiveAccObj.value.value) ? "evm" : "hive"
     expireDate.setDate(expireDate.getDate() + 7)
+    // StoreUser.login
     await storeUser.login(
       hiveAccObj.value.value,
       "active",
       "webauthn",
       expireDate,
       null,
-      result.token
+      result.token,
+      loginType
     )
     Notify.create({
       message: "Logged in with passkey",
