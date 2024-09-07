@@ -12,7 +12,8 @@
       <template v-slot:body="props">
         <q-tr :props="props.row" class="no-divider">
           <q-td dense class="text-left">
-            {{ useShortEVMAddress(props.row.reason_str) }} {{ props.row.reason }}
+            {{ useShortEVMAddress(props.row.reason_str) }}
+            {{ props.row.reason }}
           </q-td>
           <q-td class="text-right">
             {{ tidyNumber(props.row.hive, 3) }}
@@ -94,7 +95,7 @@ import { ref, computed } from "vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber } from "src/use/useUtils"
 import { useGenerateTxUrl } from "src/use/useHive"
-import { useShortEVMAddress } from "src/use/useUtils"
+import { useShortEVMAddress } from "src/use/useEVM"
 
 const t = useI18n().t
 const props = defineProps({
