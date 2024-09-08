@@ -47,6 +47,7 @@
         </q-item>
         <!-- EVM Button -->
         <q-item class="justify-center">
+          {{ evmButtonDisabled }}
           <q-btn
             style="width: 200px"
             :disable="false"
@@ -55,11 +56,12 @@
             :color="nostrButtonDisabled ? 'grey-9' : 'primary'"
             rounded
             icon="fa-brands fa-ethereum"
-            @click="connectEVM"
+            @click="useEVMLoginFlow"
           ></q-btn>
         </q-item>
         <!-- Nostr Button -->
         <q-item class="justify-center">
+          {{ nostrButtonDisabled }}
           <q-btn
             style="width: 200px"
             :disable="false"
@@ -115,20 +117,19 @@
  */
 
 import { ref, watch, onMounted, onUpdated, computed } from "vue"
+import { useStoreUser } from "src/stores/storeUser"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
-import { useGetChallenge } from "src/use/useUtils"
+import { useGetChallenge, useValidateApi } from "src/use/useUtils"
 import { useShortEVMAddress } from "src/use/useEVM"
 import {
   useIsHiveKeychainInstalled,
   useKeychainLoginFlow,
-  useValidateApi,
 } from "src/use/useKeychain"
 import { useHAS, useHASLogin, useIsHASAvailable } from "src/use/useHAS"
-import {} from "src/use/useEVM"
+import { useEVMLoginFlow } from "src/use/useEVM"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
-import { useStoreUser } from "src/stores/storeUser"
 import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue"
 import CountdownBar from "src/components/utils/CountdownBar.vue"
 
@@ -141,21 +142,10 @@ const timeMessage = ref()
 const t = useI18n().t
 const quasar = useQuasar()
 
-if (Platform.is.mobile) {
-  console.debug("Running on a mobile device")
-} else {
-  console.debug("Not running on a mobile device")
-}
-
 const isHAS = ref(true)
 const isKeychain = ref(true)
-
-// :disable="
-//   typeof hiveAccObj === 'undefined' ||
-//   hiveAccObj?.value === '' ||
-//   hiveAccObj?.value === null ||
-//   isKeychain === false
-// "
+const evmButtonDisabled = ref(true)
+const nostrButtonDisabled = ref(true)
 
 onMounted(async () => {
   console.debug("onMounted HiveLogin")
@@ -163,10 +153,6 @@ onMounted(async () => {
   isHAS.value = await useIsHASAvailable()
   nostrButtonDisabled.value = await nostrButtonCheckDisabled()
   evmButtonDisabled.value = await evmButtonCheckDisabled()
-})
-
-onUpdated(async () => {
-  console.debug("afterMounted HiveLogin")
   console.log("nostrButtonDisabled: ", nostrButtonDisabled.value)
   console.log("evmButtonDisabled: ", evmButtonDisabled.value)
 })
@@ -188,9 +174,6 @@ const hasButtonDisabled = computed(() => {
   )
 })
 
-const evmButtonDisabled = ref(true)
-const nostrButtonDisabled = ref(true)
-
 async function nostrButtonCheckDisabled() {
   if (typeof window.nostr !== "undefined") {
     console.log("Nostr wallet found")
@@ -206,6 +189,17 @@ async function connectNostr() {
     try {
       const nostrPubkey = await window.nostr.getPublicKey() // returns a public key as hex
       console.log("nostrPubkey: ", nostrPubkey)
+      // Create an event object
+      const event = {
+        created_at: Math.floor(Date.now() / 1000),
+        kind: 1, // Kind 1 is a text note in Nostr
+        tags: [],
+        content: "This is the text to be signed",
+      }
+
+      // Sign the event
+      const signedEvent = await window.nostr.signEvent(event)
+      console.log("Signed event: ", signedEvent)
     } catch (error) {
       console.error("Error connecting to Nostr", error)
     }

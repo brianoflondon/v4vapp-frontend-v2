@@ -329,3 +329,37 @@ export async function useGetChallenge(hiveAccName, clientId) {
   return getChallenge
 }
 
+/**
+ * Validates the signed message with the API.
+ *
+ * @param {string} signedMessage - The signed message to be validated.
+ * @param {string} clientId - The client ID.
+ * @returns {Promise} - A promise that resolves with the validation result.
+ */
+export async function useValidateApi(clientId, signedMessage) {
+  Notify.create({
+    timeout: 2000,
+    color: "warning",
+    message: "Validating...",
+    position: "left",
+  })
+  try {
+    const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {
+      params: {
+        clientId: clientId,
+      },
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    return validate
+  } catch (error) {
+    if (validate.status === 422) {
+      Notify.create({
+        message: "422 error from validate",
+      })
+    }
+    console.error({ error })
+    return error
+  }
+}
