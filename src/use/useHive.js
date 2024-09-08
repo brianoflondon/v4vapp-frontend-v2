@@ -140,7 +140,10 @@ export function useBlankProfileURL(type = "hive") {
     }
   }
   if (type === "evm") {
-    return "/avatars/ethereum-eth-logo.svg"
+    return "/avatars/login-icons/ethereum-eth-logo.svg"
+  }
+  if (type === "nostr") {
+    return "/avatars/login-icons/nostr_logo_prpl_wht_rnd.svg"
   }
 }
 
