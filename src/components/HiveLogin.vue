@@ -17,10 +17,10 @@
         <q-item dense class="justify-center">
           <q-btn
             style="width: 200px"
-            :disable="keychainButtonEnabled"
+            :disable="keychainButtonDisabled"
             align="left"
             rounded
-            :color="keychainButtonEnabled ? 'grey-9' : 'primary'"
+            :color="keychainButtonDisabled ? 'grey-9' : 'primary'"
             :label="t('hive_keychain')"
             icon="img:/keychain/hive-keychain-round.svg"
             @click="useKeychainLoginFlow(hiveAccObj, props)"
@@ -36,10 +36,10 @@
         <q-item class="justify-center">
           <q-btn
             style="width: 200px"
-            :disable="hasButtonEnabled"
+            :disable="hasButtonDisabled"
             label="HAS"
             align="left"
-            :color="hasButtonEnabled ? 'grey-9' : 'primary'"
+            :color="hasButtonDisabled ? 'grey-9' : 'primary'"
             rounded
             icon="img:/has/hive-auth-logo.svg"
             @click="loginHAS(hiveAccObj?.value)"
@@ -52,10 +52,23 @@
             :disable="false"
             :label="evmAddressLabel"
             align="left"
-            :color="hasButtonEnabled ? 'grey-9' : 'primary'"
+            :color="nostrButtonDisabled ? 'grey-9' : 'primary'"
             rounded
             icon="fa-brands fa-ethereum"
             @click="connectEVM"
+          ></q-btn>
+        </q-item>
+        <!-- Nostr Button -->
+        <q-item class="justify-center">
+          <q-btn
+            style="width: 200px"
+            :disable="false"
+            :label="nostrAddressLabel"
+            align="left"
+            :color="nostrButtonDisabled ? 'grey-9' : 'primary'"
+            rounded
+            icon="fa-brands fa-ethereum"
+            @click="connectNostr"
           ></q-btn>
         </q-item>
         <q-item class="justify-center" clickable v-if="displayQRCode">
@@ -101,7 +114,7 @@
  *
  */
 
-import { ref, watch, onMounted, computed } from "vue"
+import { ref, watch, onMounted, onUpdated, computed } from "vue"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import { useGetChallenge } from "src/use/useUtils"
@@ -144,7 +157,21 @@ const isKeychain = ref(true)
 //   isKeychain === false
 // "
 
-const keychainButtonEnabled = computed(() => {
+onMounted(async () => {
+  console.debug("onMounted HiveLogin")
+  isKeychain.value = await useIsHiveKeychainInstalled()
+  isHAS.value = await useIsHASAvailable()
+  nostrButtonDisabled.value = await nostrButtonCheckDisabled()
+  evmButtonDisabled.value = await evmButtonCheckDisabled()
+})
+
+onUpdated(async () => {
+  console.debug("afterMounted HiveLogin")
+  console.log("nostrButtonDisabled: ", nostrButtonDisabled.value)
+  console.log("evmButtonDisabled: ", evmButtonDisabled.value)
+})
+
+const keychainButtonDisabled = computed(() => {
   return (
     typeof hiveAccObj.value === "undefined" ||
     hiveAccObj.value.value === "" ||
@@ -153,13 +180,39 @@ const keychainButtonEnabled = computed(() => {
   )
 })
 
-const hasButtonEnabled = computed(() => {
+const hasButtonDisabled = computed(() => {
   return (
     typeof hiveAccObj.value === "undefined" ||
     hiveAccObj.value.value === "" ||
     hiveAccObj.value.value === null
   )
 })
+
+const evmButtonDisabled = ref(true)
+const nostrButtonDisabled = ref(true)
+
+async function nostrButtonCheckDisabled() {
+  if (typeof window.nostr !== "undefined") {
+    console.log("Nostr wallet found")
+    return false
+  }
+  return true
+}
+
+const nostrAddressLabel = ref("Nostr Login")
+
+async function connectNostr() {
+  if (typeof window.nostr !== "undefined") {
+    try {
+      const nostrPubkey = await window.nostr.getPublicKey() // returns a public key as hex
+      console.log("nostrPubkey: ", nostrPubkey)
+    } catch (error) {
+      console.error("Error connecting to Nostr", error)
+    }
+  } else {
+    console.log("No Nostr wallet found")
+  }
+}
 
 const props = defineProps({
   label: {
@@ -200,6 +253,19 @@ async function loginHAS(username) {
 const evmConnected = ref("")
 const evmAddressLabel = ref("EVM Login")
 
+async function evmButtonCheckDisabled() {
+  if (typeof window.ethereum !== "undefined") {
+    console.log("EVM wallet found")
+    return false
+  }
+  return true
+}
+
+/**
+ * Connects to the EVM.
+ *
+ * @returns {Promise<void>} A promise that resolves when the connection is established.
+ */
 async function connectEVM() {
   if (typeof window.ethereum !== "undefined") {
     try {
@@ -279,12 +345,6 @@ watch(qrCodeTextHAS, (newValue) => {
     return
   }
   displayQRCode.value = true
-})
-
-onMounted(async () => {
-  console.debug("onMounted HiveLogin")
-  isKeychain.value = await useIsHiveKeychainInstalled()
-  isHAS.value = await useIsHASAvailable()
 })
 
 // Review this later
