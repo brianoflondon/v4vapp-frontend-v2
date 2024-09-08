@@ -88,10 +88,17 @@ export async function useEVMLoginFlow() {
           account: evmConnected,
         }
         console.log("signatureData: ", signatureData)
+        if (!signatureData) {
+          console.error("No signature data returned")
+          return
+        }
         try {
           const validate = await useValidateApi(clientId, signatureData)
           console.log("validate: ", validate)
           console.log("logging in with EVM")
+
+
+
           await storeUser.login(
             evmConnected,
             "EVM",
@@ -101,6 +108,8 @@ export async function useEVMLoginFlow() {
             validate.data.access_token,
             "evm"
           )
+
+
           console.log("storeUser.currentUser: ", storeUser.currentUser)
         } catch (error) {
           console.error("Error validating signature: ", error)

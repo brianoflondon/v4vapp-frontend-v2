@@ -47,7 +47,6 @@
         </q-item>
         <!-- EVM Button -->
         <q-item class="justify-center">
-          {{ evmButtonDisabled }}
           <q-btn
             style="width: 200px"
             :disable="false"
@@ -61,7 +60,6 @@
         </q-item>
         <!-- Nostr Button -->
         <q-item class="justify-center">
-          {{ nostrButtonDisabled }}
           <q-btn
             style="width: 200px"
             :disable="false"
@@ -69,7 +67,7 @@
             align="left"
             :color="nostrButtonDisabled ? 'grey-9' : 'primary'"
             rounded
-            icon="fa-brands fa-ethereum"
+            icon="img:/avatars/login-icons/nostr_logo_prpl_wht_rnd.svg"
             @click="connectNostr"
           ></q-btn>
         </q-item>
@@ -116,7 +114,7 @@
  *
  */
 
-import { ref, watch, onMounted, onUpdated, computed } from "vue"
+import { ref, watch, onMounted, onBeforeMount, computed } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
@@ -147,12 +145,16 @@ const isKeychain = ref(true)
 const evmButtonDisabled = ref(true)
 const nostrButtonDisabled = ref(true)
 
+onBeforeMount(async () => {
+  console.debug("onBeforeMount HiveLogin")
+  nostrButtonDisabled.value = await nostrButtonCheckDisabled()
+  evmButtonDisabled.value = await evmButtonCheckDisabled()
+})
+
 onMounted(async () => {
   console.debug("onMounted HiveLogin")
   isKeychain.value = await useIsHiveKeychainInstalled()
   isHAS.value = await useIsHASAvailable()
-  nostrButtonDisabled.value = await nostrButtonCheckDisabled()
-  evmButtonDisabled.value = await evmButtonCheckDisabled()
   console.log("nostrButtonDisabled: ", nostrButtonDisabled.value)
   console.log("evmButtonDisabled: ", evmButtonDisabled.value)
 })
