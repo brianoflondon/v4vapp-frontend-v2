@@ -76,6 +76,10 @@ export async function useEVMLoginFlow() {
           challenge.data.challenge
         )
         console.log("signature: ", signature)
+        if (!signature) {
+          console.error("User Rejected Signature Request")
+          return
+        }
         // now we can send the signature back to the server
         const signatureData = {
           success: true,
@@ -88,16 +92,10 @@ export async function useEVMLoginFlow() {
           account: evmConnected,
         }
         console.log("signatureData: ", signatureData)
-        if (!signatureData) {
-          console.error("No signature data returned")
-          return
-        }
         try {
           const validate = await useValidateApi(clientId, signatureData)
           console.log("validate: ", validate)
           console.log("logging in with EVM")
-
-
 
           await storeUser.login(
             evmConnected,

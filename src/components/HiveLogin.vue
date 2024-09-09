@@ -59,6 +59,7 @@
           ></q-btn>
         </q-item>
         <!-- Nostr Button -->
+        <!--
         <q-item class="justify-center">
           <q-btn
             style="width: 200px"
@@ -68,9 +69,10 @@
             :color="nostrButtonDisabled ? 'grey-9' : 'primary'"
             rounded
             icon="img:/avatars/login-icons/nostr_logo_prpl_wht_rnd.svg"
-            @click="connectNostr"
+            @click="useNostrLoginFlow"
           ></q-btn>
         </q-item>
+        -->
         <q-item class="justify-center" clickable v-if="displayQRCode">
           <div class="flex column text-center justify-center">
             <div class="row text-center justify-center">
@@ -120,6 +122,7 @@ import HiveInputAcc from "components/HiveInputAcc.vue"
 import { useHiveAvatarURL } from "src/use/useHive"
 import { useGetChallenge, useValidateApi } from "src/use/useUtils"
 import { useShortEVMAddress } from "src/use/useEVM"
+// import { useNostrLoginFlow } from "src/use/useNostr"
 import {
   useIsHiveKeychainInstalled,
   useKeychainLoginFlow,
@@ -185,30 +188,6 @@ async function nostrButtonCheckDisabled() {
 }
 
 const nostrAddressLabel = ref("Nostr Login")
-
-async function connectNostr() {
-  if (typeof window.nostr !== "undefined") {
-    try {
-      const nostrPubkey = await window.nostr.getPublicKey() // returns a public key as hex
-      console.log("nostrPubkey: ", nostrPubkey)
-      // Create an event object
-      const event = {
-        created_at: Math.floor(Date.now() / 1000),
-        kind: 1, // Kind 1 is a text note in Nostr
-        tags: [],
-        content: "This is the text to be signed",
-      }
-
-      // Sign the event
-      const signedEvent = await window.nostr.signEvent(event)
-      console.log("Signed event: ", signedEvent)
-    } catch (error) {
-      console.error("Error connecting to Nostr", error)
-    }
-  } else {
-    console.log("No Nostr wallet found")
-  }
-}
 
 const props = defineProps({
   label: {
