@@ -40,17 +40,26 @@ export async function useGetLightingHiveInvoice(
     })
     return callBackResult.data
   } catch (error) {
+    console.error("Error while fetching new lightning invoice")
     console.error(error)
+
+    // Check if the error is a network error
+    if (error.code === "ERR_NETWORK") {
+      let message = "Network error occurred. Please check your connection."
+      console.error(message)
+      return {
+        error: message,
+      }
+    }
     // Check if the error response exists and has a status property
     if (error.response && error.response.status) {
       // Handle 422 status code separately
       if (error.response.status === 422) {
         console.error("Status code 422: Unprocessable Entity")
         return { error: error.response.data.detail[0].msg }
-        // Add your custom logic here
       }
     }
-    return null
+    return { error: "An error occurred while fetching new lightning invoice." }
   }
 }
 
