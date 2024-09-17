@@ -359,7 +359,11 @@ const dotColor = computed(() => {
   if (showLightning.value === null || !showLightning.value) {
     lightning = false
   }
-  return QRLightningHiveColor(showLightning.value, KeychainDialog.value.loading)
+  return QRLightningHiveColor(
+    showLightning.value,
+    KeychainDialog.value.loading,
+    q.dark.isActive
+  )
 })
 
 onBeforeMount(() => {
@@ -575,12 +579,13 @@ async function generateLightningQRCode() {
   const cur = KeychainDialog.value.currencyToSend
   const receiveCurrency = keepSats.value ? "sats" : cur.toLowerCase()
   const storeLndKey = cur + receiveCurrency
+  let lndData = null
   if (
     showLightning.value &&
     KeychainDialog.value?.lndData[storeLndKey] == null
   ) {
     KeychainDialog.value.loading = true
-    const lndData = await useGetLightingHiveInvoice(
+    lndData = await useGetLightingHiveInvoice(
       KeychainDialog.value.hiveAccTo,
       KeychainDialog.value.amountToSend,
       cur,
@@ -592,10 +597,7 @@ async function generateLightningQRCode() {
     KeychainDialog.value.lndData[storeLndKey] = lndData
     KeychainDialog.value.loading = false
   }
-  if (
-    KeychainDialog.value.lndData[storeLndKey]?.error ||
-    KeychainDialog.value.lndData == null
-  ) {
+  if (lndData?.error != null) {
     const message = KeychainDialog.value.lndData[storeLndKey]?.error
       ? KeychainDialog.value.lndData[storeLndKey]?.error
       : t("lightning_invoice_not_created")
@@ -606,7 +608,8 @@ async function generateLightningQRCode() {
       message: "Error: " + message,
       position: "top",
     })
-    showLightning.value = null
+    showLightning.value = false
+    KeychainDialog.value.lndData[storeLndKey] = null
     return
   }
   if (showLightning.value) {

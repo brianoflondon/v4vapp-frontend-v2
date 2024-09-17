@@ -278,7 +278,7 @@ const dotColor = computed(() => {
   if (showLightning.value === null || !showLightning.value) {
     lightning = false
   }
-  return QRLightningHiveColor(showLightning.value, KeychainDialog.value.loading)
+  return QRLightningHiveColor(showLightning.value, KeychainDialog.value.loading, q.dark.isActive)
 })
 
 function dialogShow(event) {

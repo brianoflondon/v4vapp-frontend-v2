@@ -188,7 +188,7 @@ const CurrencyCalc = ref({ amount: 0, currency: "hbd" })
 
 const dotColor = computed(() => {
   let isLightning = destination.value === "sats"
-  return QRLightningHiveColor(isLightning, loading.value)
+  return QRLightningHiveColor(isLightning, loading.value, q.dark.isActive)
 })
 
 const lightningAddressPrefix = computed(() => {

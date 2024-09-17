@@ -292,17 +292,17 @@ export async function putInCache(key, data, expiryTimeInMinutes) {
  * @param {boolean} loading - Indicates whether the QR code is still loading.
  * @returns {string} The color code for the QR code.
  */
-export function QRLightningHiveColor(isLightning, loading) {
-  const q = useQuasar()
+export function QRLightningHiveColor(isLightning, loading, qDarkActive) {
+  console.log("q", qDarkActive)
   if (loading) {
-    return q.dark.isActive ? "#992AC7" : "#2F0D3D"
+    return qDarkActive ? "#992AC7" : "#2F0D3D"
   }
 
   if (isLightning) {
-    return q.dark.isActive ? "#18D231" : "#0A5614"
+    return qDarkActive ? "#18D231" : "#0A5614"
   }
 
-  return q.dark.isActive ? "#1976D2" : "#0E4377"
+  return qDarkActive ? "#1976D2" : "#0E4377"
 }
 
 export function buttonActiveNot(isActive) {

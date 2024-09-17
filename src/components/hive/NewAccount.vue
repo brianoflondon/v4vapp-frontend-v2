@@ -339,7 +339,7 @@ const maxUseableWidth = computed(() => {
 })
 
 const dotColor = computed(() => {
-  return QRLightningHiveColor(true, false)
+  return QRLightningHiveColor(true, false, q.dark.isActive)
 })
 
 async function checkHiveAccountName() {
