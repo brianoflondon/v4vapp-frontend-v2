@@ -335,6 +335,8 @@ function resetCurrencyOptions(localCurrency) {
       value: localCurrency.value,
     }
     currencyOptions.value.unshift(localCurrencyOpt) // Add to the beginning
+    // select this local currency
+    currencySelected.value = localCurrency.value
   }
 }
 
@@ -661,6 +663,8 @@ const memoInput = ref("")
  * @param {string} payWith - The payment method to use.
  */
 function showPaymentQR(payWith) {
+  // always default to not showing lightning invoice first.
+  KeychainDialog.value.showLightning = false
   if (!isPaymentValid.value) {
     return
   }

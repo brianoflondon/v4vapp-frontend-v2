@@ -293,7 +293,6 @@ export async function putInCache(key, data, expiryTimeInMinutes) {
  * @returns {string} The color code for the QR code.
  */
 export function QRLightningHiveColor(isLightning, loading, qDarkActive) {
-  console.log("q", qDarkActive)
   if (loading) {
     return qDarkActive ? "#992AC7" : "#2F0D3D"
   }
