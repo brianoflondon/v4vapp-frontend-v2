@@ -1,4 +1,5 @@
 <template>
+  <div class="debug-only">LocalCurrency.vue</div>
   <div class="bordered-div row wrap justify-between content-start q-gutter-xs">
     <div class="bordered-div col-8">
       <q-select
@@ -43,15 +44,7 @@
           @update:model-value="selectReceiveCurrency($event)"
           toggle-color="primary"
           unelevated
-          :options="[
-            { label: '', value: 'hbd', slot: 'hbd' },
-            { label: '', value: 'hive', slot: 'hive' },
-            {
-              label: '',
-              value: 'sats',
-              slot: 'sats',
-            },
-          ]"
+          :options="buttonOptions"
         >
           <!-- HBD Button -->
           <template #hbd>
@@ -188,9 +181,19 @@ watch(
 watch(
   () => storeUser.pos.receiveCurrency,
   () => {
+    console.log(storeUser.loginType)
     receiveCurrency.value = storeUser.pos.receiveCurrency
   }
 )
+
+const buttonOptions = computed(() => {
+  const isHiveLogin = storeUser?.pos?.accountType === "hive"
+  return [
+    { label: "", value: "hbd", slot: "hbd", disabled: !isHiveLogin },
+    { label: "", value: "hive", slot: "hive", disabled: !isHiveLogin },
+    { label: "", value: "sats", slot: "sats" },
+  ]
+})
 
 async function selectReceiveCurrency(val) {
   console.log(val)

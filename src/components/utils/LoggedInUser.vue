@@ -1,4 +1,5 @@
 <template>
+  <div class="debug-only">LoggedInUser.vue</div>
   <div v-if="storeUser.currentUser" class="q-pa-sm">
     <div v-if="storeUser.loginType === 'hive'">
       <q-avatar round size="sm">

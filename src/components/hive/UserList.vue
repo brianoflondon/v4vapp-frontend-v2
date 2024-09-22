@@ -1,4 +1,5 @@
 <template>
+  <div class="debug-only">UserList.vue</div>
   <div class="q-pa-md user-list">
     <q-list>
       <q-item
@@ -30,6 +31,7 @@
             <br />
             API:
             {{ storeUser.getUser(user.hiveAccname).hasApiToken }}
+            <br />
           </q-tooltip>
         </q-item-section>
         <q-item-section side v-if="storeUser.getUser(user.hiveAccname).isHAS">
@@ -58,6 +60,14 @@ const emit = defineEmits(["update"])
 
 function doClick(item) {
   storeUser.switchUser(item)
+  navigator.clipboard.writeText(item).then(
+    () => {
+      console.log("Copied to clipboard")
+    },
+    (err) => {
+      console.error("Failed to copy to clipboard", err)
+    }
+  )
   emit("update", item)
 }
 </script>
