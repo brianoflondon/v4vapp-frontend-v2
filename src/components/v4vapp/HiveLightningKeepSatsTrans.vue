@@ -375,17 +375,17 @@ async function updateKeepSatsDataFiltered() {
     keepSatsDataFiltered.value = keepSatsData.value
   }
   await getKeepSatsReasons()
-  if (keepSatsDataReasonFilter.value === "All") {
-    return
+  if (keepSatsDataReasonFilter.value !== "All") {
+    keepSatsDataFiltered.value = keepSatsDataFiltered.value.filter(
+      (trx) => trx.reason === keepSatsDataReasonFilter.value
+    )
   }
-  keepSatsDataFiltered.value = keepSatsDataFiltered.value.filter(
-    (trx) => trx.reason === keepSatsDataReasonFilter.value
-  )
   await updateKeepSatsTotals()
 }
 
 async function updateKeepSatsTotals() {
   const tempTotal = keepSatsDataFiltered.value
+  console.log("number of entries", tempTotal.length)
   keepSatsTotal.value = 0
   keepHiveTotal.value = 0
   for (let i = 0; i < tempTotal.length; i++) {
