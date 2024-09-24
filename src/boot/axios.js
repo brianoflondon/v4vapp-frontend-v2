@@ -42,6 +42,7 @@ if (useLocal) {
 }
 
 const serverHiveAccount = useLocal ? "hivehydra" : "v4vapp"
+const serverHiveAccountTreasury = useLocal ? "v4vapp.tre" : "v4vapp.tre"
 
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({ baseURL: apiLoginURL })
@@ -60,4 +61,12 @@ export default boot(({ app }) => {
   app.config.globalProperties.$apiLogin = apiLogin
 })
 
-export { axios, api, apiLogin, apiURL, myNodePubKey, serverHiveAccount }
+export {
+  axios,
+  api,
+  apiLogin,
+  apiURL,
+  myNodePubKey,
+  serverHiveAccount,
+  serverHiveAccountTreasury,
+}
