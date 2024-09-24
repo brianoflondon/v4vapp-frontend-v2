@@ -270,6 +270,9 @@ import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { useI18n } from "vue-i18n"
 import { Dialog, exportFile } from "quasar"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
+import { useIsEVMAddress } from "src/use/useEVM"
+import { serverHiveAccountTreasury } from "src/boot/axios"
+
 const t = useI18n().t
 const storeAPIStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
@@ -355,6 +358,17 @@ watch(
 watch([() => storeUser.localCurrency, () => storeUser.pos.fixedRate], () => {
   calcTotalAmounts()
 })
+
+watch(
+  () => KeychainDialog.value.checkCode,
+  () => {
+    updateTransactions()
+    console.log(
+      "Updating transactions KeychainDialog.value.checkCode",
+      KeychainDialog.value.checkCode
+    )
+  }
+)
 
 async function calcTotalAmounts() {
   calcLocalTotal()
@@ -613,22 +627,20 @@ async function retryPending(props) {
  * @returns {void}
  */
 async function updateTransactions() {
-  // show where this function was called from
-  // console.log(
-  //   "updateTransactions called from",
-  //   new Error().stack.split("\n")[2]
-  // )
-  const trans = await useGetHiveTransactionHistory(
-    KeychainDialog.value.hiveAccTo,
-    200
-  )
+  let checkHiveAccount = KeychainDialog.value.hiveAccTo
+  let evmFilter = false
+  if (useIsEVMAddress(KeychainDialog.value.hiveAccTo)) {
+    checkHiveAccount = serverHiveAccountTreasury
+    evmFilter = true
+  }
+
+  const trans = await useGetHiveTransactionHistory(checkHiveAccount, 200)
   if (trans) {
     // Filter out the transactions that are not from the POS
     let posTrans = trans.filter((transaction) => {
       const memo = transaction.op[1].memo
       return memo && memo.match(/v4v-\w+$/)
     })
-
     // If posTrans is empty, exit early
     if (posTrans.length === 0) {
       return
