@@ -3,6 +3,7 @@
 // Functions related to Hive
 // ----------------------------------------------------------------------------
 import { apiURL, api, apiLogin } from "boot/axios"
+import { useIsEVMAddress } from "src/use/useEVM"
 import { Dark } from "quasar"
 import { genRandAlphaNum } from "src/use/useUtils"
 import "src/assets/hive-tx.min.js"
@@ -129,12 +130,20 @@ export function useHiveAvatarRef({
   return hiveAvatar
 }
 
-export function useBlankProfileURL() {
+export function useBlankProfileURL(type = "hive") {
   // Returns the blank profile image
-  if (Dark.isActive) {
-    return "/avatars/hive_logo_dark.svg"
-  } else {
-    return "/avatars/hive_logo_light.svg"
+  if (type === "hive") {
+    if (Dark.isActive) {
+      return "/avatars/hive_logo_dark.svg"
+    } else {
+      return "/avatars/hive_logo_light.svg"
+    }
+  }
+  if (type === "evm") {
+    return "/avatars/login-icons/ethereum-eth-logo.svg"
+  }
+  if (type === "nostr") {
+    return "/avatars/login-icons/nostr_logo_prpl_wht_rnd.svg"
   }
 }
 
@@ -146,6 +155,9 @@ export function useHiveAvatarURL({
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    if (hiveAccname && useIsEVMAddress(hiveAccname)) {
+      return useBlankProfileURL("evm")
+    }
     return useBlankProfileURL()
   }
   return useHiveImages
@@ -161,6 +173,9 @@ export async function useHiveAvatarBlob({
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    if (hiveAccname && useIsEVMAddress(hiveAccname)) {
+      return useBlankProfileURL("evm")
+    }
     return useBlankProfileURL()
   }
   const url = useHiveImages

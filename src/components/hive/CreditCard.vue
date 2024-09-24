@@ -41,39 +41,48 @@
         <!-- Name avatar and buttons -->
         <div class="profile-details col-7 flex items-center">
           <div class="credit-card-avatar">
-            <q-avatar rounded size="lg">
+            <q-avatar v-if="storeUser.loginType === 'hive'" rounded size="lg">
               <HiveAvatar :hiveAccname="storeUser.hiveAccname" />
+            </q-avatar>
+            <q-avatar v-if="storeUser.loginType === 'evm'" round size="lg">
+              <i class="fa-brands fa-ethereum"></i>
+              <q-tooltip>
+                {{ storeUser.profileName }}<br />
+                @{{ storeUser.currentUser }}
+              </q-tooltip>
             </q-avatar>
           </div>
           <div class="credit-card-text q-pl-sm">
             <div class="profile-name text-h7 embossed-text">
               {{ storeUser.profileName }}
             </div>
-            <div class="text-subtitle2">
+            <div v-if="storeUser.loginType === 'hive'" class="text-subtitle2">
               {{ storeUser.hiveAccname }}@v4v.app
             </div>
           </div>
-          <div style="font-size: 1.2rem">
-            <q-checkbox
-              v-model="currencyToggle"
-              size="sm"
-              unchecked-icon="currency_exchange"
-              checked-icon="currency_exchange"
-              :label="storeUser.localCurrency.unit"
-            >
-            </q-checkbox>
-            <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
-          </div>
-          <div class="q-px-sm" style="font-size: 0.7rem">
-            <q-checkbox
-              v-model="savingsToggle"
-              size="sm"
-              checked-icon="savings"
-              unchecked-icon="savings"
-              :label="$t('savings')"
-            >
-            </q-checkbox>
-            <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
+          <div class="row">
+            <div style="font-size: 1.2rem">
+              <q-checkbox
+                v-model="currencyToggle"
+                size="sm"
+                unchecked-icon="currency_exchange"
+                checked-icon="currency_exchange"
+                :label="storeUser.localCurrency.unit"
+              >
+              </q-checkbox>
+              <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
+            </div>
+            <div class="q-px-sm" style="font-size: 0.7rem">
+              <q-checkbox
+                v-model="savingsToggle"
+                size="sm"
+                checked-icon="savings"
+                unchecked-icon="savings"
+                :label="$t('savings')"
+              >
+              </q-checkbox>
+              <q-tooltip>{{ $t("savings_tooltip") }}</q-tooltip>
+            </div>
           </div>
         </div>
         <!-- End Name avatar and buttons -->

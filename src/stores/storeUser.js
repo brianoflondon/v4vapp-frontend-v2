@@ -4,6 +4,7 @@ import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
+import { useShortEVMAddress } from "src/use/useEVM.js"
 import { apiLogin, api } from "src/boot/axios"
 import { useKeepSats } from "src/use/useV4vapp"
 import { Notify } from "quasar"
@@ -24,6 +25,7 @@ export class HiveUser {
    * @param {number|null} [expire=null] - The expiration time (optional).
    * @param {string|null} [token=null] - The token (optional).
    * @param {string|null} [apiToken=null] - The API token (optional).
+   * @param {boolean} [loginType="hive"] - The login type (optional, defaults to "hive" if not provided).
    */
   constructor(
     hiveAccname,
@@ -33,7 +35,8 @@ export class HiveUser {
     authKey = null,
     expire = null,
     token = null,
-    apiToken = null
+    apiToken = null,
+    loginType = "hive"
   ) {
     this.hiveAccname = hiveAccname
     this.profileName = profileName
@@ -42,6 +45,7 @@ export class HiveUser {
     this.expire = expire
     this.token = token
     this.apiToken = apiToken
+    this.loginType = loginType
     if (!timestamp) timestamp = Date.now()
     this.timestamp = timestamp
   }
@@ -56,6 +60,7 @@ export class HiveUser {
       expire: this.expire,
       token: this.token,
       apiToken: this.apiToken,
+      loginType: this.loginType,
     }
   }
 
@@ -103,6 +108,7 @@ export class HiveUser {
   }
 
   get isHAS() {
+    if (this.evm) return false
     if (!this.apiToken) return false
     if (this.authKey) return true
     return false
@@ -112,6 +118,14 @@ export class HiveUser {
     if (!this.apiToken) return false
     if (this.authKey) return false
     return true
+  }
+
+  get isHive() {
+    if (this.loginType === "hive") return true
+  }
+
+  get isEVM() {
+    if (this.loginType === "evm") return true
   }
 
   get allData() {
@@ -126,6 +140,7 @@ export class HiveUser {
       apiToken: this.apiToken,
       timestamp: this.timestamp,
       loginAge: this.loginAge,
+      loginType: this.loginType,
     }
   }
 }
@@ -185,6 +200,11 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveUser.apiToken) return null
       return hiveUser.apiToken
     },
+    loginType() {
+      if (!this.currentUser) return null
+      const hiveUser = this.users[this.currentUser]
+      return hiveUser.loginType
+    },
     user() {
       // Return the HiveUser object for the passed user hiveAccname
       if (!this.currentUser) return null
@@ -210,6 +230,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       return "HiveKeychain"
     },
     isHAS() {
+      console.log("isHAS within the currenty user")
       if (!this.currentUser) return false
       const hiveUser = this.users[this.currentUser]
       console.debug(hiveUser)
@@ -233,6 +254,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @param {number} expire - The expiration time.
      * @param {string} token - The token.
      * @param {string} apiToken - The API token.
+     * @param {string} loginType - The login type.
      */
     getUser: (state) => {
       return (hiveAccname) => {
@@ -246,7 +268,8 @@ export const useStoreUser = defineStore("useStoreUser", {
           temp.authKey,
           temp.expire,
           temp.token,
-          temp.apiToken
+          temp.apiToken,
+          temp.loginType
         )
         return hiveUser
       }
@@ -500,15 +523,18 @@ export const useStoreUser = defineStore("useStoreUser", {
       authKey = null,
       expire = null,
       token = null,
-      apiToken = null
+      apiToken = null,
+      loginType = "hive"
     ) {
       try {
+        console.log("login", hiveAccname, keySelected)
         this.dataLoading = true
         const hiveDetails = await useHiveDetails(hiveAccname)
         this.dataLoading = false
-        const profileName = hiveDetails?.profile?.name || hiveAccname
+        let newUser
         if (hiveDetails) {
-          const newUser = new HiveUser(
+          const profileName = hiveDetails?.profile?.name || hiveAccname
+          newUser = new HiveUser(
             hiveAccname,
             profileName,
             keySelected,
@@ -516,19 +542,37 @@ export const useStoreUser = defineStore("useStoreUser", {
             authKey,
             expire,
             token,
-            apiToken
+            apiToken,
+            loginType
           )
-          if (apiToken) {
-            apiLogin.defaults.headers.common[
-              "Authorization"
-            ] = `Bearer ${apiToken}`
-          }
-          this.users[hiveAccname] = newUser
-          this.currentUser = hiveAccname
+        } else {
+          console.log("EVM login no Hive details")
+          const profileName = useShortEVMAddress(hiveAccname)
+          newUser = new HiveUser(
+            hiveAccname,
+            profileName,
+            keySelected,
+            Date.now(),
+            authKey,
+            expire,
+            token,
+            apiToken,
+            loginType
+          )
+        }
+        console.log("newUser", newUser)
+        if (apiToken) {
+          apiLogin.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${apiToken}`
+        }
+        this.users[hiveAccname] = newUser
+        this.currentUser = hiveAccname
+        if (hiveDetails) {
           this.currentDetails = hiveDetails
           this.currentProfile = hiveDetails.profile
-          this.update()
         }
+        this.update()
       } catch (err) {
         console.error(err)
       }

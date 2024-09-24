@@ -136,7 +136,7 @@
                 {{ formatPrettyDate(props.row.timestamp) }}
               </q-td>
               <q-td :props="props" style="text-align: left" key="reason">
-                {{ props.row.reason_str }}
+                {{ useShortEVMAddress(props.row.reason_str) }}
               </q-td>
               <q-td :props="props" style="text-align: right" key="hive">
                 {{ tidyNumber(props.row.hive, 3) }}
@@ -193,7 +193,7 @@ import { useFetchSatsHistory, useKeepSats } from "src/use/useV4vapp"
 import { useGenerateTxUrl } from "src/use/useHive"
 import KeepSatsDetail from "src/components/v4vapp/KeepSatsDetail.vue"
 import { formatPrettyDate, tidyNumber } from "src/use/useUtils"
-
+import { useShortEVMAddress } from "src/use/useEVM"
 const storeUser = useStoreUser()
 const data = ref([])
 const dataDays = ref({ label: "7 days", value: 7 })

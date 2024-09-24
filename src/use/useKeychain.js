@@ -4,7 +4,7 @@ import { useHiveAvatarURL } from "src/use/useHive.js"
 import { Platform, Notify } from "quasar"
 import { i18n } from "boot/i18n"
 import { useStoreUser } from "src/stores/storeUser"
-import { useGetChallenge } from "src/use/useUtils"
+import { useGetChallenge, useValidateApi } from "src/use/useUtils"
 
 const storeUser = useStoreUser()
 const keychain = new KeychainSDK(window)
@@ -61,6 +61,13 @@ export async function useHiveKeychainLogin({
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+/**
+ * Performs the login flow using Hive Keychain.
+ *
+ * @param {Object} hiveAccObj - The Hive account object.
+ * @param {Object} props - The props object.
+ * @returns {void}
+ */
 export async function useKeychainLoginFlow(hiveAccObj, props) {
   // Fetch the avatar for the user
   const t = i18n.global.t
@@ -95,7 +102,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
     })
     return
   }
-  // Fetch the challenge message from the server
+  // Fetch the challenge message from the server API
   try {
     const clientId = storeUser.clientId
     const challenge = await useGetChallenge(hiveAccObj.value, clientId)
@@ -119,9 +126,9 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
       signedMessage.success &&
       signedMessage?.data?.message == challenge.data.challenge
     ) {
+      // Validate the signed message with the API
       const validate = await useValidateApi(clientId, signedMessage)
       // convert validate.data.expire to a date
-      const expireDate = new Date(validate.data.expire * 1000)
       // need to store this token in the storeUser store
       hiveAccObj["loggedIn"] = true
       hiveAccObj.caption = validate.data.access_token
@@ -131,8 +138,10 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         null,
         validate.data?.expire * 1000,
         null,
-        validate.data.access_token
+        validate.data.access_token,
+        "hive" // loginType
       )
+      console.log("storeUser: ", storeUser.users)
       note({
         icon: "done", // we add an icon
         avatar: avatarUrl,
@@ -218,39 +227,4 @@ export async function useGetApiKeychainChallenge(hiveAccName, clientId) {
     },
   })
   return getChallenge
-}
-
-/**
- * Validates the signed message with the API.
- *
- * @param {string} signedMessage - The signed message to be validated.
- * @param {string} clientId - The client ID.
- * @returns {Promise} - A promise that resolves with the validation result.
- */
-export async function useValidateApi(clientId, signedMessage) {
-  Notify.create({
-    timeout: 2000,
-    color: "warning",
-    message: "Validating...",
-    position: "left",
-  })
-  try {
-    const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {
-      params: {
-        clientId: clientId,
-      },
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-    return validate
-  } catch (error) {
-    if (validate.status === 422) {
-      Notify.create({
-        message: "422 error from validate",
-      })
-    }
-    console.error({ error })
-    return error
-  }
 }

@@ -1,5 +1,6 @@
 <template>
   <q-page>
+    <div class="debug-only">POSPage.vue</div>
     <div>
       <ConfettiExplosion v-if="visible" />
     </div>
@@ -278,6 +279,7 @@ import HiveInputAcc from "src/components/HiveInputAcc.vue"
 import LocalCurrency from "src/components/utils/LocalCurrency.vue"
 import ListTransactions from "src/components/hive/ListTransactions.vue"
 import ConfettiExplosion from "vue-confetti-explosion"
+import { useIsEVMAddress } from "src/use/useEVM"
 
 const route = useRoute()
 const q = useQuasar()
@@ -350,6 +352,10 @@ const explode = async () => {
   visible.value = true
 }
 
+const destinationAccountType = computed(() => {
+  return useIsEVMAddress(hiveAccTo.value.value) ? "evm" : "hive"
+})
+
 watch(route, (to, from) => {
   // Code to execute on route change
   if (to.path.includes("/pos")) {
@@ -400,20 +406,18 @@ watch(
   }
 )
 
-// watch(
-//   () => storeUser.pos.receiveCurrency,
-//   () => {
-//     if (storeUser.pos.receiveCurrency === "hbd") {
-//       handleCurrencyClicked("hbd")
-//     } else if (storeUser.pos.receiveCurrency === "hive") {
-//       handleCurrencyClicked("hive")
-//     } else if (storeUser.pos.receiveCurrency === "sats") {
-//       handleCurrencyClicked("sats")
-//     } else {
-//       handleCurrencyClicked("hbd")
-//     }
-//   }
-// )
+watch(
+  () => hiveAccTo.value.value,
+  () => {
+    console.log("hiveAccTo changed", hiveAccTo.value.value)
+    if (destinationAccountType.value === "evm") {
+      storeUser.pos.receiveCurrency = "sats"
+      storeUser.pos.accountType = "evm"
+    } else {
+      storeUser.pos.accountType = "hive"
+    }
+  }
+)
 
 /**
  * Computed property that checks if the payment is valid.
@@ -449,6 +453,9 @@ const memoHasPipe = computed(() => {
 onMounted(() => {
   if (!storeUser.pos?.receiveCurrency) {
     storeUser.pos.receiveCurrency = "hbd"
+  }
+  if (!storeUser.pos?.hiveAccTo) {
+    useLoggedInUser()
   }
   // give me the first item in the currencyOptions list
 
@@ -551,7 +558,6 @@ function updateAmounts(val) {
 function handleCurrencyClicked(currency) {
   // change amount to match the amount of the selected currency
   // modify this to use updateAmounts
-
   switch (currency) {
     case "hbd":
       amount.value.num = CurrencyCalc.value.hbd

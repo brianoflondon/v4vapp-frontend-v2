@@ -162,7 +162,7 @@ const storeAPIStatus = useStoreAPIStatus()
 const amount = ref("10")
 const memo = ref("")
 
-const btnAmountsNormal = [1, 10, 50, 100, 500, 1000, 5000]
+const btnAmountsNormal = [10, 100, 200, 500, 1000, 1500, 2000, 3000, 5000]
 const btnAmountsSats = [5000, 10000, 25000, 50000, 100000, 250000]
 
 const btnAmounts = ref(btnAmountsNormal)

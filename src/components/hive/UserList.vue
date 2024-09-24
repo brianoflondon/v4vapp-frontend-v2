@@ -1,4 +1,5 @@
 <template>
+  <div class="debug-only">UserList.vue</div>
   <div class="q-pa-md user-list">
     <q-list>
       <q-item
@@ -16,7 +17,9 @@
         </q-item-section>
         <q-item-section>
           <q-item-label>{{ user.profileName }}</q-item-label>
-          <q-item-label caption>@{{ user.hiveAccname }}</q-item-label>
+          <q-item-label v-if="user.loginType === 'hive'" caption
+            >@{{ user.hiveAccname }}</q-item-label
+          >
           <q-tooltip caption>
             {{ $t("Expires") }}
             <br />
@@ -28,19 +31,20 @@
             <br />
             API:
             {{ storeUser.getUser(user.hiveAccname).hasApiToken }}
+            <br />
           </q-tooltip>
         </q-item-section>
-        <q-item-section
-          side
-          v-if="storeUser.getUser(user.hiveAccname).isHAS"
-        >
-            <q-icon name="img:/has/hive-auth-logo.svg" />
+        <q-item-section side v-if="storeUser.getUser(user.hiveAccname).isHAS">
+          <q-icon name="img:/has/hive-auth-logo.svg" />
         </q-item-section>
         <q-item-section
           side
-          v-if="storeUser.getUser(user.hiveAccname).isKeychain"
+          v-if="
+            storeUser.getUser(user.hiveAccname).isKeychain &&
+            user.loginType === 'hive'
+          "
         >
-            <q-icon name="img:/keychain/hive-keychain-round.svg" />
+          <q-icon name="img:/keychain/hive-keychain-round.svg" />
         </q-item-section>
       </q-item>
     </q-list>
@@ -56,6 +60,14 @@ const emit = defineEmits(["update"])
 
 function doClick(item) {
   storeUser.switchUser(item)
+  navigator.clipboard.writeText(item).then(
+    () => {
+      console.log("Copied to clipboard")
+    },
+    (err) => {
+      console.error("Failed to copy to clipboard", err)
+    }
+  )
   emit("update", item)
 }
 </script>

@@ -1,12 +1,24 @@
 <template>
+  <div class="debug-only">LoggedInUser.vue</div>
   <div v-if="storeUser.currentUser" class="q-pa-sm">
-    <q-avatar round size="sm">
-      <img :src="avatar" />
-      <q-tooltip>
-        {{ storeUser.profileName }}<br />
-        @{{ storeUser.currentUser }}
-      </q-tooltip>
-    </q-avatar>
+    <div v-if="storeUser.loginType === 'hive'">
+      <q-avatar round size="sm">
+        <img :src="avatar" />
+        <q-tooltip>
+          {{ storeUser.profileName }}<br />
+          @{{ storeUser.currentUser }}
+        </q-tooltip>
+      </q-avatar>
+    </div>
+    <div v-if="storeUser.loginType === 'evm'">
+      <q-avatar round size="lg">
+        <i class="fa-brands fa-ethereum"></i>
+        <q-tooltip>
+          {{ storeUser.profileName }}<br />
+          @{{ storeUser.currentUser }}
+        </q-tooltip>
+      </q-avatar>
+    </div>
   </div>
 </template>
 

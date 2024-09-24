@@ -195,7 +195,7 @@ function getMinMax(dest) {
       } else {
         min = storeAPIStatus.minMax[dest].min
         max = storeAPIStatus.minMax[dest].max
-
+        // need to error check here if EVMs in play
         min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()])
         max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()])
       }

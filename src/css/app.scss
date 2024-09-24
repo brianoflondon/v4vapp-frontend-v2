@@ -1,5 +1,9 @@
 // app global css in SCSS form
 
+.debug-only {
+  display: none;
+}
+
 .body--dark {
   .top-bar,
   .price-bar,
