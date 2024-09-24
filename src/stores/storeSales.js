@@ -77,6 +77,14 @@ export const useStoreSales = defineStore("storeSales", {
     clearSales() {
       this.requestedSales = []
     },
+    clearOldSales() {
+      // remove sales older than 10 minutes
+      const now = new Date()
+      const oneWeekAgo = new Date(now - 10 * 60 * 60 * 1000)
+      this.requestedSales = this.requestedSales.filter(
+        (sale) => sale.timestamp > oneWeekAgo
+      )
+    },
   },
   persist: {
     enabled: true,
