@@ -280,7 +280,7 @@ import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { useI18n } from "vue-i18n"
 import { Dialog, exportFile } from "quasar"
 import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
-import { useIsEVMAddress } from "src/use/useEVM"
+import { useIsEVMAddress, useShortEVMAddress } from "src/use/useEVM"
 import { serverHiveAccountTreasury } from "src/boot/axios"
 
 const t = useI18n().t
@@ -487,7 +487,10 @@ async function importFromHive() {
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.forEach((transaction) => {
     console.log("transaction", transaction.op[1])
-    const hiveAccTo = transaction.op[1].to
+    let hiveAccTo = transaction.op[1].to
+    if (hiveAccTo === serverHiveAccountTreasury) {
+      hiveAccTo = useShortEVMAddress(KeychainDialog.value.hiveAccTo)
+    }
     let amountString = transaction.op[1].amount
     let amount = transaction.op[1].amount.split(" ")[0]
     const currencyToSend = transaction.op[1].amount.split(" ")[1].toLowerCase()
