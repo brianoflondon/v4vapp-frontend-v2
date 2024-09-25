@@ -252,8 +252,9 @@
     </div>
   </div>
   <!-- End of import buttons and delete buttons -->
+
   <q-expansion-item
-    class="q-mt-md"
+    class="q-mt-md debug-only"
     :label="`${KeychainDialog.transactions?.length || 0}`"
     icon="fa-solid fa-dollar-sign"
     :default-open="false"
@@ -341,8 +342,6 @@ const filteredDataLocal = computed(() => {
   })
 
   if (!searchFilter.value) return filteredByPaidStatus
-  console.log("searchFilter.value", searchFilter.value)
-  console.log("row.hiveAccTo", row.hiveAccTo)
   const filteredData = filteredByPaidStatus.filter((row) => {
     return (
       row.hiveAccTo?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
@@ -373,10 +372,6 @@ watch(
   () => KeychainDialog.value.checkCode,
   () => {
     updateTransactions()
-    console.log(
-      "Updating transactions KeychainDialog.value.checkCode",
-      KeychainDialog.value.checkCode
-    )
   }
 )
 
@@ -445,12 +440,12 @@ async function calcLocalTotal() {
  */
 watch(
   () => KeychainDialog.value.hiveAccTo,
-  async (val) => {
-    console.log("KeychainDialog.value.hiveAccTo", val)
-    // KeychainDialog.value.transactions = val
-    updateTransactions()
-    storeSales.clearSales()
-    importFromHive()
+  async () => {
+    // pause for 0.5 seconds to allow the transactions to update
+    console.log("inside watch for KeychainDialog.value.hiveAccTo pausing ")
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await storeSales.clearSales()
+    await importFromHive()
   }
 )
 
@@ -488,13 +483,10 @@ function expandAll() {
  * 5. Calculates the number of new transactions.
  */
 async function importFromHive() {
-  console.log("importFromHive called")
   const lengthBefore = filteredDataHive.value.length
-  updateTransactions()
-  console.log("filteredDataHive.value", filteredDataHive.value)
+  await updateTransactions()
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.forEach((transaction) => {
-    console.log("transaction", transaction)
     const hiveAccTo = transaction.op[1].to
     const amountString = transaction.op[1].amount
     const amount = transaction.op[1].amount.split(" ")[0]
@@ -659,8 +651,6 @@ async function updateTransactions() {
       return memo && memo.match(/v4v-\w+$/)
     })
     // If posTrans is empty, exit early
-    console.log("trans", trans)
-    console.log("posTrans", posTrans)
     if (posTrans.length === 0) {
       return
     }
@@ -669,8 +659,6 @@ async function updateTransactions() {
     // Add extra fields to the transactions
     posTrans.forEach((transaction) => {
       const memo = transaction.op[1].memo
-      // console.log("transaction", transaction)
-      // console.log("memo", memo)
 
       // Convert timestamp to Unix
       const newDate = new Date(transaction.timestamp + "Z")
@@ -697,10 +685,10 @@ async function updateTransactions() {
  * 1. Clears the transactions.
  * 2. Calls `updateTransactions` to update the transactions.
  */
-onMounted(() => {
+onMounted(async () => {
   // KeychainDialog.value.transactions = []
   // updateTransactions()
-  importFromHive()
+  await importFromHive()
 })
 
 /**
@@ -724,7 +712,6 @@ const filteredDataHive = computed(() => {
     checkHiveAccount = serverHiveAccountTreasury
     evmFilter = true
   }
-  console.log("checkHiveAccount in filter", checkHiveAccount)
   const transactions = KeychainDialog.value.transactions
 
   if (!Array.isArray(transactions)) return []
@@ -734,13 +721,10 @@ const filteredDataHive = computed(() => {
     const newDate = new Date(transaction.timestamp + "Z")
     transaction.timestampUnix = Math.floor(newDate.getTime())
   })
-  console.log("checking for hiveAccTo", checkHiveAccount)
   return transactions.filter((transaction) => {
     const memo = transaction.op[1].memo
     const to = transaction.op[1].to
-    console.log("transaction in filter", transaction)
-    console.log("memo in filter", memo)
-    console.log("memo filtered", memo && memo.match(/v4v-\w+$/))
+    // EVM transactions have the v4v- in the memo and at the end of the memo.
     return (
       to === checkHiveAccount &&
       memo &&
