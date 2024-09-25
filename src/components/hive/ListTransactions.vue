@@ -442,7 +442,6 @@ watch(
   () => KeychainDialog.value.hiveAccTo,
   async () => {
     // pause for 0.5 seconds to allow the transactions to update
-    console.log("inside watch for KeychainDialog.value.hiveAccTo pausing ")
     await new Promise((resolve) => setTimeout(resolve, 500))
     await storeSales.clearSales()
     await importFromHive()
@@ -487,22 +486,34 @@ async function importFromHive() {
   await updateTransactions()
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.forEach((transaction) => {
+    console.log("transaction", transaction.op[1])
     const hiveAccTo = transaction.op[1].to
-    const amountString = transaction.op[1].amount
-    const amount = transaction.op[1].amount.split(" ")[0]
+    let amountString = transaction.op[1].amount
+    let amount = transaction.op[1].amount.split(" ")[0]
     const currencyToSend = transaction.op[1].amount.split(" ")[1].toLowerCase()
     const checkCode = transaction.checkCode
     const hiveAccFrom = transaction.op[1].from
     const trx_id = transaction.trx_id
     const timestampUnix = transaction.timestampUnix
-    const strippedMemo = transaction.strippedMemo
-    const currency =
+    let strippedMemo = transaction.strippedMemo
+    let currency =
       currencyToSend === "hbd"
         ? "hive_dollar"
         : currencyToSend === "hive"
         ? "hive"
         : ""
-    const usd = amount * storeAPIStatus.prices[currency]?.usd
+    const { sats, extractedMemo } = extractEvmInformation(
+      transaction.op[1].memo
+    )
+    let usd = amount * storeAPIStatus.prices[currency]?.usd
+    console.debug("currency", currency, amount)
+    if (amount === "0.001" && sats > 0) {
+      console.debug("amount is 0.001")
+      currency = "sats"
+      usd = sats / storeAPIStatus.prices["v4vapp"]["sats_USD"]
+      amountString = sats + " sats"
+      strippedMemo = extractedMemo
+    }
 
     // turn timestampUnix into a date object
     const paidDate = new Date(timestampUnix)
@@ -528,6 +539,23 @@ async function importFromHive() {
   calcTotalAmounts()
   const lengthAfter = filteredDataHive.value.length
   const newTransactions = lengthAfter - lengthBefore
+}
+
+function extractEvmInformation(memo) {
+  console.debug("extractEvmInformation", memo)
+  const parsedMemo = memo.split("|")
+  console.debug("parsedMemo", parsedMemo)
+  let extractedMemo = ""
+  let sats = 0
+  if (parsedMemo.length > 2 && parsedMemo[1].includes("#sats")) {
+    sats = parsedMemo[1].split("#sats")[1]
+    console.debug("sats", sats)
+    if (parsedMemo[0].includes("evm:")) {
+      extractedMemo = memo.replace(/^evm: 0x[^\s]+\s/, "")
+    }
+    return { sats, extractedMemo }
+  }
+  return { sats, extractedMemo }
 }
 
 const deleteLocalSalesConfirm = (row) => {
@@ -675,7 +703,6 @@ async function updateTransactions() {
       transaction.checkCode = memo.match(/v4v-\w+$/)[0]
     })
     KeychainDialog.value.transactions = posTrans.reverse()
-    // console.log("posTrans", posTrans)
   }
 }
 
@@ -725,23 +752,21 @@ const filteredDataHive = computed(() => {
     const memo = transaction.op[1].memo
     const to = transaction.op[1].to
     // EVM transactions have the v4v- in the memo and at the end of the memo.
-    return (
-      to === checkHiveAccount &&
-      memo &&
-      (evmFilter ? memo.match(/v4v-\w+/) : memo.match(/v4v-\w+$/))
-    )
+    if (evmFilter) {
+      return (
+        to === checkHiveAccount &&
+        memo &&
+        memo.match(/v4v-\w+/) &&
+        memo.includes(KeychainDialog.value.hiveAccTo)
+      )
+    } else {
+      return to === checkHiveAccount && memo && memo.match(/v4v-\w+$/)
+    }
   })
 })
 
 function prettyDate(row) {
   return formatPrettyDate(row.timestampUnix)
-
-  const timeDiff = Date.now() - row.timestampUnix
-  // check if timediff is less than one day
-  if (timeDiff < 86400000) {
-    return formatTimeDifference(timeDiff)
-  }
-  return formatDateTimeLocale(row.timestamp).date
 }
 
 function prettyTime(timestampUnix) {
