@@ -230,7 +230,6 @@ export const useStoreUser = defineStore("useStoreUser", {
       return "HiveKeychain"
     },
     isHAS() {
-      console.log("isHAS within the currenty user")
       if (!this.currentUser) return false
       const hiveUser = this.users[this.currentUser]
       console.debug(hiveUser)
@@ -560,7 +559,6 @@ export const useStoreUser = defineStore("useStoreUser", {
             loginType
           )
         }
-        console.log("newUser", newUser)
         if (apiToken) {
           apiLogin.defaults.headers.common[
             "Authorization"
