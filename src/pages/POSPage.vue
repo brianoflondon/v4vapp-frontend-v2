@@ -410,6 +410,10 @@ watch(
   () => hiveAccTo.value.value,
   () => {
     console.log("hiveAccTo changed", hiveAccTo.value.value)
+    
+    if (!hiveAccTo.value.value) {
+      KeychainDialog.value.transactions = []
+    }
     if (destinationAccountType.value === "evm") {
       storeUser.pos.receiveCurrency = "sats"
       storeUser.pos.accountType = "evm"

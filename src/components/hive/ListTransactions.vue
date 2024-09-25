@@ -252,6 +252,15 @@
     </div>
   </div>
   <!-- End of import buttons and delete buttons -->
+  <q-expansion-item
+    class="q-mt-md"
+    :label="`${KeychainDialog.transactions?.length || 0}`"
+    icon="fa-solid fa-dollar-sign"
+    :default-open="false"
+  >
+    {{ KeychainDialog.transactions }}
+    >
+  </q-expansion-item>
 </template>
 
 <script setup>
@@ -332,7 +341,8 @@ const filteredDataLocal = computed(() => {
   })
 
   if (!searchFilter.value) return filteredByPaidStatus
-
+  console.log("searchFilter.value", searchFilter.value)
+  console.log("row.hiveAccTo", row.hiveAccTo)
   const filteredData = filteredByPaidStatus.filter((row) => {
     return (
       row.hiveAccTo?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
@@ -436,8 +446,11 @@ async function calcLocalTotal() {
 watch(
   () => KeychainDialog.value.hiveAccTo,
   async (val) => {
-    KeychainDialog.value.transactions = val
+    console.log("KeychainDialog.value.hiveAccTo", val)
+    // KeychainDialog.value.transactions = val
     updateTransactions()
+    storeSales.clearSales()
+    importFromHive()
   }
 )
 
@@ -475,10 +488,13 @@ function expandAll() {
  * 5. Calculates the number of new transactions.
  */
 async function importFromHive() {
+  console.log("importFromHive called")
   const lengthBefore = filteredDataHive.value.length
   updateTransactions()
+  console.log("filteredDataHive.value", filteredDataHive.value)
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.forEach((transaction) => {
+    console.log("transaction", transaction)
     const hiveAccTo = transaction.op[1].to
     const amountString = transaction.op[1].amount
     const amount = transaction.op[1].amount.split(" ")[0]
@@ -635,6 +651,7 @@ async function updateTransactions() {
   }
 
   const trans = await useGetHiveTransactionHistory(checkHiveAccount, 200)
+
   if (trans) {
     // Filter out the transactions that are not from the POS
     let posTrans = trans.filter((transaction) => {
@@ -642,6 +659,8 @@ async function updateTransactions() {
       return memo && memo.match(/v4v-\w+$/)
     })
     // If posTrans is empty, exit early
+    console.log("trans", trans)
+    console.log("posTrans", posTrans)
     if (posTrans.length === 0) {
       return
     }
@@ -650,6 +669,8 @@ async function updateTransactions() {
     // Add extra fields to the transactions
     posTrans.forEach((transaction) => {
       const memo = transaction.op[1].memo
+      // console.log("transaction", transaction)
+      // console.log("memo", memo)
 
       // Convert timestamp to Unix
       const newDate = new Date(transaction.timestamp + "Z")
@@ -665,8 +686,8 @@ async function updateTransactions() {
       // Extract the checkCode
       transaction.checkCode = memo.match(/v4v-\w+$/)[0]
     })
-
     KeychainDialog.value.transactions = posTrans.reverse()
+    // console.log("posTrans", posTrans)
   }
 }
 
@@ -697,6 +718,13 @@ onMounted(() => {
  * If no transactions exist or they don't match the criteria, an empty array is returned.
  */
 const filteredDataHive = computed(() => {
+  let checkHiveAccount = KeychainDialog.value.hiveAccTo
+  let evmFilter = false
+  if (useIsEVMAddress(KeychainDialog.value.hiveAccTo)) {
+    checkHiveAccount = serverHiveAccountTreasury
+    evmFilter = true
+  }
+  console.log("checkHiveAccount in filter", checkHiveAccount)
   const transactions = KeychainDialog.value.transactions
 
   if (!Array.isArray(transactions)) return []
@@ -706,12 +734,17 @@ const filteredDataHive = computed(() => {
     const newDate = new Date(transaction.timestamp + "Z")
     transaction.timestampUnix = Math.floor(newDate.getTime())
   })
-
+  console.log("checking for hiveAccTo", checkHiveAccount)
   return transactions.filter((transaction) => {
     const memo = transaction.op[1].memo
     const to = transaction.op[1].to
+    console.log("transaction in filter", transaction)
+    console.log("memo in filter", memo)
+    console.log("memo filtered", memo && memo.match(/v4v-\w+$/))
     return (
-      to === KeychainDialog.value.hiveAccTo && memo && memo.match(/v4v-\w+$/)
+      to === checkHiveAccount &&
+      memo &&
+      (evmFilter ? memo.match(/v4v-\w+/) : memo.match(/v4v-\w+$/))
     )
   })
 })
