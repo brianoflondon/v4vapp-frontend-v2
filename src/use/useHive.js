@@ -365,6 +365,16 @@ export async function useGetHiveWitnessVotes(hiveAccname, witness) {
 }
 
 // -------- Hive check for transactions --------
+/**
+ * Fetches the transaction history for a given Hive account.
+ *
+ * @param {string} hiveAccname - The Hive account name.
+ * @param {number} [limit=100] - The maximum number of transactions to retrieve.
+ * @param {number} [start=-1] - The starting point for the transaction history.
+ * @param {number} [opFilterLow=4] - The lower bound of the operation filter.
+ * @param {number} [opFilterHigh=4] - The upper bound of the operation filter.
+ * @returns {Promise<Array|null>} - A promise that resolves to an array of transaction history objects or null if an error occurs or the account name is invalid.
+ */
 export async function useGetHiveTransactionHistory(
   hiveAccname,
   limit = 100,

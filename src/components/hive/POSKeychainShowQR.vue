@@ -270,11 +270,13 @@ import {
   useGetHiveAmountString,
   useGenerateHiveTransferOp,
 } from "src/use/useHive.js"
+import { useIsEVMAddress } from "src/use/useEVM"
 import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
 import CreateQRCode from "components/qrcode/CreateQRCode.vue"
 import { useI18n } from "vue-i18n"
 import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
 import { encodeOp } from "hive-uri"
+import { serverHiveAccountTreasury } from "src/boot/axios"
 
 const hiveCheckTime = 2 // seconds between each check
 const hiveCheckTimer = ref(100)
@@ -366,6 +368,15 @@ const dotColor = computed(() => {
   )
 })
 
+const checkHiveAccount = computed(() => {
+  // check if hiveAccTo is evm address
+  if (useIsEVMAddress(KeychainDialog.value.hiveAccTo)) {
+    console.log("KeychainDialog.value.hiveAccTo is evm address")
+    return serverHiveAccountTreasury
+  }
+  return KeychainDialog.value.hiveAccTo
+})
+
 onBeforeMount(() => {
   KeychainDialog.value.checkCode = useGetCheckCode()
   KeychainDialog.value.loading = true
@@ -381,16 +392,15 @@ onMounted(async () => {
     showLightning.value = false
   }
   updateQRCode()
-  useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
-    (val) => {
-      KeychainDialog.value.transactions = val
-      KeychainDialog.value.paid = false
-      KeychainDialog.value.loading = false
-      checkHiveTransaction()
-      KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
-      startCountdown()
-    }
-  )
+  console.log("get transactions for checkHiveAccount", checkHiveAccount.value)
+  useGetHiveTransactionHistory(checkHiveAccount.value, 20).then((val) => {
+    KeychainDialog.value.transactions = val
+    KeychainDialog.value.paid = false
+    KeychainDialog.value.loading = false
+    checkHiveTransaction()
+    KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+    startCountdown()
+  })
 })
 
 onBeforeUnmount(() => {
@@ -408,16 +418,14 @@ function dialogShow() {
     showLightning.value = false
   }
   updateQRCode()
-  useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
-    (val) => {
-      KeychainDialog.value.transactions = val
-      KeychainDialog.value.paid = false
-      KeychainDialog.value.loading = false
-      checkHiveTransaction()
-      KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
-      startCountdown()
-    }
-  )
+  useGetHiveTransactionHistory(checkHiveAccount.value, 20).then((val) => {
+    KeychainDialog.value.transactions = val
+    KeychainDialog.value.paid = false
+    KeychainDialog.value.loading = false
+    checkHiveTransaction()
+    KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+    startCountdown()
+  })
 }
 
 function dialogClose() {
@@ -701,10 +709,9 @@ async function checkHiveTransaction(count = 0) {
         intervalRef.value.push(watchingInterval)
         startHiveCheckTimer()
       })
-
       KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
-        KeychainDialog.value.hiveAccTo,
-        5
+        checkHiveAccount.value,
+        20
       )
       hiveCheckTimer.value = 100
       const transactionFound = findTransactionWithCheckCode(
@@ -770,7 +777,7 @@ function findTransactionWithCheckCode(transactions, checkCode) {
     return
   }
   const transactionFound = transactions.find((transaction) =>
-    transaction.op[1].memo.endsWith(checkCode)
+    transaction.op[1].memo.includes(checkCode)
   )
   if (transactionFound) {
     const trx_id = transactionFound?.trx_id
