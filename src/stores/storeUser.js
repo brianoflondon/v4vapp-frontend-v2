@@ -493,7 +493,6 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.dataLoading = true
           this.currentKeepSats = await useKeepSats(useCache, false)
           this.dataLoading = false
-          console.debug("currentKeepSats", this.currentKeepSats)
           if (this.currentKeepSats) {
             if (currentSatsBalance !== this.currentKeepSats.net_sats) {
               return true
@@ -599,7 +598,6 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
      */
     apiTokenSet(hiveAccname = this.currentUser) {
-      console.debug("Setting API Token for", hiveAccname)
       if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
         apiLogin.defaults.headers.common[
           "Authorization"

@@ -97,6 +97,8 @@ export async function useDecodeLightningInvoice(invoice) {
       decodedInvoice.v4vapp.pubKeys = extractPubKeys(decodedInvoice)
       decodedInvoice.v4vapp.type = "bolt11"
       decodedInvoice.v4vapp.timeNow = Date.now() / 1000
+      if (decodedInvoice.satoshis)
+      console.log("decodedInvoice", decodedInvoice)
       return decodedInvoice
     }
   } else {
