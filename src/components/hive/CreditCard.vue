@@ -56,7 +56,7 @@
             <div class="profile-name text-h7 embossed-text">
               {{ storeUser.profileName }}
             </div>
-            <div v-if="storeUser.loginType === 'hive'" class="text-subtitle2">
+            <div v-if="storeUser.loginType != 'evm'" class="text-subtitle2">
               {{ storeUser.hiveAccname }}@v4v.app
             </div>
           </div>

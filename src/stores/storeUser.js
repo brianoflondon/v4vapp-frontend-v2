@@ -25,7 +25,7 @@ export class HiveUser {
    * @param {number|null} [expire=null] - The expiration time (optional).
    * @param {string|null} [token=null] - The token (optional).
    * @param {string|null} [apiToken=null] - The API token (optional).
-   * @param {boolean} [loginType="hive"] - The login type (optional, defaults to "hive" if not provided).
+   * @param {string} [loginType="hive"] - The login type (optional, defaults to "hive" if not provided).
    */
   constructor(
     hiveAccname,
@@ -463,8 +463,19 @@ export const useStoreUser = defineStore("useStoreUser", {
       return totalSatsBalance
     },
   },
-
   actions: {
+    initialize() {
+      // called once from the HiveLogin component. If we change any settings in the store,
+      // we can update them here.
+      console.log("Store initialized")
+      // Iterate over users and set loginType to "hive" if not set change in v 1.19.0 and later
+      for (const userId in this.users) {
+        const user = this.users[userId]
+        if (!user.loginType) {
+          user.loginType = "hive"
+        }
+      }
+    },
     /**
      * Updates the user details and profile.
      * @param {boolean} useCache - Indicates whether to use cached data or not. Default is true.

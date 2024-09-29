@@ -56,7 +56,7 @@ import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 const storeUser = useStoreUser()
 
-const emit = defineEmits(["update"])
+const emit = defineEmits(["update", "click"])
 
 function doClick(item) {
   storeUser.switchUser(item)
