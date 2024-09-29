@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue"
+import { ref, watch, defineEmits } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useHiveAvatarURL } from "src/use/useHive"
 const storeUser = useStoreUser()
@@ -32,6 +32,8 @@ avatar.value = useHiveAvatarURL({
   hiveAccname: storeUser.currentUser,
   size: "small",
 })
+
+const emit = defineEmits(['click']);
 
 watch(
   () => storeUser.currentUser,
