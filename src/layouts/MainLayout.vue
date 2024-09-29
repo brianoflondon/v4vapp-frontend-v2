@@ -24,6 +24,7 @@ import PriceBar from "components/PriceBar.vue"
 import SideMenu from "components/SideMenu.vue"
 import { useQuasar } from "quasar" // Enables Dark mode detection
 import TopBar from "components/TopBar.vue"
+import { useStoreUser } from "src/stores/storeUser"
 
 const q = useQuasar() // Enables Dark mode detection
 q.dark.set("auto") // Enables Dark mode detection
@@ -36,6 +37,8 @@ const isPWA =
 const isIphone = /iPhone/.test(window.navigator.userAgent)
 
 onMounted(() => {
+  // Initialize the store this only happens here.
+  useStoreUser().initialize()
   const isDev = window.location.href.includes("dev.v4v.app")
   const isLocalhost =
     window.location.href.includes("localhost") ||
