@@ -1,6 +1,9 @@
 <template>
   <q-page>
-    <div class="debug-only">POSPage.vue</div>
+    <div class="debug-only">
+      POSPage.vue
+      {{ CurrencyCalc }}
+    </div>
     <div>
       <ConfettiExplosion v-if="visible" />
     </div>
@@ -227,6 +230,10 @@
             </div>
           </q-btn>
         </div>
+        <!-- Amount too low too high message -->
+         <div class="text-caption currency-calc-message">
+          {{ CurrencyCalc.message }}
+         </div>
         <!-- Alternate currencies  -->
         <div class="pad-max-width full-width q-px-md" v-if="isPaymentValid">
           <AlternateCurrency
@@ -410,7 +417,7 @@ watch(
   () => hiveAccTo.value.value,
   () => {
     console.log("hiveAccTo changed", hiveAccTo.value.value)
-    
+
     if (!hiveAccTo.value.value) {
       KeychainDialog.value.transactions = []
     }

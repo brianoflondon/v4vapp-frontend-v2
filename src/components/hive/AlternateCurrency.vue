@@ -35,6 +35,9 @@ import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
+import { useI18n } from "vue-i18n"
+
+const t = useI18n().t
 
 const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
@@ -164,12 +167,16 @@ async function calcAllAmounts() {
         (CurrencyCalc.value.hive * storeAPIStatus.hiveSatsNumber) / adustRate
       CurrencyCalc.value.local = CurrencyCalc.value.amount
   }
+  console.log("CurrencyCalc range check")
   CurrencyCalc.value.outOfRange = false
+  CurrencyCalc.value.message = ""
   if (storeAPIStatus.minMax) {
     if (CurrencyCalc.value.sats < storeAPIStatus.minMax.sats.min) {
       CurrencyCalc.value.outOfRange = true
+      CurrencyCalc.value.message = t("too_low_for_sats")
     } else if (CurrencyCalc.value.sats > storeAPIStatus.minMax.sats.max) {
       CurrencyCalc.value.outOfRange = true
+      CurrencyCalc.value.message = t("too_high_for_sats")
     }
     if (CurrencyCalc.value.currency) {
       CurrencyCalc.value.minMax = getMinMax(
