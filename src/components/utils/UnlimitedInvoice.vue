@@ -76,7 +76,6 @@ const amountChanged = ref(false)
 
 // track changes to the logged in user
 watch(storeUser, () => {
-  console.log("storeUser.currentUser", storeUser.currentUser)
   resetValues()
 })
 
@@ -86,7 +85,6 @@ onMounted(() => {
 })
 
 function resetValues() {
-  console.log("resetValues")
   hiveAccTo.value = {
     label: storeUser.hiveAccname,
     value: storeUser.hiveAccname,
@@ -99,14 +97,10 @@ function resetValues() {
 }
 
 function handleInput() {
-  console.log("handleInput")
   amountChanged.value = true
 }
 
 async function generateUnlimitedInvoice() {
-  console.log("generateUnlimitedInvoice")
-  console.log("hiveAccTo", hiveAccTo.value)
-  console.log("amountSats", amountSats.value)
   try {
     invoice.value = await useGetUnlimitedInvoice(
       hiveAccTo.value.value,
@@ -118,7 +112,6 @@ async function generateUnlimitedInvoice() {
       return
     }
     amountChanged.value = false
-    console.log(invoice.value.pr)
     copyToClipboard(invoice.value.pr)
   } catch (error) {
     invoice.value.pr = "Error"
