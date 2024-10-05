@@ -100,7 +100,9 @@
             @update:model-value="(val) => updateAmounts(val, 'amount')"
             inputmode="decimal"
             pattern="\d*"
-            :label="$t('amount')"
+            :label="
+              CurrencyCalc.message !== '' ? CurrencyCalc.message : $t('amount')
+            "
             stack-label
             debounce="20"
             @keyup.enter="enterPressed()"
@@ -231,9 +233,9 @@
           </q-btn>
         </div>
         <!-- Amount too low too high message -->
-         <div class="text-caption currency-calc-message">
+        <div class="text-caption currency-calc-message">
           {{ CurrencyCalc.message }}
-         </div>
+        </div>
         <!-- Alternate currencies  -->
         <div class="pad-max-width full-width q-px-md" v-if="isPaymentValid">
           <AlternateCurrency

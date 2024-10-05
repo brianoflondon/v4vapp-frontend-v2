@@ -170,6 +170,9 @@ async function calcAllAmounts() {
   console.log("CurrencyCalc range check")
   CurrencyCalc.value.outOfRange = false
   CurrencyCalc.value.message = ""
+  if (storeUser.currentKeepSats?.admin) {
+    // do nothing for now
+  }
   if (storeAPIStatus.minMax) {
     if (CurrencyCalc.value.sats < storeAPIStatus.minMax.sats.min) {
       CurrencyCalc.value.outOfRange = true

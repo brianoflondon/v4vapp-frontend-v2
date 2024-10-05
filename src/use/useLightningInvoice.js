@@ -7,6 +7,60 @@ import { useStoreUser } from "src/stores/storeUser"
 const storeAPIStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 
+export async function useGetUnlimitedInvoice(account, amount, comment) {
+  try {
+    const response = await api.get("lnurlp/unlimited/" + account, {
+      params: {
+        amount: amount,
+        comment: comment,
+      },
+      headers: {
+        accept: "application/json",
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error("Error while fetching LNURLp invoice")
+    console.error(error)
+
+    // Check if the error is a network error
+    if (error.code === "ERR_NETWORK") {
+      let message = "Network error occurred. Please check your connection."
+      console.error(message)
+      return {
+        error: message,
+      }
+    }
+    // Check if the error response exists and has a status property
+    if (error.response && error.response.status) {
+      let message = `Error: ${error.response.status} - ${error.response.statusText}`
+      console.error(message)
+      return {
+        error: message,
+      }
+    }
+    // Generic error message
+    return {
+      error: "An unexpected error occurred.",
+    }
+  }
+}
+
+/**
+ * Fetches a new lightning invoice for a given Hive account.
+ *
+ * @async
+ * @function useGetLightingHiveInvoice
+ * @param {string} hiveAccname - The Hive account name.
+ * @param {number} amount - The amount for the invoice.
+ * @param {string} currency - The currency for the invoice.
+ * @param {string} memo - The memo for the invoice.
+ * @param {string} [checkCode=""] - An optional check code to append to the memo.
+ * @param {number} [expiry=300] - The expiry time for the invoice in seconds (max 600).
+ * @param {string} [receiveCurrency=""] - The currency to receive.
+ * @returns {Promise<Object>} The response data from the API call.
+ * @throws Will throw an error if the API call fails.
+ */
 export async function useGetLightingHiveInvoice(
   hiveAccname,
   amount,

@@ -57,7 +57,7 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
-        <!-- Send pannel -->
+        <!-- Send panel -->
         <q-tab-panel name="send">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
@@ -303,7 +303,7 @@
             </div>
           </q-slide-transition>
         </q-tab-panel>
-        <!-- End Send pannel -->
+        <!-- End Send panel -->
         <q-tab-panel name="receive">
           <q-slide-transition appear disappear :duration="500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
@@ -331,11 +331,7 @@
       class="outer-wrapper row justify-center q-gutter-sm q-pt-lg"
       v-if="storeUser.currentKeepSats?.admin"
     >
-      <q-toggle
-        v-model="adminOverride"
-        label="Admin Override"
-        color="primary"
-      />
+      <UnlimitedInvoice />
     </div>
     <!-- End Main page content for wallet with credit card and invoice entry -->
     <AskDetailsDialog
@@ -398,6 +394,7 @@ import HiveLightningKeepSatsTrans from "src/components/v4vapp/HiveLightningKeepS
 import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
 import ConvertWrapper from "src/components/hive/ConvertWrapper.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
+import UnlimitedInvoice from "components/utils/UnlimitedInvoice.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -414,8 +411,6 @@ const voteOptions = ref({
 const cameraOn = ref(false)
 const cameraShow = ref(false)
 const cameraError = ref("")
-
-const adminOverride = ref(false)
 
 const privateMemo = ref(false)
 
