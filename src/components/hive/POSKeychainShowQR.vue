@@ -5,6 +5,10 @@
     @show="dialogShow"
   >
     <q-card>
+      <div class="debug-only">
+        POSKeychainShowQR.vue
+        {{ KeychainDialog.currencyCalc.outOfRange }}
+      </div>
       <q-toolbar>
         <!-- Title Bar -->
         <q-toolbar-title>
@@ -122,7 +126,12 @@
                   value: false,
                   slot: KeychainDialog.currencyToSend,
                 },
-                { label: '', value: true, slot: 'lightning' },
+                {
+                  label: '',
+                  value: true,
+                  slot: 'lightning',
+                  disable: KeychainDialog.currencyCalc.outOfRange,
+                },
               ]"
             >
               <template #lightning>
@@ -182,6 +191,10 @@
                 </div>
               </template>
             </q-btn-toggle>
+            <!-- Amount too low too high message -->
+            <div class="text-caption currency-calc-message">
+              {{ KeychainDialog.currencyCalc.message }}
+            </div>
           </div>
         </div>
       </q-card-section>
