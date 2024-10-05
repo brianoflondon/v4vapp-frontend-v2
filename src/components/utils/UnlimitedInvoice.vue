@@ -5,7 +5,7 @@
         <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options />
       </div>
       <div class="q-pa-sm">
-        <div class="row">
+        <div class="row items-center">
           <div class="col-12">
             <q-input
               filled
@@ -14,16 +14,29 @@
               v-model="amountSats"
               :label="$t('amount_to_send') + ' ' + amountDisplay + ' sats'"
               stack-label
+              @update:model-value="() => handleInput()"
             />
           </div>
           <div class="q-pa-sm">
             <q-btn
               color="primary"
               label="Generate"
+              :disable="!amountChanged"
               @click="generateUnlimitedInvoice"
+              clearable
             />
           </div>
-
+          <div class="q-px-sm">
+            <q-btn
+              icon="content_copy"
+              size="sm"
+              round
+              :disable="!invoice.pr"
+              @click="copyToClipboard(invoice.pr)"
+            >
+              <q-tooltip>{{ t("copy_qrcode") }}</q-tooltip>
+            </q-btn>
+          </div>
           <!-- Show the QR dialog -->
           <div class="col-12">
             <q-input
@@ -42,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue"
+import { ref, onMounted, computed, watch } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import { useI18n } from "vue-i18n"
@@ -59,11 +72,9 @@ const amountDisplay = computed(() => {
   return tidyNumber(amountSats.value, 0)
 })
 const invoice = ref({})
-
-const KeychainDialog = ref({ show: false, settings: false })
+const amountChanged = ref(false)
 
 onMounted(() => {
-  console.log("UnlimitedInvoice.vue")
   // on load set the hiveAccTo to the current user
   hiveAccTo.value = {
     label: storeUser.hiveAccname,
@@ -73,19 +84,35 @@ onMounted(() => {
   if (storeUser.currentUser === "v4vapp.tre") {
     amountSats.value = 999900
   }
+  amountChanged.value = true
 })
+
+function handleInput() {
+  console.log("handleInput")
+  amountChanged.value = true
+}
 
 async function generateUnlimitedInvoice() {
   console.log("generateUnlimitedInvoice")
   console.log("hiveAccTo", hiveAccTo.value)
   console.log("amountSats", amountSats.value)
-  invoice.value = await useGetUnlimitedInvoice(
-    hiveAccTo.value.value,
-    amountSats.value,
-    "v4v.app"
-  )
-  console.log(invoice.value.pr)
-  copyToClipboard(invoice.value.pr)
+  try {
+    invoice.value = await useGetUnlimitedInvoice(
+      hiveAccTo.value.value,
+      amountSats.value,
+      "v4v.app"
+    )
+    if (invoice.value.error) {
+      invoice.value.pr = invoice.value.error
+      return
+    }
+    amountChanged.value = false
+    console.log(invoice.value.pr)
+    copyToClipboard(invoice.value.pr)
+  } catch (error) {
+    invoice.value.pr = "Error"
+    console.error(error)
+  }
 }
 </script>
 
