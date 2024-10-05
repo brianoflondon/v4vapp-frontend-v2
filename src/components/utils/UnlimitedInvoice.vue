@@ -74,8 +74,19 @@ const amountDisplay = computed(() => {
 const invoice = ref({})
 const amountChanged = ref(false)
 
+// track changes to the logged in user
+watch(storeUser, () => {
+  console.log("storeUser.currentUser", storeUser.currentUser)
+  resetValues()
+})
+
 onMounted(() => {
   // on load set the hiveAccTo to the current user
+  resetValues
+})
+
+function resetValues() {
+  console.log("resetValues")
   hiveAccTo.value = {
     label: storeUser.hiveAccname,
     value: storeUser.hiveAccname,
@@ -85,7 +96,7 @@ onMounted(() => {
     amountSats.value = 999900
   }
   amountChanged.value = true
-})
+}
 
 function handleInput() {
   console.log("handleInput")
