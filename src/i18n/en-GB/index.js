@@ -23,6 +23,8 @@ export default {
   local_currency: 'Local Currency',
   currency: 'Currency',
   receive_currency: 'Receive Payments as',
+  too_high_for_sats: 'Amount too high to convert to sats',
+  too_low_for_sats: 'Amount too low to convert to sats',
   confirm: 'Confirm',
   yes: 'Yes',
   no: 'No',
