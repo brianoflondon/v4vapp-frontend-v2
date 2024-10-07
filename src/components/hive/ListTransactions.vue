@@ -390,7 +390,6 @@ async function calcTotalAmounts() {
     usd: 0,
   }
   filteredDataLocal.value.forEach((row) => {
-    console.log("row", row)
     if (row.currencyToSend === "hive") {
       amounts.hive += parseFloat(row.amount)
     } else if (row.currencyToSend === "hbd") {
@@ -401,7 +400,6 @@ async function calcTotalAmounts() {
   })
   amounts.hive = amounts.hive.toFixed(3)
   amounts.hbd = amounts.hbd.toFixed(3)
-  console.log("amounts", amounts)
   // convert hive to USD
   totalAmounts.value = amounts
   if (storeAPIStatus.prices === "fetching prices") {
@@ -415,8 +413,6 @@ async function calcTotalAmounts() {
   amounts.usd += amounts.hbd * storeAPIStatus.prices?.hive_dollar?.usd
   amounts.usd += amounts.sats / storeAPIStatus.prices?.v4vapp?.sats_USD
   totalAmounts.value.usd = amounts.usd.toFixed(2)
-  console.log("amounts", amounts, totalAmounts.value)
-
 }
 
 async function calcLocalTotal() {
@@ -500,7 +496,6 @@ async function importFromHive() {
   await updateTransactions()
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.forEach((transaction) => {
-    console.log('transaction', transaction)
     let hiveAccTo = transaction.op[1].to
     if (hiveAccTo === serverHiveAccountTreasury) {
       hiveAccTo = useShortEVMAddress(KeychainDialog.value.hiveAccTo)
