@@ -90,74 +90,76 @@
         <div class="col-5 text-right">
           <div class="row justify-end">
             <table>
-              <tr>
-                <td class="keepsats-table-cell">KeepSats</td>
-              </tr>
-              <tr v-if="nonZeroKeepSats">
-                <td class="numeric-cell-lg">
-                  <span v-if="currencyToggle" style="font-size: 1rem">
-                    {{ storeUser.localCurrency.unit }}
-                  </span>
-                  {{ balances["keepSats"] }}<br />
-                </td>
-                <td class="numeric-cell">
-                  <div v-if="!balances['bitcoinDisplay']">
-                    <span>シ</span>
+              <tbody>
+                <tr>
+                  <td class="keepsats-table-cell">KeepSats</td>
+                </tr>
+                <tr v-if="nonZeroKeepSats">
+                  <td class="numeric-cell-lg">
+                    <span v-if="currencyToggle" style="font-size: 1rem">
+                      {{ storeUser.localCurrency.unit }}
+                    </span>
+                    {{ balances["keepSats"] }}<br />
+                  </td>
+                  <td class="numeric-cell">
+                    <div v-if="!balances['bitcoinDisplay']">
+                      <span>シ</span>
+                      <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
+                    </div>
+                    <div v-else>
+                      <span><i class="fa-brands fa-btc" /></span>
+                      <q-tooltip>Bitcoin</q-tooltip>
+                    </div>
+                  </td>
+                  <td class="keepsats-table-cell numeric-cell q-pl-sm">
+                    <div v-if="!balances['bitcoinDisplay']">sats</div>
+                    <div v-else>BTC</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="numeric-cell">
+                    <span v-if="currencyToggle">
+                      {{ storeUser.localCurrency.unit }}
+                    </span>
+                    {{ balances["hive"] }}<br />
+                  </td>
+                  <td>
+                    <q-icon name="fa-brands fa-hive" />
+                  </td>
+                  <td class="keepsats-table-cell numeric-cell q-pl-sm">Hive</td>
+                </tr>
+                <tr>
+                  <td class="numeric-cell">
+                    <span v-if="currencyToggle">
+                      {{ storeUser.localCurrency.unit }}
+                    </span>
+                    {{ balances["hbd"] }}
+                  </td>
+                  <td class="numeric-cell q-pl-sm">
+                    <HbdLogoIcon />
+                  </td>
+                  <td class="keepsats-table-cell numeric-cell q-pl-sm">HUSD</td>
+                </tr>
+                <!-- Lower summation of Hive amounts -->
+                <tr v-if="false">
+                  <td
+                    class="table-border-top numeric-cell q-pt-xs"
+                    style="border-top: 1px solid"
+                  >
+                    <strong>{{ balances["sats"] }}</strong
+                    ><br />
+                    <div style="font-size: 0.7rem; line-height: 0.3rem">
+                      +<q-icon name="savings"></q-icon>&nbsp;{{
+                        balances["totalSats"]
+                      }}
+                    </div>
+                  </td>
+                  <td>
+                    シ
                     <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
-                  </div>
-                  <div v-else>
-                    <span><i class="fa-brands fa-btc" /></span>
-                    <q-tooltip>Bitcoin</q-tooltip>
-                  </div>
-                </td>
-                <td class="keepsats-table-cell numeric-cell q-pl-sm">
-                  <div v-if="!balances['bitcoinDisplay']">sats</div>
-                  <div v-else>BTC</div>
-                </td>
-              </tr>
-              <tr>
-                <td class="numeric-cell">
-                  <span v-if="currencyToggle">
-                    {{ storeUser.localCurrency.unit }}
-                  </span>
-                  {{ balances["hive"] }}<br />
-                </td>
-                <td>
-                  <q-icon name="fa-brands fa-hive" />
-                </td>
-                <td class="keepsats-table-cell numeric-cell q-pl-sm">Hive</td>
-              </tr>
-              <tr>
-                <td class="numeric-cell">
-                  <span v-if="currencyToggle">
-                    {{ storeUser.localCurrency.unit }}
-                  </span>
-                  {{ balances["hbd"] }}
-                </td>
-                <td class="numeric-cell q-pl-sm">
-                  <HbdLogoIcon />
-                </td>
-                <td class="keepsats-table-cell numeric-cell q-pl-sm">HUSD</td>
-              </tr>
-              <!-- Lower summation of Hive amounts -->
-              <tr v-if="false">
-                <td
-                  class="table-border-top numeric-cell q-pt-xs"
-                  style="border-top: 1px solid"
-                >
-                  <strong>{{ balances["sats"] }}</strong
-                  ><br />
-                  <div style="font-size: 0.7rem; line-height: 0.3rem">
-                    +<q-icon name="savings"></q-icon>&nbsp;{{
-                      balances["totalSats"]
-                    }}
-                  </div>
-                </td>
-                <td>
-                  シ
-                  <q-tooltip>シ = {{ $t("sats") }}</q-tooltip>
-                </td>
-              </tr>
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
           <!-- Lower summation of Hive amounts -->
