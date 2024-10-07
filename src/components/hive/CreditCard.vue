@@ -188,8 +188,6 @@ const savingsToggle = ref(false)
 const currencyToggle = ref(false)
 const t = useI18n().t
 
-const adminOverride = ref(false)
-
 // emit balances to the parent component
 const emit = defineEmits(["balances"])
 
