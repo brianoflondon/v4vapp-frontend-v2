@@ -486,7 +486,6 @@ async function importFromHive() {
   await updateTransactions()
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.forEach((transaction) => {
-    console.log("transaction", transaction.op[1])
     let hiveAccTo = transaction.op[1].to
     if (hiveAccTo === serverHiveAccountTreasury) {
       hiveAccTo = useShortEVMAddress(KeychainDialog.value.hiveAccTo)
