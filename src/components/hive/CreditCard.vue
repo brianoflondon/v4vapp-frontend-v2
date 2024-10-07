@@ -176,6 +176,8 @@ import { useQuasar } from "quasar"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
+import { useCoingeckoStore } from "src/stores/storeCoingecko"
+const storeCoingecko = useCoingeckoStore()
 
 // import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
 import ConfettiExplosion from "vue-confetti-explosion"
@@ -361,6 +363,7 @@ function changeBackground() {
 }
 
 watch([() => storeUser.localCurrency, () => storeUser.pos.fixedRate], () => {
+  storeCoingecko.getCoingeckoRate(storeUser.localCurrency.value)
   storeUser.update()
 })
 </script>
