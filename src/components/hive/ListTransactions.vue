@@ -203,6 +203,10 @@
     <div class="q-px-sm q-py-md">
       <hbd-logo-icon />&nbsp;{{ totalAmounts.hbd }}
     </div>
+    <div class="q-px-sm q-py-md">+</div>
+    <div class="q-px-sm q-py-md">
+      {{ tidyNumber(totalAmounts.sats,0) }} sats
+    </div>
     <div class="q-px-sm q-py-md">=</div>
     <div class="q-px-sm q-py-md">USD ${{ totalAmounts.usd }}</div>
     <div class="q-px-sm q-py-md">
@@ -272,6 +276,7 @@ import {
   formatDateTimeLocale,
   formatTimeDifference,
   formatPrettyDate,
+  tidyNumber,
 } from "src/use/useUtils"
 import { useStoreSales } from "src/stores/storeSales"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
@@ -293,6 +298,7 @@ const maxNumTransactions = 40 // max number of transactions to show in the table
 const totalAmounts = ref({
   hive: 0,
   hbd: 0,
+  sats: 0,
   usd: 0,
 })
 const storeSales = useStoreSales()
@@ -377,9 +383,10 @@ watch(
 
 async function calcTotalAmounts() {
   calcLocalTotal()
-  const amounts = {
+  let amounts = {
     hive: 0,
     hbd: 0,
+    sats: 0,
     usd: 0,
   }
   filteredDataLocal.value.forEach((row) => {
@@ -387,6 +394,8 @@ async function calcTotalAmounts() {
       amounts.hive += parseFloat(row.amount)
     } else if (row.currencyToSend === "hbd") {
       amounts.hbd += parseFloat(row.amount)
+    } else if (row.currencyToSend === "sats") {
+      amounts.sats += parseFloat(row.amount)
     }
   })
   amounts.hive = amounts.hive.toFixed(3)
@@ -402,6 +411,7 @@ async function calcTotalAmounts() {
   }
   amounts.usd = amounts.hive * storeAPIStatus.prices?.hive?.usd
   amounts.usd += amounts.hbd * storeAPIStatus.prices?.hive_dollar?.usd
+  amounts.usd += amounts.sats / storeAPIStatus.prices?.v4vapp?.sats_USD
   totalAmounts.value.usd = amounts.usd.toFixed(2)
 }
 
@@ -486,14 +496,13 @@ async function importFromHive() {
   await updateTransactions()
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.forEach((transaction) => {
-    console.log("transaction", transaction.op[1])
     let hiveAccTo = transaction.op[1].to
     if (hiveAccTo === serverHiveAccountTreasury) {
       hiveAccTo = useShortEVMAddress(KeychainDialog.value.hiveAccTo)
     }
     let amountString = transaction.op[1].amount
     let amount = transaction.op[1].amount.split(" ")[0]
-    const currencyToSend = transaction.op[1].amount.split(" ")[1].toLowerCase()
+    let currencyToSend = transaction.op[1].amount.split(" ")[1].toLowerCase()
     const checkCode = transaction.checkCode
     const hiveAccFrom = transaction.op[1].from
     const trx_id = transaction.trx_id
@@ -513,8 +522,10 @@ async function importFromHive() {
     if (amount === "0.001" && sats > 0) {
       console.debug("amount is 0.001")
       currency = "sats"
+      currencyToSend = "sats"
       usd = sats / storeAPIStatus.prices["v4vapp"]["sats_USD"]
       amountString = sats + " sats"
+      amount = sats
       strippedMemo = extractedMemo
     }
 
@@ -551,7 +562,7 @@ function extractEvmInformation(memo) {
   let extractedMemo = ""
   let sats = 0
   if (parsedMemo.length > 2 && parsedMemo[1].includes("#sats")) {
-    sats = parsedMemo[1].split("#sats")[1]
+    sats = parseInt(parsedMemo[1].split("#sats")[1])
     console.debug("sats", sats)
     if (parsedMemo[0].includes("evm:")) {
       extractedMemo = memo.replace(/^evm: 0x[^\s]+\s/, "")

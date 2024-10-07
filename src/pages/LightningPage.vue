@@ -421,6 +421,7 @@ const q = useQuasar()
 const storeApiStatus = useStoreAPIStatus()
 const storeUser = useStoreUser()
 const payWithSatsAmount = ref(0)
+const adminOverride = ref(false)
 
 const payWithSatsButton = computed(() => {
   return (
