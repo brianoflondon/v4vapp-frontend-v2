@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineEmits } from "vue"
+import { ref, watch } from "vue"
 import { useStoreUser } from "src/stores/storeUser"
 import { useHiveAvatarURL } from "src/use/useHive"
 const storeUser = useStoreUser()
