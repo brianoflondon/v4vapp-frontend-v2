@@ -140,25 +140,31 @@
                 </div>
                 <div class="flex justify-center q-pa-md">
                   <table>
-                    <tr class="q-pb-sm">
-                      <td style="text-align: left">
-                        {{ t("you_will_be_charged") }}:
-                      </td>
-                      <td colspan="2" class="border-bottom">{{ payButton }}</td>
-                    </tr>
-                    <tr>
-                      <td style="text-align: left">{{ t("receive_back") }}:</td>
-                      <td style="text-align: right">
-                        {{ tidyNumber(newAccountCost?.hive_back, 3) }}<br />
-                        {{ tidyNumber(newAccountCost?.hbd_back, 3) }}<br />
-                        {{ tidyNumber(newAccountCost?.sats_back, 0) }}
-                      </td>
-                      <td>
-                        Hive<br />
-                        HBD<br />
-                        sats
-                      </td>
-                    </tr>
+                    <tbody>
+                      <tr class="q-pb-sm">
+                        <td style="text-align: left">
+                          {{ t("you_will_be_charged") }}:
+                        </td>
+                        <td colspan="2" class="border-bottom">
+                          {{ payButton }}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="text-align: left">
+                          {{ t("receive_back") }}:
+                        </td>
+                        <td style="text-align: right">
+                          {{ tidyNumber(newAccountCost?.hive_back, 3) }}<br />
+                          {{ tidyNumber(newAccountCost?.hbd_back, 3) }}<br />
+                          {{ tidyNumber(newAccountCost?.sats_back, 0) }}
+                        </td>
+                        <td>
+                          Hive<br />
+                          HBD<br />
+                          sats
+                        </td>
+                      </tr>
+                    </tbody>
                   </table>
                 </div>
               </div>
