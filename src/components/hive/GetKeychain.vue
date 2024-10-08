@@ -27,8 +27,6 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue"
-
 const props = defineProps({
   activeItem: Number,
 })
@@ -48,7 +46,6 @@ const props = defineProps({
     opacity: 0.9;
   }
 }
-
 
 .animated {
   animation-duration: 1s; /* Adjust this value to change the animation speed */
