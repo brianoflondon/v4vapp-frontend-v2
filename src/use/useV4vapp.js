@@ -56,7 +56,10 @@ export async function useKeepSats(
   } catch (error) {
     console.error("useKeepSats", error)
     const t = i18n.global.t
-    if (error.response.data.detail === "Hive Key authorization failure") {
+    if (
+      error.response.data.detail === "Hive Key authorization failure" ||
+      error.response.data.detail === "Could not validate credentials"
+    ) {
       Notify.create({
         message: t("need_to_logout_login"),
         color: "negative",
@@ -70,7 +73,7 @@ export async function useKeepSats(
           },
         ],
       })
-      return null
+      return error.response.data
     } else {
       Notify.create({
         message: "Communication issues, try again soon",

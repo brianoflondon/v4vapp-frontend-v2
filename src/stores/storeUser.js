@@ -502,7 +502,20 @@ export const useStoreUser = defineStore("useStoreUser", {
         const currentSatsBalance = this.currentKeepSats?.net_sats
         try {
           this.dataLoading = true
-          this.currentKeepSats = await useKeepSats(useCache, false)
+          let answer = null
+          try {
+            answer = await useKeepSats(useCache, false)
+            console.log("answer", answer)
+            if (answer?.detail === "Could not validate credentials") {
+              console.log("Need to log out")
+              this.logout()
+              return false
+            }
+            console.log("answer", answer)
+          } catch (err) {
+            console.error(err)
+          }
+          this.currentKeepSats = answer
           this.dataLoading = false
           console.debug("currentKeepSats", this.currentKeepSats)
           if (this.currentKeepSats) {
