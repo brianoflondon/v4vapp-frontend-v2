@@ -177,17 +177,17 @@ export default {
   The 'Send' tab allows you to pay any Lightning invoice or Lightning Address. In addition you can deposit sats to be stored as 'KeepSats' on v4v.app and use those to pay Lightning invoices or send to other Hive users. At any time you can convert the sats to Hive or HBD.\n
   The 'Receive' tab lets you request a Hive Payment (as a QR code for the payer) or a Lightning invoice BTC sats as Hive. This can act as a Point of Sale in a shop and let you collect payment instantly from people paying with Hive, HBD or Lightning.\n
   You can store a small amount of Sats on V4V.app: your KeepSats balance. This balance is shown on your credit card when logged in. It's the big number.\n`,
-  keepsats_deposit_title: `How to receive KeepSats on v4v.app`,
+  keepsats_deposit_title: `Como receber KeepSats no v4v.app`,
   keepsats_deposit_text: `To store KeepSats on v4v.app, there are two ways.:\n
   1. Deposit Hive or HBD and they will be converted and stored as a KeepSats balance\n
   2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by \@sats.v4v.app\n
   A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
-  keepsats_convert_title: `How to convert KeepSats to Hive or HBD`,
+  keepsats_convert_title: `Como converter KeepSats para Eive ou HBD`,
   keepsats_convert_text: `To convert KeepSats to Hive, select the amount of sats to convert with the slider and choose Hive or HBD, your sats will be deposited in Hive or HBD.\n
   A fee applies when converting sats to Hive or HBD.`,
   // Receive Page
   // Convert
-  convert_confirm: 'You are about to convert',
+  convert_confirm: 'Você está prestes a converter',
   // Credit Card
   savings: 'Poupança',
   savings_tooltip: 'Mostrar os valores HBD e Hive armazenados nas contas de poupança da Hive blockchain',
@@ -226,16 +226,16 @@ export default {
   import_hive: 'Import Hive',
   local_records: 'Local Records',
   import_from_hive_tooltip: 'Import all past sales from Hive',
-  delete_local_records_tooltip: `Delete all local records. This will erase all pending payments, \n
-    but successful payments can be re- imported from Hive with the \n
-    Import Hive button`,
+  delete_local_records_tooltip: `Excluir todos os registros locais. Esta ação apagará todos os pagamentos pendentes, \n
+    mas pagamentos realizados podem ser importados do Hive com o botão \n
+    Importar Hive`,
   delete_all_pending_message: 'Are you sure you want to delete all pending sales?',
   delete_one_pending_message: 'Are you sure you want to delete this pending sale?',
   export_to_csv: 'Export to CSV',
   export_to_csv_tooltip: 'Export all the currently displayed sales to a CSV file',
   // Hive to Lightning Transactions
   other: 'Other',
-  wallet: 'Wallet',
+  wallet: 'Carteira',
   login_to_see_history: 'Login to see your history',
   reason: 'Reason',
   deposit: 'Deposit',
@@ -256,7 +256,7 @@ export default {
   download_keys: 'Download Keys',
   copy_master_password: 'Copy Master Password',
   confirm_download: 'Confirm Download',
-  invoice_canceled: 'Invoice Canceled',
+  invoice_canceled: 'Fatura Cancelada',
   keys_downloaded: 'YES! I have downloaded and saved my keys',
   you_will_be_charged: 'You will be charged',
   receive_back: 'Receive back',
