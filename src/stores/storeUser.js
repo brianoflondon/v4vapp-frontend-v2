@@ -505,7 +505,6 @@ export const useStoreUser = defineStore("useStoreUser", {
           let answer = null
           try {
             answer = await useKeepSats(useCache, false)
-            console.log("answer", answer)
             if (answer?.detail === "Could not validate credentials") {
               console.log("Need to log out")
               this.logout()
