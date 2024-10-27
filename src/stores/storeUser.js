@@ -511,7 +511,6 @@ export const useStoreUser = defineStore("useStoreUser", {
               this.logout()
               return false
             }
-            console.log("answer", answer)
           } catch (err) {
             console.error(err)
           }
