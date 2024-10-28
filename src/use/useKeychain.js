@@ -169,7 +169,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
   } catch (error) {
     // hiveAccObj["loggedIn"] = false
     console.error("error: ", error)
-    note({
+    Notify.create({
       icon: "cancel", // we add an icon
       spinner: false, // we reset the spinner setting so the icon can be displayed
       message: `${error}`,
