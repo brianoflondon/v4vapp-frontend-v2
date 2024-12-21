@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@github/webauthn-json": "^2.1.1",
-    "@hive/wax": "^0.3.8-stable.240313233236",
     "@quasar/cli": "^2.4.1",
     "@quasar/extras": "^1.16.12",
     "@vueuse/core": "^10.6.1",
