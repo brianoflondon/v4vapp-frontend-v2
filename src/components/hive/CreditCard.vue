@@ -13,7 +13,15 @@
       <div class="credit-card-shading" :style="creditCardShading">
         <div class="items-end flex row">
           <div class="card-spacer row col-12"></div>
-          <!-- Sats balance on the face of the credit card -->
+          <!-- Binance balance on the face of the credit card -->
+          <div class="row col-12 binance-balance" v-if="storeUser.currentKeepSats?.binance">
+            <div class="col-7">
+            </div>
+            <div class="text-h6 credit-card-text embossed-text text-right">
+              {{ tidyNumber(storeUser?.currentKeepSats?.binance?.SATS) }} sats<br />
+              {{ tidyNumber(storeUser?.currentKeepSats?.binance?.HIVE, 0) }} Hive
+            </div>
+          </div>
           <div class="row col-12" v-if="false">
             <div class="text-h6 credit-card-text embossed-text"></div>
           </div>
@@ -32,6 +40,7 @@
       size="lg"
       style="position: absolute; top: 30%; left: 8%"
     />
+
     <q-card-section
       v-if="storeUser.currentUser"
       class="credit-card-strip absolute-bottom q-py-xs q-px-sm text-subtitle2 text-left"
@@ -290,6 +299,7 @@ const nonZeroKeepSats = computed(() => {
 })
 
 const balances = computed(() => {
+  console.log(storeUser.currentKeepSats)
   if (currencyToggle.value) {
     if (savingsToggle.value) {
       return {
