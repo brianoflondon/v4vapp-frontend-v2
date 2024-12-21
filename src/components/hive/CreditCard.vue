@@ -14,7 +14,7 @@
         <div class="items-end flex row">
           <div class="card-spacer row col-12"></div>
           <!-- Binance balance on the face of the credit card -->
-          <div class="row  col-12 binance-balance" v-if="storeUser.currentKeepSats?.binance">
+          <div class="row col-12 binance-balance" v-if="storeUser.currentKeepSats?.binance">
             <div class="col-7">
             </div>
             <div class="text-h6 credit-card-text embossed-text text-right">
