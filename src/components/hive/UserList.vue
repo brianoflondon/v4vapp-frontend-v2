@@ -56,10 +56,11 @@ import { useStoreUser } from "src/stores/storeUser"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 const storeUser = useStoreUser()
 
-const emit = defineEmits(["update", "click"])
+const emit = defineEmits(["update", "click", "user-clicked"])
 
 function doClick(item) {
   storeUser.switchUser(item)
+  emit("user-clicked", item)
   navigator.clipboard.writeText(item).then(
     () => {
       console.log("Copied to clipboard")

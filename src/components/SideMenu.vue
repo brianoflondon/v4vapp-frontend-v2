@@ -4,6 +4,7 @@
       <UserList
         @update="(val) => (hiveUsername = val)"
         @click="$emit('close-menu')"
+        @user-clicked="closeRightDrawer"
       />
       <HiveLogin v-model="hiveAccObj" key-type="Active" :label="label" />
       <PasskeyManagement />
@@ -51,7 +52,7 @@ import { api, apiLogin, serverHiveAccount } from "boot/axios"
 
 const { appName, appVersion } = useAppDetails()
 const storeUser = useStoreUser()
-// const rightDrawerOpen = defineModel(false)
+const rightDrawerOpen = defineModel(false)
 
 const hiveAccObj = ref()
 const isDev = ref()
@@ -140,6 +141,10 @@ function addAdminMenu() {
       },
     ]
   }
+}
+
+function closeRightDrawer() {
+  rightDrawerOpen.value = false;
 }
 
 onBeforeMount(async () => {
