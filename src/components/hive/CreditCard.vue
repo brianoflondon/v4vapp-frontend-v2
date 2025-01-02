@@ -2,7 +2,12 @@
   <div>
     <ConfettiExplosion v-if="visible" />
   </div>
-  <q-card @click="changeBackground" class="credit-card-background q-ma-xs">
+  <q-card
+    @click="changeBackground"
+    class="credit-card-background q-ma-xs"
+    v-touch-swipe.mouse="handleSwipe"
+    draggable="false"
+  >
     <q-img
       :src="creditCardBackground"
       width="365px"
@@ -14,12 +19,16 @@
         <div class="items-end flex row">
           <div class="card-spacer row col-12"></div>
           <!-- Binance balance on the face of the credit card -->
-          <div class="row col-12 binance-balance" v-if="storeUser.currentKeepSats?.binance">
-            <div class="col-7">
-            </div>
+          <div
+            class="row col-12 binance-balance"
+            v-if="storeUser.currentKeepSats?.binance"
+          >
+            <div class="col-7"></div>
             <div class="text-h6 credit-card-text embossed-text text-right">
-              {{ tidyNumber(storeUser?.currentKeepSats?.binance?.SATS) }} sats<br />
-              {{ tidyNumber(storeUser?.currentKeepSats?.binance?.HIVE, 0) }} Hive
+              {{ tidyNumber(storeUser?.currentKeepSats?.binance?.SATS) }}
+              sats<br />
+              {{ tidyNumber(storeUser?.currentKeepSats?.binance?.HIVE, 0) }}
+              Hive
             </div>
           </div>
           <div class="row col-12" v-if="false">
@@ -276,6 +285,30 @@ watch(
   }
 )
 
+function handleSwipe(e) {
+  const users = Object.values(storeUser.users)
+  const currentUser = storeUser.currentUser
+
+  if (!Array.isArray(users)) {
+    console.error("storeUser.users is not an array")
+    return
+  }
+
+  const currentIndex = users.findIndex(
+    (user) => user.hiveAccname === currentUser
+  )
+
+  if (e.direction === "left") {
+    // Switch to the next user
+    const nextIndex = (currentIndex + 1) % users.length
+    storeUser.switchUser(users[nextIndex].hiveAccname)
+  } else if (e.direction === "right") {
+    // Switch to the previous user
+    const nextIndex = (currentIndex - 1 + users.length) % users.length
+    storeUser.switchUser(users[nextIndex].hiveAccname)
+  }
+}
+
 async function scheduleUpdate() {
   await storeUser.update(false)
   // Schedule the next update after 5 minutes
@@ -299,7 +332,6 @@ const nonZeroKeepSats = computed(() => {
 })
 
 const balances = computed(() => {
-  console.log(storeUser.currentKeepSats)
   if (currencyToggle.value) {
     if (savingsToggle.value) {
       return {
