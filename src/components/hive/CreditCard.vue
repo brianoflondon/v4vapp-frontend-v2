@@ -332,7 +332,6 @@ const nonZeroKeepSats = computed(() => {
 })
 
 const balances = computed(() => {
-  console.log(storeUser.currentKeepSats)
   if (currencyToggle.value) {
     if (savingsToggle.value) {
       return {
