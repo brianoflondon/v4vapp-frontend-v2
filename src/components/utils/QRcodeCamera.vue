@@ -1,125 +1,122 @@
 <template>
-  <div>
-    <!-- Camera  -->
-    <div v-if="!cameraShow" class="q-pb-lg"></div>
-    <div>
-      <video ref="video" autoplay playsinline></video>
-      <input type="range" ref="zoomSlider"  />
-    </div>
-    <div v-if="cameraShow">
-      <qrcode-stream
-        @detect="onDecode"
-        @camera-on="onReady"
-        @error="onError"
-      ></qrcode-stream>
-    </div>
-    <!-- End Camera -->
-    <div>
-      <q-btn
-        v-if="!cameraShow"
-        @click="cameraShow = true"
-        color="primary"
-        label="Scan QR Code"
-        icon="mdi-camera"
-        class="q-mb-md"
-      />
-      <q-btn
-        v-if="cameraShow"
-        @click="cameraShow = false"
-        color="primary"
-        label="Close Camera"
-        icon="mdi-camera-off"
-        class="q-mb-md"
-      />
-    </div>
-  </div>
+  <q-page>
+    <!-- Other components and elements -->
+
+    <qrcode-stream
+      @detect="onDecode"
+      @camera-on="onReady"
+      @error="onError"
+    >
+      <button @click="switchCamera">
+        <img :src="getBaseUrl('/camera-switch.svg')" alt="switch camera" />
+      </button>
+    </qrcode-stream>
+
+    <input type="range" ref="zoomSlider"  />
+
+    <!-- Other components and elements -->
+  </q-page>
 </template>
-
 <script setup>
-import { ref, onMounted } from "vue"
-import { QrcodeStream } from "vue-qrcode-reader"
-import { useI18n } from "vue-i18n"
+// filepath: /Users/bol/Documents/dev/v4vapp/v4vapp-frontend-v2/src/pages/LightningPage.vue
+import { ref } from 'vue'
+import { QrcodeStream } from 'vue-qrcode-reader'
+import { useQuasar } from 'quasar'
 
-const t = useI18n().t
-const cameraOn = ref(false)
-const cameraShow = ref(false)
-const cameraError = ref("")
-
-const video = ref(null)
+// Reactive state
+const facingMode = ref('environment')
+const noRearCamera = ref(false)
+const noFrontCamera = ref(false)
 const zoomSlider = ref(null)
 
-onMounted(() => {
-  navigator.mediaDevices
-    .getUserMedia({ video: { zoom: true } })
-    .then((mediaStream) => {
-      video.value.srcObject = mediaStream
-
-      const [track] = mediaStream.getVideoTracks()
-      const capabilities = track.getCapabilities()
-      const settings = track.getSettings()
-
-      // Check whether zoom is supported or not.
-      if (!("zoom" in settings)) {
-        console.error("Zoom is not supported by " + track.label)
-        return
-      }
-
-      // Map zoom to a slider element.
-      zoomSlider.value.min = capabilities.zoom.min
-      zoomSlider.value.max = capabilities.zoom.max
-      zoomSlider.value.step = capabilities.zoom.step
-      zoomSlider.value.value = settings.zoom
-      zoomSlider.value.oninput = function (event) {
-        track.applyConstraints({ advanced: [{ zoom: event.target.value }] })
-      }
-      zoomSlider.value.hidden = false
-    })
-    .catch((error) => console.error("Error accessing media devices.", error))
-})
-
-async function onReady() {
-  cameraOn.value = true
-}
-
-async function onDecode(content) {
-  // Switch to better QR Code library, handle multiple QR codes
-  // scan through them until a valid Lightning invoice is found.
-  let i = 0
-  while (i < content.length && !invoiceValid.value) {
-    const rawValue = content[i].rawValue
-
-    // invoiceText.value = rawValue
-    console.log("QR Code detected: ", rawValue)
-
-    i++
-  }
-}
-
-function onError(error) {
-  console.error("onError", error.name)
-  if (cameraErrors.includes(error.name)) {
-    cameraError.value = `${t("error")}: ${t(error.name)}`
+// Method to switch the camera
+function switchCamera() {
+  if (facingMode.value === 'environment') {
+    facingMode.value = 'user'
   } else {
-    cameraError.value = `${t("error")}: ${t("OtherError")} ${
-      error.name
-    } ${error}`
+    facingMode.value = 'environment'
   }
-  invoiceChecking.value = false
-  q.notify({
-    color: "negative",
-    timeout: 4000,
-    message: cameraError.value,
-    position: "top",
-  })
-  setTimeout(() => {
-    cameraError.value = ""
-    cameraOn.value = false
-    cameraShow.value = false
-  }, 500)
-  cameraOn.value = false
-  cameraShow.value = false
-  invoiceChecking.value = false
+}
+
+// Method to handle camera errors
+function onError(error) {
+  const triedFrontCamera = facingMode.value === 'user'
+  const triedRearCamera = facingMode.value === 'environment'
+
+  const cameraMissingError = error.name === 'OverconstrainedError'
+
+  if (triedRearCamera && cameraMissingError) {
+    noRearCamera.value = true
+  }
+
+  if (triedFrontCamera && cameraMissingError) {
+    noFrontCamera.value = true
+  }
+
+  console.error(error)
+}
+
+// Method to handle QR code decoding
+function onDecode(result) {
+  console.log('QR code decoded:', result)
+  // Add your logic to handle the decoded result here
+}
+
+// Method to handle camera ready event
+function onReady(mediaStream) {
+  if (!mediaStream || !mediaStream.getVideoTracks) {
+    console.error('Invalid mediaStream object:', mediaStream)
+    return
+  }
+
+  const [track] = mediaStream.getVideoTracks()
+  if (!track) {
+    console.error('No video tracks available in mediaStream:', mediaStream)
+    return
+  }
+
+  const capabilities = track.getCapabilities()
+  const settings = track.getSettings()
+
+  // Check whether zoom is supported or not.
+  if (!('zoom' in settings)) {
+    console.error('Zoom is not supported by ' + track.label)
+    return
+  }
+
+  // Map zoom to a slider element.
+  zoomSlider.value.min = capabilities.zoom.min
+  zoomSlider.value.max = capabilities.zoom.max
+  zoomSlider.value.step = capabilities.zoom.step
+  zoomSlider.value.value = settings.zoom
+  zoomSlider.value.oninput = function(event) {
+    track.applyConstraints({ advanced: [{ zoom: event.target.value }] })
+  }
+  zoomSlider.value.hidden = false
+}
+
+// Method to get the base URL
+function getBaseUrl(path) {
+  return import.meta.env.BASE_URL + path
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped>
+button {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+button img {
+  width: 50px;
+  height: 50px;
+}
+input[type="range"] {
+  width: 100%;
+  margin-top: 10px;
+}
+.error {
+  color: red;
+  font-weight: bold;
+}
+</style>

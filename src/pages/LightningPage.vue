@@ -2,7 +2,6 @@
   <q-page>
     <div class="flex column text-center items-center q-pa-none">
       <div class="pad-max-width full-width">
-        <QRcodeCamera />
         <q-tabs
           v-model="currentTab"
           align="center"
@@ -40,6 +39,7 @@
           <!-- <q-tab name="other" :label="$t('other')" /> -->
         </q-tabs>
       </div>
+              <QRcodeCamera />
       <!-- Q-tab-panels -->
       <q-tab-panels v-model="currentTab">
         <q-tab-panel name="realWallet">
