@@ -11,7 +11,7 @@
     <div v-if="noFrontCamera" class="error">No front camera available</div>
     <pre>{{ mediaStreamRef }}</pre>
     <pre>{{ decodedQR }}</pre>
-    <input type="range" ref="zoomSlider" />
+    <input type="range" ref="zoomSlider" hidden @change="onZoom" />
 
     <!-- Other components and elements -->
   </q-page>
