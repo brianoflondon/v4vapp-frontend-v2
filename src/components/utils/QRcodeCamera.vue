@@ -9,12 +9,20 @@
         @detect="onDetect"
         @camera-on="onCameraReady"
       >
-        <q-btn
-          @click="cycleBackCameras"
-          round
-          color="primary"
-          icon="zoom_in"
-        />
+      <div class="zoom-buttons">
+          <q-btn
+            @click="cycleBackCameras('out')"
+            round
+            color="primary"
+            icon="zoom_out"
+          />
+          <q-btn
+            @click="cycleBackCameras('in')"
+            round
+            color="primary"
+            icon="zoom_in"
+          />
+      </div>
       </qrcode-stream>
     </div>
   </div>
@@ -46,7 +54,7 @@ const emit = defineEmits(["error", "result", "invoiceChecking"])
 const result = ref("")
 
 // Method to cycle through camera options
-async function cycleBackCameras() {
+async function cycleBackCameras(direction = "in") {
   if (backCameras.value.length === 0) {
     await getBackCameras()
   }
@@ -57,13 +65,18 @@ async function cycleBackCameras() {
   }
 
   // Cycle through zoom levels
-  currentZoomLevel.value = (currentZoomLevel.value + 1) % zoomLevels.length
+  if (direction === "in") {
+    currentZoomLevel.value = (currentZoomLevel.value + 1) % zoomLevels.length
+  } else {
+    currentZoomLevel.value =
+      (currentZoomLevel.value - 1 + zoomLevels.length) % zoomLevels.length
+  }
 
   // If we've cycled through all zoom levels, move to the next camera
-  if (currentZoomLevel.value === 0) {
-    currentCameraIndex.value =
-      (currentCameraIndex.value + 1) % backCameras.value.length
-  }
+  //   if (currentZoomLevel.value === 0) {
+  //     currentCameraIndex.value =
+  //       (currentCameraIndex.value + 1) % backCameras.value.length
+  //   }
 
   const constraints = {
     deviceId: { exact: backCameras.value[currentCameraIndex.value].deviceId },
@@ -266,7 +279,7 @@ function onError(error) {
   word-wrap: break-word;
 }
 
-button {
+.zoom-buttons {
   position: absolute;
   left: 10px;
   top: 10px;
