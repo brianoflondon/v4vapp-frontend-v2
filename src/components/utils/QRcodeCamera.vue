@@ -1,7 +1,7 @@
 <template>
   <div>
     <button @click="cycleBackCameras">Cycle Back Cameras</button>
-    {{ currentZoomLevel}}
+    {{ currentZoomLevel }}
 
     <p class="error">{{ error }}</p>
 
@@ -17,18 +17,31 @@
         @error="onError"
         @detect="onDetect"
         @camera-on="onCameraReady"
-      />
+      ></qrcode-stream>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue"
+import { useQuasar } from "quasar"
 import { QrcodeStream } from "vue-qrcode-reader"
+import { useI18n } from "vue-i18n"
+
+const t = useI18n().t
+const q = useQuasar()
 const backCameras = ref([])
 const currentCameraIndex = ref(0)
 const currentZoomLevel = ref(1)
 const zoomLevels = [1, 2, 3, 4, 5] // Define your desired zoom levels here
+
+const cameraOn = ref(false)
+const cameraShow = ref(false)
+const cameraError = ref("")
+// define emits for error if needed to tell the calling component that there was an error
+// and output the result and invoicechecking Flag
+const invoiceChecking = ref(false)
+const emit = defineEmits(["error", "result", "invoiceChecking"])
 
 /*** detection handling ***/
 
@@ -75,6 +88,7 @@ async function getBackCameras() {
 function onDetect(detectedCodes) {
   console.log(detectedCodes)
   result.value = JSON.stringify(detectedCodes.map((code) => code.rawValue))
+  emit("result", detectedCodes)
 }
 
 /*** select camera ***/
@@ -199,27 +213,42 @@ const selectedBarcodeFormats = computed(() => {
 
 const error = ref("")
 
-function onError(err) {
-  error.value = `[${err.name}]: `
+const cameraErrors = [
+  "NotAllowedError",
+  "NotFoundError",
+  "NotSupportedError",
+  "NotReadableError",
+  "OverconstrainedError",
+  "StreamApiNotSupportedError",
+  "InsecureContextError",
+]
 
-  if (err.name === "NotAllowedError") {
-    error.value += "you need to grant camera access permission"
-  } else if (err.name === "NotFoundError") {
-    error.value += "no camera on this device"
-  } else if (err.name === "NotSupportedError") {
-    error.value += "secure context required (HTTPS, localhost)"
-  } else if (err.name === "NotReadableError") {
-    error.value += "is the camera already in use?"
-  } else if (err.name === "OverconstrainedError") {
-    error.value += "installed cameras are not suitable"
-  } else if (err.name === "StreamApiNotSupportedError") {
-    error.value += "Stream API is not supported in this browser"
-  } else if (err.name === "InsecureContextError") {
-    error.value +=
-      "Camera access is only permitted in secure context. Use HTTPS or localhost rather than HTTP."
+function onError(error) {
+  console.error("onError", error.name)
+  if (cameraErrors.includes(error.name)) {
+    cameraError.value = `${t("error")}: ${t(error.name)}`
   } else {
-    error.value += err.message
+    cameraError.value = `${t("error")}: ${t("OtherError")} ${
+      error.name
+    } ${error}`
   }
+  invoiceChecking.value = false
+  emit("error", cameraError.value)
+  emit("invoiceChecking", invoiceChecking.value)
+  q.notify({
+    color: "negative",
+    timeout: 4000,
+    message: cameraError.value,
+    position: "top",
+  })
+  setTimeout(() => {
+    cameraError.value = ""
+    cameraOn.value = false
+    cameraShow.value = false
+  }, 500)
+  cameraOn.value = false
+  cameraShow.value = false
+  invoiceChecking.value = false
 }
 </script>
 

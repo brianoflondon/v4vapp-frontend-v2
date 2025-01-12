@@ -66,7 +66,7 @@
                 <!-- Camera  -->
                 <div v-if="!cameraShow" class="q-pb-lg"></div>
                 <div v-if="cameraShow">
-                  <QRcodeCamera />
+                  <QRcodeCamera @result="onDecode" />
                   <!-- <qrcode-stream
                     @detect="onDecode"
                     @camera-on="onReady"
@@ -671,6 +671,7 @@ watch(
 async function onDecode(content) {
   // Switch to better QR Code library, handle multiple QR codes
   // scan through them until a valid Lightning invoice is found.
+  console.log("onDecode", content)
   let i = 0
   while (i < content.length && !invoiceValid.value) {
     const rawValue = content[i].rawValue
