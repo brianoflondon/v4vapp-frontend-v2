@@ -2,6 +2,7 @@
   <q-page>
     <div class="flex column text-center items-center q-pa-none">
       <div class="pad-max-width full-width">
+        <QRcodeCamera />
         <q-tabs
           v-model="currentTab"
           align="center"
@@ -395,6 +396,7 @@ import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
 import ConvertWrapper from "src/components/hive/ConvertWrapper.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import UnlimitedInvoice from "components/utils/UnlimitedInvoice.vue"
+import QRcodeCamera from "src/components/utils/QRcodeCamera.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
