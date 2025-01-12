@@ -9,7 +9,7 @@
     </qrcode-stream>
     <div v-if="noRearCamera" class="error">No rear camera available</div>
     <div v-if="noFrontCamera" class="error">No front camera available</div>
-    <pre>{{ mediaStream }}</pre>
+    <pre>{{ mediaStreamRef }}</pre>
     <pre>{{ decodedQR }}</pre>
     <input type="range" ref="zoomSlider" />
 
@@ -28,7 +28,7 @@ const noRearCamera = ref(false)
 const noFrontCamera = ref(false)
 const zoomSlider = ref(null)
 const decodedQR = ref("")
-const mediaStream = ref(null)
+const mediaStreamRef = ref(null)
 
 // Method to switch the camera
 function switchCamera() {
@@ -71,7 +71,7 @@ function onDecode(content) {
 
 // Method to handle camera ready event
 function onReady(mediaStream) {
-  mediaStream.value = mediaStream
+  mediaStreamRef.value = mediaStream
   console.log("Camera is ready:", mediaStream)
   if (!mediaStream || typeof mediaStream.getVideoTracks !== "function") {
     console.error("Invalid mediaStream object:", mediaStream)
