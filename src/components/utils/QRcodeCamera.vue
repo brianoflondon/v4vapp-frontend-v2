@@ -34,20 +34,6 @@
       </select>
     </p>
 
-    <p>
-      By default only QR-codes are detected but a variety of other barcode
-      formats are also supported. You can select one or multiple but the more
-      you select the more expensive scanning becomes: <br />
-
-      <span
-        v-for="option in Object.keys(barcodeFormats)"
-        :key="option"
-        class="barcode-format-checkbox"
-      >
-        <input type="checkbox" v-model="barcodeFormats[option]" :id="option" />
-        <label :for="option">{{ option }}</label>
-      </span>
-    </p>
 
     <p class="error">{{ error }}</p>
 
@@ -281,6 +267,7 @@ function onError(err) {
 }
 
 .decode-result {
+  max-width: 500px;
   word-wrap: break-word;
 }
 </style>
