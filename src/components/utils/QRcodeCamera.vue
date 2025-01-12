@@ -1,10 +1,12 @@
 <template>
   <div>
+    <button @click="cycleCamera">Cycle Camera</button>
+
     <p>
-      Modern mobile phones often have a variety of different cameras installed (e.g. front, rear,
-      wide-angle, infrared, desk-view). The one picked by default is sometimes not the best choice.
-      For more fine-grained control, you can select a camera by device constraints or by the device
-      ID:
+      Modern mobile phones often have a variety of different cameras installed
+      (e.g. front, rear, wide-angle, infrared, desk-view). The one picked by
+      default is sometimes not the best choice. For more fine-grained control,
+      you can select a camera by device constraints or by the device ID:
 
       <select v-model="selectedConstraints">
         <option
@@ -18,8 +20,8 @@
     </p>
 
     <p>
-      Detected codes are visually highlighted in real-time. Use the following dropdown to change the
-      flavor:
+      Detected codes are visually highlighted in real-time. Use the following
+      dropdown to change the flavor:
 
       <select v-model="trackFunctionSelected">
         <option
@@ -33,20 +35,16 @@
     </p>
 
     <p>
-      By default only QR-codes are detected but a variety of other barcode formats are also
-      supported. You can select one or multiple but the more you select the more expensive scanning
-      becomes: <br />
+      By default only QR-codes are detected but a variety of other barcode
+      formats are also supported. You can select one or multiple but the more
+      you select the more expensive scanning becomes: <br />
 
       <span
         v-for="option in Object.keys(barcodeFormats)"
         :key="option"
         class="barcode-format-checkbox"
       >
-        <input
-          type="checkbox"
-          v-model="barcodeFormats[option]"
-          :id="option"
-        />
+        <input type="checkbox" v-model="barcodeFormats[option]" :id="option" />
         <label :for="option">{{ option }}</label>
       </span>
     </p>
@@ -71,12 +69,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { QrcodeStream } from 'vue-qrcode-reader'
+import { ref, computed } from "vue"
+import { QrcodeStream } from "vue-qrcode-reader"
 
 /*** detection handling ***/
 
-const result = ref('')
+const result = ref("")
+
+// Method to cycle through camera options
+function cycleCamera() {
+  const currentIndex = constraintOptions.value.findIndex(
+    option => option.constraints === selectedConstraints.value
+  )
+  const nextIndex = (currentIndex + 1) % constraintOptions.value.length
+  selectedConstraints.value = constraintOptions.value[nextIndex].constraints
+}
 
 function onDetect(detectedCodes) {
   console.log(detectedCodes)
@@ -85,10 +92,10 @@ function onDetect(detectedCodes) {
 
 /*** select camera ***/
 
-const selectedConstraints = ref({ facingMode: 'environment' })
+const selectedConstraints = ref({ facingMode: "environment" })
 const defaultConstraintOptions = [
-  { label: 'rear camera', constraints: { facingMode: 'environment' } },
-  { label: 'front camera', constraints: { facingMode: 'user' } }
+  { label: "rear camera", constraints: { facingMode: "environment" } },
+  { label: "front camera", constraints: { facingMode: "user" } },
 ]
 const constraintOptions = ref(defaultConstraintOptions)
 
@@ -98,17 +105,18 @@ async function onCameraReady() {
   // requesting the permissions. The `camera-on` event should guarantee that this
   // has happened.
   const devices = await navigator.mediaDevices.enumerateDevices()
-  const videoDevices = devices.filter(({ kind }) => kind === 'videoinput')
+  const videoDevices = devices.filter(({ kind }) => kind === "videoinput")
 
   constraintOptions.value = [
     ...defaultConstraintOptions,
     ...videoDevices.map(({ deviceId, label }) => ({
       label: `${label} (ID: ${deviceId})`,
-      constraints: { deviceId }
-    }))
+      constraints: { deviceId },
+    })),
   ]
+  console.log("constraintOptions", constraintOptions.value)
 
-  error.value = ''
+  error.value = ""
 }
 
 /*** track functons ***/
@@ -117,7 +125,7 @@ function paintOutline(detectedCodes, ctx) {
   for (const detectedCode of detectedCodes) {
     const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
 
-    ctx.strokeStyle = 'red'
+    ctx.strokeStyle = "red"
 
     ctx.beginPath()
     ctx.moveTo(firstPoint.x, firstPoint.y)
@@ -132,11 +140,11 @@ function paintOutline(detectedCodes, ctx) {
 function paintBoundingBox(detectedCodes, ctx) {
   for (const detectedCode of detectedCodes) {
     const {
-      boundingBox: { x, y, width, height }
+      boundingBox: { x, y, width, height },
     } = detectedCode
 
     ctx.lineWidth = 2
-    ctx.strokeStyle = '#007bff'
+    ctx.strokeStyle = "#007bff"
     ctx.strokeRect(x, y, width, height)
   }
 }
@@ -150,21 +158,21 @@ function paintCenterText(detectedCodes, ctx) {
     const fontSize = Math.max(12, (50 * boundingBox.width) / ctx.canvas.width)
 
     ctx.font = `bold ${fontSize}px sans-serif`
-    ctx.textAlign = 'center'
+    ctx.textAlign = "center"
 
     ctx.lineWidth = 3
-    ctx.strokeStyle = '#35495e'
+    ctx.strokeStyle = "#35495e"
     ctx.strokeText(detectedCode.rawValue, centerX, centerY)
 
-    ctx.fillStyle = '#5cb984'
+    ctx.fillStyle = "#5cb984"
     ctx.fillText(rawValue, centerX, centerY)
   }
 }
 const trackFunctionOptions = [
-  { text: 'nothing (default)', value: undefined },
-  { text: 'outline', value: paintOutline },
-  { text: 'centered text', value: paintCenterText },
-  { text: 'bounding box', value: paintBoundingBox }
+  { text: "nothing (default)", value: undefined },
+  { text: "outline", value: paintOutline },
+  { text: "centered text", value: paintCenterText },
+  { text: "bounding box", value: paintBoundingBox },
 ]
 const trackFunctionSelected = ref(trackFunctionOptions[1])
 
@@ -191,34 +199,36 @@ const barcodeFormats = ref({
   upc_a: false,
   upc_e: false,
   linear_codes: false,
-  matrix_codes: false
+  matrix_codes: false,
 })
 const selectedBarcodeFormats = computed(() => {
-  return Object.keys(barcodeFormats.value).filter((format) => barcodeFormats.value[format])
+  return Object.keys(barcodeFormats.value).filter(
+    (format) => barcodeFormats.value[format]
+  )
 })
 
 /*** error handling ***/
 
-const error = ref('')
+const error = ref("")
 
 function onError(err) {
   error.value = `[${err.name}]: `
 
-  if (err.name === 'NotAllowedError') {
-    error.value += 'you need to grant camera access permission'
-  } else if (err.name === 'NotFoundError') {
-    error.value += 'no camera on this device'
-  } else if (err.name === 'NotSupportedError') {
-    error.value += 'secure context required (HTTPS, localhost)'
-  } else if (err.name === 'NotReadableError') {
-    error.value += 'is the camera already in use?'
-  } else if (err.name === 'OverconstrainedError') {
-    error.value += 'installed cameras are not suitable'
-  } else if (err.name === 'StreamApiNotSupportedError') {
-    error.value += 'Stream API is not supported in this browser'
-  } else if (err.name === 'InsecureContextError') {
+  if (err.name === "NotAllowedError") {
+    error.value += "you need to grant camera access permission"
+  } else if (err.name === "NotFoundError") {
+    error.value += "no camera on this device"
+  } else if (err.name === "NotSupportedError") {
+    error.value += "secure context required (HTTPS, localhost)"
+  } else if (err.name === "NotReadableError") {
+    error.value += "is the camera already in use?"
+  } else if (err.name === "OverconstrainedError") {
+    error.value += "installed cameras are not suitable"
+  } else if (err.name === "StreamApiNotSupportedError") {
+    error.value += "Stream API is not supported in this browser"
+  } else if (err.name === "InsecureContextError") {
     error.value +=
-      'Camera access is only permitted in secure context. Use HTTPS or localhost rather than HTTP.'
+      "Camera access is only permitted in secure context. Use HTTPS or localhost rather than HTTP."
   } else {
     error.value += err.message
   }
@@ -234,5 +244,9 @@ function onError(err) {
   margin-right: 10px;
   white-space: nowrap;
   display: inline-block;
+}
+
+.decode-result {
+  word-wrap: break-word;
 }
 </style>

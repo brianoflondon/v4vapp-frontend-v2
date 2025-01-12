@@ -39,7 +39,7 @@
           <!-- <q-tab name="other" :label="$t('other')" /> -->
         </q-tabs>
       </div>
-              <QRcodeCamera />
+
       <!-- Q-tab-panels -->
       <q-tab-panels v-model="currentTab">
         <q-tab-panel name="realWallet">
@@ -66,11 +66,12 @@
                 <!-- Camera  -->
                 <div v-if="!cameraShow" class="q-pb-lg"></div>
                 <div v-if="cameraShow">
-                  <qrcode-stream
+                  <QRcodeCamera />
+                  <!-- <qrcode-stream
                     @detect="onDecode"
                     @camera-on="onReady"
                     @error="onError"
-                  ></qrcode-stream>
+                  ></qrcode-stream> -->
                 </div>
                 <!-- End Camera -->
                 <!-- Progress screen -->
