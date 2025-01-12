@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button @click="cycleCamera">Cycle Camera</button>
+    <button @click="cycleBackCameras">Cycle Back Cameras</button>
 
     <p>
       Modern mobile phones often have a variety of different cameras installed
@@ -71,18 +71,51 @@
 <script setup lang="ts">
 import { ref, computed } from "vue"
 import { QrcodeStream } from "vue-qrcode-reader"
+const backCameras = ref([])
+const currentCameraIndex = ref(0)
+const currentZoomLevel = ref(1)
+const zoomLevels = [1, 2, 3, 4, 5] // Define your desired zoom levels here
 
 /*** detection handling ***/
 
 const result = ref("")
 
 // Method to cycle through camera options
-function cycleCamera() {
-  const currentIndex = constraintOptions.value.findIndex(
-    option => option.constraints === selectedConstraints.value
+async function cycleBackCameras() {
+  if (backCameras.value.length === 0) {
+    await getBackCameras()
+  }
+
+  if (backCameras.value.length === 0) {
+    console.error("No back cameras found")
+    return
+  }
+
+  // Cycle through zoom levels
+  currentZoomLevel.value = (currentZoomLevel.value + 1) % zoomLevels.length
+
+  // If we've cycled through all zoom levels, move to the next camera
+  if (currentZoomLevel.value === 0) {
+    currentCameraIndex.value =
+      (currentCameraIndex.value + 1) % backCameras.value.length
+  }
+
+  const constraints = {
+    deviceId: { exact: backCameras.value[currentCameraIndex.value].deviceId },
+    advanced: [{ zoom: zoomLevels[currentZoomLevel.value] }],
+  }
+
+  selectedConstraints.value = constraints
+}
+
+// Method to get back cameras
+async function getBackCameras() {
+  const devices = await navigator.mediaDevices.enumerateDevices()
+  backCameras.value = devices.filter(
+    (device) =>
+      device.kind === "videoinput" &&
+      device.label.toLowerCase().includes("back")
   )
-  const nextIndex = (currentIndex + 1) % constraintOptions.value.length
-  selectedConstraints.value = constraintOptions.value[nextIndex].constraints
 }
 
 function onDetect(detectedCodes) {
@@ -106,6 +139,7 @@ async function onCameraReady() {
   // has happened.
   const devices = await navigator.mediaDevices.enumerateDevices()
   const videoDevices = devices.filter(({ kind }) => kind === "videoinput")
+  await getBackCameras()
 
   constraintOptions.value = [
     ...defaultConstraintOptions,
