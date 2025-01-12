@@ -4,11 +4,12 @@
 
     <qrcode-stream @detect="onDecode" @camera-on="onReady" @error="onError">
       <button @click="switchCamera">
-        <img :src="getBaseUrl('/camera-switch.svg')" alt="switch camera" />
+        <q-img icon="camera" alt="switch camera" />
       </button>
     </qrcode-stream>
     <div v-if="noRearCamera" class="error">No rear camera available</div>
     <div v-if="noFrontCamera" class="error">No front camera available</div>
+    <pre>{{ mediaStream }}</pre>
     <pre>{{ decodedQR }}</pre>
     <input type="range" ref="zoomSlider" />
 
@@ -27,6 +28,7 @@ const noRearCamera = ref(false)
 const noFrontCamera = ref(false)
 const zoomSlider = ref(null)
 const decodedQR = ref("")
+const mediaStream = ref(null)
 
 // Method to switch the camera
 function switchCamera() {
@@ -69,6 +71,8 @@ function onDecode(content) {
 
 // Method to handle camera ready event
 function onReady(mediaStream) {
+  mediaStream.value = mediaStream
+  console.log("Camera is ready:", mediaStream)
   if (!mediaStream || typeof mediaStream.getVideoTracks !== "function") {
     console.error("Invalid mediaStream object:", mediaStream)
     return
@@ -98,11 +102,6 @@ function onReady(mediaStream) {
     track.applyConstraints({ advanced: [{ zoom: event.target.value }] })
   }
   zoomSlider.value.hidden = false
-}
-
-// Method to get the base URL
-function getBaseUrl(path) {
-  return import.meta.env.BASE_URL + path
 }
 </script>
 
