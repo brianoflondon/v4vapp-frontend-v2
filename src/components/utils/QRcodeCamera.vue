@@ -1,14 +1,5 @@
 <template>
   <div>
-    <button @click="cycleBackCameras">Cycle Back Cameras</button>
-    {{ currentZoomLevel }}
-
-    <p class="error">{{ error }}</p>
-
-    <p class="decode-result">
-      Last result: <b>{{ result }}</b>
-    </p>
-
     <div>
       <qrcode-stream
         :constraints="selectedConstraints"
@@ -17,7 +8,14 @@
         @error="onError"
         @detect="onDetect"
         @camera-on="onCameraReady"
-      ></qrcode-stream>
+      >
+        <q-btn
+          @click="cycleBackCameras"
+          round
+          color="primary"
+          icon="zoom_in"
+        />
+      </qrcode-stream>
     </div>
   </div>
 </template>
@@ -32,8 +30,8 @@ const t = useI18n().t
 const q = useQuasar()
 const backCameras = ref([])
 const currentCameraIndex = ref(0)
-const currentZoomLevel = ref(1)
-const zoomLevels = [1, 2, 3, 4, 5] // Define your desired zoom levels here
+const currentZoomLevel = ref(2)
+const zoomLevels = [1, 2, 3, 4, 5, 6] // Define your desired zoom levels here
 
 const cameraOn = ref(false)
 const cameraShow = ref(false)
@@ -266,5 +264,15 @@ function onError(error) {
 .decode-result {
   max-width: 500px;
   word-wrap: break-word;
+}
+
+button {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+button img {
+  width: 50px;
+  height: 50px;
 }
 </style>
