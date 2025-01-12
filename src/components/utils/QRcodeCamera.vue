@@ -1,39 +1,7 @@
 <template>
   <div>
     <button @click="cycleBackCameras">Cycle Back Cameras</button>
-
-    <p>
-      Modern mobile phones often have a variety of different cameras installed
-      (e.g. front, rear, wide-angle, infrared, desk-view). The one picked by
-      default is sometimes not the best choice. For more fine-grained control,
-      you can select a camera by device constraints or by the device ID:
-
-      <select v-model="selectedConstraints">
-        <option
-          v-for="option in constraintOptions"
-          :key="option.label"
-          :value="option.constraints"
-        >
-          {{ option.label }}
-        </option>
-      </select>
-    </p>
-
-    <p>
-      Detected codes are visually highlighted in real-time. Use the following
-      dropdown to change the flavor:
-
-      <select v-model="trackFunctionSelected">
-        <option
-          v-for="option in trackFunctionOptions"
-          :key="option.text"
-          :value="option"
-        >
-          {{ option.text }}
-        </option>
-      </select>
-    </p>
-
+    {{ currentZoomLevel}}
 
     <p class="error">{{ error }}</p>
 
