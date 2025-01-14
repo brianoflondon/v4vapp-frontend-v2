@@ -90,7 +90,6 @@ async function cycleBackCameras(direction = "in") {
 
   if (backCameras.value.length === 0) {
     console.error("No back cameras found")
-    // return
   }
   console.log("cameraZoomLevel", currentZoomLevel.value)
   // Cycle through zoom levels
@@ -156,20 +155,11 @@ async function onCameraReady(mediaStream) {
     console.log("zoomCapabilities", mediaStream.zoom)
     // set  zoom levels to 5 steps between zoom.min and zoom.max
     zoomLevels.value = Array.from(
-      { length: 5 },
+      { length: 7 },
       (_, i) =>
         mediaStream.zoom.min +
         ((mediaStream.zoom.max - mediaStream.zoom.min) * i) / 4
     )
-    console.log("zoomLevels", zoomLevels.value)
-  }
-
-  console.log("mediaStreamFromCamera", mediaStreamFromCamera.value)
-  try {
-    mediaStreamTrack.value = mediaStream.getVideoTracks()
-  } catch (e) {
-    mediaStreamTrack.value = "getVideoTracks not supported"
-    console.error("Error getting zoom capabilities", e)
   }
 
   constraintOptions.value = [
