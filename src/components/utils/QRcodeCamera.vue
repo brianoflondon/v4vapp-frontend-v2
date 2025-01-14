@@ -8,10 +8,6 @@
     <pre>
         {{ mediaStreamTrack }}
     </pre>
-    Zoom
-    <pre>
-        {{ zoomCapabilities }}
-    </pre>
     zoomLevels
     <pre>
         {{ zoomLevels }}
@@ -57,15 +53,15 @@ import { ref, computed } from "vue"
 import { useQuasar } from "quasar"
 import { QrcodeStream } from "vue-qrcode-reader"
 import { useI18n } from "vue-i18n"
+import { axios } from "boot/axios"
 
 const t = useI18n().t
 const q = useQuasar()
 const backCameras = ref([])
 const currentCameraIndex = ref(0)
 const currentZoomLevel = ref(2)
-const zoomLevels = ref([0.5, 2, 5, 7])
+const zoomLevels = ref([1, 2, 3, 4])
 const currentZoomLevelIndex = ref(1)
-const zoomCapabilities = ref([])
 
 const cameraOn = ref(false)
 const cameraShow = ref(false)
@@ -151,17 +147,17 @@ async function onCameraReady(mediaStream) {
   await getBackCameras()
 
   mediaStreamFromCamera.value = mediaStream
-  zoomCapabilities.value = mediaStream.zoom
-
+  sendMediaStreamData(mediaStream)
   if (mediaStream.zoom) {
-    console.log("zoomCapabilities", mediaStream.zoom)
     // set  zoom levels to 5 steps between zoom.min and zoom.max
-    zoomLevels.value = Array.from(
-      { length: zoomSteps },
-      (_, i) =>
-        mediaStream.zoom.min +
-        ((mediaStream.zoom.max - mediaStream.zoom.min) * i) / (zoomSteps - 1)
-    )
+    if (mediaStream.zoom.max === mediaStream.zoom.min) {
+      zoomLevels.value = [mediaStream.zoom.max]
+    }
+    if (mediaStream.zoom.max === 1) {
+      zoomLevels.value = [1]
+    }
+  } else {
+    zoomLevels.value = [1]
   }
 
   constraintOptions.value = [
@@ -173,6 +169,19 @@ async function onCameraReady(mediaStream) {
   ]
   console.log("constraintOptions", constraintOptions.value)
   error.value = ""
+}
+
+// Method to send mediaStream data to the webhook
+async function sendMediaStreamData(mediaStream) {
+  try {
+    const response = await axios.post(
+      "https://webhook.site/4270bb5c-fd33-4e07-a716-ae38b5369cf9",
+      mediaStream
+    )
+    console.log("Webhook response:", response.data)
+  } catch (error) {
+    console.error("Error sending mediaStream data to webhook:", error)
+  }
 }
 
 /*** track functons ***/
