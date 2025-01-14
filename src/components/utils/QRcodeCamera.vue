@@ -1,5 +1,11 @@
 <template>
   <div>
+    <pre>
+        {{ mediaStreamFromCamera }}
+    </pre>
+    <pre>
+        {{ mediaStreamTrack }}
+    </pre>
     <div>
       <qrcode-stream
         :constraints="selectedConstraints"
@@ -9,7 +15,7 @@
         @detect="onDetect"
         @camera-on="onCameraReady"
       >
-      <div class="zoom-buttons">
+        <div class="zoom-buttons">
           <q-btn
             @click="cycleBackCameras('out')"
             round
@@ -22,7 +28,7 @@
             color="primary"
             icon="zoom_in"
           />
-      </div>
+        </div>
       </qrcode-stream>
     </div>
   </div>
@@ -39,7 +45,8 @@ const q = useQuasar()
 const backCameras = ref([])
 const currentCameraIndex = ref(0)
 const currentZoomLevel = ref(2)
-const zoomLevels = [1, 2, 3, 4, 5, 6] // Define your desired zoom levels here
+const zoomLevels = [1, 1.5, 2, 2.5, 3, 4] // Define your desired zoom levels here
+const zoomCapabilities = ref([])
 
 const cameraOn = ref(false)
 const cameraShow = ref(false)
@@ -48,6 +55,9 @@ const cameraError = ref("")
 // and output the result and invoicechecking Flag
 const invoiceChecking = ref(false)
 const emit = defineEmits(["error", "result", "invoiceChecking"])
+
+const mediaStreamFromCamera = ref(null)
+const mediaStreamTrack = ref(null)
 
 /*** detection handling ***/
 
@@ -63,7 +73,7 @@ async function cycleBackCameras(direction = "in") {
     console.error("No back cameras found")
     return
   }
-
+  console.log("cameraZoomLevel", currentZoomLevel.value)
   // Cycle through zoom levels
   if (direction === "in") {
     currentZoomLevel.value = (currentZoomLevel.value + 1) % zoomLevels.length
@@ -111,7 +121,7 @@ const defaultConstraintOptions = [
 ]
 const constraintOptions = ref(defaultConstraintOptions)
 
-async function onCameraReady() {
+async function onCameraReady(mediaStream) {
   // NOTE: on iOS we can't invoke `enumerateDevices` before the user has given
   // camera access permission. `QrcodeStream` internally takes care of
   // requesting the permissions. The `camera-on` event should guarantee that this
@@ -119,6 +129,15 @@ async function onCameraReady() {
   const devices = await navigator.mediaDevices.enumerateDevices()
   const videoDevices = devices.filter(({ kind }) => kind === "videoinput")
   await getBackCameras()
+
+  mediaStreamFromCamera.value = mediaStream
+  console.log("mediaStreamFromCamera", mediaStreamFromCamera.value)
+  try {
+    mediaStreamTrack.value = mediaStream.getVideoTracks()
+  } catch (e) {
+    mediaStreamTrack.value = "getVideoTracks not supported"
+    console.error("Error getting zoom capabilities", e)
+  }
 
   constraintOptions.value = [
     ...defaultConstraintOptions,
@@ -128,7 +147,6 @@ async function onCameraReady() {
     })),
   ]
   console.log("constraintOptions", constraintOptions.value)
-
   error.value = ""
 }
 
