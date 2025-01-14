@@ -151,14 +151,15 @@ async function onCameraReady(mediaStream) {
   mediaStreamFromCamera.value = mediaStream
   zoomCapabilities.value = mediaStream.zoom
 
+  const zoomSteps = 7
   if (mediaStream.zoom) {
     console.log("zoomCapabilities", mediaStream.zoom)
     // set  zoom levels to 5 steps between zoom.min and zoom.max
     zoomLevels.value = Array.from(
-      { length: 7 },
+      { length: zoomSteps },
       (_, i) =>
         mediaStream.zoom.min +
-        ((mediaStream.zoom.max - mediaStream.zoom.min) * i) / 4
+        ((mediaStream.zoom.max - mediaStream.zoom.min) * i) / (zoomSteps - 1)
     )
   }
 
