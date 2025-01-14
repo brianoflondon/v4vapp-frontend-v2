@@ -1,19 +1,5 @@
 <template>
   <div>
-    mediaStreamFromCamera
-    <pre>
-        {{ mediaStreamFromCamera }}
-    </pre>
-    mediaStreamTrack
-    <pre>
-        {{ mediaStreamTrack }}
-    </pre>
-    zoomLevels
-    <pre>
-        {{ zoomLevels }}
-        {{ currentZoomLevel }}
-        {{ currentZoomLevelIndex }}
-    </pre>
     <div>
       <qrcode-stream
         :constraints="selectedConstraints"
