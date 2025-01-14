@@ -61,6 +61,7 @@ const backCameras = ref([])
 const currentCameraIndex = ref(0)
 const currentZoomLevel = ref(2)
 const zoomLevels = ref([0.5, 2, 5, 7])
+const currentZoomLevelIndex = ref(1)
 const zoomCapabilities = ref([])
 
 const cameraOn = ref(false)
@@ -91,19 +92,17 @@ async function cycleBackCameras(direction = "in") {
   console.log("cameraZoomLevel", currentZoomLevel.value)
   // Cycle through zoom levels
   if (direction === "in") {
-    currentZoomLevel.value =
-      (currentZoomLevel.value + 1) % zoomLevels.value.length
+    currentZoomLevelIndex.value += 1
   } else {
-    currentZoomLevel.value =
-      (currentZoomLevel.value - 1 + zoomLevels.value.length) %
-      zoomLevels.value.length
+    currentZoomLevelIndex.value -= 1
   }
-
-  // If we've cycled through all zoom levels, move to the next camera
-  //   if (currentZoomLevel.value === 0) {
-  //     currentCameraIndex.value =
-  //       (currentCameraIndex.value + 1) % backCameras.value.length
-  //   }
+  if (currentZoomLevelIndex.value < 0) {
+    currentZoomLevelIndex.value = 0
+  }
+  if (currentZoomLevelIndex.value >= zoomLevels.value.length) {
+    currentZoomLevelIndex.value = zoomLevels.value.length - 1
+  }
+  currentZoomLevel.value = zoomLevels[currentZoomLevelIndex.value]
 
   const constraints = {
     deviceId: { exact: backCameras.value[currentCameraIndex.value].deviceId },
