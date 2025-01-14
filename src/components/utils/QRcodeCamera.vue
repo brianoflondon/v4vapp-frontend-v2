@@ -105,11 +105,11 @@ async function cycleBackCameras(direction = "in") {
   if (currentZoomLevelIndex.value >= zoomLevels.value.length) {
     currentZoomLevelIndex.value = zoomLevels.value.length - 1
   }
-  currentZoomLevel.value = zoomLevels[currentZoomLevelIndex.value]
+  currentZoomLevel.value = zoomLevels.value[currentZoomLevelIndex.value]
 
   const constraints = {
     deviceId: { exact: backCameras.value[currentCameraIndex.value].deviceId },
-    advanced: [{ zoom: zoomLevels[currentZoomLevel.value] }],
+    advanced: [{ zoom: zoomLevels.value[currentZoomLevel.value] }],
   }
 
   selectedConstraints.value = constraints
