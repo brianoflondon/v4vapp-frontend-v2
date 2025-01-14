@@ -1,6 +1,6 @@
 <template>
   <div>
-      mediaStreamFromCamera
+    mediaStreamFromCamera
     <pre>
         {{ mediaStreamFromCamera }}
     </pre>
@@ -11,6 +11,10 @@
     Zoom
     <pre>
         {{ zoomCapabilities }}
+    </pre>
+    zoomLevels
+    <pre>
+        {{ zoomLevels }}
     </pre>
     <div>
       <qrcode-stream
@@ -34,6 +38,11 @@
             color="primary"
             icon="zoom_in"
           />
+          <div>
+            <h3>
+              {{ currentZoomLevel }}
+            </h3>
+          </div>
         </div>
       </qrcode-stream>
     </div>
@@ -51,7 +60,7 @@ const q = useQuasar()
 const backCameras = ref([])
 const currentCameraIndex = ref(0)
 const currentZoomLevel = ref(2)
-const zoomLevels = [0.5, 1, 2, 3, 4] // Define your desired zoom levels here
+const zoomLevels = ref([0.5, 2, 5, 7])
 const zoomCapabilities = ref([])
 
 const cameraOn = ref(false)
@@ -82,10 +91,12 @@ async function cycleBackCameras(direction = "in") {
   console.log("cameraZoomLevel", currentZoomLevel.value)
   // Cycle through zoom levels
   if (direction === "in") {
-    currentZoomLevel.value = (currentZoomLevel.value + 1) % zoomLevels.length
+    currentZoomLevel.value =
+      (currentZoomLevel.value + 1) % zoomLevels.value.length
   } else {
     currentZoomLevel.value =
-      (currentZoomLevel.value - 1 + zoomLevels.length) % zoomLevels.length
+      (currentZoomLevel.value - 1 + zoomLevels.value.length) %
+      zoomLevels.value.length
   }
 
   // If we've cycled through all zoom levels, move to the next camera
@@ -138,6 +149,18 @@ async function onCameraReady(mediaStream) {
 
   mediaStreamFromCamera.value = mediaStream
   zoomCapabilities.value = mediaStream.zoom
+
+  if (mediaStream.zoom) {
+    console.log("zoomCapabilities", mediaStream.zoom)
+    // set  zoom levels to 5 steps between zoom.min and zoom.max
+    zoomLevels.value = Array.from(
+      { length: 5 },
+      (_, i) =>
+        mediaStream.zoom.min +
+        ((mediaStream.zoom.max - mediaStream.zoom.min) * i) / 4
+    )
+    console.log("zoomLevels", zoomLevels.value)
+  }
 
   console.log("mediaStreamFromCamera", mediaStreamFromCamera.value)
   try {
