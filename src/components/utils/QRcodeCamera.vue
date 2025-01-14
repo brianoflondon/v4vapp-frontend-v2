@@ -78,6 +78,8 @@ const emit = defineEmits(["error", "result", "invoiceChecking"])
 const mediaStreamFromCamera = ref(null)
 const mediaStreamTrack = ref(null)
 
+const zoomSteps = 12
+
 /*** detection handling ***/
 
 const result = ref("")
@@ -151,7 +153,6 @@ async function onCameraReady(mediaStream) {
   mediaStreamFromCamera.value = mediaStream
   zoomCapabilities.value = mediaStream.zoom
 
-  const zoomSteps = 7
   if (mediaStream.zoom) {
     console.log("zoomCapabilities", mediaStream.zoom)
     // set  zoom levels to 5 steps between zoom.min and zoom.max
