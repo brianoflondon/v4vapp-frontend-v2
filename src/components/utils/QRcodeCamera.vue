@@ -1,10 +1,16 @@
 <template>
   <div>
+      mediaStreamFromCamera
     <pre>
         {{ mediaStreamFromCamera }}
     </pre>
+    mediaStreamTrack
     <pre>
         {{ mediaStreamTrack }}
+    </pre>
+    Zoom
+    <pre>
+        {{ zoomCapabilities }}
     </pre>
     <div>
       <qrcode-stream
@@ -45,7 +51,7 @@ const q = useQuasar()
 const backCameras = ref([])
 const currentCameraIndex = ref(0)
 const currentZoomLevel = ref(2)
-const zoomLevels = [1, 1.5, 2, 2.5, 3, 4] // Define your desired zoom levels here
+const zoomLevels = [0.5, 1, 2, 3, 4] // Define your desired zoom levels here
 const zoomCapabilities = ref([])
 
 const cameraOn = ref(false)
@@ -131,6 +137,8 @@ async function onCameraReady(mediaStream) {
   await getBackCameras()
 
   mediaStreamFromCamera.value = mediaStream
+  zoomCapabilities.value = mediaStream.zoom
+
   console.log("mediaStreamFromCamera", mediaStreamFromCamera.value)
   try {
     mediaStreamTrack.value = mediaStream.getVideoTracks()
