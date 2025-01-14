@@ -15,6 +15,8 @@
     zoomLevels
     <pre>
         {{ zoomLevels }}
+        {{ currentZoomLevel }}
+        {{ currentZoomLevelIndex }}
     </pre>
     <div>
       <qrcode-stream
@@ -41,6 +43,7 @@
           <div>
             <h3>
               {{ currentZoomLevel }}
+              {{ currentZoomLevelIndex }}
             </h3>
           </div>
         </div>
@@ -87,7 +90,7 @@ async function cycleBackCameras(direction = "in") {
 
   if (backCameras.value.length === 0) {
     console.error("No back cameras found")
-    return
+    // return
   }
   console.log("cameraZoomLevel", currentZoomLevel.value)
   // Cycle through zoom levels
