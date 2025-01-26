@@ -39,6 +39,7 @@
           <!-- <q-tab name="other" :label="$t('other')" /> -->
         </q-tabs>
       </div>
+
       <!-- Q-tab-panels -->
       <q-tab-panels v-model="currentTab">
         <q-tab-panel name="realWallet">
@@ -65,11 +66,12 @@
                 <!-- Camera  -->
                 <div v-if="!cameraShow" class="q-pb-lg"></div>
                 <div v-if="cameraShow">
-                  <qrcode-stream
+                  <QRcodeCamera @result="onDecode" />
+                  <!-- <qrcode-stream
                     @detect="onDecode"
                     @camera-on="onReady"
                     @error="onError"
-                  ></qrcode-stream>
+                  ></qrcode-stream> -->
                 </div>
                 <!-- End Camera -->
                 <!-- Progress screen -->
@@ -395,6 +397,7 @@ import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
 import ConvertWrapper from "src/components/hive/ConvertWrapper.vue"
 import HiveAvatar from "components/utils/HiveAvatar.vue"
 import UnlimitedInvoice from "components/utils/UnlimitedInvoice.vue"
+import QRcodeCamera from "src/components/utils/QRcodeCamera.vue"
 
 const invoiceText = ref(null)
 const invoiceChecking = ref(false)
@@ -668,6 +671,7 @@ watch(
 async function onDecode(content) {
   // Switch to better QR Code library, handle multiple QR codes
   // scan through them until a valid Lightning invoice is found.
+  console.log("onDecode", content)
   let i = 0
   while (i < content.length && !invoiceValid.value) {
     const rawValue = content[i].rawValue
