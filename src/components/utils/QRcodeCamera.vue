@@ -9,21 +9,21 @@
         @detect="onDetect"
         @camera-on="onCameraReady"
       >
-        <div class="zoom-buttons">
-          <q-btn
-            @click="cycleBackCameras('out')"
-            round
-            color="primary"
-            icon="zoom_out"
-          />
-          <q-btn
-            @click="cycleBackCameras('in')"
-            round
-            color="primary"
-            icon="zoom_in"
-          />
-        </div>
       </qrcode-stream>
+      <div class="zoom-buttons">
+        <q-btn
+          @click="cycleBackCameras('in')"
+          round
+          color="primary"
+          icon="zoom_in"
+        />
+        <q-btn
+          @click="cycleBackCameras('out')"
+          round
+          color="primary"
+          icon="zoom_out"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -47,7 +47,7 @@ const cameraOn = ref(false)
 const cameraShow = ref(false)
 const cameraError = ref("")
 // define emits for error if needed to tell the calling component that there was an error
-// and output the result and invoicechecking Flag
+// and output the result and invoice checking Flag
 const invoiceChecking = ref(false)
 const emit = defineEmits(["error", "result", "invoiceChecking"])
 
@@ -161,7 +161,7 @@ async function sendMediaStreamData(mediaStream) {
   }
 }
 
-/*** track functons ***/
+/*** track functions ***/
 
 function paintOutline(detectedCodes, ctx) {
   for (const detectedCode of detectedCodes) {
@@ -309,10 +309,19 @@ function onError(error) {
 }
 
 .zoom-buttons {
-  position: absolute;
-  left: 10px;
-  top: 10px;
+  position: fixed;
+  top: 10rem;
+  left: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+
+.zoom-buttons button,
+.zoom-buttons input {
+  margin: 5px 0;
+}
+
 button img {
   width: 50px;
   height: 50px;
