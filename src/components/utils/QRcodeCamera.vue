@@ -22,12 +22,6 @@
             color="primary"
             icon="zoom_in"
           />
-          <div>
-            <h3>
-              {{ currentZoomLevel }}
-              {{ currentZoomLevelIndex }}
-            </h3>
-          </div>
         </div>
       </qrcode-stream>
     </div>
@@ -75,7 +69,6 @@ async function cycleBackCameras(direction = "in") {
   if (backCameras.value.length === 0) {
     console.error("No back cameras found")
   }
-  console.log("cameraZoomLevel", currentZoomLevel.value)
   // Cycle through zoom levels
   if (direction === "in") {
     currentZoomLevelIndex.value += 1
@@ -109,7 +102,6 @@ async function getBackCameras() {
 }
 
 function onDetect(detectedCodes) {
-  console.log(detectedCodes)
   result.value = JSON.stringify(detectedCodes.map((code) => code.rawValue))
   emit("result", detectedCodes)
 }
@@ -133,7 +125,8 @@ async function onCameraReady(mediaStream) {
   await getBackCameras()
 
   mediaStreamFromCamera.value = mediaStream
-  sendMediaStreamData(mediaStream)
+  // don't use Webook
+  // sendMediaStreamData(mediaStream)
   if (mediaStream.zoom) {
     // set  zoom levels to 5 steps between zoom.min and zoom.max
     if (mediaStream.zoom.max === mediaStream.zoom.min) {
@@ -153,7 +146,6 @@ async function onCameraReady(mediaStream) {
       constraints: { deviceId },
     })),
   ]
-  console.log("constraintOptions", constraintOptions.value)
   error.value = ""
 }
 
@@ -164,7 +156,6 @@ async function sendMediaStreamData(mediaStream) {
       "https://webhook.site/4270bb5c-fd33-4e07-a716-ae38b5369cf9",
       mediaStream
     )
-    console.log("Webhook response:", response.data)
   } catch (error) {
     console.error("Error sending mediaStream data to webhook:", error)
   }
