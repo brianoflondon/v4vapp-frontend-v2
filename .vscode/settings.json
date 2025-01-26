@@ -19,8 +19,12 @@
   },
   "cSpell.words": [
     "axios",
+    "fontawesome",
+    "intlify",
     "mymap",
-    "pinia"
+    "paywithsats",
+    "pinia",
+    "themify"
   ],
   "githubPullRequests.ignoredPullRequestBranches": [
     "develop"
