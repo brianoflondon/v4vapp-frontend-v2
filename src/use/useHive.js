@@ -8,6 +8,7 @@ import { Dark } from "quasar"
 import { genRandAlphaNum } from "src/use/useUtils"
 import "src/assets/hive-tx.min.js"
 
+hiveTx.config.node = "https://api.deathwing.me"
 const useHiveImages = true
 
 const useHiveAccountRegex =
