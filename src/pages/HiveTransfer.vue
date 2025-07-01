@@ -361,10 +361,49 @@ onMounted(() => {
         value: "hivehydra",
         caption: "hivehydra",
       }
-      memo.value = "#brianoflondon@getalby.com"
+      memo.value = "#brianoflondon@sats.v4v.app"
     }
   }
+  // Auto-fill amount based on balance, rounding to nearest 50 HIVE
+  autoFillAmountFromBalance(50);
+
 })
+
+/**
+ * Automatically sets the amount based on available balance
+ * @param {number} roundToNearest - The increment to round down to (e.g., 50, 100)
+ */
+function autoFillAmountFromBalance(roundToNearest = 50) {
+  if (storeUser.hiveBalanceLocal) {
+    // Get the available balance as a number
+    const availableBalance = parseFloat(storeUser.hiveBalanceLocal)
+
+    // Calculate a safe amount (80% of available balance)
+    const safeAmount = availableBalance * 0.8
+
+    // Round down to the nearest specified increment
+    const roundedAmount =
+      Math.floor(safeAmount / roundToNearest) * roundToNearest
+
+    // Set a minimum value (10 HIVE or the user's balance if lower)
+    const minAmount = 10
+
+    // Update the amount ref with the calculated value, or minAmount if roundedAmount is less than minAmount
+    amount.value =
+      roundedAmount >= minAmount
+        ? roundedAmount.toString()
+        : availableBalance < minAmount
+        ? availableBalance.toFixed(3)
+        : minAmount.toString()
+
+    console.log(
+      `Auto-filled amount: ${amount.value} HIVE (from balance: ${availableBalance} HIVE)`
+    )
+  } else {
+    console.log("No Hive balance available, using default amount")
+    // Keep default value
+  }
+}
 
 // ----------------- Podcast Index Search -----------------
 
