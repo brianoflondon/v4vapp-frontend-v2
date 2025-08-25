@@ -365,42 +365,81 @@ onMounted(() => {
     }
   }
   // Auto-fill amount based on balance, rounding to nearest 50 HIVE
-  autoFillAmountFromBalance(50);
-
+  checkAndSetAmount()
 })
+
+// Function to check if balance is available and set amount
+function checkAndSetAmount() {
+  console.log("Checking Hive balance...")
+  console.log("storeUser.hiveBalanceLocal:", storeUser.hiveBalanceLocal)
+
+  // Check if we have a valid balance (not null and not loading indicator)
+  if (storeUser.hiveBalanceLocal && storeUser.hiveBalanceLocal !== "💰💰💰") {
+    // Balance is already available and valid, call autoFillAmountFromBalance directly
+    autoFillAmountFromBalance(50)
+  } else {
+    // Set up a watcher to wait for the balance to be available
+    const stopWatch = watch(
+      () => storeUser.hiveBalanceLocal,
+      (newBalance) => {
+        // Only proceed if we have a valid balance (not null and not loading indicator)
+        if (newBalance && newBalance !== "💰💰💰") {
+          autoFillAmountFromBalance(50)
+          stopWatch() // Stop watching once we've used the balance
+        }
+      },
+      { immediate: true } // Check immediately and then on changes
+    )
+  }
+}
 
 /**
  * Automatically sets the amount based on available balance
  * @param {number} roundToNearest - The increment to round down to (e.g., 50, 100)
  */
 function autoFillAmountFromBalance(roundToNearest = 50) {
-  if (storeUser.hiveBalanceLocal) {
-    // Get the available balance as a number
-    const availableBalance = parseFloat(storeUser.hiveBalanceLocal)
+  // Double-check that we have a valid balance
+  if (storeUser.hiveBalanceLocal && storeUser.hiveBalanceLocal !== "💰💰💰") {
+    try {
+      // Get the available balance as a number
+      const availableBalance = parseFloat(storeUser.hiveBalanceLocal)
 
-    // Calculate a safe amount (80% of available balance)
-    const safeAmount = availableBalance * 0.8
+      // Verify that we have a valid number
+      if (isNaN(availableBalance)) {
+        console.log("Invalid balance format:", storeUser.hiveBalanceLocal)
+        return
+      }
 
-    // Round down to the nearest specified increment
-    const roundedAmount =
-      Math.floor(safeAmount / roundToNearest) * roundToNearest
+      console.log(
+        `Available balance: ${availableBalance} HIVE (from storeUser.hiveBalanceLocal)`
+      )
 
-    // Set a minimum value (10 HIVE or the user's balance if lower)
-    const minAmount = 10
+      // Calculate a safe amount (80% of available balance)
+      const safeAmount = availableBalance * 0.8
 
-    // Update the amount ref with the calculated value, or minAmount if roundedAmount is less than minAmount
-    amount.value =
-      roundedAmount >= minAmount
-        ? roundedAmount.toString()
-        : availableBalance < minAmount
-        ? availableBalance.toFixed(3)
-        : minAmount.toString()
+      // Round down to the nearest specified increment
+      const roundedAmount =
+        Math.floor(safeAmount / roundToNearest) * roundToNearest
 
-    console.log(
-      `Auto-filled amount: ${amount.value} HIVE (from balance: ${availableBalance} HIVE)`
-    )
+      // Set a minimum value (10 HIVE or the user's balance if lower)
+      const minAmount = 10
+
+      // Update the amount ref with the calculated value, or minAmount if roundedAmount is less than minAmount
+      amount.value =
+        roundedAmount >= minAmount
+          ? roundedAmount.toString()
+          : availableBalance < minAmount
+          ? availableBalance.toFixed(3)
+          : minAmount.toString()
+
+      console.log(
+        `Auto-filled amount: ${amount.value} HIVE (from balance: ${availableBalance} HIVE)`
+      )
+    } catch (error) {
+      console.error("Error calculating amount from balance:", error)
+    }
   } else {
-    console.log("No Hive balance available, using default amount")
+    console.log("No valid Hive balance available, using default amount")
     // Keep default value
   }
 }
