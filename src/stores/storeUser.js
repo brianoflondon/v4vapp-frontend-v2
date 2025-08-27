@@ -480,16 +480,25 @@ export const useStoreUser = defineStore("useStoreUser", {
      * Updates the user details and profile.
      * @param {boolean} useCache - Indicates whether to use cached data or not. Default is true.
      */
-    update(useCache = true) {
-      const onOpen = async () => {
-        if (this.currentUser === this.hiveDetails?.name) return
-        this.currentDetails = await useHiveDetails(this.currentUser)
-        await this.updateSatsBalance(useCache)
-        this.currentProfile = this.currentDetails?.profile
-      }
+    async update(useCache = true) {
       this.apiTokenSet()
       this.expireCheck()
-      onOpen()
+      console.log("storeUser.js: update called for", this.currentUser)
+      const details = await useHiveDetails(this.currentUser)
+      console.log("storeUser.js: useHiveDetails returned", details)
+      if (!details) {
+        console.error(
+          "storeUser.js: useHiveDetails returned null or undefined!"
+        )
+      } else if (!details.balance) {
+        console.error(
+          "storeUser.js: details object missing 'balance' property!",
+          details
+        )
+      }
+      this.currentDetails = details
+      await this.updateSatsBalance(useCache)
+      this.currentProfile = details?.profile
     },
     /**
      * Updates the sats balance for the current user.
