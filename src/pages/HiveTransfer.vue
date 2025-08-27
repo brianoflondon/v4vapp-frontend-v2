@@ -3,6 +3,16 @@
     <div class="fit row wrap justify-center q-pb-md">
       <div>
         <CreditCard />
+        <div class="flex justify-center q-mt-md">
+          <q-btn
+            color="primary"
+            rounded
+            label="Check Set Amount"
+            @click="autoFillAmountFromBalance(50)"
+            size="sm"
+            class="q-mt-xs"
+          />
+        </div>
       </div>
     </div>
     <div class="q-pa-sm">
@@ -340,13 +350,20 @@ const qrCodeText = computed(() => {
   return hiveUri
 })
 
-onMounted(() => {
+onMounted(async () => {
+  console.log("HiveTransfer.vue: onMounted called")
+  await storeUser.update(false)
+  console.log("HiveTransfer.vue: storeUser.update(false) finished")
+  console.log("HiveTransfer.vue: storeUser.hiveAccname", storeUser.hiveAccname)
+  console.log("HiveTransfer.vue: storeUser.hiveBalance", storeUser.hiveBalance)
+
   if (storeUser.hiveAccname) {
     hiveAccFrom.value = {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
       caption: storeUser.hiveAccname,
     }
+    console.log("HiveTransfer.vue: hiveAccFrom set", hiveAccFrom.value)
     if (storeUser.hiveAccname === "v4vapp.tre") {
       hiveAccTo.value = {
         label: "bdhivesteem",
@@ -354,6 +371,10 @@ onMounted(() => {
         caption: "bdhivesteem",
       }
       memo.value = "100116033"
+      console.log(
+        "HiveTransfer.vue: hiveAccTo set for v4vapp.tre",
+        hiveAccTo.value
+      )
     }
     if (storeUser.hiveAccname === "v4vapp.dev") {
       hiveAccTo.value = {
@@ -362,86 +383,75 @@ onMounted(() => {
         caption: "hivehydra",
       }
       memo.value = "#brianoflondon@sats.v4v.app"
+      console.log(
+        "HiveTransfer.vue: hiveAccTo set for v4vapp.dev",
+        hiveAccTo.value
+      )
     }
   }
-  // Auto-fill amount based on balance, rounding to nearest 50 HIVE
-  checkAndSetAmount()
+
+  // Watch for hiveBalance to become available and valid, then auto-fill amount
+  watch(
+    () => storeUser.hiveBalance,
+    (newBalance, oldBalance) => {
+      console.log(
+        "HiveTransfer.vue: hiveBalance changed from",
+        oldBalance,
+        "to",
+        newBalance
+      )
+      if (newBalance && newBalance !== "💰💰💰") {
+        console.log(
+          "HiveTransfer.vue: hiveBalance is valid, calling autoFillAmountFromBalance"
+        )
+        autoFillAmountFromBalance(50)
+      } else {
+        console.log("HiveTransfer.vue: hiveBalance is not valid yet")
+      }
+    },
+    { immediate: true }
+  )
 })
-
-// Function to check if balance is available and set amount
-function checkAndSetAmount() {
-  console.log("Checking Hive balance...")
-  console.log("storeUser.hiveBalanceLocal:", storeUser.hiveBalanceLocal)
-
-  // Check if we have a valid balance (not null and not loading indicator)
-  if (storeUser.hiveBalanceLocal && storeUser.hiveBalanceLocal !== "💰💰💰") {
-    // Balance is already available and valid, call autoFillAmountFromBalance directly
-    autoFillAmountFromBalance(50)
-  } else {
-    // Set up a watcher to wait for the balance to be available
-    const stopWatch = watch(
-      () => storeUser.hiveBalanceLocal,
-      (newBalance) => {
-        // Only proceed if we have a valid balance (not null and not loading indicator)
-        if (newBalance && newBalance !== "💰💰💰") {
-          autoFillAmountFromBalance(50)
-          stopWatch() // Stop watching once we've used the balance
-        }
-      },
-      { immediate: true } // Check immediately and then on changes
-    )
-  }
-}
 
 /**
  * Automatically sets the amount based on available balance
  * @param {number} roundToNearest - The increment to round down to (e.g., 50, 100)
  */
 function autoFillAmountFromBalance(roundToNearest = 50) {
-  // Double-check that we have a valid balance
-  if (storeUser.hiveBalanceLocal && storeUser.hiveBalanceLocal !== "💰💰💰") {
-    try {
-      // Get the available balance as a number
-      const availableBalance = parseFloat(storeUser.hiveBalanceLocal)
+  console.log("HiveTransfer.vue: autoFillAmountFromBalance called")
+  // defensively coerce the argument to a number (in case an Event was passed)
+  const rn = Number(roundToNearest) || 50
+  console.log(
+    "HiveTransfer.vue: roundToNearest (coerced) =",
+    rn,
+    "typeof:",
+    typeof rn
+  )
 
-      // Verify that we have a valid number
-      if (isNaN(availableBalance)) {
-        console.log("Invalid balance format:", storeUser.hiveBalanceLocal)
-        return
-      }
+  const raw = storeUser.hiveBalance
+  const availableBalance = parseFloat(String(raw).replace(/,/g, ""))
 
-      console.log(
-        `Available balance: ${availableBalance} HIVE (from storeUser.hiveBalanceLocal)`
-      )
-
-      // Calculate a safe amount (80% of available balance)
-      const safeAmount = availableBalance * 0.8
-
-      // Round down to the nearest specified increment
-      const roundedAmount =
-        Math.floor(safeAmount / roundToNearest) * roundToNearest
-
-      // Set a minimum value (10 HIVE or the user's balance if lower)
-      const minAmount = 10
-
-      // Update the amount ref with the calculated value, or minAmount if roundedAmount is less than minAmount
-      amount.value =
-        roundedAmount >= minAmount
-          ? roundedAmount.toString()
-          : availableBalance < minAmount
-          ? availableBalance.toFixed(3)
-          : minAmount.toString()
-
-      console.log(
-        `Auto-filled amount: ${amount.value} HIVE (from balance: ${availableBalance} HIVE)`
-      )
-    } catch (error) {
-      console.error("Error calculating amount from balance:", error)
-    }
-  } else {
-    console.log("No valid Hive balance available, using default amount")
-    // Keep default value
+  if (isNaN(availableBalance)) {
+    console.warn(
+      "HiveTransfer.vue: autoFillAmountFromBalance - invalid balance:",
+      raw
+    )
+    return
   }
+
+  // Round down to nearest `rn`
+  const rounded = Math.floor(availableBalance / rn) * rn
+
+  // If rounding yields 0 (balance < rn), keep a sensible small amount with 3 decimals
+  if (rounded > 0) {
+    amount.value = String(rounded)
+  } else {
+    amount.value = availableBalance.toFixed(3)
+  }
+
+  console.log(
+    `HiveTransfer.vue: Auto-filled amount: ${amount.value} (rounded down from ${availableBalance} to nearest ${rn})`
+  )
 }
 
 // ----------------- Podcast Index Search -----------------
