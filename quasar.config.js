@@ -171,7 +171,7 @@ module.exports = configure(function (/* ctx */) {
       manifestFilename: "manifest.json",
       useCredentialsForManifestTag: false,
       manifest: {
-        name: "V4V.app Name",
+        name: "V4V.app",
         short_name: "V4V.app",
         description: "V4V.app Hive Lightning Bridge",
       },
