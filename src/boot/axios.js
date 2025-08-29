@@ -49,6 +49,10 @@ const serverHiveAccountTreasury = useDevAccounts
   ? "devtre.v4vapp"
   : "v4vapp.tre"
 
+// Domain controls for lightning addresses / QR text
+const lightningAddressDomainSuffix = "v4v.app"
+const lightningAddressDomainPrefix = useDevAccounts ? "d" : ""
+
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({ baseURL: apiLoginURL })
 
@@ -74,4 +78,6 @@ export {
   myNodePubKey,
   serverHiveAccount,
   serverHiveAccountTreasury,
+  lightningAddressDomainSuffix,
+  lightningAddressDomainPrefix,
 }
