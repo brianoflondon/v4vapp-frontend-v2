@@ -172,7 +172,11 @@ import AmountSlider from "src/components/utils/AmountSlider.vue"
 const t = useI18n().t
 const q = useQuasar()
 
-const options = ref([{ label: "", value: "sats", slot: "lightning" }])
+const options = ref([
+  { label: "", value: "sats", slot: "lightning" },
+  { label: "", value: "hbd",  slot: "hbd" },
+  { label: "", value: "hive", slot: "hive" },
+])
 
 const HASDialog = ref({ show: false })
 const storeUser = useStoreUser()
