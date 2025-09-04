@@ -90,7 +90,13 @@ function resetValues() {
     value: storeUser.hiveAccname,
     caption: storeUser.profileName,
   }
-  if (storeUser.currentUser === "v4vapp.tre") {
+  const specialUsers = [
+    "v4vapp.tre",
+    "devtre.v4vapp",
+    "brianoflondon",
+    "v4vapp-test",
+  ]
+  if (specialUsers.includes(storeUser.currentUser)) {
     amountSats.value = 999900
   }
   amountChanged.value = true

@@ -4,7 +4,7 @@
       <div class="pad-max-width">
         <ExplanationBox
           :title="t('keepsats_deposit_title')"
-          :text="t('keepsats_deposit_text')"
+          :text="t('keepsats_deposit_text', { at: '@' })"
         />
       </div>
     </div>
@@ -58,11 +58,13 @@
     </div>
     <div
       class="row justify-center address-qr-code q-pa-sm"
-      @click="makePayment"
+      @click="copyText"
+      title="Click to copy address"
+      style="cursor: pointer"
     >
       <div>
         <CreateQRCode
-          :qr-text="destination === 'sats' ? qrCodeSats : qrCodeHive"
+          :qr-text="qrText"
           :loading="loading"
           :hive-accname="storeUser.currentUser"
           :width="300"
@@ -164,7 +166,11 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import AskHASDialog from "src/components/hive/AskHASDialog.vue"
 import { useGenerateHiveTransferOp } from "src/use/useHive"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
-import { serverHiveAccount } from "src/boot/axios"
+import {
+  serverHiveAccount,
+  lightningAddressDomainPrefix,
+  lightningAddressDomainSuffix,
+} from "src/boot/axios"
 import { encodeOp } from "hive-uri"
 import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
 import AmountSlider from "src/components/utils/AmountSlider.vue"
@@ -172,7 +178,11 @@ import AmountSlider from "src/components/utils/AmountSlider.vue"
 const t = useI18n().t
 const q = useQuasar()
 
-const options = ref([{ label: "", value: "sats", slot: "lightning" }])
+const options = ref([
+  { label: "", value: "sats", slot: "lightning" },
+  { label: "", value: "hbd", slot: "hbd" },
+  { label: "", value: "hive", slot: "hive" },
+])
 
 const HASDialog = ref({ show: false })
 const storeUser = useStoreUser()
@@ -197,8 +207,10 @@ const lightningAddressPrefix = computed(() => {
     return ""
   }
   const path =
-    destination.value === "hive" ? "v4v.app" : `${destination.value}.v4v.app`
-  const address = `lightning:${storeUser.currentUser}@${path}`
+    `${lightningAddressDomainPrefix}${destination.value}.${lightningAddressDomainSuffix}`.toLowerCase()
+  const address = `lightning:${String(
+    storeUser.currentUser
+  ).toLowerCase()}@${path}`
   return address
 })
 
@@ -207,8 +219,8 @@ const lightningAddress = computed(() => {
     return ""
   }
   const path =
-    destination.value === "hive" ? "v4v.app" : `${destination.value}.v4v.app`
-  const address = `${storeUser.currentUser}@${path}`
+    `${lightningAddressDomainPrefix}${destination.value}.${lightningAddressDomainSuffix}`.toLowerCase()
+  const address = `${String(storeUser.currentUser).toLowerCase()}@${path}`
   return address
 })
 
@@ -217,24 +229,30 @@ const lightningAddressLabel = computed(() => {
     return ""
   }
   const path =
-    destination.value === "hive" ? "v4v.app" : `${destination.value}.v4v.app`
-  const name = useShortEVMAddress(storeUser.currentUser)
+    `${lightningAddressDomainPrefix}${destination.value}.${lightningAddressDomainSuffix}`.toLowerCase()
+  const name = useShortEVMAddress(String(storeUser.currentUser).toLowerCase())
   return `${name}@${path}`
 })
 
 const qrCodeHive = computed(() => {
-  const op = useGenerateHiveTransferOp(
-    storeUser.currentUser,
-    serverHiveAccount,
-    parseFloat(amount.value),
-    destination.value,
-    `${storeUser.currentUser} Deposit to #SATS`
-  )
-  return encodeOp(op)
+  // For hive/hbd destinations we want a BECH32 lightning address prefixed with 'lightning:'
+  if (!bech32.value) return ""
+  const raw = String(bech32.value)
+  // avoid double prefix
+  const withoutPrefix = raw.toLowerCase().startsWith("lightning:")
+    ? raw.slice(10)
+    : raw
+  return `lightning:${withoutPrefix}`.toLowerCase()
 })
 
 const qrCodeSats = computed(() => {
-  return bech32.value
+  return bech32.value ? String(bech32.value).toLowerCase() : ""
+})
+
+const qrText = computed(() => {
+  return (
+    (destination.value === "sats" ? qrCodeSats.value : qrCodeHive.value) || ""
+  )
 })
 
 const props = defineProps({
@@ -269,8 +287,18 @@ async function updateDestination() {
   }
   updateAmount(amount.value)
   loading.value = true
-  const bech32Data = await storeUser.bech32Address("sats")
-  bech32.value = bech32Data.prefix
+  // fetch bech32 for the currently selected destination (sats/hbd/hive)
+  try {
+    const bech32Data = await storeUser.bech32Address(destination.value)
+    // store the returned prefix/address depending on implementation
+    bech32.value = bech32Data.prefix || bech32Data.address || bech32Data
+  } catch (err) {
+    console.error(
+      "ReceiveKeepsats.vue: updateDestination bech32 fetch failed",
+      err
+    )
+    bech32.value = ""
+  }
   loading.value = false
 }
 
@@ -301,7 +329,8 @@ function calcFees(amount) {
 }
 
 function copyText() {
-  copyToClipboard(lightningAddress.value)
+  const textToCopy = qrText.value || lightningAddress.value
+  copyToClipboard(textToCopy)
   q.notify({
     message: t("copied"),
     color: "positive",

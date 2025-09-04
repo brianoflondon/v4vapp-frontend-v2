@@ -911,18 +911,25 @@ async function confirmPayWithApi(message) {
  */
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
-  // Add 6 Hive to the amount to cover the fee or 2 HBD
+  // Use dynamic fee calculation with a 1% uplift for safety margin
+  let baseSats = dInvoice.value?.millisatoshis / 1000 || 0
+  let satsWithFees = calcSatsFee(baseSats)
+  let uplift = 0.01 // 1% uplift
+  satsWithFees *= 1 + uplift // Apply 1% uplift
+  satsWithFees += 100 // Add fixed fee
+
   let amountNum = 0
-  if (currency == "HIVE") {
-    amountNum = parseFloat(Hive.value) + 6 + 0.002 * parseFloat(Hive.value)
-  } else if (currency == "HBD") {
-    amountNum = parseFloat(HBD.value) + 2 + 0.002 * parseFloat(HBD.value)
+  if (currency === "HIVE") {
+    amountNum = (satsWithFees / storeApiStatus.hiveSatsNumber).toFixed(3)
+  } else if (currency === "HBD") {
+    amountNum = (satsWithFees / storeApiStatus.HBDSatsNumber).toFixed(3)
   }
-  CurrencyCalc.value.amount = amountNum
+
+  CurrencyCalc.value.amount = parseFloat(amountNum)
   CurrencyCalc.value.currency = currency.toLowerCase()
   // next tick which allows currency calc to catch up.
   await new Promise((resolve) => setTimeout(resolve, 0))
-  let amount = amountNum.toFixed(3)
+  let amount = amountNum
 
   // if payWithSats is true add #paywithsats to the end of the memo
   // adds encryption to the memo 2024-02-23
@@ -1177,7 +1184,7 @@ async function checkHiveTransaction(username, trx_id, notif) {
     // check if the transaction contains the string "Your Lightning Invoice of 1234 sats has been paid"
 
     let regex = /(Deducting|Your Lightning Invoice of) ([\d,]+).*/
-
+    console.log("Checking transaction memo:", transaction_found?.op[1].memo)
     let match = transaction_found?.op[1].memo.match(regex)
     if (match) {
       let satsPaid = match[2].replace(",", "")
@@ -1193,7 +1200,7 @@ async function checkHiveTransaction(username, trx_id, notif) {
       })
     } else {
       // extract the text after the : ""Something went wrong with paying the Lightning Invoice: invoice is already paid, returning all Hive funds"
-      regex = /Something went wrong with paying the Lightning Invoice: (.*)/
+      regex = /Lightning error: (.*)/
       match = transaction_found?.op[1].memo.match(regex)
       if (match && match[1]) {
         // if match exists and match[1] has a value, include it in the message

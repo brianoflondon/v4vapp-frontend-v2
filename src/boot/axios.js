@@ -41,8 +41,17 @@ if (useLocal) {
   apiLoginURL = "http://localhost:1818/"
 }
 
-const serverHiveAccount = useLocal ? "hivehydra" : "v4vapp"
-const serverHiveAccountTreasury = useLocal ? "v4vapp.tre" : "v4vapp.tre"
+// Set dev accounts if useDev or useLocal is true
+const useDevAccounts = useDev || useLocal
+
+const serverHiveAccount = useDevAccounts ? "devser.v4vapp" : "v4vapp"
+const serverHiveAccountTreasury = useDevAccounts
+  ? "devtre.v4vapp"
+  : "v4vapp.tre"
+
+// Domain controls for lightning addresses / QR text
+const lightningAddressDomainSuffix = "v4v.app"
+const lightningAddressDomainPrefix = useDevAccounts ? "d" : ""
 
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({ baseURL: apiLoginURL })
@@ -69,4 +78,6 @@ export {
   myNodePubKey,
   serverHiveAccount,
   serverHiveAccountTreasury,
+  lightningAddressDomainSuffix,
+  lightningAddressDomainPrefix,
 }
