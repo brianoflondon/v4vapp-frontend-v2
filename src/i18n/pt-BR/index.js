@@ -178,10 +178,10 @@ A aba "Enviar" permite que você pague qualquer fatura Lightning ou endereço Li
 A aba "Receber" permite que você solicite um pagamento Hive (como um código QR para o pagador) ou uma fatura Lightning BTC sats como Hive. Isso pode atuar como um ponto de venda em uma loja e permitir que você receba o pagamento instantaneamente de pessoas que pagam com Hive, HBD ou Lightning.\n
 Você pode armazenar uma pequena quantia de Sats no V4V.app: seu saldo KeepSats. Este saldo é exibido no cartão de crédito quando você faz login. Sim, é o número grande!\n`,
   keepsats_deposit_title: `Como receber KeepSats no v4v.app`,
-  keepsats_deposit_text: `Para armazenar KeepSats no v4v.app, há duas maneiras:\n
-  1. Depositar Hive ou HBD e eles serão convertidos e armazenados como um saldo de KeepSats\n
-  2. Enviar Sats direto para o endereço mostrado na guia Depósito de Depósitos, que é apenas o nome da sua conta do Hive, seguido de \@sats.4v.app\n
-  A taxa é aplicada apenas na conversão de Hive ou HBD para sats, depositar sats não tem taxa.`,
+  keepsats_deposit_text: `To store KeepSats on v4v.app, there are two ways.:\n
+  1. Deposit Hive or HBD and they will be converted and stored as a KeepSats balance\n
+  2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by {at}sats.v4v.app\n
+  A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
   keepsats_convert_title: `Como converter KeepSats para Hive ou HBD`,
   keepsats_convert_text: `Para converter KeepSats para Hive, selecione a quantidade de sats para converter pelo controle deslizante e escolha Hive ou HBD, seus sats serão depositados no Hive ou HBD.\n
   A taxa se aplica ao converter sats para Hive ou HBD.`,
