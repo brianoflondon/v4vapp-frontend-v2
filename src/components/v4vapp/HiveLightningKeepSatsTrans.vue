@@ -237,9 +237,13 @@ const tableData = computed(() => {
   }
 
   // Check for all_transactions.combined_balance first (the main data source)
-  if (keepSatsResponse.value.all_transactions?.combined_balance && 
-      Array.isArray(keepSatsResponse.value.all_transactions.combined_balance)) {
-    console.log(`Found transactions in all_transactions.combined_balance with ${keepSatsResponse.value.all_transactions.combined_balance.length} items`)
+  if (
+    keepSatsResponse.value.all_transactions?.combined_balance &&
+    Array.isArray(keepSatsResponse.value.all_transactions.combined_balance)
+  ) {
+    console.log(
+      `Found transactions in all_transactions.combined_balance with ${keepSatsResponse.value.all_transactions.combined_balance.length} items`
+    )
     return keepSatsResponse.value.all_transactions.combined_balance
   }
 
@@ -255,14 +259,20 @@ const tableData = computed(() => {
   ]
   for (const key of possibleKeys) {
     if (Array.isArray(keepSatsResponse.value[key])) {
-      console.log(`Found transactions array in property '${key}' with ${keepSatsResponse.value[key].length} items`)
+      console.log(
+        `Found transactions array in property '${key}' with ${keepSatsResponse.value[key].length} items`
+      )
       return keepSatsResponse.value[key]
     }
   }
 
   // If no array found, check if the response itself is an array
   if (Array.isArray(keepSatsResponse.value)) {
-    console.log("Response is already an array with", keepSatsResponse.value.length, "items")
+    console.log(
+      "Response is already an array with",
+      keepSatsResponse.value.length,
+      "items"
+    )
     return keepSatsResponse.value
   }
 
