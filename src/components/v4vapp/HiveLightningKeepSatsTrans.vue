@@ -35,6 +35,7 @@
     <q-table
       :rows="tableData"
       :columns="ledgerColumns"
+      :visible-columns="visibleColumns"
       row-key="group_id"
       :pagination="{ rowsPerPage: 10 }"
       :loading="storeUser.dataLoading"
@@ -123,19 +124,24 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
+import { useQuasar } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
 import { useKeepSats } from "src/use/useV4vapp"
 import { formatPrettyDate, tidyNumber } from "src/use/useUtils"
 
 const storeUser = useStoreUser()
-const keepSatsResponse = ref(null)
+const $q = useQuasar()
+const keepSatsResponse = ref([])
 
 const props = defineProps({
   adminOverride: Boolean,
 })
 
+// Check if screen width is less than 700px
+const isMobileView = computed(() => $q.screen.width < 700)
+
 const ledgerColumns = computed(() => {
-  return [
+  const columns = [
     {
       name: "timestamp",
       required: true,
@@ -159,42 +165,113 @@ const ledgerColumns = computed(() => {
       align: "right",
       field: (row) => row.conv_signed?.sats || row.sats || 0,
     },
-    {
-      name: "hive",
-      required: true,
-      sortable: true,
-      label: "Hive",
-      align: "right",
-      field: (row) => row.conv_signed?.hive || row.hive || 0,
-    },
-    {
-      name: "hbd",
-      required: true,
-      sortable: true,
-      label: "HBD",
-      align: "right",
-      field: (row) => row.conv_signed?.hbd || row.hbd || 0,
-    },
-    {
-      name: "total",
-      required: true,
-      sortable: true,
-      label: "Total",
-      align: "right",
-      field: (row) => row.conv_running_total?.sats || 0,
-    },
-    {
+  ]
+
+  // Add Hive and HBD columns if not mobile
+  if (!isMobileView.value) {
+    columns.push(
+      {
+        name: "hive",
+        required: true,
+        sortable: true,
+        label: "Hive",
+        align: "right",
+        field: (row) => row.conv_signed?.hive || row.hive || 0,
+      },
+      {
+        name: "hbd",
+        required: true,
+        sortable: true,
+        label: "HBD",
+        align: "right",
+        field: (row) => row.conv_signed?.hbd || row.hbd || 0,
+      }
+    )
+  }
+
+  // Always add Total column
+  columns.push({
+    name: "total",
+    required: true,
+    sortable: true,
+    label: "Total",
+    align: "right",
+    field: (row) => row.conv_running_total?.sats || 0,
+  })
+
+  // Add Type column if not mobile
+  if (!isMobileView.value) {
+    columns.push({
       name: "ledger_type",
       required: true,
       label: "Type",
       align: "left",
       field: "ledger_type",
-    },
-  ]
+    })
+  }
+
+  return columns
 })
 
+// Dynamic visible columns based on screen size
+const visibleColumns = computed(() => {
+  if (isMobileView.value) {
+    return ["timestamp", "description", "sats", "total"]
+  } else {
+    return [
+      "timestamp",
+      "description",
+      "sats",
+      "hive",
+      "hbd",
+      "total",
+      "ledger_type",
+    ]
+  }
+})
+
+// Extract transactions array from the API response
 const tableData = computed(() => {
-  return keepSatsResponse.value?.all_transactions?.combined_balance || []
+  if (!keepSatsResponse.value || typeof keepSatsResponse.value !== "object") {
+    return []
+  }
+
+  // Check for all_transactions.combined_balance first (the main data source)
+  if (keepSatsResponse.value.all_transactions?.combined_balance && 
+      Array.isArray(keepSatsResponse.value.all_transactions.combined_balance)) {
+    console.log(`Found transactions in all_transactions.combined_balance with ${keepSatsResponse.value.all_transactions.combined_balance.length} items`)
+    return keepSatsResponse.value.all_transactions.combined_balance
+  }
+
+  // Fallback: try other possible property names for the transactions array
+  const possibleKeys = [
+    "transactions",
+    "data",
+    "rows",
+    "items",
+    "ledger",
+    "history",
+    "transfers",
+  ]
+  for (const key of possibleKeys) {
+    if (Array.isArray(keepSatsResponse.value[key])) {
+      console.log(`Found transactions array in property '${key}' with ${keepSatsResponse.value[key].length} items`)
+      return keepSatsResponse.value[key]
+    }
+  }
+
+  // If no array found, check if the response itself is an array
+  if (Array.isArray(keepSatsResponse.value)) {
+    console.log("Response is already an array with", keepSatsResponse.value.length, "items")
+    return keepSatsResponse.value
+  }
+
+  // If still no array, return empty array
+  console.warn(
+    "Could not find transactions array in keepSats response. Available keys:",
+    Object.keys(keepSatsResponse.value)
+  )
+  return []
 })
 
 watch(
@@ -204,7 +281,7 @@ watch(
       await fetchData()
     }
     if (newVal === null || newVal === undefined) {
-      keepSatsResponse.value = null
+      keepSatsResponse.value = []
     }
     return
   }
@@ -217,11 +294,12 @@ watch(
 async function fetchData() {
   storeUser.dataLoading = true
   if (!storeUser.hiveAccname) {
-    keepSatsResponse.value = null
+    keepSatsResponse.value = []
     return
   }
   const keepSats = await useKeepSats(false, true, props.adminOverride)
   console.log("KeepSats data", keepSats)
+  console.log("KeepSats data keys:", Object.keys(keepSats || {}))
 
   keepSatsResponse.value = keepSats
 
