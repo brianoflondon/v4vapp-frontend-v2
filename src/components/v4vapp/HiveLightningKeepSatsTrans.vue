@@ -8,12 +8,12 @@
             label="Refresh"
             :loading="storeUser.dataLoading"
             rounded
-            @click="fetchData(dataDays)"
+            @click="fetchData()"
           ></q-btn>
         </div>
         <div class="days-select q-px-sm">
           <q-select
-            v-model="dataDays"
+            :model-value="{ label: '7 days', value: 7 }"
             :options="[
               { label: '3 days', value: 3 },
               { label: '7 days', value: 7 },
@@ -23,7 +23,7 @@
             ]"
             label="Days"
             dense
-            @update:model-value="fetchData($event)"
+            readonly
           ></q-select>
         </div>
       </div>
@@ -63,6 +63,9 @@
               <q-card class="description-card">
                 <q-card-section class="description-full">
                   {{ props.value }}
+                  <div v-if="props.row.user_memo" class="user-memo">
+                    <strong>Memo:</strong> "{{ props.row.user_memo }}"
+                  </div>
                 </q-card-section>
               </q-card>
             </q-expansion-item>
@@ -70,6 +73,13 @@
           <div v-else class="description-cell">
             {{ props.value }}
           </div>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-timestamp="props">
+        <q-td :props="props">
+          {{
+            formatPrettyDate(props.row.timestamp_unix || props.row.timestamp)
+          }}
         </q-td>
       </template>
       <template v-slot:body-cell-sats="props">
@@ -113,127 +123,15 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
-import { useI18n } from "vue-i18n"
 import { useStoreUser } from "src/stores/storeUser"
-import { useFetchSatsHistory, useKeepSats } from "src/use/useV4vapp"
-import { useGenerateTxUrl } from "src/use/useHive"
-import KeepSatsDetail from "src/components/v4vapp/KeepSatsDetail.vue"
+import { useKeepSats } from "src/use/useV4vapp"
 import { formatPrettyDate, tidyNumber } from "src/use/useUtils"
-import { useShortEVMAddress } from "src/use/useEVM"
 
 const storeUser = useStoreUser()
-const data = ref([])
-const dataDays = ref({ label: "7 days", value: 7 })
-const totals = ref({ totalHive: 0, totalSats: 0 })
-
-const keepSatsDataReasonFilter = ref("All")
-const keepSatsDataReasons = ref([])
-const keepSatsDataCategoryFilter = ref("All")
-const keepSatsDataCategories = ref(["All"])
-const keepSatsDataFiltered = ref([])
-
 const keepSatsResponse = ref(null)
-
-const t = useI18n().t
-
-const rowsExpanded = ref([])
 
 const props = defineProps({
   adminOverride: Boolean,
-})
-
-const columns = computed(() => {
-  return [
-    {
-      name: "timestamp",
-      required: true,
-      sortable: true,
-      label: t("date"),
-      align: "left",
-      field: "timestamp",
-      format: (val) => formatPrettyDate(val),
-    },
-    {
-      name: "reason",
-      required: true,
-      label: t("reason"),
-      align: "left",
-      field: "reason",
-      format: (val) => val,
-    },
-    {
-      name: "net_hive",
-      required: true,
-      sortable: true,
-      label: t("hive"),
-      align: "right",
-      field: "net_hive",
-      format: (val) => tidyNumber(val, 3),
-    },
-    {
-      name: "sats",
-      required: true,
-      sortable: true,
-      label: "Sats シ",
-      align: "right",
-      field: "sats",
-      format: (val) => tidyNumber(val, 0),
-    },
-    {
-      name: "link",
-      required: true,
-      align: "center",
-      field: "trx_id",
-      format: (val) => val,
-    },
-  ]
-})
-
-const keepSatsData = ref([])
-const keepSatsTotal = ref(0)
-const keepHiveTotal = ref(0)
-const keepSatsColumns = computed(() => {
-  return [
-    {
-      name: "timestamp",
-      required: true,
-      sortable: true,
-      label: t("date"),
-      align: "left",
-      field: "timestamp",
-      format: (val) => formatPrettyDate(val),
-    },
-    {
-      name: "reason",
-      required: true,
-      label: t("reason"),
-      align: "left",
-      field: "reason",
-      format: (val) => val,
-    },
-    {
-      name: "hive",
-      required: true,
-      sortable: true,
-      label: "Hive",
-      align: "right",
-      field: "hive",
-      format: (val) => tidyNumber(val, 3),
-    },
-    {
-      name: "sats",
-      required: true,
-      sortable: true,
-      label: "Sats シ",
-      align: "right",
-      field: "sats",
-      format: (val) => tidyNumber(val, 0),
-    },
-    {
-      name: "expand",
-      field: "expand",
-    },
-  ]
 })
 
 const ledgerColumns = computed(() => {
@@ -244,8 +142,7 @@ const ledgerColumns = computed(() => {
       sortable: true,
       label: "Date",
       align: "left",
-      field: "timestamp",
-      format: (val) => formatPrettyDate(val),
+      field: "timestamp-unix",
     },
     {
       name: "description",
@@ -307,8 +204,6 @@ watch(
       await fetchData()
     }
     if (newVal === null || newVal === undefined) {
-      data.value = []
-      keepSatsData.value = []
       keepSatsResponse.value = null
     }
     return
@@ -317,15 +212,11 @@ watch(
 
 /**
  * Fetches data from the server.
- *
- * @param {number} [newValue=dataDays.value] - The value to use for fetching data. Defaults to the value of `dataDays.value`.
  * @returns {Promise} - A promise that resolves with the fetched data.
  */
-async function fetchData(newValue = dataDays.value) {
+async function fetchData() {
   storeUser.dataLoading = true
   if (!storeUser.hiveAccname) {
-    data.value = []
-    keepSatsData.value = []
     keepSatsResponse.value = null
     return
   }
@@ -361,10 +252,6 @@ function isPrimaryAmount(row, field) {
 </script>
 
 <style lang="scss" scoped>
-.bordered-div {
-  border: 1px solid #e0e0e0;
-}
-
 .keepsats-table .q-table__container .q-table tbody tr td {
   padding: 5px;
 }
@@ -389,7 +276,7 @@ function isPrimaryAmount(row, field) {
 
 .expansion-icon {
   font-size: 1.2rem;
-  color: #1976d2;
+  color: var(--q-primary);
   transition: transform 0.3s ease;
 }
 
@@ -401,7 +288,7 @@ function isPrimaryAmount(row, field) {
     background: transparent;
 
     &:hover {
-      background-color: rgba(25, 118, 210, 0.04);
+      background-color: var(--q-hover-background);
     }
 
     &.q-expansion-item--expanded .expansion-icon {
@@ -416,7 +303,7 @@ function isPrimaryAmount(row, field) {
 
 .description-card {
   margin-top: 8px;
-  border-left: 3px solid #1976d2;
+  border-left: 3px solid var(--q-primary);
 }
 
 .description-full {
@@ -425,7 +312,21 @@ function isPrimaryAmount(row, field) {
   line-height: 1.4;
   word-wrap: break-word;
   white-space: pre-wrap;
-  background-color: #f8f9fa;
+  background-color: var(--q-card-background);
   border-radius: 4px;
+}
+
+.user-memo {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--q-separator-color);
+  font-size: 0.8rem;
+  color: var(--q-text-secondary);
+  font-style: italic;
+
+  strong {
+    color: var(--q-primary);
+    font-weight: 600;
+  }
 }
 </style>
