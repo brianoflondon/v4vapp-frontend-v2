@@ -19,6 +19,7 @@
         :rules="[(val) => !!val || t('no_amount')]"
         :error-message="errorMessage"
         :error="errorState"
+        tabindex="1"
       >
         <!-- Use my Own code for the clearable button -->
         <template v-if="amount.txt" v-slot:append>
@@ -39,6 +40,7 @@
         map-options
         @update:model-value="(val) => updateCurrencySelected(val)"
         dense
+        tabindex="2"
       />
     </div>
   </div>
