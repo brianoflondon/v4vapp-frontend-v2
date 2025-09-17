@@ -217,7 +217,11 @@ async function checkForSats(oldNetSats = 0, count = 0) {
   const change = await storeUser.updateSatsBalance(false)
   if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
     q.notify({
-      message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,
+      message: `You now have ${
+        storeUser.currentKeepSats.net_sats === 0
+          ? 0
+          : storeUser.currentKeepSats.net_sats
+      } KeepSats`,
       color: "positive",
       icon: "check_circle",
     })
