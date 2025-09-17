@@ -488,6 +488,11 @@ const satsFee = computed(() => {
 
 function calcSatsFee(sats) {
   let satsWithFees = sats
+  console.log(
+    "conv_fee_percent",
+    storeApiStatus.apiStatus.config.conv_fee_percent
+  )
+  console.log("conv_fee_sats", storeApiStatus.apiStatus.config.conv_fee_sats)
   satsWithFees *= 1 + storeApiStatus.apiStatus.config.conv_fee_percent
   satsWithFees += storeApiStatus.apiStatus.config.conv_fee_sats
   return satsWithFees
@@ -914,9 +919,11 @@ async function payInvoice(currency, method) {
   // Use dynamic fee calculation with a 1% uplift for safety margin
   let baseSats = dInvoice.value?.millisatoshis / 1000 || 0
   let satsWithFees = calcSatsFee(baseSats)
-  let uplift = 0.01 // 1% uplift
-  satsWithFees *= 1 + uplift // Apply 1% uplift
+  console.log("satsWithFees", satsWithFees)
+  let uplift = 1.01 // 1% uplift
+  satsWithFees *= uplift // Apply 1% uplift
   satsWithFees += 100 // Add fixed fee
+  console.log("satsWithFees with uplift and fixed fee", satsWithFees)
 
   let amountNum = 0
   if (currency === "HIVE") {

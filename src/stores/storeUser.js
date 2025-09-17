@@ -293,17 +293,28 @@ export const useStoreUser = defineStore("useStoreUser", {
       return {
         hive: parseFloat(this.currentDetails.balance),
         hbd: parseFloat(this.currentDetails.hbd_balance),
-        keepSats: this.currentKeepSats?.net_sats,
-        sats: this.currentKeepSats?.net_sats,
+        keepSats:
+          this.currentKeepSats?.net_sats === 0
+            ? 0
+            : this.currentKeepSats?.net_sats,
+        sats:
+          this.currentKeepSats?.net_sats === 0
+            ? 0
+            : this.currentKeepSats?.net_sats,
       }
     },
     balancesDisplay() {
       if (!this.currentDetails) return null
+      // Ensure net_sats is never -0
+      const netSats =
+        this.currentKeepSats?.net_sats === 0
+          ? 0
+          : this.currentKeepSats?.net_sats
       return {
         hive: tidyNumber(parseFloat(this.currentDetails.balance), 3),
         hbd: tidyNumber(parseFloat(this.currentDetails.hbd_balance), 3),
-        keepSats: tidyNumber(this.currentKeepSats?.net_sats, 0),
-        sats: tidyNumber(this.currentKeepSats?.net_sats, 0),
+        keepSats: tidyNumber(netSats, 0),
+        sats: tidyNumber(netSats, 0),
       }
     },
     hiveBalance() {
@@ -406,11 +417,19 @@ export const useStoreUser = defineStore("useStoreUser", {
         const netBitcoin = this.currentKeepSats?.net_sats / 100000000
         return tidyNumber(netBitcoin, 3)
       }
-      return tidyNumber(this.currentKeepSats?.net_sats, 0)
+      // Ensure net_sats is never -0
+      const netSats =
+        this.currentKeepSats?.net_sats === 0
+          ? 0
+          : this.currentKeepSats?.net_sats
+      return tidyNumber(netSats, 0)
     },
     keepSatsBalanceLocal() {
       if (!this.currentKeepSats) return "💰💰💰"
-      return this.convertToLocalCurrency(this.currentKeepSats.net_sats, "sats")
+      // Ensure net_sats is never -0
+      const netSats =
+        this.currentKeepSats.net_sats === 0 ? 0 : this.currentKeepSats.net_sats
+      return this.convertToLocalCurrency(netSats, "sats")
     },
     /**
      * Retrieves the balance of keepSats and returns it as a formatted number or string.
@@ -427,7 +446,10 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (this.currentKeepSats?.net_sats > 1000000) {
         return this.currentKeepSats?.net_sats / 100000000
       }
-      return this.currentKeepSats?.net_sats
+      // Ensure net_sats is never -0
+      return this.currentKeepSats?.net_sats === 0
+        ? 0
+        : this.currentKeepSats?.net_sats
     },
     keepSatsBalanceNum() {
       if (this.currentKeepSats === null) {
@@ -435,7 +457,10 @@ export const useStoreUser = defineStore("useStoreUser", {
         console.debug("check if logged in with HAS or Keychain")
         return 0
       }
-      return this.currentKeepSats?.net_sats
+      // Ensure net_sats is never -0
+      return this.currentKeepSats?.net_sats === 0
+        ? 0
+        : this.currentKeepSats?.net_sats
     },
     savingsSatsBalance() {
       if (this.satsBalance === "💰💰💰") return "💰💰💰"
@@ -523,10 +548,21 @@ export const useStoreUser = defineStore("useStoreUser", {
             console.error(err)
           }
           this.currentKeepSats = answer
+          // Ensure net_sats is never -0
+          if (this.currentKeepSats && this.currentKeepSats.net_sats === 0) {
+            this.currentKeepSats.net_sats = 0
+          }
           this.dataLoading = false
           console.debug("currentKeepSats", this.currentKeepSats)
           if (this.currentKeepSats) {
-            if (currentSatsBalance !== this.currentKeepSats.net_sats) {
+            // Ensure net_sats is never -0 for comparison
+            const normalizedCurrent =
+              currentSatsBalance === 0 ? 0 : currentSatsBalance
+            const normalizedNew =
+              this.currentKeepSats.net_sats === 0
+                ? 0
+                : this.currentKeepSats.net_sats
+            if (normalizedCurrent !== normalizedNew) {
               return true
             }
           }
