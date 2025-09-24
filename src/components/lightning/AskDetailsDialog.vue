@@ -227,10 +227,12 @@ watch(
       nextTick(() => {
         if (amountCurrencyInput.value) {
           // Find the input element within the AmountCurrencyInput component
-          const inputElement =
-            amountCurrencyInput.value.$el?.querySelector("input")
-          if (inputElement) {
-            inputElement.focus()
+          if (amountCurrencyInput.value?.$el && typeof amountCurrencyInput.value.$el.querySelector === 'function') {
+            const inputElement =
+              amountCurrencyInput.value.$el.querySelector("input")
+            if (inputElement) {
+              inputElement.focus()
+            }
           }
         }
       })
