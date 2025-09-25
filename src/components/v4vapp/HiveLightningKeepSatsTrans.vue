@@ -43,10 +43,7 @@
     >
       <template v-slot:body-cell-description="props">
         <q-td :props="props">
-          <div
-            v-if="props.value && props.value.length > 30"
-            class="description-cell"
-          >
+          <div v-if="isMobileView" class="description-cell">
             <q-expansion-item
               dense
               class="description-expansion"
@@ -56,7 +53,8 @@
               <template v-slot:header>
                 <div class="description-inline">
                   <span class="short-description">
-                    {{ props.value.substring(0, 30) }}...
+                    <span class="ledger-icon">{{ props.row.icon }}</span>
+                    {{ props.row.ledger_type_str }}
                   </span>
                   <q-icon name="expand_more" class="expansion-icon" />
                 </div>
@@ -72,7 +70,37 @@
             </q-expansion-item>
           </div>
           <div v-else class="description-cell">
-            {{ props.value }}
+            <div
+              v-if="props.value && props.value.length > 30"
+              class="description-cell"
+            >
+              <q-expansion-item
+                dense
+                class="description-expansion"
+                header-class="description-header"
+                hide-expand-icon
+              >
+                <template v-slot:header>
+                  <div class="description-inline">
+                    <span class="short-description">
+                      {{ props.value.substring(0, 30) }}...
+                    </span>
+                    <q-icon name="expand_more" class="expansion-icon" />
+                  </div>
+                </template>
+                <q-card class="description-card">
+                  <q-card-section class="description-full">
+                    {{ props.value }}
+                    <div v-if="props.row.user_memo" class="user-memo">
+                      <strong>Memo:</strong> "{{ props.row.user_memo }}"
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </div>
+            <div v-else class="description-cell">
+              {{ props.value }}
+            </div>
           </div>
         </q-td>
       </template>
@@ -118,6 +146,14 @@
           {{ tidyNumber(props.value, 0) }}
         </q-td>
       </template>
+      <template v-slot:body-cell-ledger_type="props">
+        <q-td :props="props">
+          <span class="ledger-icon">
+            {{ props.row.icon }}
+            <q-tooltip>{{ props.row.ledger_type_str }}</q-tooltip>
+          </span>
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>
@@ -150,6 +186,20 @@ const ledgerColumns = computed(() => {
       align: "left",
       field: "timestamp-unix",
     },
+  ]
+
+  // Add Type column if not mobile
+  if (!isMobileView.value) {
+    columns.push({
+      name: "ledger_type",
+      required: true,
+      label: "Type",
+      align: "left",
+      field: "ledger_type",
+    })
+  }
+
+  columns.push(
     {
       name: "description",
       required: true,
@@ -164,8 +214,8 @@ const ledgerColumns = computed(() => {
       label: "Sats",
       align: "right",
       field: (row) => row.conv_signed?.sats || row.sats || 0,
-    },
-  ]
+    }
+  )
 
   // Add Hive and HBD columns if not mobile
   if (!isMobileView.value) {
@@ -199,17 +249,6 @@ const ledgerColumns = computed(() => {
     field: (row) => row.conv_running_total?.sats || 0,
   })
 
-  // Add Type column if not mobile
-  if (!isMobileView.value) {
-    columns.push({
-      name: "ledger_type",
-      required: true,
-      label: "Type",
-      align: "left",
-      field: "ledger_type",
-    })
-  }
-
   return columns
 })
 
@@ -220,12 +259,12 @@ const visibleColumns = computed(() => {
   } else {
     return [
       "timestamp",
+      "ledger_type",
       "description",
       "sats",
       "hive",
       "hbd",
       "total",
-      "ledger_type",
     ]
   }
 })
@@ -416,5 +455,10 @@ function isPrimaryAmount(row, field) {
     color: var(--q-primary);
     font-weight: 600;
   }
+}
+
+.ledger-icon {
+  font-size: 1.2rem;
+  cursor: pointer;
 }
 </style>
