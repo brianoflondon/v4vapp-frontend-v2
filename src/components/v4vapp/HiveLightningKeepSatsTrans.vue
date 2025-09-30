@@ -31,7 +31,7 @@
   </div>
 
   <!-- Ledger Transactions Table -->
-  <div class="q-pa-md">
+  <div :class="{ 'q-px-none': isMobileView, 'q-py-xs': isMobileView, 'q-pa-md': !isMobileView }" class="full-width">
     <q-table
       :rows="tableData"
       :columns="ledgerColumns"
@@ -39,7 +39,7 @@
       row-key="group_id"
       :pagination="{ rowsPerPage: 10 }"
       :loading="storeUser.dataLoading"
-      class="keepsats-table"
+      :class="{ 'keepsats-table': true, 'mobile-table': isMobileView }"
     >
       <template v-slot:body-cell-description="props">
         <q-td :props="props">
@@ -54,6 +54,15 @@
                 <div class="description-inline">
                   <span class="short-description">
                     <span class="ledger-icon">{{ props.row.icon }}</span>
+                    <span v-if="props.row.link" class="hive-link-icon">
+                      <a
+                        :href="props.row.link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <i class="fa-brands fa-hive" />
+                      </a>
+                    </span>
                     {{ props.row.ledger_type_str }}
                   </span>
                   <q-icon name="expand_more" class="expansion-icon" />
@@ -83,7 +92,7 @@
                 <template v-slot:header>
                   <div class="description-inline">
                     <span class="short-description">
-                      {{ props.value.substring(0, 30) }}...
+                      {{ props.value.substring(0, 35) }}...
                     </span>
                     <q-icon name="expand_more" class="expansion-icon" />
                   </div>
@@ -105,14 +114,18 @@
         </q-td>
       </template>
       <template v-slot:body-cell-timestamp="props">
-        <q-td :props="props">
+        <q-td :props="props" :class="{ 'mobile-date-cell': isMobileView }">
           {{
             formatPrettyDate(props.row.timestamp_unix || props.row.timestamp)
           }}
         </q-td>
       </template>
       <template v-slot:body-cell-sats="props">
-        <q-td :props="props" class="text-right">
+        <q-td
+          :props="props"
+          :class="{ 'mobile-compact-cell': isMobileView }"
+          class="text-right"
+        >
           <strong v-if="isPrimaryAmount(props.row, 'sats')">
             {{ tidyNumber(props.value, 0) }}
           </strong>
@@ -142,7 +155,11 @@
         </q-td>
       </template>
       <template v-slot:body-cell-total="props">
-        <q-td :props="props" class="text-right">
+        <q-td
+          :props="props"
+          :class="{ 'mobile-compact-cell': isMobileView }"
+          class="text-right"
+        >
           {{ tidyNumber(props.value, 0) }}
         </q-td>
       </template>
@@ -151,6 +168,11 @@
           <span class="ledger-icon">
             {{ props.row.icon }}
             <q-tooltip>{{ props.row.ledger_type_str }}</q-tooltip>
+          </span>
+          <span v-if="props.row.link" class="hive-link-icon">
+            <a :href="props.row.link" target="_blank" rel="noopener noreferrer">
+              <i class="fa-brands fa-hive" />
+            </a>
           </span>
         </q-td>
       </template>
@@ -383,6 +405,42 @@ function isPrimaryAmount(row, field) {
   padding: 5px;
 }
 
+.mobile-table {
+  .q-table__container .q-table {
+    tbody tr td {
+      padding: 1px 1px 1px 0px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    thead tr th {
+      padding: 2px 1px 2px 1px;
+      font-size: 0.75rem;
+    }
+  }
+
+  .q-table tbody tr {
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.mobile-date-cell {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  font-size: 0.7rem;
+  padding-right: 1px !important;
+}
+
+.mobile-compact-cell {
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+  font-size: 0.75rem;
+  text-align: right;
+  padding: 1px 3px 1px 1px !important;
+}
 .description-cell {
   width: 100%;
 }
@@ -434,7 +492,7 @@ function isPrimaryAmount(row, field) {
 }
 
 .description-full {
-  padding: 12px;
+  padding: 3px;
   font-size: 0.875rem;
   line-height: 1.4;
   word-wrap: break-word;
@@ -460,5 +518,20 @@ function isPrimaryAmount(row, field) {
 .ledger-icon {
   font-size: 1.2rem;
   cursor: pointer;
+}
+
+.hive-link-icon {
+  margin-left: 4px;
+
+  a {
+    color: var(--q-primary);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--q-secondary);
+    }
+  }
 }
 </style>

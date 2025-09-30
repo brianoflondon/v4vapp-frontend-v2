@@ -52,7 +52,7 @@
         <q-tab-panel name="history">
           <q-slide-transition appear disappear :duration="1500">
             <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
-              <div>
+              <div class="full-width">
                 <HiveLightningKeepSatsTrans :adminOverride="adminOverride" />
               </div>
             </div>

@@ -101,10 +101,17 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
-      https: true,
+      https: process.env.HTTPS === "true",
+      port: 9200, // Add explicit port
+      host: "0.0.0.0", // Add host binding
       open: false, // opens browser window automatically
       historyApiFallback: {
         rewrites: [{ from: /./, to: "/index.html" }],
+      },
+      // Add these new properties for proxy compatibility
+      allowedHosts: "all",
+      client: {
+        webSocketURL: "wss://dev.h.v4v.app/ws", // WebSocket endpoint through proxy
       },
     },
 
