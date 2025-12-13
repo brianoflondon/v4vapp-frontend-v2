@@ -1,6 +1,6 @@
 export default {
   // General
-  loading: 'Lade...',
+  loading: 'Lädt ...',
   error: 'Fehler',
   paste: 'Einfügen',
   required: 'Notwendig',
@@ -178,10 +178,10 @@ export default {
   Auf der Registerkarte „Empfangen“ kann eine Hive-Zahlung (als QR-Code für den Zahler) oder eine Lightning-Rechnung mit BTC-Sats als Hive angefordert werden. Dies kann als Point of Sale in einem Geschäft fungieren und es Ihnen ermöglichen, Zahlungen von Personen, die mit Hive, HBD oder Lightning zahlen, sofort einzuziehen\n
   Sie können auch eine kleine Menge Sats auf V4V.app speichern: Ihr KeepSats Saldo. Dieser Saldo wird auf der Kreditkarte angezeigt, wenn du eingeloggt bist. Es ist die große Zahl.\n`,
   keepsats_deposit_title: `So erhalte ich KeepSats auf v4v.app`,
-  keepsats_deposit_text: `To store KeepSats on v4v.app, there are two ways.:\n
-  1. Deposit Hive or HBD and they will be converted and stored as a KeepSats balance\n
-  2. Send Sats direct to the Lightning address shown on the Deposit tab which is just your Hive Account Name followed by {at}sats.v4v.app\n
-  A fee is only applied when changing Hive or HBD into sats, depositing sats has no fee.`,
+  keepsats_deposit_text: `Um KeepSats auf v4v.app zu speichern, gibt es zwei Wege.:\n
+  1.Zahlen Sie Hive oder HBD ein und sie werden zu KeepSats umgewandelt und als Guthaben gespeichert \n
+  2 Senden Sie BTC-Sats direkt an die Lightning-Adresse, die auf der Registerkarte „Einzahlung“ angezeigt wird. Dabei handelt es sich lediglich um Ihren Hive-Kontonamen gefolgt von {at}sats.v4v.app\n
+  Eine Gebühr wird nur erhoben, wenn Hive oder HBD in BTC-Sats umgewandelt werden. Für die Einzahlung von BTC-Sats fallen keine Gebühren an.`,
   keepsats_convert_title: `Wie man KeepSats in Hive oder HBD konvertiert`,
   keepsats_convert_text: `Um KeepSats in Hive umzuwandeln, wählen Sie mit dem Schieberegler die Anzahl der umzuwandelnden Sats aus und wählen Sie Hive oder HBD. Ihre Sats werden in Hive oder HBD hinterlegt.\n
 Für die Umwandlung von Sats in Hive oder HBD fällt eine Gebühr an.`,
