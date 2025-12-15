@@ -45,7 +45,7 @@ export async function getCoingeckoRates() {
       return [coingeckoRates, currencyOptions]
     }
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 }
 
@@ -62,6 +62,6 @@ export async function getCoingeckoRate(currency) {
       return coingeckoRates
     }
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 }

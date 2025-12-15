@@ -1,36 +1,66 @@
 <template>
   <q-page>
-    <div class="flex column text-center items-center">
+    <div class="debug-only">
+      POSPage.vue
+      {{ CurrencyCalc }}
+    </div>
+    <div>
+      <ConfettiExplosion v-if="visible" />
+    </div>
+    <div class="flex column text-center items-center q-pa-none">
+      <q-tabs v-model="currentTab" align="center" dense animated swipeable>
+        <q-route-tab
+          :to="`/pos/sales${
+            route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
+          }`"
+          name="sales"
+          icon="storefront"
+          :label="$t('sales')"
+        />
+        <q-route-tab
+          :to="`/pos/history${
+            route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
+          }`"
+          name="history"
+          icon="receipt_long"
+          :label="$t('history')"
+        />
+        <q-route-tab
+          :to="`/pos/currency${
+            route.params.hiveAccTo ? '/@' + route.params.hiveAccTo : ''
+          }`"
+          name="currency"
+          icon="currency_exchange"
+          :label="$t('currency')"
+        />
+      </q-tabs>
+      <q-tab-panels v-model="currentTab">
+        <q-tab-panel v-show="false" name="sales">
+          <div></div>
+        </q-tab-panel>
+        <q-tab-panel name="history">
+          <div class="div flex row pad-max-width full-width q-px-xs q-py-xs">
+            <ListTransactions
+              v-model="KeychainDialog"
+              @update-fields="handleRetryTransaction"
+            ></ListTransactions>
+          </div>
+        </q-tab-panel>
+        <q-tab-panel name="currency">
+          <div class="flex row pad-max-width full-width q-px-xs q-py-xs">
+            <LocalCurrency />
+          </div>
+        </q-tab-panel>
+      </q-tab-panels>
+
       <!-- Pay To bar -->
       <!-- Pre-selected user name from path -->
       <div
         v-if="route.params.hiveAccTo"
         class="div flex row pad-max-width full-width items-center q-pa-sm q-pt-md"
       >
-        <div class="col-9">
+        <div class="col-10">
           <PosHeader />
-        </div>
-        <!-- Button to Show Currency settings -->
-        <div class="div col-3 q-px-sm" v-if="true">
-          <q-btn
-            round
-            @click="KeychainDialog.settings = !KeychainDialog.settings"
-            icon="settings"
-            ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
-          </q-btn>
-        </div>
-        <div class="col-12 q-px-sm q-pb-md" v-else>
-          <!-- bookmark icon -->
-          <div v-if="!hiveAccTo.valid">
-            <q-icon name="bookmark" class="cursor-pointer" />
-          </div>
-          <div v-else>
-            <a :href="`/pos/@${hiveAccTo.value}/`">
-              <q-icon name="bookmark" class="cursor-pointer" />{{
-                `v4v.app/pos/@${hiveAccTo.value}`
-              }}
-            </a>
-          </div>
         </div>
       </div>
       <!-- Select a user and Local Currency Settings -->
@@ -38,24 +68,15 @@
         class="div flex row pad-max-width full-width items-start q-pa-sm q-pt-lg q-pb-md"
         v-else
       >
-        <div class="col-9 q-px-sm">
+        <div class="col-11 q-px-sm">
           <div class="pad-max-width full-width">
             <!-- <HiveSelectFancyAcc dense v-model="hiveAccTo" fancy-options /> -->
             <HiveInputAcc v-model="hiveAccTo" :prefix="t('pay_to')">
             </HiveInputAcc>
           </div>
         </div>
-        <!-- Button to Show Currency settings -->
-        <div class="div col-3 q-px-none row justify-start items-center">
-          <div class="q-px-xs">
-            <q-btn
-              round
-              dense
-              @click="KeychainDialog.settings = !KeychainDialog.settings"
-              icon="settings"
-              ><q-tooltip>{{ t("local_currency") }}</q-tooltip>
-            </q-btn>
-          </div>
+        <!-- Button to Show bookmark settings -->
+        <div class="div col-1 q-px-none">
           <div class="q-px-xs">
             <q-btn dense round icon="bookmark" @click="bookmarkSite">
               <q-tooltip>
@@ -79,7 +100,9 @@
             @update:model-value="(val) => updateAmounts(val, 'amount')"
             inputmode="decimal"
             pattern="\d*"
-            :label="$t('amount')"
+            :label="
+              CurrencyCalc.message !== '' ? CurrencyCalc.message : $t('amount')
+            "
             stack-label
             debounce="20"
             @keyup.enter="enterPressed()"
@@ -109,13 +132,22 @@
           />
         </div>
         <!-- Show fixed set rate Bar -->
-        <SetRateBar
-          v-if="
-            storeUser.pos.fixedRate &&
-            currencySelected === storeUser.localCurrency.value
-          "
-          @click="KeychainDialog.settings = !KeychainDialog.settings"
-        />
+        <div
+          dense
+          class="q-pa-none full-width items-baseline bg-primary text-white"
+        >
+          <div
+            class="fixed-rate-banner"
+            v-if="
+              storeUser.pos.fixedRate &&
+              currencySelected === storeUser.localCurrency.value
+            "
+          >
+            <SetRateBar
+              @click="KeychainDialog.settings = !KeychainDialog.settings"
+            />
+          </div>
+        </div>
       </div>
       <!-- Memo -->
       <div class="memo-input flex pad-max-width full-width q-px-md q-py-xs">
@@ -124,49 +156,86 @@
           v-model="memoInput"
           class="full-width"
           :label="t('memo')"
+          :rules="[(val) => !memoHasPipe || $t('memo_pipe')]"
         >
         </q-input>
       </div>
       <!-- Pay buttons -->
       <div class="pad-max-width full-width q-px-md q-py-md q-gutter-sm">
         <!-- HBD Button -->
-        <q-btn
-          color="secondary"
-          @click="showPaymentQR('hbd')"
-          :disable="!isPaymentValid"
-        >
-          <div class="column items-center q-pa-none" style="font-size: 1.2rem">
-            <div><HbdLogoIcon /></div>
-            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-              HBD
+        <div v-if="storeUser.pos.receiveCurrency === 'hbd'">
+          <q-btn
+            color="secondary"
+            @click="showPaymentQR('hbd')"
+            :disable="!isPaymentValid"
+          >
+            <div class="column items-center q-px-md" style="font-size: 1.2rem">
+              <div><HbdLogoIcon /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                HUSD
+              </div>
             </div>
-          </div>
-          <div class="q-px-md" style="font-size: 1.2rem">
-            {{ tidyNumber(CurrencyCalc.hbd, 2) }}
-          </div>
-          <div class="q-px-none">
-            <q-icon name="qr_code_2"></q-icon>
-          </div>
-        </q-btn>
+            <div class="q-px-md" style="font-size: 1.2rem">
+              {{ tidyNumber(CurrencyCalc.hbd, 2) }}
+            </div>
+            <div class="q-px-none">
+              <q-icon name="qr_code_2"></q-icon>
+            </div>
+          </q-btn>
+        </div>
         <!-- Hive Button -->
-        <q-btn
-          color="primary"
-          @click="showPaymentQR('hive')"
-          :disable="!isPaymentValid"
-        >
-          <div class="column items-center q-pa-none" style="font-size: 2.05rem">
-            <div><i class="fa-brands fa-hive" /></div>
-            <div class="text-center" style="font-size: 0.5rem; margin: -8px">
-              Hive
+        <div v-else-if="storeUser.pos.receiveCurrency === 'hive'">
+          <q-btn
+            color="primary"
+            @click="showPaymentQR('hive')"
+            :disable="!isPaymentValid"
+          >
+            <div
+              class="column items-center q-pa-none"
+              style="font-size: 2.05rem"
+            >
+              <div><i class="fa-brands fa-hive" /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                Hive
+              </div>
             </div>
-          </div>
-          <div class="q-px-md" style="font-size: 1.2rem">
-            {{ tidyNumber(CurrencyCalc.hive, 2) }}
-          </div>
-          <div class="q-px-none">
-            <q-icon name="qr_code_2"></q-icon>
-          </div>
-        </q-btn>
+            <div class="q-px-md" style="font-size: 1.2rem">
+              {{ tidyNumber(CurrencyCalc.hive, 2) }}
+            </div>
+            <div class="q-px-none">
+              <q-icon name="qr_code_2"></q-icon>
+            </div>
+          </q-btn>
+        </div>
+        <!-- Sats Button -->
+        <div v-else-if="storeUser.pos.receiveCurrency === 'sats'">
+          <q-btn
+            color="deep-orange-14"
+            @click="showPaymentQR('sats')"
+            :disable="CurrencyCalc.outOfRange"
+            no-caps
+          >
+            <div
+              class="column items-center q-pa-none"
+              style="font-size: 2.05rem"
+            >
+              <div><i class="fa-brands fa-btc" /></div>
+              <div class="text-center" style="font-size: 0.5rem; margin: -8px">
+                KeepSats
+              </div>
+            </div>
+            <div class="q-px-md" style="font-size: 1.2rem">
+              {{ tidyNumber(CurrencyCalc.sats, 0) }}
+            </div>
+            <div class="q-px-none">
+              <q-icon name="qr_code_2"></q-icon>
+            </div>
+          </q-btn>
+        </div>
+        <!-- Amount too low too high message -->
+        <div class="text-caption currency-calc-message">
+          {{ CurrencyCalc.message }}
+        </div>
         <!-- Alternate currencies  -->
         <div class="pad-max-width full-width q-px-md" v-if="isPaymentValid">
           <AlternateCurrency
@@ -197,21 +266,16 @@
       </div>
     </div>
     <!-- Show the QR dialog -->
-    <KeychainShowQR v-if="KeychainDialog.show" v-model="KeychainDialog" />
+    <POSKeychainShowQR v-model="KeychainDialog" />
     <!-- Show the settings dialog -->
-    <POSSettingsDialog
-      v-if="KeychainDialog.settings"
-      v-model="KeychainDialog"
-    />
   </q-page>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue"
-import { tidyNumber } from "src/use/useUtils"
+import { ref, onMounted, watch, computed, nextTick } from "vue"
+import { tidyNumber, useUsernameFromRouteParam } from "src/use/useUtils"
 import { useQuasar } from "quasar"
-import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
-import POSSettingsDialog from "src/components/POSSettingsDialog.vue"
+import POSKeychainShowQR from "src/components/hive/POSKeychainShowQR.vue"
 import ExplanationBox from "src/components/utils/ExplanationBox.vue"
 import SetRateBar from "src/components/utils/SetRateBar.vue"
 import { useStoreUser } from "src/stores/storeUser"
@@ -221,13 +285,20 @@ import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 import { useRoute } from "vue-router"
 import PosHeader from "src/components/hive/PosHeader.vue"
 import HiveInputAcc from "src/components/HiveInputAcc.vue"
+import LocalCurrency from "src/components/utils/LocalCurrency.vue"
+import ListTransactions from "src/components/hive/ListTransactions.vue"
+import ConfettiExplosion from "vue-confetti-explosion"
+import { useIsEVMAddress } from "src/use/useEVM"
 
 const route = useRoute()
 const q = useQuasar()
 const t = useI18n().t
 const currencySelected = ref("hbd")
 
+const currentTab = ref("sales")
+
 const storeUser = useStoreUser()
+
 const hiveAccTo = ref({
   label: "",
   value: "",
@@ -244,6 +315,7 @@ const CurrencyCalc = ref({
   hive: 0,
   hbd: 0,
   local: 0,
+  outOfRange: true,
 })
 
 const amount = ref({
@@ -256,6 +328,13 @@ const decimalEntry = ref(0)
 const currencyOptions = ref()
 
 function resetCurrencyOptions(localCurrency) {
+  /**
+   * FILEPATH: /Users/bol/Documents/dev/v4vapp/v4vapp-frontend-v2/src/pages/POSPage.vue
+   *
+   * Sets the value of the currencyOptions variable.
+   *
+   * @param {Array} value - The new value for the currencyOptions variable.
+   */
   currencyOptions.value = [
     { label: "HBD", value: "hbd" },
     { label: "HIVE", value: "hive" },
@@ -267,12 +346,28 @@ function resetCurrencyOptions(localCurrency) {
       value: localCurrency.value,
     }
     currencyOptions.value.unshift(localCurrencyOpt) // Add to the beginning
+    // select this local currency
+    currencySelected.value = localCurrency.value
   }
 }
 
+/**
+ * ConfettiExplosion component
+ */
+const visible = ref(false)
+const explode = async () => {
+  visible.value = false
+  await nextTick()
+  visible.value = true
+}
+
+const destinationAccountType = computed(() => {
+  return useIsEVMAddress(hiveAccTo.value.value) ? "evm" : "hive"
+})
+
 watch(route, (to, from) => {
   // Code to execute on route change
-  if (to.path === "/pos") {
+  if (to.path.includes("/pos")) {
     // first unset hiveAccTo to trigger a refresh
     // wait half a second then run the code
     // wait for a tick
@@ -281,6 +376,7 @@ watch(route, (to, from) => {
         hiveAccTo.value = {
           label: storeUser.pos.hiveAccTo.label,
           value: storeUser.pos.hiveAccTo.value,
+          valid: true,
           caption: storeUser.pos.hiveAccTo.caption,
           fixedUser: false,
         }
@@ -319,6 +415,28 @@ watch(
   }
 )
 
+watch(
+  () => hiveAccTo.value.value,
+  () => {
+    console.log("hiveAccTo changed", hiveAccTo.value.value)
+
+    if (!hiveAccTo.value.value) {
+      KeychainDialog.value.transactions = []
+    }
+    if (destinationAccountType.value === "evm") {
+      storeUser.pos.receiveCurrency = "sats"
+      storeUser.pos.accountType = "evm"
+    } else {
+      storeUser.pos.accountType = "hive"
+    }
+  }
+)
+
+/**
+ * Computed property that checks if the payment is valid.
+ *
+ * @returns {boolean} True if the payment is valid, false otherwise.
+ */
 const isPaymentValid = computed(() => {
   // Returns True if this payment screen can produce a QR code
   // Check if there is a running total, if that is 0 use the amount
@@ -329,12 +447,41 @@ const isPaymentValid = computed(() => {
   if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
     return false
   }
+  if (memoHasPipe.value) {
+    return false
+  }
   return true
 })
 
+const memoHasPipe = computed(() => {
+  if (!memoInput.value) {
+    return false
+  }
+  if (memoInput.value.includes("|")) {
+    return true
+  }
+  return false
+})
+
 onMounted(() => {
+  if (!storeUser.pos?.receiveCurrency) {
+    storeUser.pos.receiveCurrency = "hbd"
+  }
+  if (!storeUser.pos?.hiveAccTo) {
+    useLoggedInUser()
+  }
+  // give me the first item in the currencyOptions list
+
+  const path = route.path
+  if (path.includes("/sales")) {
+    currentTab.value = "sales"
+  } else if (path.includes("/history")) {
+    currentTab.value = "history"
+  } else if (path.includes("/currency")) {
+    currentTab.value = "currency"
+  }
   if (route.params.hiveAccTo) {
-    const username = extractUsernameFromRouteParam(route.params.hiveAccTo)
+    const username = useUsernameFromRouteParam(route.params.hiveAccTo)
     hiveAccTo.value = {
       label: username,
       value: username,
@@ -360,22 +507,40 @@ onMounted(() => {
     currencySelected.value = storeUser.pos.currencySelected
     CurrencyCalc.value.currency = currencySelected.value
   } else {
-    // give me the first item in the currencyOptions list
-    currencySelected.value = currencyOptions.value[0].value
-    storeUser.pos.currencySelected = currencySelected.value
+    currencySelected.value = "hbd"
+    CurrencyCalc.value.currency = "hbd"
   }
 })
 
-function extractUsernameFromRouteParam(routeParam) {
-  // Assuming routeParam is in the format 'v4vapp.dev/bookmark'
-  var slashPosition = routeParam.indexOf("/")
+/**
+ * Handles the retry of a transaction.
+ *
+ * This function is called when a transaction needs to be retried. It sets up the necessary values for the transaction,
+ * such as the account to send to (`hiveAccTo`), the currency to send (`currencyToSend`), the amount to send (`amount`),
+ * and the memo (`memoInput`). After setting these values, it updates the amounts and shows the payment QR code.
+ *
+ * @param {Object} val - The transaction data. Should have properties: `hiveAccTo`, `currencyToSend`, `amount`, and `memo`.
+ */
+function handleRetryTransaction(val) {
+  KeychainDialog.value.hiveAccTo = val.hiveAccTo
 
-  // Extract the substring before the first /
-  // If there is no /, it extracts the entire string
-  var username =
-    slashPosition !== -1 ? routeParam.substring(0, slashPosition) : routeParam
+  hiveAccTo.value = {
+    label: val.hiveAccTo,
+    value: val.hiveAccTo,
+    caption: val.hiveAccTo,
+  }
+  hiveAccTo.value.valid = true
 
-  return username
+  handleCurrencyClicked(val.currencyToSend)
+
+  amount.value.num = val.amount
+  amount.value.txt = tidyNumber(val.amount, 3)
+  memoInput.value = val.memo
+  updateAmounts(amount.value.txt)
+  // wait a tick
+  setTimeout(() => {
+    showPaymentQR(val.currencyToSend)
+  }, 100)
 }
 
 function useLoggedInUser() {
@@ -389,7 +554,11 @@ function useLoggedInUser() {
   }
 }
 
-// When the amount is updated manually deal with that here
+/**
+ * Updates the amounts based on the given value.
+ *
+ * @param {any} val - The value used to update the amounts.
+ */
 function updateAmounts(val) {
   if (val === "" || val === null) {
     amount.value.num = 0
@@ -400,10 +569,8 @@ function updateAmounts(val) {
 }
 
 function handleCurrencyClicked(currency) {
-  console.log("handleCurrencyClicked", currency)
   // change amount to match the amount of the selected currency
   // modify this to use updateAmounts
-
   switch (currency) {
     case "hbd":
       amount.value.num = CurrencyCalc.value.hbd
@@ -432,19 +599,13 @@ function bookmarkSite() {
   // Since browsers restrict adding bookmarks via script,
   // inform the user how to bookmark the page manually.
   // jump to a different url
-  window.location.href = "/pos/@" + hiveAccTo.value.value
-  // wait for the page to load
-  // setTimeout(() => {
-  //   // scroll to the bottom of the page
-  //   alert(
-  //     "To bookmark this page, press " +
-  //       (navigator.userAgent.toLowerCase().indexOf("mac") != -1
-  //         ? "Command/Cmd"
-  //         : "CTRL") +
-  //       " + D on your keyboard."
-  //   )
-  // }, 1000)
+  window.location.href = "/pos/sales/@" + hiveAccTo.value.value
 }
+
+const beforeVal = ref("")
+const afterVal = ref("")
+const afterParsed = ref("")
+const currentLocale = ref("")
 
 function parseLocalizedFloat(val) {
   const commaLocales = [
@@ -461,17 +622,30 @@ function parseLocalizedFloat(val) {
     "da-DK",
     "fi-FI",
     "el-GR",
+    "lu-LU", // Luxembourg
+    "de-AT", // Austria
+    "fr-BE",
+    "nl-BE", // Belgium
+    "hr-HR", // Croatia
+    "cs-CZ", // Czech Republic
+    "et-EE", // Estonia
+    "hu-HU", // Hungary
+    "lv-LV", // Latvia
+    "lt-LT", // Lithuania
+    "sk-SK", // Slovakia
+    "sl-SI", // Slovenia
     // Add or remove locales as required
   ]
-
-  const currentLocale = q.lang.getLocale()
-
+  beforeVal.value = val
+  currentLocale.value = q.lang.getLocale()
   // Check if the current locale is in the list of comma locales
-  if (commaLocales.includes(currentLocale)) {
+  if (commaLocales.includes(currentLocale.value)) {
     val = val.replace(".", "").replace(",", ".")
   }
 
   // Handle other locale-specific formats as necessary
+  afterVal.value = val
+  afterParsed.value = parseFloat(val)
   return parseFloat(val)
 }
 
@@ -502,9 +676,19 @@ function clearAmount() {
 
 const memoInput = ref("")
 
+/**
+ * Displays the payment QR code.
+ *
+ * @param {string} payWith - The payment method to use.
+ */
 function showPaymentQR(payWith) {
+  // always default to not showing lightning invoice first.
+  KeychainDialog.value.showLightning = false
   if (!isPaymentValid.value) {
     return
+  }
+  if (payWith === "sats") {
+    KeychainDialog.value.showLightning = true
   }
   KeychainDialog.value.memo = memoInput.value
   KeychainDialog.value.currencyToSend = payWith
@@ -519,6 +703,9 @@ watch(
   (paid) => {
     if (paid) {
       clearAmount(true)
+      setTimeout(() => {
+        explode()
+      }, 5300)
     } else {
     }
   }
@@ -526,6 +713,10 @@ watch(
 </script>
 
 <style lang="scss" scoped>
+.fixed-rate-banner {
+  font-size: 0.8rem;
+}
+
 .amount-display {
   font-size: 2rem;
 }
@@ -535,7 +726,8 @@ watch(
 }
 
 .pad-max-width {
-  max-width: 400px;
+  max-width: 600px;
+  padding: 1rem 0.5rem;
 }
 
 .full-width {

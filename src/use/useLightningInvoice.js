@@ -1,16 +1,74 @@
 import { api, myNodePubKey } from "boot/axios"
+import { store } from "quasar/wrappers"
 import * as bolt11 from "src/assets/bolt11.min.js"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import { useStoreUser } from "src/stores/storeUser"
 
 const storeAPIStatus = useStoreAPIStatus()
+const storeUser = useStoreUser()
 
+export async function useGetUnlimitedInvoice(account, amount, comment) {
+  try {
+    const response = await api.get("lnurlp/unlimited/" + account, {
+      params: {
+        amount: amount,
+        comment: comment,
+      },
+      headers: {
+        accept: "application/json",
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error("Error while fetching LNURLp invoice")
+    console.error(error)
+
+    // Check if the error is a network error
+    if (error.code === "ERR_NETWORK") {
+      let message = "Network error occurred. Please check your connection."
+      console.error(message)
+      return {
+        error: message,
+      }
+    }
+    // Check if the error response exists and has a status property
+    if (error.response && error.response.status) {
+      let message = `Error: ${error.response.status} - ${error.response.statusText}`
+      console.error(message)
+      return {
+        error: message,
+      }
+    }
+    // Generic error message
+    return {
+      error: "An unexpected error occurred.",
+    }
+  }
+}
+
+/**
+ * Fetches a new lightning invoice for a given Hive account.
+ *
+ * @async
+ * @function useGetLightingHiveInvoice
+ * @param {string} hiveAccname - The Hive account name.
+ * @param {number} amount - The amount for the invoice.
+ * @param {string} currency - The currency for the invoice.
+ * @param {string} memo - The memo for the invoice.
+ * @param {string} [checkCode=""] - An optional check code to append to the memo.
+ * @param {number} [expiry=300] - The expiry time for the invoice in seconds (max 600).
+ * @param {string} [receiveCurrency=""] - The currency to receive.
+ * @returns {Promise<Object>} The response data from the API call.
+ * @throws Will throw an error if the API call fails.
+ */
 export async function useGetLightingHiveInvoice(
   hiveAccname,
   amount,
   currency,
   memo,
   checkCode = "",
-  expiry = 300
+  expiry = 300,
+  receiveCurrency = ""
 ) {
   try {
     if (expiry > 600) {
@@ -31,21 +89,31 @@ export async function useGetLightingHiveInvoice(
         app_name: "v4vapp-pos",
         expiry: expiry,
         message: message,
+        receive_currency: receiveCurrency,
       },
     })
     return callBackResult.data
   } catch (error) {
+    console.error("Error while fetching new lightning invoice")
     console.error(error)
+
+    // Check if the error is a network error
+    if (error.code === "ERR_NETWORK") {
+      let message = "Network error occurred. Please check your connection."
+      console.error(message)
+      return {
+        error: message,
+      }
+    }
     // Check if the error response exists and has a status property
     if (error.response && error.response.status) {
       // Handle 422 status code separately
       if (error.response.status === 422) {
         console.error("Status code 422: Unprocessable Entity")
         return { error: error.response.data.detail[0].msg }
-        // Add your custom logic here
       }
     }
-    return null
+    return { error: "An error occurred while fetching new lightning invoice." }
   }
 }
 
@@ -63,10 +131,13 @@ export async function useCheckLightningInvoice(paymentHash) {
   }
 }
 
+/**
+ * Decodes a lightning invoice using local Bolt11 library and V4V.app API.
+ *
+ * @param {string} invoice - The lightning invoice to decode.
+ * @returns {Promise<Object|null>} - The decoded invoice object, or null if decoding fails.
+ */
 export async function useDecodeLightningInvoice(invoice) {
-  // Decode a lightning invoice first using local Bolt11 library
-  // then using V4V.app API to decode lnurl and lightning addresses
-
   let decodedInvoice = null
   invoice = invoice.toLowerCase().trim()
   // if the invoice starts with lnbc the bolt11 library can decode it
@@ -124,26 +195,29 @@ function validateInvoice(decodedInvoice) {
   if (!decodedInvoice) {
     return null
   }
-
+  decodedInvoice.payWithSatsOnly = false
   if (decodedInvoice.payeeNodeKey === myNodePubKey) {
-    // if we fail this test, no need to do any other tests
-    decodedInvoice.errors.self_payment = true
-    decodedInvoice.errors.text.push("self_payment")
-    return
+    // if this is a self payment i.e. going to the v4v.app node
+    // only pay it with KeepSats
+    console.log("decodedInvoice.payeeNodeKey", decodedInvoice.payeeNodeKey)
+    // decodedInvoice.payWithSatsOnly = true
   }
   const amount = Math.floor(decodedInvoice.millisatoshis / 1000)
   const minimumPayment =
     storeAPIStatus.apiStatus.config.minimum_invoice_payment_sats
   const maximumPayment =
     storeAPIStatus.apiStatus.config.maximum_invoice_payment_sats
-  if (amount < minimumPayment) {
+  // need to add check to see if user has a sats balance
+  if (amount < minimumPayment && storeUser.keepSatsBalanceNum < amount) {
     decodedInvoice.errors.too_low = true
     decodedInvoice.errors.text.push("invoice_too_low")
     return
-  } else if (amount > maximumPayment) {
+  } else if (amount > maximumPayment && amount > storeUser.keepSatsBalanceNum) {
     decodedInvoice.errors.too_high = true
     decodedInvoice.errors.text.push("invoice_too_high")
     return
+  } else if (amount < minimumPayment || amount > maximumPayment) {
+    decodedInvoice.payWithSatsOnly = true
   }
   // Compare the current time with the expiration time
   if (Date.now() > decodedInvoice.timeExpireDate * 1000) {
@@ -235,7 +309,6 @@ export async function useCreateInvoice(dInvoice) {
       console.error("response from Lightning Service Provider is null")
       return null
     }
-    console.log("response in useLightning", response)
     dInvoice.askDetails = false
     dInvoice.callback = response
     return response

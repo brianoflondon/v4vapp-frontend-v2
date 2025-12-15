@@ -13,13 +13,20 @@
     "vue"
   ],
   "workbench.colorCustomizations": {
-    "activityBar.background": "#063147",
-    "titleBar.activeBackground": "#094464",
-    "titleBar.activeForeground": "#F6FBFE"
+    "activityBar.background": "#fe90008c",
+    "titleBar.activeBackground": "#FE9200",
+    "titleBar.activeForeground": "#010508"
   },
   "cSpell.words": [
     "axios",
-    "pinia"
+    "codabar",
+    "databar",
+    "fontawesome",
+    "intlify",
+    "mymap",
+    "paywithsats",
+    "pinia",
+    "themify"
   ],
   "githubPullRequests.ignoredPullRequestBranches": [
     "develop"
@@ -27,6 +34,8 @@
   "i18n-ally.localesPaths": [
     "src/i18n/*"
   ],
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.namespace": false,
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },

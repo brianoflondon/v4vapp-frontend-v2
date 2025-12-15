@@ -1,8 +1,6 @@
-// This is just an example,
-// so you can safely delete all default props below
 export default {
   // General
-  loading: 'Lade...',
+  loading: 'Lädt ...',
   error: 'Fehler',
   paste: 'Einfügen',
   required: 'Notwendig',
@@ -20,8 +18,23 @@ export default {
   prices_fetched: 'Preise abgerufen',
   from: 'von',
   to: 'nach',
+  From: 'Von',
+  To: 'An',
   local_currency: 'Landeswährung',
   currency: 'Währung',
+  receive_currency: 'Zahlungen empfangen als',
+  too_high_for_sats: 'Betrag zu hoch zum Konvertieren in Sats',
+  too_low_for_sats: 'Betrag zu niedrig zum Umwandeln in Sats',
+  confirm: 'Bestätige',
+  yes: 'Ja',
+  no: 'Nein',
+  all: 'Alles',
+  keepsats: 'KeepSats',
+  // Error
+  expired_login: 'Dein Login ist abgelaufen',
+  need_to_logout_login: 'Du musst dich abmelden und erneut anmelden',
+  clear_local_storage: 'Lokalen Speicher löschen',
+  clear_local_storage_message: 'Dies ist so, als ob Sie es ausschalten und wieder einschalten. Dadurch wird der gesamte lokale Speicher gelöscht und Sie werden abgemeldet. Sind Sie sicher?',
   // Dark Mode Selector
   change_light: 'Heller Modus',
   change_dark: 'Dunkler Modus',
@@ -38,8 +51,12 @@ export default {
   hive: 'Hive',
   transfer: 'Übertragung',
   not_found: 'nicht gefunden',
+  set_amount: 'Zu sendende Betrag',
   lightning_failed: 'Lightning-Zahlung fehlgeschlagen',
   Progress: 'In Umsetzung',
+  private_memo: 'Privates Hive-Transfer-Memo (Memo Key erforderlich)',
+  paste_tooltip: 'Einfügen in einer Ligthningrechnung aus der Zwischenablage',
+  keepssats_error: 'Du musst mit einem KeepSats Guthaben angemeldet sein, um Sats an einen Hive-Benutzer zu senden',
   // Login
   keychain_not_installed: 'Keychain ist nicht installiert',
   enter_hive_account: 'Bitte geben Sie Ihren Hive-Namen ein',
@@ -53,6 +70,19 @@ export default {
   login_success: 'Anmeldung erfolgreich',
   sign_this: 'Transaktion bestätigen',
   matches: ' stimmt überein',
+  logout: 'Abmelden',
+  logout_all: 'Alle abmelden',
+  // Passkeys:
+  passkey: 'Passcode',
+  used: 'Benutzt',
+  unused: 'Unbenutzt',
+  add: 'hinzufügen',
+  manage: 'Verwalte',
+  confirm_delete: 'Löschen bestätigen',
+  confirm_edit: 'Änderung bestätigen',
+  name: 'Name',
+  add_new_key: 'Neues Passwort hinzufügen',
+  name_required: 'Gerätename erforderlich',
   // Get Hive
   amount: 'Betrag',
   copy: 'Kopieren',
@@ -64,6 +94,7 @@ export default {
   download_tooltip: 'QR-Code als Datei herunterladen',
   downloading_qrcode: 'QR-Code wird heruntergeladen',
   // SideMenu
+  map: 'Landkarte',
   page: 'Seite',
   home: 'Startseite',
   status: 'Status',
@@ -72,15 +103,15 @@ export default {
   // Pricebar
   sats: 'Satoshis (1/1000,000,000 BTC)',
   failure: 'Fehlgeschlagen',
-  working: 'Wird verarbeitet',
-  keychain_installed: 'Keychain ist installiert',
-  keychain_missing: 'Keychain ist nicht installiert',
+  working: 'Arbeitet',
+  keychain_installed: 'Hive-Keychain ist installiert',
+  keychain_missing: 'Keychain fehlt',
   reload_prices: 'Preise neu laden',
   // Invoice
   invoice: 'Rechnung',
   expires: 'verfällt',
   Expires: 'Verfällt',
-  enter_invoice: 'lnbc.... oder Lightning Adresse',
+  enter_invoice: 'lnbc..., Lightning-Adresse oder Hive Name',
   valid_invoice: 'Rechnung entschlüsselt',
   valid_lightning_address: 'Adresse entschlüsselt',
   invalid_invoice: 'Ungültige Rechnung oder Lightning Adresse',
@@ -88,12 +119,14 @@ export default {
   invoice_too_high: 'Rechnung ist über der Maximalzahlung',
   invoice_expired: 'Rechnung ist abgelaufen',
   self_payment: 'Senden an v4v.app ist nicht möglich',
-  invoice_hint: 'Rechnung einfügen oder QR-Code scannen',
+  invoice_hint: 'Füge eine Rechnung ein, scanne einen QR-Code oder ein Hive Konto.',
   waiting_for: 'Warte auf Antwort der Hive-Blockchain',
   payment_sent_hive_keychain: 'Zahlung per Hive-Keychain gesendet',
   check_lightning: 'Überprüfen Sie Ihre Lightning Wallet, die Zahlung wurde gesendet',
   invoice_provider_not_working: 'Der Lightning-Invoice-Anbieter funktioniert momentan nicht, versuche es später oder überprüfen Sie die Adresse',
   requesting: 'Anfordern',
+  payment_cancelled: 'Zahlung wurde storniert',
+  processing: 'Verarbeite',
   // HAS Process
   logged_in_as: 'Angemeldet als',
   open_HAS_auth: 'Bitte öffnen Sie Ihre HAS-App und genehmigen Sie die Transaktion.',
@@ -109,11 +142,16 @@ export default {
   vote_proposal: 'Stimmen Sie für meinen DHF-Vorschlag',
   thank_you: 'Vielen Dank, dass Sie bereits abgestimmt haben!',
   // Tab Bar
-  send: 'Versenden',
-  receive: 'Empfangen',
+  send: 'senden',
+  receive: 'empfangen',
   podcasts: 'Podcasts',
-  pods: 'Pods',
+  pods: 'pods',
+  move: 'verschieben',
+  wallet: 'Wallet',
+  store: 'Store',
   // Ask Details dialog
+  send_to_hive: 'An Hive senden',
+  send_to_lightning: 'An Lightning senden',
   asking_details: 'Sie zahlen:',
   making_invoice: 'Sie erstellen eine Rechnung für:',
   amount_to_send: 'Zu sendender Betrag',
@@ -134,21 +172,37 @@ export default {
   OtherError: 'Unbekannter Kamerafehler',
   // Explanation Box
   explanation_title: 'Was ist die V4V.app?',
-  explanation_text: `Die v4v.app wirkt wie ein Bitcoin-Lightning-Wallet für Hive.\n
-  Verwenden Sie Ihre Hive-oder Hive-Backed Dollars (HBD) die Sie in Ihrem Hive-Account haben. Damit können Sie jede Lightning Rechnung bezahlen oder BTC Sats an jede Lightning Adresse senden.\n
-  Auf der Registerkarte 'Senden' können Sie jede Lightning Rechnung oder Lightning Adresse bezahlen.\n
-  Auf der Registerkarte 'Empfangen' können Sie eine Hive-Zahlung (als QR-Code für den Zahler) oder eine BTC-Rechnung als Hive anfordern.\n
-  Die alte Registerkarte 'Hive' ist immer noch verfügbar, aber es wird empfohlen, stattdessen die Registerkarten 'Senden' und 'Empfangen' zu verwenden.\n`,
+  explanation_text: `v4v.app wirkt wie eine Bitcoin-Lightning-Wallet für Hive.\n
+  Mit den Hive- oder Hive-Backed-Dollars (HBD), die in Ihrem Hive-Konto sind, können Sie jede Lightning-Rechnung bezahlen oder BTC-Sats an jede Lightning-Adresse senden.\n
+  Über die Registerkarte „Senden“ können Sie jede beliebige Lightning-Rechnung oder Lightning-Adresse bezahlen. Darüber hinaus können Sie Sats hinterlegen, die als „KeepSats“ auf v4v.app gespeichert werden, und diese zum Bezahlen von Lightning-Rechnungen oder zum Versenden an andere Hive-Benutzer verwenden. Sie können diese Sats zu jederzeit in Hive oder HBD umwandeln.\n
+  Auf der Registerkarte „Empfangen“ kann eine Hive-Zahlung (als QR-Code für den Zahler) oder eine Lightning-Rechnung mit BTC-Sats als Hive angefordert werden. Dies kann als Point of Sale in einem Geschäft fungieren und es Ihnen ermöglichen, Zahlungen von Personen, die mit Hive, HBD oder Lightning zahlen, sofort einzuziehen\n
+  Sie können auch eine kleine Menge Sats auf V4V.app speichern: Ihr KeepSats Saldo. Dieser Saldo wird auf der Kreditkarte angezeigt, wenn du eingeloggt bist. Es ist die große Zahl.\n`,
+  keepsats_deposit_title: `So erhalte ich KeepSats auf v4v.app`,
+  keepsats_deposit_text: `Um KeepSats auf v4v.app zu speichern, gibt es zwei Wege.:\n
+  1.Zahlen Sie Hive oder HBD ein und sie werden zu KeepSats umgewandelt und als Guthaben gespeichert \n
+  2 Senden Sie BTC-Sats direkt an die Lightning-Adresse, die auf der Registerkarte „Einzahlung“ angezeigt wird. Dabei handelt es sich lediglich um Ihren Hive-Kontonamen gefolgt von {at}sats.v4v.app\n
+  Eine Gebühr wird nur erhoben, wenn Hive oder HBD in BTC-Sats umgewandelt werden. Für die Einzahlung von BTC-Sats fallen keine Gebühren an.`,
+  keepsats_convert_title: `Wie man KeepSats in Hive oder HBD konvertiert`,
+  keepsats_convert_text: `Um KeepSats in Hive umzuwandeln, wählen Sie mit dem Schieberegler die Anzahl der umzuwandelnden Sats aus und wählen Sie Hive oder HBD. Ihre Sats werden in Hive oder HBD hinterlegt.\n
+Für die Umwandlung von Sats in Hive oder HBD fällt eine Gebühr an.`,
+  // Receive Page
+  // Convert
+  convert_confirm: 'Du bist dabei zu konvertieren',
   // Credit Card
   savings: 'Erspartes',
   savings_tooltip: 'Zeige die in Hive-Savings für HBD und Hive gespeicherten Beträge',
+  balance_changed: 'KeepSats Guthaben ändert sich um',
   // Transfer page
   sending: 'Senden',
   // Point of Sale POS
   point_of_sale: 'Kasse (POS)',
+  pay_with: 'Zahlen mit',
   charge: 'Tarif',
   set_rate: 'Rate einstellen',
   market_rate: 'Marktkurs',
+  sales: 'Verkäufe',
+  history: 'Verlauf',
+  memo_pipe: 'Die Nachricht darf NICHT das Symbol enthalten: "|"',
   // as in charge a customer
   payment: 'Zahlung',
   scan_to_send: 'Scannen Sie diesen Code um zu senden',
@@ -158,9 +212,58 @@ export default {
   no_account: 'Kein Hive Account zum Senden vorhanden',
   old_page: 'Alte Hive Seite',
   new_page: 'Neue Hive Seite',
-  no_fees: 'Keine Gebühren für Hive oder HBD',
+  no_fees: 'Keine Gebühr für Hive, HBD oder KeepSats',
   Fees: 'Gebühren',
   list_received_payments: 'Erhaltene Zahlungen',
   memo: 'Notiz',
-  calculating_fees: 'Berechnung der Gebühren'
+  calculating_fees: 'Berechnung der Gebühren',
+  // Transaction list
+  date: 'Datum',
+  paid: 'Bezahlt',
+  pending: 'Anstehend',
+  date: 'Datum',
+  paid_by: 'Gezahlt über',
+  import_hive: 'Hive-Import',
+  local_records: 'Lokale Einträge',
+  import_from_hive_tooltip: 'Alle bisherigen Verkäufe aus Hive importieren',
+  delete_local_records_tooltip: `Lösche alle lokalen Einträge. Dies löscht alle ausstehenden Zahlungen \n
+    aber erfolgreiche Zahlungen können mit dem \n
+    Import-Button aus Hive-Datei importiert`,
+  delete_all_pending_message: 'Möchten Sie wirklich alle ausstehenden Verkäufe löschen?',
+  delete_one_pending_message: 'Sind Sie sicher, dass Sie diesen ausstehenden Verkauf löschen möchten?',
+  export_to_csv: 'Exportieren in CSV',
+  export_to_csv_tooltip: 'Exportieren Sie alle derzeit angezeigten Verkäufe in eine CSV-Datei',
+  // Hive to Lightning Transactions
+  other: 'Sonstiges',
+  wallet: 'Wallet',
+  login_to_see_history: 'Anmelden, um den Verlauf zu sehen',
+  reason: 'Anlass',
+  deposit: 'Einlage',
+  receive: 'Empfangen',
+  withdraw: 'Auszahlen',
+  convert: 'Konvertieren',
+  convert_sats_to_hive: 'Sats in Hive tauschen',
+  receive_sats_on_v4vapp: 'Sats auf v4v.app erhalten',
+  convert_sats_from_v4vapp: 'Sats in Hive tauschen',
+  payment_failed: 'Fehlgeschlagen',
+  // Loading messages
+  new_content: 'Neuer Inhalt ist verfügbar; bitte die App beenden oder neu laden.',
+  // New account
+  use_desktop: 'Dieser Prozess funktioniert auf dem Handy, ist aber auf dem Desktop leichter.',
+  install_keychain: 'Installieren Sie Hive Keychain',
+  pick_hive_name: 'Hive-Account wählen',
+  copy_keys: 'Kopiert in die Zwischenablage',
+  download_keys: 'Keys herunterladen',
+  copy_master_password: 'Masterpasswort kopieren',
+  confirm_download: 'Download bestätigen',
+  invoice_canceled: 'Rechnung abgebrochen',
+  keys_downloaded: 'JA! Ich habe meine Schlüssel heruntergeladen und gespeichert',
+  you_will_be_charged: 'Ihnen wird eine Gebühr berechnet',
+  receive_back: 'Zurückerhalten',
+  account_created: 'Ihr Account wurde erstellt',
+  last_chance: 'Dies ist die letzte Chance, Ihre Schlüssel zu speichern!',
+  recommendation: 'Empfehlung:',
+  put_into_keychain: 'Geben Sie Benutzername und Master-Passwort direkt in Hive Keychain ein.',
+  store_safely: 'Speichern Sie das Master-Passwort sicher in einem Passwort-Manager.',
+  no_forgot_option: 'Es gibt keine "Ich habe meine Schlüssel vergessen" auf Hive.'
 };

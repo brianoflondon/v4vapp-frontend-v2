@@ -1,5 +1,20 @@
 <template>
   <q-page>
+    <div class="fit row wrap justify-center q-pb-md">
+      <div>
+        <CreditCard />
+        <div class="flex justify-center q-mt-md">
+          <q-btn
+            color="primary"
+            rounded
+            label="Check Set Amount"
+            @click="autoFillAmountFromBalance(50)"
+            size="sm"
+            class="q-mt-xs"
+          />
+        </div>
+      </div>
+    </div>
     <div class="q-pa-sm">
       <div class="row q-pa-sm destinations">
         <div class="col-6 q-px-sm v4vapp-sending-from">
@@ -143,6 +158,8 @@ import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
 import { api } from "boot/axios"
 import { useI18n } from "vue-i18n"
+import CreditCard from "src/components/hive/CreditCard.vue"
+
 const t = useI18n().t
 const hiveAccFrom = ref({ label: "", value: "", caption: "" })
 const hiveAccTo = ref({ label: "", value: "", caption: "" })
@@ -154,7 +171,7 @@ const storeAPIStatus = useStoreAPIStatus()
 const amount = ref("10")
 const memo = ref("")
 
-const btnAmountsNormal = [1, 10, 50, 100, 500, 1000, 5000]
+const btnAmountsNormal = [10, 100, 200, 500, 1000, 1500, 2000, 3000, 5000]
 const btnAmountsSats = [5000, 10000, 25000, 50000, 100000, 250000]
 
 const btnAmounts = ref(btnAmountsNormal)
@@ -215,7 +232,6 @@ const hiveAmount = computed(() => {
     answer = Number(amount.value / storeAPIStatus.hiveBTCNumber).toFixed(3)
   }
   if (optionsSelected.value === "USD") {
-    console.log(storeAPIStatus.apiStatus.crypto.hive.usd)
     answer = Number(
       amount.value / storeAPIStatus.apiStatus.crypto.hive.usd
     ).toFixed(3)
@@ -257,7 +273,6 @@ async function copyNumToClipboard(value) {
   try {
     const valueNumber = parseFloat(value.replace(/,/g, ""))
     await navigator.clipboard.writeText(valueNumber)
-    console.log("Value copied to clipboard:", value, valueNumber)
   } catch (error) {
     console.error("Failed to copy value to clipboard:", error)
   }
@@ -299,7 +314,7 @@ async function sendTransfer() {
         to: hiveAccTo.value.value,
         amount: amountToSend.value,
         memo: memoToSend,
-        enforce: true,
+        enforce: false,
         currency: currencyToSend.value,
       },
       options: {},
@@ -308,10 +323,9 @@ async function sendTransfer() {
       formParamsAsObject.data,
       formParamsAsObject.options
     )
-    console.log({ transfer })
   } catch (error) {
-    console.log("❌ failure")
-    console.log({ error })
+    console.error("❌ failure")
+    console.error({ error })
     $q.notify(`${error.message}`)
   }
 }
@@ -332,19 +346,24 @@ const qrCodeText = computed(() => {
       memo: memo.value,
     },
   ]
-  console.log(op)
   const hiveUri = encodeOp(op)
-  console.log("hiveUri", hiveUri)
   return hiveUri
 })
 
-onMounted(() => {
+onMounted(async () => {
+  console.log("HiveTransfer.vue: onMounted called")
+  await storeUser.update(false)
+  console.log("HiveTransfer.vue: storeUser.update(false) finished")
+  console.log("HiveTransfer.vue: storeUser.hiveAccname", storeUser.hiveAccname)
+  console.log("HiveTransfer.vue: storeUser.hiveBalance", storeUser.hiveBalance)
+
   if (storeUser.hiveAccname) {
     hiveAccFrom.value = {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
       caption: storeUser.hiveAccname,
     }
+    console.log("HiveTransfer.vue: hiveAccFrom set", hiveAccFrom.value)
     if (storeUser.hiveAccname === "v4vapp.tre") {
       hiveAccTo.value = {
         label: "bdhivesteem",
@@ -352,6 +371,10 @@ onMounted(() => {
         caption: "bdhivesteem",
       }
       memo.value = "100116033"
+      console.log(
+        "HiveTransfer.vue: hiveAccTo set for v4vapp.tre",
+        hiveAccTo.value
+      )
     }
     if (storeUser.hiveAccname === "v4vapp.dev") {
       hiveAccTo.value = {
@@ -359,10 +382,77 @@ onMounted(() => {
         value: "hivehydra",
         caption: "hivehydra",
       }
-      memo.value = "#brianoflondon@getalby.com"
+      memo.value = "#brianoflondon@sats.v4v.app"
+      console.log(
+        "HiveTransfer.vue: hiveAccTo set for v4vapp.dev",
+        hiveAccTo.value
+      )
     }
   }
+
+  // Watch for hiveBalance to become available and valid, then auto-fill amount
+  watch(
+    () => storeUser.hiveBalance,
+    (newBalance, oldBalance) => {
+      console.log(
+        "HiveTransfer.vue: hiveBalance changed from",
+        oldBalance,
+        "to",
+        newBalance
+      )
+      if (newBalance && newBalance !== "💰💰💰") {
+        console.log(
+          "HiveTransfer.vue: hiveBalance is valid, calling autoFillAmountFromBalance"
+        )
+        autoFillAmountFromBalance(50)
+      } else {
+        console.log("HiveTransfer.vue: hiveBalance is not valid yet")
+      }
+    },
+    { immediate: true }
+  )
 })
+
+/**
+ * Automatically sets the amount based on available balance
+ * @param {number} roundToNearest - The increment to round down to (e.g., 50, 100)
+ */
+function autoFillAmountFromBalance(roundToNearest = 50) {
+  console.log("HiveTransfer.vue: autoFillAmountFromBalance called")
+  // defensively coerce the argument to a number (in case an Event was passed)
+  const rn = Number(roundToNearest) || 50
+  console.log(
+    "HiveTransfer.vue: roundToNearest (coerced) =",
+    rn,
+    "typeof:",
+    typeof rn
+  )
+
+  const raw = storeUser.hiveBalance
+  const availableBalance = parseFloat(String(raw).replace(/,/g, ""))
+
+  if (isNaN(availableBalance)) {
+    console.warn(
+      "HiveTransfer.vue: autoFillAmountFromBalance - invalid balance:",
+      raw
+    )
+    return
+  }
+
+  // Round down to nearest `rn`
+  const rounded = Math.floor(availableBalance / rn) * rn
+
+  // If rounding yields 0 (balance < rn), keep a sensible small amount with 3 decimals
+  if (rounded > 0) {
+    amount.value = String(rounded)
+  } else {
+    amount.value = availableBalance.toFixed(3)
+  }
+
+  console.log(
+    `HiveTransfer.vue: Auto-filled amount: ${amount.value} (rounded down from ${availableBalance} to nearest ${rn})`
+  )
+}
 
 // ----------------- Podcast Index Search -----------------
 

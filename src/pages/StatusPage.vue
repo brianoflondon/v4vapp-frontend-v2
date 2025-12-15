@@ -41,7 +41,7 @@ import VoteProposal from "components/utils/VoteProposal.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 
 const { appName, appVersion } = useAppDetails()
-console.log("appName", appName, "appVersion", appVersion)
+console.debug("appName", appName, "appVersion", appVersion)
 
 const voteOptions = ref({
   hiveUser: "",

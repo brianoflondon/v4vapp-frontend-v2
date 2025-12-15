@@ -12,12 +12,49 @@ import axios from "axios"
 const myNodePubKey =
   "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
-const apiURL = "https://api.v4v.app/v1"
-// const apiURL = "http://127.0.0.1:1818/v1"
+// const myNodePubKey = ""
+// Don't change
+let useLocal = false
 
-const serverHiveAccount = "v4vapp"
+const isLocalhost =
+  window.location.href.includes("localhost") ||
+  window.location.href.includes("127.0") ||
+  window.location.href.includes("192.168") ||
+  window.location.href.includes("10.0")
+
+if (process.env.VUE_APP_LOCAL_API === "true" || isLocalhost) {
+  useLocal = process.env.VUE_APP_LOCAL_API !== "false"
+}
+
+const isDev = window.location.href.includes("dev.v4v.app")
+
+const useDev = isDev || process.env.VUE_APP_DEV_API === "true"
+
+const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
+const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
+
+let apiURL = rootUrl
+let apiLoginURL = rootLoginUrl
+
+if (useLocal) {
+  apiURL = "http://localhost:1818/v1"
+  apiLoginURL = "http://localhost:1818/"
+}
+
+// Set dev accounts if useDev or useLocal is true
+const useDevAccounts = useDev || useLocal
+
+const serverHiveAccount = useDevAccounts ? "devser.v4vapp" : "v4vapp"
+const serverHiveAccountTreasury = useDevAccounts
+  ? "devtre.v4vapp"
+  : "v4vapp.tre"
+
+// Domain controls for lightning addresses / QR text
+const lightningAddressDomainSuffix = "v4v.app"
+const lightningAddressDomainPrefix = useDevAccounts ? "d" : ""
 
 const api = axios.create({ baseURL: apiURL })
+const apiLogin = axios.create({ baseURL: apiLoginURL })
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
@@ -29,6 +66,18 @@ export default boot(({ app }) => {
   app.config.globalProperties.$api = api
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
   //       so you can easily perform requests against your app's API
+
+  app.config.globalProperties.$apiLogin = apiLogin
 })
 
-export { axios, api, apiURL, myNodePubKey, serverHiveAccount }
+export {
+  axios,
+  api,
+  apiLogin,
+  apiURL,
+  myNodePubKey,
+  serverHiveAccount,
+  serverHiveAccountTreasury,
+  lightningAddressDomainSuffix,
+  lightningAddressDomainPrefix,
+}

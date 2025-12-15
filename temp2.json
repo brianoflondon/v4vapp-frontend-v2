@@ -1,0 +1,127 @@
+{
+  "show": false,
+  "settings": false,
+  "checkCode": "v4v-A5gQQ",
+  "loading": false,
+  "paid": false,
+  "lndData": {},
+  "hiveAccTo": "v4vapp.dev",
+  "transactions": [
+    {
+      "block": 86215362,
+      "op": [
+        "transfer",
+        {
+          "amount": "0.440 HBD",
+          "from": "brianoflondon",
+          "memo": "v4v-QbEQG",
+          "to": "v4vapp.dev"
+        }
+      ],
+      "op_in_trx": 0,
+      "timestamp": "2024-06-12T06:04:33",
+      "trx_id": "ec68ca223162f428fc49380adda6ca5b9e697f8e",
+      "trx_in_block": 17,
+      "virtual_op": false
+    },
+    {
+      "block": 86215220,
+      "op": [
+        "transfer",
+        {
+          "amount": "0.110 HBD",
+          "from": "brianoflondon",
+          "memo": "v4v-iwCGd",
+          "to": "v4vapp.dev"
+        }
+      ],
+      "op_in_trx": 0,
+      "timestamp": "2024-06-12T05:57:27",
+      "trx_id": "0d6233669f66aa18485796e1cada1dccd503f943",
+      "trx_in_block": 2,
+      "virtual_op": false
+    },
+    {
+      "block": 86215176,
+      "op": [
+        "transfer",
+        {
+          "amount": "0.200 HBD",
+          "from": "brianoflondon",
+          "memo": "v4v-JPCJg",
+          "to": "v4vapp.dev"
+        }
+      ],
+      "op_in_trx": 0,
+      "timestamp": "2024-06-12T05:55:15",
+      "trx_id": "f789a6f14d29031140970c9d887d8e0fb7e1e17f",
+      "trx_in_block": 0,
+      "virtual_op": false
+    },
+    {
+      "block": 86215145,
+      "op": [
+        "transfer",
+        {
+          "amount": "2.000 HBD",
+          "from": "v4vapp.dev",
+          "memo": "v4v-kcjrQ",
+          "to": "v4vapp.dev"
+        }
+      ],
+      "op_in_trx": 0,
+      "timestamp": "2024-06-12T05:53:42",
+      "trx_id": "8f44d75af62037e46ce6661190603cf6177d9faa",
+      "trx_in_block": 10,
+      "virtual_op": false
+    },
+    {
+      "block": 86214977,
+      "op": [
+        "transfer",
+        {
+          "amount": "1.330 HBD",
+          "from": "v4vapp.dev",
+          "memo": "v4v-gCrcv",
+          "to": "v4vapp.bol"
+        }
+      ],
+      "op_in_trx": 0,
+      "timestamp": "2024-06-12T05:45:18",
+      "trx_id": "5f3d77c80a442ba8065d7d6df4af243b3311ca9f",
+      "trx_in_block": 1,
+      "virtual_op": false
+    }
+  ],
+  "qrCodeText": "hive://sign/op/WyJ0cmFuc2ZlciIseyJmcm9tIjoiIiwidG8iOiJ2NHZhcHAuZGV2IiwiYW1vdW50IjoiMC4yMzAgSEJEIiwibWVtbyI6InY0di1BNWdRUSJ9XQ..",
+  "memo": "",
+  "currencyToSend": "hbd",
+  "currencyCalc": {
+    "amount": 0.23,
+    "currency": "hbd",
+    "sats": 339.94975944316695,
+    "hive": 0.8420301016844898,
+    "hbd": 0.23,
+    "local": 0.8579,
+    "outOfRange": true,
+    "minMax": {
+      "min": null,
+      "max": null,
+      "step": null,
+      "mid": null
+    }
+  },
+  "display": "pos",
+  "amountToSend": 0.23,
+  "amountString": "0.230 HBD",
+  "op": [
+    "transfer",
+    {
+      "from": "",
+      "to": "v4vapp.dev",
+      "amount": "0.230 HBD",
+      "memo": "v4v-A5gQQ"
+    }
+  ],
+  "qrCodeTextHive": "hive://sign/op/WyJ0cmFuc2ZlciIseyJmcm9tIjoiIiwidG8iOiJ2NHZhcHAuZGV2IiwiYW1vdW50IjoiMC4yMzAgSEJEIiwibWVtbyI6InY0di1BNWdRUSJ9XQ.."
+}

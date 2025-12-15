@@ -10,7 +10,10 @@
         tidyNumber(CurrencyCalc.hive, 3)
       }}
     </div>
-    <div class="text-center q-pa-xs" @click="emitEvent(storeUser.localCurrency.value)">
+    <div
+      class="text-center q-pa-xs"
+      @click="emitEvent(storeUser.localCurrency.value)"
+    >
       {{ storeUser.localCurrency.unit }}{{ tidyNumber(CurrencyCalc.local, 2) }}
     </div>
     <div class="text-center q-pa-xs" @click="emitEvent('sats')">
@@ -26,12 +29,15 @@
 </style>
 
 <script setup>
-import { onMounted, watch, defineEmits } from "vue"
+import { onMounted, watch } from "vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
 import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
+import { useI18n } from "vue-i18n"
+
+const t = useI18n().t
 
 const storeUser = useStoreUser()
 const storeAPIStatus = useStoreAPIStatus()
@@ -75,13 +81,12 @@ watch(
 )
 
 function emitEvent(currencyType) {
-  console.log("emitEvent", currencyType)
-  console.log("Currency Local", storeUser.localCurrency.value)
   emit("currencyClicked", currencyType)
 }
 
 function updateLocalRates() {
   // check if the localRates structure has the storeUser.localCurrency.value in it
+  // this is necessary if a user has added their own currency
   if (!localRates.hive[storeUser.localCurrency.value]) {
     addCurrency(storeUser.localCurrency.value, storeUser.pos.fixedRate)
   }
@@ -162,5 +167,62 @@ async function calcAllAmounts() {
         (CurrencyCalc.value.hive * storeAPIStatus.hiveSatsNumber) / adustRate
       CurrencyCalc.value.local = CurrencyCalc.value.amount
   }
+  console.log("CurrencyCalc range check")
+  CurrencyCalc.value.outOfRange = false
+  CurrencyCalc.value.message = ""
+  if (storeUser.currentKeepSats?.admin) {
+    // do nothing for now
+  }
+  if (storeAPIStatus.minMax) {
+    if (CurrencyCalc.value.sats < storeAPIStatus.minMax.sats.min) {
+      CurrencyCalc.value.outOfRange = true
+      CurrencyCalc.value.message = t("too_low_for_sats")
+    } else if (CurrencyCalc.value.sats > storeAPIStatus.minMax.sats.max) {
+      CurrencyCalc.value.outOfRange = true
+      CurrencyCalc.value.message = t("too_high_for_sats")
+    }
+    if (CurrencyCalc.value.currency) {
+      CurrencyCalc.value.minMax = getMinMax(
+        CurrencyCalc.value.currency.toUpperCase()
+      )
+    }
+  }
+}
+
+function getMinMax(dest) {
+  // check if dest is hive hbd or sats
+  if (["hive", "hbd", "sats"].includes(dest.toLowerCase())) {
+    if (storeAPIStatus?.minMax) {
+      let min = 1
+      let max = 400
+      if (dest === "SATS") {
+        dest = "sats"
+        min = storeAPIStatus.minMax.sats.min
+        max = Math.min(
+          storeUser.keepSatsBalanceNum,
+          storeAPIStatus.minMax.sats.max
+        )
+      } else {
+        min = storeAPIStatus.minMax[dest].min
+        max = storeAPIStatus.minMax[dest].max
+        // need to error check here if EVMs in play
+        min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()])
+        max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()])
+      }
+      const diff = max - min
+
+      // Divide the difference by 100 to get the initial step size
+      let step = diff / 100
+
+      // Calculate the power of 10 for the step size
+      const power = Math.floor(Math.log10(step))
+
+      // Round the step size to the nearest power of 10
+      step = Math.pow(10, power)
+      const mid = diff / 2 + min
+      return { min: min, max: max, step: step, mid: mid }
+    }
+  }
+  return { min: 1, max: 400, step: 1, diff: 200 }
 }
 </script>

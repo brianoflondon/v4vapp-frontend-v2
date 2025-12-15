@@ -1,16 +1,16 @@
 <template>
-  <img
-    ref="avatarImg"
-    :src="
-      useHiveAvatarURL({
-        hiveAccname: hiveAccname,
-        size: size,
-        reason: 'HiveAvatarComponent',
-      })
-    "
+  <q-img
+    :src="avatarUrl"
     :alt="'Hive Avatar for ' + hiveAccname"
-    @error="handleImageError"
-  />
+    spinner-size="16px"
+  >
+    <template v-slot:error>
+      <img
+        :src="useBlankProfileURL()"
+        :alt="'Hive Avatar for ' + hiveAccname"
+      />
+    </template>
+  </q-img>
 </template>
 
 <script setup>
@@ -22,9 +22,7 @@
  * @props {string} size - Default: small - small, medium, large size of the avatar
  */
 import { useBlankProfileURL, useHiveAvatarURL } from "src/use/useHive"
-import { ref } from "vue"
-
-const avatarImg = ref(null)
+import { computed } from "vue"
 
 const props = defineProps({
   hiveAccname: {
@@ -35,16 +33,15 @@ const props = defineProps({
     type: String,
     default: "small",
   },
-  qImg: {
-    type: Boolean,
-    default: true,
-  },
 })
 
-function handleImageError(error) {
-  // If the image fails to load, use the blank profile image
-  avatarImg.value.src = useBlankProfileURL()
-}
+const avatarUrl = computed(() => {
+  return useHiveAvatarURL({
+    hiveAccname: props.hiveAccname,
+    size: props.size,
+    reason: "HiveAvatarComponent-",
+  })
+})
 </script>
 
 <style lang="scss" scoped></style>

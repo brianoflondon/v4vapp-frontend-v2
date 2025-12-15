@@ -1,6 +1,9 @@
 <template>
   <q-footer elevated>
-    <div class="price-bar q-pa-none shadow-1 no-wrap row">
+    <div
+      :style="paddingBottom"
+      class="price-bar q-pa-none shadow-1 no-wrap row"
+    >
       <span class="price-bar-item btc-price q-pa-xs">
         <i class="fa-brands fa-btc" />&thinsp;
         <strong>${{ storeAPIStatus.bitcoin }}</strong>
@@ -23,7 +26,7 @@
       </span>
       <span class="price-bar-item api-status-indicator q-pl-md q-pa-xs">
         <q-btn
-          @click="alert = true"
+          @click="clearLocalStorage"
           flat
           dense
           :title="storeAPIStatus.apiError ? $t('failure') : $t('working')"
@@ -39,7 +42,10 @@
           dense
           @click="storeAPIStatus.update()"
         />
-        <q-tooltip>{{ $t('prices_fetched') }}: {{ storeAPIStatus.lastFetchTime }}</q-tooltip>
+        <q-tooltip
+          >{{ $t("prices_fetched") }}:
+          {{ storeAPIStatus.lastFetchTime }}</q-tooltip
+        >
       </span>
       <span class="price-bar-item keychain-status-indicator q-pa-none">
         <q-btn
@@ -66,12 +72,11 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, computed, ref } from "vue"
-import DarkSelector from "components/utils/DarkSelector.vue"
+import { onMounted, onUnmounted, computed } from "vue"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useI18n } from "vue-i18n"
-import { useQuasar } from "quasar"
-import HbdLogoIcon from "./utils/HbdLogoIcon.vue"
+import { useQuasar, Dialog } from "quasar"
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 
 const storeAPIStatus = useStoreAPIStatus()
 const t = useI18n().t
@@ -86,15 +91,13 @@ const smallScreen = computed(() => {
 // run on mounted
 onMounted(async () => {
   try {
-    await storeAPIStatus.update()
     scheduleUpdate()
   } catch (err) {
-    console.log("PriceBar err", err)
+    console.error("PriceBar err", err)
   }
 })
 
 async function scheduleUpdate() {
-  // console.log("Updating prices")
   await storeAPIStatus.update()
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 10 * 60 * 1000)
@@ -103,6 +106,33 @@ async function scheduleUpdate() {
 onUnmounted(() => {
   clearTimeout(timeoutId)
 })
+
+const paddingBottom = computed(() => {
+  const isPWA =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone
+  const isIphone = /iPhone/.test(window.navigator.userAgent)
+
+  return isPWA && isIphone ? "padding-bottom: 20px;" : ""
+})
+
+function clearLocalStorage() {
+  Dialog.create({
+    title: t("clear_local_storage"),
+    message: t("clear_local_storage_message"),
+    ok: {
+      label: t("yes"),
+      color: "negative",
+    },
+    cancel: {
+      label: t("no"),
+      color: "primary",
+    },
+  }).onOk(() => {
+    localStorage.clear()
+    location.reload()
+  })
+}
 </script>
 
 <style lang="scss" scoped>

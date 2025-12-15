@@ -3,8 +3,10 @@
 // General utility functions
 //
 // ----------------------------------------------------------------------------
-
+import { useQuasar, Notify } from "quasar"
 import { useI18n } from "vue-i18n"
+import { apiLogin } from "boot/axios"
+import { productName, version } from "../../package.json"
 
 /**
  * Formats a number by inserting commas as thousands separators in its integer part,
@@ -73,34 +75,43 @@ export function formatTime(timeInSeconds) {
  * @returns {{ time: string, date: string }} An object containing formatted time and date strings.
  */
 export function formatDateTimeLocale(isoString) {
-  /**
-   * Formats a time duration in seconds into a human-readable string.
-   *
-   * @param {number} timeInSeconds - The time duration in seconds to format.
-   * @returns {string} The formatted time string in the format "Xh Ym Zs" or "Ym Zs" or "Zs".
-   */
-  // const { locale } = useI18n({ useScope: "global" })
-
+  const { locale } = useI18n({ useScope: "global" })
   // Parse the given UTC ISO string into a Date object
   const date = new Date(isoString)
 
   // Format time with hours, minutes, and seconds
-  const timeFormat = date.toLocaleTimeString([], {
+  const timeFormat = date.toLocaleTimeString(locale.value, {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
   })
 
   // Format date with day and month
-  const dateFormat = date.toLocaleDateString([], {
+  const dateFormat = date.toLocaleDateString(locale.value, {
     day: "2-digit",
     month: "2-digit",
+    year: "2-digit",
   })
 
   return {
     time: timeFormat,
     date: dateFormat,
   }
+}
+
+export function formatPrettyDate(timestamp) {
+  /**
+   * Calculates the time difference between the current date and a given timestamp.
+   *
+   * @param {number} timestamp - The timestamp to calculate the difference from.
+   * @returns {number} The time difference in milliseconds.
+   */
+  const timeDiff = Date.now() - timestamp
+  // check if timediff is less than one day
+  if (timeDiff < 86400000) {
+    return formatTimeDifference(timeDiff)
+  }
+  return formatDateTimeLocale(timestamp).date
 }
 
 /**
@@ -178,7 +189,6 @@ export function genRandAlphaNum(length) {
   return result
 }
 
-
 /**
  * Truncate the section of a string that starts with "lnbc" if it exceeds a certain length.
  *
@@ -191,19 +201,165 @@ export function genRandAlphaNum(length) {
  * console.log(truncateLnbc(testString)); // Outputs "lnbc5u1pjs..."
  */
 export function useTruncateLnbc(inputString, maxLength = 9) {
-    // Check if the string contains "lnbc"
-    if (inputString.includes("lnbc")) {
-        // Use a regular expression to match the "lnbc" pattern and grab everything after it
-        const match = inputString.match(/(lnbc[^\s]+)/);
+  // Check if the string contains "lnbc"
+  if (inputString.includes("lnbc")) {
+    // Use a regular expression to match the "lnbc" pattern and grab everything after it
+    const match = inputString.match(/(lnbc[^\s]+)/)
 
-        if (match && match[1].length > maxLength) {
-            // If the matched string exceeds the maxLength, truncate it and append '...'
-            const truncated = match[1].substr(0, maxLength) + '...';
-            // Replace the original matched string with the truncated one in the inputString
-            return inputString.replace(match[1], truncated);
-        }
+    if (match && match[1].length > maxLength) {
+      // If the matched string exceeds the maxLength, truncate it and append '...'
+      const truncated = match[1].substr(0, maxLength) + "..."
+      // Replace the original matched string with the truncated one in the inputString
+      return inputString.replace(match[1], truncated)
     }
+  }
 
-    // If "lnbc" wasn't found or if the matched string didn't exceed maxLength, return the inputString as is
-    return inputString;
+  // If "lnbc" wasn't found or if the matched string didn't exceed maxLength, return the inputString as is
+  return inputString
+}
+
+/**
+ * Extracts the username from a route parameter.
+ *
+ * This function assumes that the route parameter is in the format 'v4vapp.dev/bookmark', and extracts the substring
+ * before the first '/'. If there is no '/', it extracts the entire string.
+ *
+ * @param {string} routeParam - The route parameter from which to extract the username.
+ * @returns {string} The extracted username.
+ */
+export function useUsernameFromRouteParam(routeParam) {
+  // Assuming routeParam is in the format 'v4vapp.dev/bookmark'
+  var slashPosition = routeParam.indexOf("/")
+
+  // Extract the substring before the first /
+  // If there is no /, it extracts the entire string
+  var username =
+    slashPosition !== -1 ? routeParam.substring(0, slashPosition) : routeParam
+
+  return username
+}
+
+export function generateUUID() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c === "x" ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
+/**
+ * Checks the cache for a given key and returns the cached data if it exists and is not expired.
+ * If the cached data is expired, it will be deleted from the cache.
+ * @param {string} key - The key to check in the cache.
+ * @returns {Promise<Object|null>} - The cached data if it exists and is not expired, otherwise null.
+ */
+export async function checkCache(key) {
+  const cache = await caches.open("v4vapp")
+  const cachedResponse = await cache.match(key)
+  const cachedTimestamp = await cache.match(`${key}-timestamp`)
+
+  if (cachedResponse && cachedTimestamp) {
+    const expiryTime = await cachedTimestamp.text()
+    if (Date.now() > expiryTime) {
+      // The item is expired
+      await cache.delete(key)
+      await cache.delete(`${key}-timestamp`)
+      return null
+    } else {
+      const data = await cachedResponse.json()
+      return data
+    }
+  }
+  return null
+}
+
+export async function putInCache(key, data, expiryTimeInMinutes) {
+  /**
+   * The cache object used for storing data in the "v4vapp" cache.
+   * @type {Cache}
+   */
+  const cache = await caches.open("v4vapp")
+  const expiryTime = Date.now() + expiryTimeInMinutes * 60 * 1000
+  cache.put(key, new Response(JSON.stringify(data)))
+  cache.put(`${key}-timestamp`, new Response(expiryTime.toString()))
+}
+
+/**
+ * Calculates the color for a QR code based on the given parameters.
+ *
+ * @param {boolean} isLightning - Indicates whether the QR code is related to lightning.
+ * @param {boolean} loading - Indicates whether the QR code is still loading.
+ * @returns {string} The color code for the QR code.
+ */
+export function QRLightningHiveColor(isLightning, loading, qDarkActive) {
+  if (loading) {
+    return qDarkActive ? "#992AC7" : "#2F0D3D"
+  }
+
+  if (isLightning) {
+    return qDarkActive ? "#18D231" : "#0A5614"
+  }
+
+  return qDarkActive ? "#1976D2" : "#0E4377"
+}
+
+export function buttonActiveNot(isActive) {
+  const colors = {
+    color: isActive ? "primary" : "blue-grey-1",
+    textColor: isActive ? "white" : "grey-7",
+  }
+  return colors
+}
+
+/**
+ * Retrieves the challenge from the Login API.
+ *
+ * @param {string} hiveAccName - The hive account name.
+ * @param {string} clientId - The client ID.
+ * @returns {Promise} - A promise that resolves to the challenge data.
+ */
+export async function useGetChallenge(hiveAccName, clientId) {
+  const getChallenge = await apiLogin.get(`/auth/${hiveAccName}`, {
+    params: {
+      clientId: clientId,
+      appId: `${productName}-${version}`.replace(/\s+/g, ""),
+      scope: "hive:active",
+    },
+  })
+  return getChallenge
+}
+
+/**
+ * Validates the signed message with the API.
+ *
+ * @param {string} signedMessage - The signed message to be validated.
+ * @param {string} clientId - The client ID.
+ * @returns {Promise} - A promise that resolves with the validation result.
+ */
+export async function useValidateApi(clientId, signedMessage) {
+  Notify.create({
+    timeout: 2000,
+    color: "warning",
+    message: "Validating...",
+    position: "left",
+  })
+  try {
+    const validate = await apiLogin.post(`/auth/validate/`, signedMessage, {
+      params: {
+        clientId: clientId,
+      },
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    return validate
+  } catch (error) {
+    if (validate.status === 422) {
+      Notify.create({
+        message: "422 error from validate",
+      })
+    }
+    console.error({ error })
+    return error
+  }
 }

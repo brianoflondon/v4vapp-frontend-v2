@@ -1,6 +1,6 @@
 {
   "orientation": "portrait",
-  "background_color": "#ffffff",
+  "background_color": "#dddddd",
   "theme_color": "#027be3",
   "icons": [
     {
@@ -27,6 +27,24 @@
       "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/screenshot-landscape.png",
+      "sizes": "1726x818",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/screenshot-portrait.png",
+      "sizes": "790x1662",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/screenshot-desktop-wide.png",
+      "sizes": "2080x1398",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }

@@ -2,18 +2,34 @@
 //
 // Functions related to Hive
 // ----------------------------------------------------------------------------
-import { apiURL, api } from "boot/axios"
+import { apiURL, api, apiLogin } from "boot/axios"
+import { useIsEVMAddress } from "src/use/useEVM"
 import { Dark } from "quasar"
 import { genRandAlphaNum } from "src/use/useUtils"
-import { encodeOp } from "hive-uri"
-
 import "src/assets/hive-tx.min.js"
+
+hiveTx.config.node = "https://api.deathwing.me"
+const useHiveImages = true
 
 const useHiveAccountRegex =
   /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
 
+const baseURLBlockExplorer = "https://hivehub.dev/tx/"
+
+export function useGenerateTxUrl(txId) {
+  if (!txId) {
+    return null
+  }
+  return `${baseURLBlockExplorer}${txId}`
+}
+
+/**
+ * Retrieves Hive profile and details for a given Hive account name.
+ *
+ * @param {string} hiveAccname - The Hive account name.
+ * @returns {Promise<Object|null>} - The Hive profile and details, or null if an error occurs.
+ */
 export async function useHiveDetails(hiveAccname) {
-  // returns Hive Profile and details for a given Hive hiveAccname
   if (!hiveAccname?.match(useHiveAccountRegex)) {
     console.debug("Invalid Hive hiveAccname")
     return null
@@ -25,6 +41,60 @@ export async function useHiveDetails(hiveAccname) {
     return hiveDetails
   } catch (e) {
     return null
+  }
+}
+
+/**
+ * Checks if a Hive account exists.
+ *
+ * @param {string} hiveAccname - The Hive account name to check.
+ * @returns {Promise<Object>} - An object containing the result of the account existence check.
+ * @property {boolean} exists - Indicates whether the account exists or not.
+ * @property {boolean} valid - Indicates whether the account name is valid for new account or not.
+ * @property {string|null} error - The error message if any error occurred during the check.
+ */
+export async function useHiveAccountExists(hiveAccname) {
+  // Returns true if the Hive account exists
+  // first char is not a-z
+  if (!hiveAccname[0].match(/[a-z]/)) {
+    return {
+      exists: false,
+      valid: false,
+      error: "Name must not start with a number",
+      hiveAccname: hiveAccname,
+    }
+  }
+  if (hiveAccname.length < 3 || hiveAccname.length > 16) {
+    const errorText = hiveAccname.length < 3 ? "Too short" : "Too long"
+
+    return {
+      exists: false,
+      valid: false,
+      error: `${errorText}: 3 to 16 chars`,
+      hiveAccname: hiveAccname,
+    }
+  }
+  if (!hiveAccname?.match(useHiveAccountRegex)) {
+    return { exists: false, valid: false, error: "Invalid Hive account name" }
+  }
+  try {
+    const res = await hiveTx.call("condenser_api.get_accounts", [[hiveAccname]])
+    if (res.result.length > 0) {
+      return {
+        exists: true,
+        valid: false,
+        error: "Account Name taken",
+        hiveAccname: hiveAccname,
+      }
+    }
+    return {
+      exists: false,
+      valid: true,
+      error: "Available Account Name",
+      hiveAccname: hiveAccname,
+    }
+  } catch (e) {
+    return { exists: false, valid: null, error: e, hiveAccname: hiveAccname }
   }
 }
 
@@ -61,12 +131,20 @@ export function useHiveAvatarRef({
   return hiveAvatar
 }
 
-export function useBlankProfileURL() {
+export function useBlankProfileURL(type = "hive") {
   // Returns the blank profile image
-  if (Dark.isActive) {
-    return "/avatars/hive_logo_dark.svg"
-  } else {
-    return "/avatars/hive_logo_light.svg"
+  if (type === "hive") {
+    if (Dark.isActive) {
+      return "/avatars/hive_logo_dark.svg"
+    } else {
+      return "/avatars/hive_logo_light.svg"
+    }
+  }
+  if (type === "evm") {
+    return "/avatars/login-icons/ethereum-eth-logo.svg"
+  }
+  if (type === "nostr") {
+    return "/avatars/login-icons/nostr_logo_prpl_wht_rnd.svg"
   }
 }
 
@@ -78,11 +156,14 @@ export function useHiveAvatarURL({
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    if (hiveAccname && useIsEVMAddress(hiveAccname)) {
+      return useBlankProfileURL("evm")
+    }
     return useBlankProfileURL()
   }
-  return (
-    apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
-  )
+  return useHiveImages
+    ? "https://images.hive.blog/u/" + hiveAccname + "/avatar/" + size
+    : apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
 }
 
 export async function useHiveAvatarBlob({
@@ -93,9 +174,14 @@ export async function useHiveAvatarBlob({
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+    if (hiveAccname && useIsEVMAddress(hiveAccname)) {
+      return useBlankProfileURL("evm")
+    }
     return useBlankProfileURL()
   }
-  const url = "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
+  const url = useHiveImages
+    ? "https://images.hive.blog/u/" + hiveAccname + "/avatar/" + size
+    : "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
   try {
     const response = await api.get(url, { responseType: "blob" })
     const blob = new Blob([response.data], { type: response.data.type })
@@ -113,9 +199,12 @@ export async function useHiveAvatarBlob({
 }
 
 // -------- Helper functions --------
+/**
+ * Extracts the profile from the posting_json_metadata field or if that doesn't exist checks the profile.
+ * @param {object} data - The data object containing the posting_json_metadata and json_metadata fields.
+ * @returns {object|null} - The extracted profile object or null if not found.
+ */
 async function extractProfile(data) {
-  // Extracts the profile from the posting_json_metadata field or
-  // if that doesn't exist checks the profile.
   try {
     const profile = await JSON.parse(data["posting_json_metadata"])["profile"]
     return profile
@@ -130,10 +219,14 @@ async function extractProfile(data) {
 }
 
 // -------- Hive Account Reputation --------
+/**
+ * Searches through Hive for accounts matching a pattern and returns them sorted by reputation.
+ * If there is an exact match in the list, it will be the first item.
+ * @param {string} val - The pattern to search for.
+ * @param {number} [maxAcc=6] - The maximum number of accounts to return.
+ * @returns {Promise<Array<string>>} - The sorted accounts.
+ */
 export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
-  // search through Hive for accounts matching pattern val
-  // return sorted by reputation.
-  // If there is an exact match in the list, it will be the first item.
   if (val.length < 2) {
     return
   }
@@ -273,6 +366,16 @@ export async function useGetHiveWitnessVotes(hiveAccname, witness) {
 }
 
 // -------- Hive check for transactions --------
+/**
+ * Fetches the transaction history for a given Hive account.
+ *
+ * @param {string} hiveAccname - The Hive account name.
+ * @param {number} [limit=100] - The maximum number of transactions to retrieve.
+ * @param {number} [start=-1] - The starting point for the transaction history.
+ * @param {number} [opFilterLow=4] - The lower bound of the operation filter.
+ * @param {number} [opFilterHigh=4] - The upper bound of the operation filter.
+ * @returns {Promise<Array|null>} - A promise that resolves to an array of transaction history objects or null if an error occurs or the account name is invalid.
+ */
 export async function useGetHiveTransactionHistory(
   hiveAccname,
   limit = 100,
@@ -293,6 +396,9 @@ export async function useGetHiveTransactionHistory(
       opFilterHigh,
     ])
     // This removes the un-necessary double list structure
+    if (!history.result) {
+      return null
+    }
     return history.result.reverse().map((item) => item[1])
   } catch (error) {
     console.error({ error })
@@ -303,6 +409,7 @@ export async function useGetHiveTransactionHistory(
 export function useGetHiveAmountString(amount, currency) {
   // Returns a string with the amount and currency
   // convert currency to uppercase
+  console.log("useGetHiveAmountString", amount, currency)
   currency = currency.toUpperCase()
   if (!["HIVE", "HBD"].includes(currency)) {
     return null
@@ -318,6 +425,17 @@ export function useGetCheckCode() {
   return "v4v-" + genRandAlphaNum(5)
 }
 
+/**
+ * Generates a Hive transfer operation.
+ *
+ * @param {string} from - The sender's account name.
+ * @param {string} to - The recipient's account name.
+ * @param {number} amountToSend - The amount to transfer.
+ * @param {string} currencyToSend - The currency of the transfer. (hbd or hive)
+ * @param {string} memo - The memo for the transfer.
+ * @param {string|null} checkCode - The check code for the transfer.
+ * @returns {Array} - The Hive transfer operation.
+ */
 export function useGenerateHiveTransferOp(
   from,
   to,
@@ -328,7 +446,7 @@ export function useGenerateHiveTransferOp(
 ) {
   // Returns a Hive transfer operation
   if (!from) {
-    from = "__signer"
+    from = ""
   }
   if (!to) {
     return null
@@ -348,85 +466,3 @@ export function useGenerateHiveTransferOp(
   ]
   return op
 }
-
-// export async function useGeneratePaymentQR(
-//   payWith,
-//   KeychainDialog,
-//   amount,
-//   hiveAccTo,
-//   memoInput,
-//   CurrencyCalc = null
-// ) {
-//   // Check if there is a running total, if that is 0 use the amount
-//   // on the screen
-//   console.log("useGeneratePaymentQR")
-//   console.log("payWith", payWith)
-//   console.log("amount", amount)
-//   console.log("hiveAccTo", hiveAccTo)
-//   console.log("KeychainDialog", KeychainDialog)
-//   console.log("CurrencyCalc", CurrencyCalc)
-//   if (amount === 0) {
-//     q.notify({
-//       message: t("no_amount"),
-//       type: "negative",
-//       position: "top",
-//       timeout: 2000,
-//     })
-//     return
-//   }
-//   if (hiveAccTo.value === "") {
-//     q.notify({
-//       message: t("no_account"),
-//       type: "negative",
-//       position: "top",
-//       timeout: 2000,
-//     })
-//     return
-//   }
-//   console.log("useGeneratePaymentQR amount", amount)
-//   switch (payWith) {
-//     // If CurencyCalc is null then use the raw amount (HBD or HIVE)
-//     // If CurrencyCalc is not null then use the calculated amount
-//     case "HBD":
-//       KeychainDialog.amountToSend = CurrencyCalc
-//         ? CurrencyCalc.hbd.toFixed(3)
-//         : amount.toFixed(3)
-
-//       KeychainDialog.currencyToSend = "HBD"
-//       break
-//     case "HIVE":
-//       KeychainDialog.amountToSend = CurrencyCalc
-//         ? CurrencyCalc.hive.toFixed(3)
-//         : amount.toFixed(3)
-//       KeychainDialog.currencyToSend = "HIVE"
-//       break
-//     default:
-//       break
-//   }
-
-//   KeychainDialog.amountString =
-//     KeychainDialog.amountToSend + " " + KeychainDialog.currencyToSend
-//   KeychainDialog.hiveAccTo = hiveAccTo.value
-//   // Add a check code onto the memo.
-//   KeychainDialog.checkCode = "v4v-" + genRandAlphaNum(5)
-//   KeychainDialog.memo = memoInput
-//     ? memoInput + " " + KeychainDialog.checkCode
-//     : KeychainDialog.checkCode
-//   KeychainDialog.op = [
-//     "transfer",
-//     {
-//       from: "__signer",
-//       to: KeychainDialog.hiveAccTo,
-//       amount: KeychainDialog.amountString,
-//       memo: KeychainDialog.memo,
-//     },
-//   ]
-//   KeychainDialog.show = true
-
-//   KeychainDialog.qrCodeTextHive = encodeOp(KeychainDialog.op)
-//   KeychainDialog.transactions = await useGetHiveTransactionHistory(
-//     KeychainDialog.hiveAccTo,
-//     20
-//   )
-//   console.log("KeychainDialog", KeychainDialog)
-// }
