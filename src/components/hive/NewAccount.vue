@@ -88,9 +88,9 @@
               </div>
               <div class="flex row wrap justify-center">
                 <div class="q-ma-sm">
+                  <!-- Download or copy your keys and master password -->
                   <q-btn
                     :label="t('download_keys')"
-                    :disable="activeItem < 2"
                     icon="download"
                     :color="buttonActiveNot(!activeItem < 2).color"
                     :text-color="buttonActiveNot(!activeItem < 2).textColor"
@@ -100,7 +100,6 @@
                 <div class="q-ma-sm">
                   <q-btn
                     :label="t('copy_keys')"
-                    :disable="activeItem < 2"
                     icon="content_copy"
                     :color="buttonActiveNot(!activeItem < 2).color"
                     :text-color="buttonActiveNot(!activeItem < 2).textColor"
@@ -663,17 +662,20 @@ function downloadKeys() {
 
 const keysText = computed(() => {
   const data = `
-  Hive Username: ${accountName.value}
-
-  Owner Key: ${keys.value.private.owner}
-
-  Active Key: ${keys.value.private.active}
-
-  Posting Key: ${keys.value.private.posting}
-
-  Memo Key: ${keys.value.private.memo}
-
+  Hive Username:            ${accountName.value}
   Backup (Master) Password: ${masterPassword.value}
+  Private Keys:
+    Owner:   ${keys.value.private.owner}
+    Active:  ${keys.value.private.active}
+    Posting: ${keys.value.private.posting}
+    Memo:    ${keys.value.private.memo}
+
+
+  Public Keys:
+    Owner:   ${keys.value.public.owner}
+    Active:  ${keys.value.public.active}
+    Posting: ${keys.value.public.posting}
+    Memo:    ${keys.value.public.memo}
   `
   return data
 })

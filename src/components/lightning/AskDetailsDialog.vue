@@ -1,11 +1,6 @@
 <template>
   <div v-if="dInvoice">
-    <q-dialog
-      class="q-ma-lg"
-      v-model="dInvoice.askDetails"
-      @show="showDialog"
-      @hide="hideDialog"
-    >
+    <q-dialog class="q-ma-lg" v-model="dInvoice.askDetails" @hide="hideDialog">
       <q-card
         class="q-pa-none"
         :style="{
@@ -58,7 +53,7 @@
                   @keyup.enter="createInvoice"
                   :error-message="errorMessage"
                   :error="errorState"
-                  tabindex="1"
+                  tabindex="7"
                 />
               </div>
               <!-- USD INPUT -->
@@ -73,6 +68,7 @@
                   debounce="1000"
                   :input-style="{ 'text-align': 'right' }"
                   @update:model-value="(val) => updateAmounts(val, 'hbd')"
+                  tabindex="8"
                 />
               </div>
               <!-- USD INPUT -->
@@ -87,6 +83,7 @@
                   debounce="1000"
                   :input-style="{ 'text-align': 'right' }"
                   @update:model-value="(val) => updateAmounts(val, 'hive')"
+                  tabindex="9"
                 />
               </div>
             </div>
@@ -112,6 +109,7 @@
                 label
                 switch-label-side
                 @update:model-value="(val) => updateAmounts(val, 'hbd')"
+                tabindex="10"
               ></q-slider>
             </div>
             <div class="row sats-slider q-py-sm">
@@ -125,6 +123,7 @@
                 label
                 switch-label-side
                 @update:model-value="(val) => updateAmounts(val, 'sats')"
+                tabindex="11"
               ></q-slider>
             </div>
           </q-card-section>
@@ -132,6 +131,7 @@
         <div>
           <q-card-section>
             <AmountCurrencyInput
+              ref="amountCurrencyInput"
               :error-state="errorState"
               :error-message="errorMessage"
               defaultCurrency="sats"
@@ -151,7 +151,7 @@
             :label="$t('comment')"
             type="text"
             counter
-            tabindex="2"
+            tabindex="3"
             :rules="[
               (val) =>
                 val.length <= dInvoice?.v4vapp?.metadata?.commentLength ||
@@ -162,20 +162,25 @@
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-toggle class="q-px-md" v-model="oldStyle" label="Old Style" />
+          <q-toggle
+            class="q-px-md"
+            v-model="oldStyle"
+            label="Old Style"
+            tabindex="-1"
+          />
 
           <q-btn
             :label="$t('cancel')"
             color="primary"
             v-close-popup
-            tabindex="4"
+            tabindex="5"
           ></q-btn>
           <q-btn
             :label="$t('ok')"
             color="primary"
             @click="createInvoice"
             :disabled="errorState"
-            tabindex="3"
+            tabindex="4"
           ></q-btn>
         </q-card-actions>
       </q-card>
@@ -184,7 +189,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, nextTick, watch } from "vue"
 import { useQuasar } from "quasar"
 import { useCreateInvoice } from "src/use/useLightningInvoice"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
@@ -211,6 +216,29 @@ const amounts = ref({
   satsNum: 1000,
 })
 const main_message = ref("")
+const amountCurrencyInput = ref(null)
+
+watch(
+  () => dInvoice.value?.askDetails,
+  (newVal) => {
+    if (newVal) {
+      showDialog()
+      // Focus the amount input field when dialog opens
+      nextTick(() => {
+        if (amountCurrencyInput.value) {
+          // Find the input element within the AmountCurrencyInput component
+          if (amountCurrencyInput.value?.$el && typeof amountCurrencyInput.value.$el.querySelector === 'function') {
+            const inputElement =
+              amountCurrencyInput.value.$el.querySelector("input")
+            if (inputElement) {
+              inputElement.focus()
+            }
+          }
+        }
+      })
+    }
+  }
+)
 
 const headerBarTitle = computed(() => {
   if (dInvoice.value.v4vapp.type === "hiveAccname") {

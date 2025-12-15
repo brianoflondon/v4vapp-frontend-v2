@@ -8,12 +8,12 @@
             label="Refresh"
             :loading="storeUser.dataLoading"
             rounded
-            @click="fetchData(dataDays)"
+            @click="fetchData()"
           ></q-btn>
         </div>
         <div class="days-select q-px-sm">
           <q-select
-            v-model="dataDays"
+            :model-value="{ label: '7 days', value: 7 }"
             :options="[
               { label: '3 days', value: 3 },
               { label: '7 days', value: 7 },
@@ -23,288 +23,326 @@
             ]"
             label="Days"
             dense
-            @update:model-value="fetchData($event)"
+            readonly
           ></q-select>
         </div>
-      </div>
-      <!--End  Refresh button and days select  -->
-      <div class="transaction-data-tables row">
-        <!-- Hive to Sats Table -->
-        <div class="hivetosats-table q-pa-sm">
-          Hive -> Sats
-          <q-table
-            class="hive-sats-table"
-            dense
-            :rows="data"
-            row-key="trx_id"
-            :columns="columns"
-            :visible-columns="[
-              'net_hive',
-              'sats',
-              'timestamp',
-              'link',
-              'reason',
-            ]"
-          >
-            <template v-slot:body-cell-link="props">
-              <q-td :props="props">
-                <a
-                  :href="useGenerateTxUrl(props.row.trx_id)"
-                  target="_blank"
-                  class="custom-link"
-                >
-                  <q-btn
-                    size="xs"
-                    color="accent"
-                    flat
-                    dense
-                    icon="fa-brands fa-hive"
-                    name="open_in_new"
-                  />
-                </a>
-              </q-td>
-            </template>
-            <template v-slot:bottom-row v-if="data?.length > 0">
-              <q-tr class="text-bold">
-                <q-td colspan="2" class="text-left">Total</q-td>
-                <q-td class="text-right">
-                  {{ tidyNumber(totals.totalHive, 3) }}
-                </q-td>
-                <q-td class="text-right">
-                  {{ tidyNumber(totals.totalSats, 0) }}
-                </q-td>
-                <q-td colspan="1"></q-td>
-              </q-tr>
-            </template>
-          </q-table>
-        </div>
-        <!-- End Hive to Sats Table -->
       </div>
     </div>
-    <div class="col-auto">
-      <!-- Keep Sats Table -->
-      <div class="keepsats-table-outer q-pa-sm"></div>
-      <div class="category-reasons-selectors flex">
-        <div class="category-select q-px-sm col-grow">
-          <q-select
-            v-model="keepSatsDataCategoryFilter"
-            @update:model-value="updateKeepSatsDataFiltered"
-            :options="keepSatsDataCategories"
-            label="Category"
-            dense
-          ></q-select>
-        </div>
-        <div class="reasons-select q-px-sm col-grow">
-          <q-select
-            v-model="keepSatsDataReasonFilter"
-            @update:model-value="updateKeepSatsDataFiltered"
-            :options="keepSatsDataReasons"
-            label="Reason"
-            dense
-          ></q-select>
-        </div>
-      </div>
-      <div class="keepsats-table" v-if="keepSatsDataFiltered">
-        KeepSats
-        <q-table
-          dense
-          :rows="keepSatsDataFiltered"
-          :columns="keepSatsColumns"
-          v-model:expanded="rowsExpanded"
-          row-key="group_id"
-          :visible-columns="['timestamp', 'sats', 'hive', 'reason', 'expand']"
-        >
-          <!-- Expansion icon header of the table -->
-          <template v-slot:header-cell-expand="props">
-            <q-th :props="props" style="text-align: right">
-              <q-btn
-                round
-                flat
+  </div>
+
+  <!-- Ledger Transactions Table -->
+  <div :class="{ 'q-px-none': isMobileView, 'q-py-xs': isMobileView, 'q-pa-md': !isMobileView }" class="full-width">
+    <q-table
+      :rows="tableData"
+      :columns="ledgerColumns"
+      :visible-columns="visibleColumns"
+      row-key="group_id"
+      :pagination="{ rowsPerPage: 10 }"
+      :loading="storeUser.dataLoading"
+      :class="{ 'keepsats-table': true, 'mobile-table': isMobileView }"
+    >
+      <template v-slot:body-cell-description="props">
+        <q-td :props="props">
+          <div v-if="isMobileView" class="description-cell">
+            <q-expansion-item
+              dense
+              class="description-expansion"
+              header-class="description-header"
+              hide-expand-icon
+            >
+              <template v-slot:header>
+                <div class="description-inline">
+                  <span class="short-description">
+                    <span class="ledger-icon">{{ props.row.icon }}</span>
+                    <span v-if="props.row.link" class="hive-link-icon">
+                      <a
+                        :href="props.row.link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <i class="fa-brands fa-hive" />
+                      </a>
+                    </span>
+                    {{ props.row.ledger_type_str }}
+                  </span>
+                  <q-icon name="expand_more" class="expansion-icon" />
+                </div>
+              </template>
+              <q-card class="description-card">
+                <q-card-section class="description-full">
+                  {{ props.value }}
+                  <div v-if="props.row.user_memo" class="user-memo">
+                    <strong>Memo:</strong> "{{ props.row.user_memo }}"
+                  </div>
+                </q-card-section>
+              </q-card>
+            </q-expansion-item>
+          </div>
+          <div v-else class="description-cell">
+            <div
+              v-if="props.value && props.value.length > 30"
+              class="description-cell"
+            >
+              <q-expansion-item
                 dense
-                :icon="
-                  rowsExpanded.length === 0 ? 'expand_more' : 'expand_less'
-                "
-                @click="expandAll"
-              ></q-btn>
-            </q-th>
-          </template>
-          <!-- End Expansion icon header of the table -->
-
-          <template #body="props">
-            <q-tr :props="props">
-              <q-td :props="props" style="text-align: left" key="timestamp">
-                {{ formatPrettyDate(props.row.timestamp) }}
-              </q-td>
-              <q-td :props="props" style="text-align: left" key="reason">
-                {{ useShortEVMAddress(props.row.reason_str) }}
-              </q-td>
-              <q-td :props="props" style="text-align: right" key="hive">
-                {{ tidyNumber(props.row.hive, 3) }}
-              </q-td>
-              <q-td :props="props" style="text-align: right" key="sats">
-                {{ tidyNumber(props.row.sats, 0) }}
-              </q-td>
-              <q-td :props="props" key="expand" style="text-align: right">
-                <q-btn
-                  round
-                  size="sm"
-                  flat
-                  dense
-                  :icon="props.expand ? 'expand_less' : 'expand_more'"
-                  @click="props.expand = !props.expand"
-                ></q-btn>
-              </q-td>
-            </q-tr>
-            <!-- Expansion Item -->
-            <q-tr v-if="props.expand">
-              <q-td :colspan="5">
-                <KeepSatsDetail :tableData="props.row.details" />
-              </q-td>
-            </q-tr>
-            <!-- End Expansion Item -->
-          </template>
-
-          <!-- Show total for this age range at the bottom -->
-          <template v-slot:bottom-row v-if="keepSatsDataFiltered?.length > 0">
-            <q-tr class="text-bold">
-              <q-td class="text-left" colspan="2">Total</q-td>
-              <q-td class="text-right">
-                {{ tidyNumber(keepHiveTotal, 3) }}
-              </q-td>
-              <q-td class="text-right">
-                {{ tidyNumber(keepSatsTotal, 0) }}
-              </q-td>
-              <q-td colspan="1"></q-td>
-            </q-tr>
-          </template>
-          <!-- End Show total for this age range at the bottom -->
-        </q-table>
-      </div>
-      <!-- End Keep Sats Table -->
-    </div>
+                class="description-expansion"
+                header-class="description-header"
+                hide-expand-icon
+              >
+                <template v-slot:header>
+                  <div class="description-inline">
+                    <span class="short-description">
+                      {{ props.value.substring(0, 35) }}...
+                    </span>
+                    <q-icon name="expand_more" class="expansion-icon" />
+                  </div>
+                </template>
+                <q-card class="description-card">
+                  <q-card-section class="description-full">
+                    {{ props.value }}
+                    <div v-if="props.row.user_memo" class="user-memo">
+                      <strong>Memo:</strong> "{{ props.row.user_memo }}"
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </div>
+            <div v-else class="description-cell">
+              {{ props.value }}
+            </div>
+          </div>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-timestamp="props">
+        <q-td :props="props" :class="{ 'mobile-date-cell': isMobileView }">
+          {{
+            formatPrettyDate(props.row.timestamp_unix || props.row.timestamp)
+          }}
+        </q-td>
+      </template>
+      <template v-slot:body-cell-sats="props">
+        <q-td
+          :props="props"
+          :class="{ 'mobile-compact-cell': isMobileView }"
+          class="text-right"
+        >
+          <strong v-if="isPrimaryAmount(props.row, 'sats')">
+            {{ tidyNumber(props.value, 0) }}
+          </strong>
+          <span v-else>
+            {{ tidyNumber(props.value, 0) }}
+          </span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-hive="props">
+        <q-td :props="props" class="text-right">
+          <strong v-if="isPrimaryAmount(props.row, 'hive')">
+            {{ tidyNumber(props.value, 3) }}
+          </strong>
+          <span v-else>
+            {{ tidyNumber(props.value, 3) }}
+          </span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-hbd="props">
+        <q-td :props="props" class="text-right">
+          <strong v-if="isPrimaryAmount(props.row, 'hbd')">
+            {{ tidyNumber(props.value, 3) }}
+          </strong>
+          <span v-else>
+            {{ tidyNumber(props.value, 3) }}
+          </span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-total="props">
+        <q-td
+          :props="props"
+          :class="{ 'mobile-compact-cell': isMobileView }"
+          class="text-right"
+        >
+          {{ tidyNumber(props.value, 0) }}
+        </q-td>
+      </template>
+      <template v-slot:body-cell-ledger_type="props">
+        <q-td :props="props">
+          <span class="ledger-icon">
+            {{ props.row.icon }}
+            <q-tooltip>{{ props.row.ledger_type_str }}</q-tooltip>
+          </span>
+          <span v-if="props.row.link" class="hive-link-icon">
+            <a :href="props.row.link" target="_blank" rel="noopener noreferrer">
+              <i class="fa-brands fa-hive" />
+            </a>
+          </span>
+        </q-td>
+      </template>
+    </q-table>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
-import { useI18n } from "vue-i18n"
+import { useQuasar } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
-import { useFetchSatsHistory, useKeepSats } from "src/use/useV4vapp"
-import { useGenerateTxUrl } from "src/use/useHive"
-import KeepSatsDetail from "src/components/v4vapp/KeepSatsDetail.vue"
+import { useKeepSats } from "src/use/useV4vapp"
 import { formatPrettyDate, tidyNumber } from "src/use/useUtils"
-import { useShortEVMAddress } from "src/use/useEVM"
+
 const storeUser = useStoreUser()
-const data = ref([])
-const dataDays = ref({ label: "7 days", value: 7 })
-const totals = ref({ totalHive: 0, totalSats: 0 })
-
-const keepSatsDataReasonFilter = ref("All")
-const keepSatsDataReasons = ref([])
-const keepSatsDataCategoryFilter = ref("All")
-const keepSatsDataCategories = ref(["All"])
-const keepSatsDataFiltered = ref([])
-
-const t = useI18n().t
-
-const rowsExpanded = ref([])
+const $q = useQuasar()
+const keepSatsResponse = ref([])
 
 const props = defineProps({
   adminOverride: Boolean,
 })
 
-const columns = computed(() => {
-  return [
+// Check if screen width is less than 700px
+const isMobileView = computed(() => $q.screen.width < 700)
+
+const ledgerColumns = computed(() => {
+  const columns = [
     {
       name: "timestamp",
       required: true,
       sortable: true,
-      label: t("date"),
+      label: "Date",
       align: "left",
-      field: "timestamp",
-      format: (val) => formatPrettyDate(val),
+      field: "timestamp-unix",
     },
-    {
-      name: "reason",
+  ]
+
+  // Add Type column if not mobile
+  if (!isMobileView.value) {
+    columns.push({
+      name: "ledger_type",
       required: true,
-      label: t("reason"),
+      label: "Type",
       align: "left",
-      field: "reason",
-      format: (val) => val,
-    },
+      field: "ledger_type",
+    })
+  }
+
+  columns.push(
     {
-      name: "net_hive",
+      name: "description",
       required: true,
-      sortable: true,
-      label: t("hive"),
-      align: "right",
-      field: "net_hive",
-      format: (val) => tidyNumber(val, 3),
+      label: "Description",
+      align: "left",
+      field: "description",
     },
     {
       name: "sats",
       required: true,
       sortable: true,
-      label: "Sats シ",
+      label: "Sats",
       align: "right",
-      field: "sats",
-      format: (val) => tidyNumber(val, 0),
-    },
-    {
-      name: "link",
-      required: true,
-      align: "center",
-      field: "trx_id",
-      format: (val) => val,
-    },
-  ]
+      field: (row) => row.conv_signed?.sats || row.sats || 0,
+    }
+  )
+
+  // Add Hive and HBD columns if not mobile
+  if (!isMobileView.value) {
+    columns.push(
+      {
+        name: "hive",
+        required: true,
+        sortable: true,
+        label: "Hive",
+        align: "right",
+        field: (row) => row.conv_signed?.hive || row.hive || 0,
+      },
+      {
+        name: "hbd",
+        required: true,
+        sortable: true,
+        label: "HBD",
+        align: "right",
+        field: (row) => row.conv_signed?.hbd || row.hbd || 0,
+      }
+    )
+  }
+
+  // Always add Total column
+  columns.push({
+    name: "total",
+    required: true,
+    sortable: true,
+    label: "Total",
+    align: "right",
+    field: (row) => row.conv_running_total?.sats || 0,
+  })
+
+  return columns
 })
 
-const keepSatsData = ref([])
-const keepSatsTotal = ref(0)
-const keepHiveTotal = ref(0)
-const keepSatsColumns = computed(() => {
-  return [
-    {
-      name: "timestamp",
-      required: true,
-      sortable: true,
-      label: t("date"),
-      align: "left",
-      field: "timestamp",
-      format: (val) => formatPrettyDate(val),
-    },
-    {
-      name: "reason",
-      required: true,
-      label: t("reason"),
-      align: "left",
-      field: "reason",
-      format: (val) => val,
-    },
-    {
-      name: "hive",
-      required: true,
-      sortable: true,
-      label: "Hive",
-      align: "right",
-      field: "hive",
-      format: (val) => tidyNumber(val, 3),
-    },
-    {
-      name: "sats",
-      required: true,
-      sortable: true,
-      label: "Sats シ",
-      align: "right",
-      field: "sats",
-      format: (val) => tidyNumber(val, 0),
-    },
-    {
-      name: "expand",
-      field: "expand",
-    },
+// Dynamic visible columns based on screen size
+const visibleColumns = computed(() => {
+  if (isMobileView.value) {
+    return ["timestamp", "description", "sats", "total"]
+  } else {
+    return [
+      "timestamp",
+      "ledger_type",
+      "description",
+      "sats",
+      "hive",
+      "hbd",
+      "total",
+    ]
+  }
+})
+
+// Extract transactions array from the API response
+const tableData = computed(() => {
+  if (!keepSatsResponse.value || typeof keepSatsResponse.value !== "object") {
+    return []
+  }
+
+  // Check for all_transactions.combined_balance first (the main data source)
+  if (
+    keepSatsResponse.value.all_transactions?.combined_balance &&
+    Array.isArray(keepSatsResponse.value.all_transactions.combined_balance)
+  ) {
+    console.log(
+      `Found transactions in all_transactions.combined_balance with ${keepSatsResponse.value.all_transactions.combined_balance.length} items`
+    )
+    return keepSatsResponse.value.all_transactions.combined_balance
+  }
+
+  // Fallback: try other possible property names for the transactions array
+  const possibleKeys = [
+    "transactions",
+    "data",
+    "rows",
+    "items",
+    "ledger",
+    "history",
+    "transfers",
   ]
+  for (const key of possibleKeys) {
+    if (Array.isArray(keepSatsResponse.value[key])) {
+      console.log(
+        `Found transactions array in property '${key}' with ${keepSatsResponse.value[key].length} items`
+      )
+      return keepSatsResponse.value[key]
+    }
+  }
+
+  // If no array found, check if the response itself is an array
+  if (Array.isArray(keepSatsResponse.value)) {
+    console.log(
+      "Response is already an array with",
+      keepSatsResponse.value.length,
+      "items"
+    )
+    return keepSatsResponse.value
+  }
+
+  // If still no array, return empty array
+  console.warn(
+    "Could not find transactions array in keepSats response. Available keys:",
+    Object.keys(keepSatsResponse.value)
+  )
+  return []
 })
 
 watch(
@@ -314,8 +352,7 @@ watch(
       await fetchData()
     }
     if (newVal === null || newVal === undefined) {
-      data.value = []
-      keepSatsData.value = []
+      keepSatsResponse.value = []
     }
     return
   }
@@ -323,98 +360,21 @@ watch(
 
 /**
  * Fetches data from the server.
- *
- * @param {number} [newValue=dataDays.value] - The value to use for fetching data. Defaults to the value of `dataDays.value`.
  * @returns {Promise} - A promise that resolves with the fetched data.
  */
-async function fetchData(newValue = dataDays.value) {
+async function fetchData() {
   storeUser.dataLoading = true
   if (!storeUser.hiveAccname) {
-    data.value = []
-    keepSatsData.value = []
+    keepSatsResponse.value = []
     return
   }
-  const [satsHistory, keepSats] = await Promise.all([
-    useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
-    useKeepSats(false, true, props.adminOverride),
-  ])
+  const keepSats = await useKeepSats(false, true, props.adminOverride)
+  console.log("KeepSats data", keepSats)
+  console.log("KeepSats data keys:", Object.keys(keepSats || {}))
 
-  // Process the KeepSats transactions
-  if (keepSats.summary_transactions) {
-    const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
-    keepSatsData.value = keepSats.summary_transactions.filter(
-      (trx) => trx.reason !== "Fees" && trx.timestamp > oldTimestamp
-    )
-  }
-  data.value = satsHistory
+  keepSatsResponse.value = keepSats
 
-  // Process the Hive sats transactions
-  // calculate totals for hive and sats
-  if (data.value) {
-    totals.value.totalHive = 0
-    totals.value.totalSats = 0
-    for (let i = 0; i < data.value.length; i++) {
-      totals.value.totalHive += data.value[i].net_hive
-      totals.value.totalSats += data.value[i].sats
-    }
-  }
-  await getKeepSatsReasons()
-  await getKeepSatsCategories()
-  await updateKeepSatsDataFiltered()
-  await updateKeepSatsTotals()
   storeUser.dataLoading = false
-}
-
-async function updateKeepSatsDataFiltered() {
-  // filter categories first
-  if (keepSatsDataCategoryFilter.value !== "All") {
-    keepSatsDataFiltered.value = keepSatsData.value.filter(
-      (trx) => trx.category === keepSatsDataCategoryFilter.value
-    )
-  } else {
-    keepSatsDataFiltered.value = keepSatsData.value
-  }
-  await getKeepSatsReasons()
-  if (keepSatsDataReasonFilter.value !== "All") {
-    keepSatsDataFiltered.value = keepSatsDataFiltered.value.filter(
-      (trx) => trx.reason === keepSatsDataReasonFilter.value
-    )
-  }
-  await updateKeepSatsTotals()
-}
-
-async function updateKeepSatsTotals() {
-  const tempTotal = keepSatsDataFiltered.value
-  console.log("number of entries", tempTotal.length)
-  keepSatsTotal.value = 0
-  keepHiveTotal.value = 0
-  for (let i = 0; i < tempTotal.length; i++) {
-    keepSatsTotal.value += tempTotal[i].msats
-    keepHiveTotal.value += tempTotal[i].hive
-  }
-  keepSatsTotal.value = keepSatsTotal.value / 1000
-}
-
-async function getKeepSatsReasons() {
-  // extract a list of reasons from the keepsats data
-  keepSatsDataReasons.value = ["All"]
-  keepSatsDataReasons.value = keepSatsDataReasons.value.concat(
-    keepSatsDataFiltered.value.map((trx) => trx.reason)
-  )
-  // remove duplicates from list
-  keepSatsDataReasons.value = Array.from(new Set(keepSatsDataReasons.value))
-}
-
-async function getKeepSatsCategories() {
-  // extract a list of categories from the keepsats data
-  keepSatsDataCategories.value = ["All"]
-  keepSatsDataCategories.value = keepSatsDataCategories.value.concat(
-    keepSatsData.value.map((trx) => trx.category)
-  )
-  // remove duplicates from list
-  keepSatsDataCategories.value = Array.from(
-    new Set(keepSatsDataCategories.value)
-  )
 }
 
 onMounted(() => {
@@ -422,26 +382,156 @@ onMounted(() => {
 })
 
 /**
- * Toggles the expansion of all rows in the table.
- *
- * If no rows are currently expanded, it expands all rows by setting `rowsExpanded.value` to an array of all checkCodes.
- * If there are any expanded rows, it collapses all rows by setting `rowsExpanded.value` to an empty array.
+ * Determines if the specified field is the primary amount in the transaction
+ * @param {Object} row - The transaction row data
+ * @param {string} field - The field to check ('sats', 'hive', or 'hbd')
+ * @returns {boolean} - True if this field matches the unit type
  */
-function expandAll() {
-  if (rowsExpanded.value.length === 0) {
-    rowsExpanded.value = keepSatsData.value.map((row) => row.group_id)
-  } else {
-    rowsExpanded.value = []
-  }
+function isPrimaryAmount(row, field) {
+  const unit = row.unit
+  if (!unit) return false
+
+  // Map unit values to field names
+  if (unit === "hive" && field === "hive") return true
+  if (unit === "hbd" && field === "hbd") return true
+  if (unit === "msats" && field === "sats") return true
+
+  return false
 }
 </script>
 
 <style lang="scss" scoped>
-.bordered-div {
-  border: 1px solid #e0e0e0;
-}
-
 .keepsats-table .q-table__container .q-table tbody tr td {
   padding: 5px;
+}
+
+.mobile-table {
+  .q-table__container .q-table {
+    tbody tr td {
+      padding: 1px 1px 1px 0px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    thead tr th {
+      padding: 2px 1px 2px 1px;
+      font-size: 0.75rem;
+    }
+  }
+
+  .q-table tbody tr {
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.mobile-date-cell {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  font-size: 0.7rem;
+  padding-right: 1px !important;
+}
+
+.mobile-compact-cell {
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+  font-size: 0.75rem;
+  text-align: right;
+  padding: 1px 3px 1px 1px !important;
+}
+.description-cell {
+  width: 100%;
+}
+
+.description-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.short-description {
+  flex: 1;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  margin-right: 8px;
+}
+
+.expansion-icon {
+  font-size: 1.2rem;
+  color: var(--q-primary);
+  transition: transform 0.3s ease;
+}
+
+.description-expansion {
+  .q-expansion-item__header {
+    padding: 4px 8px;
+    min-height: auto;
+    border: none;
+    background: transparent;
+
+    &:hover {
+      background-color: var(--q-hover-background);
+    }
+
+    &.q-expansion-item--expanded .expansion-icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  .q-expansion-item__content {
+    padding: 0;
+  }
+}
+
+.description-card {
+  margin-top: 8px;
+  border-left: 3px solid var(--q-primary);
+}
+
+.description-full {
+  padding: 3px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  background-color: var(--q-card-background);
+  border-radius: 4px;
+}
+
+.user-memo {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--q-separator-color);
+  font-size: 0.8rem;
+  color: var(--q-text-secondary);
+  font-style: italic;
+
+  strong {
+    color: var(--q-primary);
+    font-weight: 600;
+  }
+}
+
+.ledger-icon {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.hive-link-icon {
+  margin-left: 4px;
+
+  a {
+    color: var(--q-primary);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--q-secondary);
+    }
+  }
 }
 </style>

@@ -8,6 +8,8 @@ import { i18n } from "boot/i18n"
 // import { useStoreUser } from "src/store/user"
 // const storeUser = useStoreUser()
 
+const API_BASE = "/v2/v4vapp/"
+
 let paymentInProgressDialog = null
 
 /**
@@ -49,7 +51,7 @@ export async function useKeepSats(
       transactions: transactions,
       admin: adminOverride,
     }
-    const resp = await apiLogin.get("/v1/v4vapp/keepsats", {
+    const resp = await apiLogin.get(`${API_BASE}keepsats`, {
       params,
     })
     return resp.data
@@ -108,7 +110,7 @@ export async function useFetchSatsHistory(username, days = 7 * 4) {
       return data
     }
 
-    const response = await apiLogin.get("/v1/v4vapp/hivetosats", {
+    const response = await apiLogin.get(`${API_BASE}hivetosats`, {
       params,
     })
     if (Array.isArray(response.data) && response.data.length > 0) {
@@ -152,7 +154,7 @@ export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
   }
 
   try {
-    const response = await apiLogin.post("/v1/v4vapp/keepsats/transfer", data)
+    const response = await apiLogin.post(`${API_BASE}keepsats/transfer`, data)
     if (response.status === 200) {
       return response.data
     }
@@ -318,7 +320,7 @@ export async function useKeepSatsInvoice(paymentRequest) {
     const data = {
       memo: paymentRequest,
     }
-    const response = await apiLogin.post("/v1/v4vapp/keepsats/invoice", data)
+    const response = await apiLogin.post(`${API_BASE}keepsats/invoice`, data)
     if (response.status === 200) {
       return response.data
     }
@@ -342,7 +344,7 @@ export async function useKeepSatsConvert(satsToConvert, currency, memo = "") {
       currency: currency,
       memo: memo,
     }
-    const response = await apiLogin.post("/v1/v4vapp/keepsats/convert", data)
+    const response = await apiLogin.post(`${API_BASE}keepsats/convert`, data)
     if (response.status === 200) {
       return response.data
     }

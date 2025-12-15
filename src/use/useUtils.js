@@ -100,18 +100,20 @@ export function formatDateTimeLocale(isoString) {
 }
 
 export function formatPrettyDate(timestamp) {
-  /**
-   * Calculates the time difference between the current date and a given timestamp.
-   *
-   * @param {number} timestamp - The timestamp to calculate the difference from.
-   * @returns {number} The time difference in milliseconds.
-   */
-  const timeDiff = Date.now() - timestamp
+  // Handle both Unix timestamp (number) and ISO string (string) inputs
+  let timestampMs
+  if (typeof timestamp === "string") {
+    timestampMs = new Date(timestamp).getTime()
+  } else {
+    timestampMs = timestamp
+  }
+
+  const timeDiff = Date.now() - timestampMs
   // check if timediff is less than one day
   if (timeDiff < 86400000) {
     return formatTimeDifference(timeDiff)
   }
-  return formatDateTimeLocale(timestamp).date
+  return formatDateTimeLocale(new Date(timestampMs).toISOString()).date
 }
 
 /**
