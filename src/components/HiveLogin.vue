@@ -155,11 +155,11 @@ onBeforeMount(async () => {
 })
 
 onMounted(async () => {
-  console.debug("onMounted HiveLogin")
+  // console.debug("onMounted HiveLogin")
   isKeychain.value = await useIsHiveKeychainInstalled()
   isHAS.value = await useIsHASAvailable()
-  console.log("nostrButtonDisabled: ", nostrButtonDisabled.value)
-  console.log("evmButtonDisabled: ", evmButtonDisabled.value)
+  // console.log("nostrButtonDisabled: ", nostrButtonDisabled.value)
+  // console.log("evmButtonDisabled: ", evmButtonDisabled.value)
 })
 
 const keychainButtonDisabled = computed(() => {
