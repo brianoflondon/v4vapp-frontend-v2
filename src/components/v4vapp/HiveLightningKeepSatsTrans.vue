@@ -11,6 +11,7 @@
             @click="fetchData()"
           ></q-btn>
         </div>
+        <!-- Days select (currently fixed to 7 days)
         <div class="days-select q-px-sm">
           <q-select
             :model-value="{ label: '7 days', value: 7 }"
@@ -26,18 +27,26 @@
             readonly
           ></q-select>
         </div>
+        -->
       </div>
     </div>
   </div>
 
   <!-- Ledger Transactions Table -->
-  <div :class="{ 'q-px-none': isMobileView, 'q-py-xs': isMobileView, 'q-pa-md': !isMobileView }" class="full-width">
+  <div
+    :class="{
+      'q-px-none': isMobileView,
+      'q-py-xs': isMobileView,
+      'q-pa-md': !isMobileView,
+    }"
+    class="full-width"
+  >
     <q-table
       :rows="tableData"
       :columns="ledgerColumns"
       :visible-columns="visibleColumns"
       row-key="group_id"
-      :pagination="{ rowsPerPage: 10 }"
+      :pagination="{ rowsPerPage: 10, sortBy: 'timestamp', descending: true }"
       :loading="storeUser.dataLoading"
       :class="{ 'keepsats-table': true, 'mobile-table': isMobileView }"
     >
@@ -71,6 +80,19 @@
               <q-card class="description-card">
                 <q-card-section class="description-full">
                   {{ props.value }}
+                  <div
+                    class="rate-line"
+                    v-if="props.row.sats_hbd || props.row.sats_hive"
+                  >
+                    <strong>Rate:</strong>
+                    {{
+                      tidyNumber(props.row.sats_hbd, 0) || "-"
+                    }}
+                    sats/USD&nbsp;|&nbsp;{{
+                      tidyNumber(props.row.sats_hive, 0) || "-"
+                    }}
+                    sats/Hive
+                  </div>
                   <div v-if="props.row.user_memo" class="user-memo">
                     <strong>Memo:</strong> "{{ props.row.user_memo }}"
                   </div>
@@ -100,6 +122,19 @@
                 <q-card class="description-card">
                   <q-card-section class="description-full">
                     {{ props.value }}
+                    <div
+                      class="rate-line"
+                      v-if="props.row.sats_hbd || props.row.sats_hive"
+                    >
+                      <strong>Rate:</strong>
+                      {{
+                        tidyNumber(props.row.sats_hbd, 0) || "-"
+                      }}
+                      sats/USD&nbsp;|&nbsp;{{
+                        tidyNumber(props.row.sats_hive, 0) || "-"
+                      }}
+                      sats/Hive
+                    </div>
                     <div v-if="props.row.user_memo" class="user-memo">
                       <strong>Memo:</strong> "{{ props.row.user_memo }}"
                     </div>
@@ -206,7 +241,13 @@ const ledgerColumns = computed(() => {
       sortable: true,
       label: "Date",
       align: "left",
-      field: "timestamp-unix",
+      field: (row) => {
+        // prefer millisecond unix timestamp when available, fall back to numeric or parsed timestamp
+        if (typeof row.timestamp_unix === "number") return row.timestamp_unix
+        if (typeof row.timestamp === "number") return row.timestamp
+        // Date.parse returns ms since epoch or NaN; this handles ISO strings
+        return Date.parse(row.timestamp)
+      },
     },
   ]
 
@@ -515,9 +556,10 @@ function isPrimaryAmount(row, field) {
   }
 }
 
-.ledger-icon {
-  font-size: 1.2rem;
-  cursor: pointer;
+.rate-line {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--q-text-secondary);
 }
 
 .hive-link-icon {
