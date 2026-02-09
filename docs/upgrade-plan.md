@@ -1,82 +1,43 @@
 # Upgrade plan: Quasar and Vue
 
-As of 2025-12-14
+## Completed — 2026-02-09 (PR #255)
 
-Snapshot (from package.json)
-- Quasar: ^2.17.0
-- Vue: ^3.3.8
-- @quasar/app-vite: ^1.10.0
+### What was upgraded
+| Package | Before | After |
+|---------|--------|-------|
+| quasar | 2.17.5 | 2.18.6 |
+| @quasar/app-vite | 1.11.0 | 2.4.1 |
+| vue | 3.5.13 | 3.5.28 |
+| vue-i18n | 9.14.2 | 11.2.8 |
+| @intlify/unplugin-vue-i18n | (was vite-plugin-vue-i18n 6.0.3) | 11.0.3 |
+| vue-router | 4.5.0 | 4.6.4 |
+| pinia | 2.3.0 | 2.3.1 |
+| @vueuse/core | 10.11.1 | 12.8.2 |
+| Node.js (min engine) | 14/16/18 | >=20 |
 
-Latest on npm
-- Quasar: 2.18.6  (delta: +1 minor, +6 patches)
-- Vue: 3.5.25     (delta: +2 minors)
-- @quasar/app-vite: 2.4.0 (delta: +1 major)
-- vue-router: 4.6.4 (optional align)
-- pinia: 3.0.4 (optional align)
-- @vueuse/core: 14.1.0 (optional align)
+### Lessons learned
 
-Notes
-- Quasar 2.18.x is a safe in-series upgrade from 2.17.x.
-- @quasar/app-vite 2.x is a major CLI upgrade; expect small config changes and Vite 5+.
-- Vue 3.3 → 3.5 is usually low risk; watch for stricter typings and minor behavior tweaks.
+1. **Quasar 2.18 and @quasar/app-vite v1 are incompatible.** Quasar 2.18 uses `:has()`/`:is()` CSS selectors that require the Vite 5+ Sass toolchain in app-vite v2. They must be upgraded together.
 
-Recommended sequence (no actions taken yet)
-1) Prep
-- Create a feature branch and ensure Node 18+ locally and in CI.
-- Run/record current behavior (dev, build, PWA flows) for comparison.
+2. **App-vite v2 assumes ESM.** Config files using CommonJS (`require`/`module.exports`) must be renamed to `.cjs`:
+   - `quasar.config.js` → `quasar.config.cjs`
+   - `postcss.config.js` → `postcss.config.cjs`
+   - `.eslintrc.js` → `.eslintrc.cjs`
 
-2) Step 1: Upgrade Quasar core to 2.18.x
-```bash
-npm i quasar@^2.18.6
-npm run dev && npm run build
-```
-- Fix any minor styling/icon regressions if they surface.
+3. **App-vite v2 auto-loads .env files** for the app, so `build.env: require('dotenv').config().parsed` must be removed. However, `dotenv` must still be loaded at the top of `quasar.config.cjs` for config-time vars like `HTTPS`.
 
-3) Step 2: Upgrade Vue to 3.5.x
-```bash
-npm i vue@^3.5.25
-npm run dev && npm run build
-```
-- <!-- gitleaks:allow --> Verify key flows: Keychain/HAS login, KeepSats fetch/transfer, QR scan, invoice parsing, POS routes.
-- If peer warnings appear (i18n/router), plan upgrades in Step 5.
+4. **workboxMode casing changed**: `generateSW` → `GenerateSW`.
 
-4) Step 3: Upgrade Quasar CLI (@quasar/app-vite) to 2.x
-```bash
-npm i -D @quasar/app-vite@^2
-npm run dev && npm run build
-```
-- Address any warnings in `quasar.config.js` (devServer, vitePlugins etc.).
-- Expect Vite 5+; ensure Node >=18.
+5. **register-service-worker** is no longer bundled — must be installed as an explicit dependency.
 
-5) Optional ecosystem alignments (as needed)
-```bash
-# only if peer warnings suggest
-npm i pinia@^3
-npm i vue-router@^4
-npm i @vueuse/core@^14
-```
-- Update `@intlify/vite-plugin-vue-i18n` if Vite plugin API warnings appear.
+6. **@intlify/vite-plugin-vue-i18n is deprecated** and incompatible with Vite 7. Replaced by `@intlify/unplugin-vue-i18n`, but only v11 works with Vite 7, which requires vue-i18n v11.
 
-6) Engines and CI
-- In `package.json`, update engines to require Node ">=18" after CLI upgrade.
-- Ensure GitHub Actions and local dev use Node >=18.
+7. **vite** must be installed as a direct dev dependency for `@intlify/unplugin-vue-i18n` to resolve it (it's nested inside `@quasar/app-vite`).
 
-7) Validation checklist (after each step)
-- Dev: hot reload, i18n load, axios boot files OK.
-- Build: `quasar build` (PWA) emits `dist/pwa/`; service worker registers.
-- Features: login (Keychain/HAS), KeepSats, QR scanning, invoice parsing, POS.
-- Visual: dark mode, icons from `@quasar/extras`.
-- Docker image still serves built PWA under nginx.
+8. **App-vite v2.4.1 bundles Vite 7**, which requires `crypto.hash()` — only available in Node 20.12+. Node 18 will crash.
 
-Helper commands (read-only)
-```bash
-npm outdated quasar vue @quasar/app-vite pinia vue-router @vueuse/core
-npx npm-check-updates '/^(quasar|@quasar\/app-vite|vue|pinia|vue-router|@vueuse\/core)$/' -u && npm install
-```
-
-Rollback plan
-- Revert the branch or selectively reset `package.json` and `package-lock.json` to previous commit if issues arise.
-
-Notes captured from codebase
-- PWA build targets `dist/pwa/` and is served via nginx in Dockerfile.
-- Dev server uses port 9200 with optional HTTPS and custom WS URL; validate after upgrades.
+### Deferred to follow-up PRs
+- eslint 8→9 (requires flat config migration, significant effort)
+- prettier 2→3 (reformats all code, noisy diff)
+- workbox 6→7 (no peer warnings, app-vite v2 bundles its own)
+- pinia 2→3 and vue-router 4→5 (new majors with breaking changes, review separately)
