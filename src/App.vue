@@ -24,7 +24,7 @@ export default defineComponent({
         });
 
         dialog.onOk(() => {
-          window.open("https://peakd.com/@v4vapp", "_blank");
+          window.open("https://peakd.com/hive-110369/@v4vapp/v4vapp-will-be-down-wednesday-11th-february-10am-utc", "_blank");
         });
 
         dialog.onCancel(() => {
