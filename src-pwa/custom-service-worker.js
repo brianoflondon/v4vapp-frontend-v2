@@ -1,4 +1,4 @@
-/* eslint-env serviceworker */
+/* global self */
 
 /*
  * This file (which will be your service worker)
