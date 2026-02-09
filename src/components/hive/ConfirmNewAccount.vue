@@ -97,18 +97,18 @@
 </template>
 
 <script setup>
-import { copyToClipboard } from "quasar"
-import { buttonActiveNot } from "src/use/useUtils"
-import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
-import { onMounted } from "vue"
-import { useI18n } from "vue-i18n"
-import { ref } from "vue"
-const t = useI18n().t
+import { copyToClipboard } from "quasar";
+import { buttonActiveNot } from "src/use/useUtils";
+import CreateQRCode from "src/components/qrcode/CreateQRCode.vue";
+import { onMounted } from "vue";
+import { useI18n } from "vue-i18n";
+import { ref } from "vue";
+const t = useI18n().t;
 
-const emit = defineEmits(["close", "downloadKeys", "copyKeys"])
+const emit = defineEmits(["close", "downloadKeys", "copyKeys"]);
 
-const accountNameForm = ref()
-const masterPasswordForm = ref()
+const accountNameForm = ref();
+const masterPasswordForm = ref();
 
 const props = defineProps({
   accountName: {
@@ -127,22 +127,22 @@ const props = defineProps({
     type: String,
     default: "",
   },
-})
+});
 
 onMounted(() => {
-  accountNameForm.value = props.accountName
-  masterPasswordForm.value = props.masterPassword
-})
+  accountNameForm.value = props.accountName;
+  masterPasswordForm.value = props.masterPassword;
+});
 
 function closeDialog() {
-  emit("close")
+  emit("close");
 }
 
 function downloadKeys() {
-  emit("downloadKeys")
+  emit("downloadKeys");
 }
 function copyKeys() {
-  emit("copyKeys")
+  emit("copyKeys");
 }
 </script>
 

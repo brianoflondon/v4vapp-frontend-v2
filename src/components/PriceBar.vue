@@ -72,49 +72,49 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, computed } from "vue"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useI18n } from "vue-i18n"
-import { useQuasar, Dialog } from "quasar"
-import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
+import { onMounted, onUnmounted, computed } from "vue";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
+import { useI18n } from "vue-i18n";
+import { useQuasar, Dialog } from "quasar";
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue";
 
-const storeAPIStatus = useStoreAPIStatus()
-const t = useI18n().t
-const q = useQuasar()
+const storeAPIStatus = useStoreAPIStatus();
+const t = useI18n().t;
+const q = useQuasar();
 
-let timeoutId
+let timeoutId;
 
 const smallScreen = computed(() => {
-  return q.screen.width < 460
-})
+  return q.screen.width < 460;
+});
 
 // run on mounted
 onMounted(async () => {
   try {
-    scheduleUpdate()
+    scheduleUpdate();
   } catch (err) {
-    console.error("PriceBar err", err)
+    console.error("PriceBar err", err);
   }
-})
+});
 
 async function scheduleUpdate() {
-  await storeAPIStatus.update()
+  await storeAPIStatus.update();
   // Schedule the next update after 5 minutes
-  timeoutId = setTimeout(scheduleUpdate, 10 * 60 * 1000)
+  timeoutId = setTimeout(scheduleUpdate, 10 * 60 * 1000);
 }
 
 onUnmounted(() => {
-  clearTimeout(timeoutId)
-})
+  clearTimeout(timeoutId);
+});
 
 const paddingBottom = computed(() => {
   const isPWA =
     window.matchMedia("(display-mode: standalone)").matches ||
-    window.navigator.standalone
-  const isIphone = /iPhone/.test(window.navigator.userAgent)
+    window.navigator.standalone;
+  const isIphone = /iPhone/.test(window.navigator.userAgent);
 
-  return isPWA && isIphone ? "padding-bottom: 20px;" : ""
-})
+  return isPWA && isIphone ? "padding-bottom: 20px;" : "";
+});
 
 function clearLocalStorage() {
   Dialog.create({
@@ -129,9 +129,9 @@ function clearLocalStorage() {
       color: "primary",
     },
   }).onOk(() => {
-    localStorage.clear()
-    location.reload()
-  })
+    localStorage.clear();
+    location.reload();
+  });
 }
 </script>
 

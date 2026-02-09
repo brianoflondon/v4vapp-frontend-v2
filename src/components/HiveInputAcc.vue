@@ -64,11 +64,11 @@
  * accounts, such as social media platforms, content management systems, or blockchain explorers.
  */
 
-import { ref, watch } from "vue"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { useI18n } from "vue-i18n"
-import { useHiveProfile } from "src/use/useHive"
-import { useIsEVMAddress, useShortEVMAddress } from "src/use/useEVM"
+import { ref, watch } from "vue";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
+import { useI18n } from "vue-i18n";
+import { useHiveProfile } from "src/use/useHive";
+import { useIsEVMAddress, useShortEVMAddress } from "src/use/useEVM";
 
 const props = defineProps({
   label: {
@@ -79,7 +79,7 @@ const props = defineProps({
     type: String,
     default: "",
   },
-})
+});
 
 const modelValue = defineModel({
   label: "",
@@ -87,95 +87,95 @@ const modelValue = defineModel({
   caption: "",
   valid: false,
   fixedUser: false,
-})
-const simpleInput = ref("")
-const isValidAccount = ref(false)
-const avatarName = ref("")
-const simpleHiveInput = ref(null)
+});
+const simpleInput = ref("");
+const isValidAccount = ref(false);
+const avatarName = ref("");
+const simpleHiveInput = ref(null);
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 watch(modelValue, (val) => {
   if (modelValue.value.value != simpleInput.value) {
-    simpleInput.value = modelValue.value.value
-    updateHiveAccTo(simpleInput.value, modelValue.value.fixedUser)
+    simpleInput.value = modelValue.value.value;
+    updateHiveAccTo(simpleInput.value, modelValue.value.fixedUser);
   }
-})
+});
 
 function clearInput() {
-  modelValue.value.fixedUser = false
-  modelValue.value.valid = false
-  modelValue.value.value = ""
-  modelValue.value.label = ""
-  modelValue.value.caption = props.label
-  simpleInput.value = ""
-  isValidAccount.value = false
+  modelValue.value.fixedUser = false;
+  modelValue.value.valid = false;
+  modelValue.value.value = "";
+  modelValue.value.label = "";
+  modelValue.value.caption = props.label;
+  simpleInput.value = "";
+  isValidAccount.value = false;
   if (simpleHiveInput.value) {
-    simpleHiveInput.value.validate()
+    simpleHiveInput.value.validate();
   }
-  avatarName.value = ""
+  avatarName.value = "";
 }
 
 function toggleLock() {
   if (!modelValue.value.value) {
-    clearInput()
-    modelValue.value.fixedUser = false
-    return
+    clearInput();
+    modelValue.value.fixedUser = false;
+    return;
   }
-  modelValue.value.fixedUser = !modelValue.value.fixedUser
+  modelValue.value.fixedUser = !modelValue.value.fixedUser;
 }
 
 async function updateHiveAccTo(val, fixed) {
-  console.debug("updateHiveAccTo", val, fixed)
+  console.debug("updateHiveAccTo", val, fixed);
   if (!val) {
-    clearInput()
-    return
+    clearInput();
+    return;
   }
-  val = val.toLowerCase().trim()
+  val = val.toLowerCase().trim();
   modelValue.value = {
     label: val,
     value: val,
     caption: val,
-  }
-  isValidAccount.value = false
-  avatarName.value = val
-  simpleHiveInput.value.validate()
+  };
+  isValidAccount.value = false;
+  avatarName.value = val;
+  simpleHiveInput.value.validate();
 
-  const result = await useHiveProfile(val)
+  const result = await useHiveProfile(val);
   if (result) {
     if (result?.metadata?.profile?.name) {
-      modelValue.value.caption = setCaption(result?.metadata?.profile?.name)
+      modelValue.value.caption = setCaption(result?.metadata?.profile?.name);
     } else {
-      modelValue.value.caption = setCaption(val)
+      modelValue.value.caption = setCaption(val);
     }
-    modelValue.value.fixedUser = fixed
-    modelValue.value.valid = true
-    isValidAccount.value = true
+    modelValue.value.fixedUser = fixed;
+    modelValue.value.valid = true;
+    isValidAccount.value = true;
     if (simpleHiveInput.value) {
-      simpleHiveInput.value.validate()
+      simpleHiveInput.value.validate();
     }
   } else {
-    console.log("No Hive profile found for", val)
-    const isEVM = useIsEVMAddress(val)
+    console.log("No Hive profile found for", val);
+    const isEVM = useIsEVMAddress(val);
     if (isEVM) {
-      modelValue.value.caption = useShortEVMAddress(val)
-      modelValue.value.fixedUser = fixed
-      modelValue.value.valid = true
-      isValidAccount.value = true
+      modelValue.value.caption = useShortEVMAddress(val);
+      modelValue.value.fixedUser = fixed;
+      modelValue.value.valid = true;
+      isValidAccount.value = true;
     }
   }
 }
 
 function setCaption(profileName) {
   if (props.prefix === "") {
-    return profileName
+    return profileName;
   }
   // Check if profileName already starts with the prefix
   if (profileName.startsWith(props.prefix)) {
-    return profileName
+    return profileName;
   }
 
-  return props.prefix + " " + profileName
+  return props.prefix + " " + profileName;
 }
 </script>
 

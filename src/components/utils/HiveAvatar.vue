@@ -21,8 +21,8 @@
  * @props {string} hiveAccname - The Hive account name
  * @props {string} size - Default: small - small, medium, large size of the avatar
  */
-import { useBlankProfileURL, useHiveAvatarURL } from "src/use/useHive"
-import { computed } from "vue"
+import { useBlankProfileURL, useHiveAvatarURL } from "src/use/useHive";
+import { computed } from "vue";
 
 const props = defineProps({
   hiveAccname: {
@@ -33,15 +33,15 @@ const props = defineProps({
     type: String,
     default: "small",
   },
-})
+});
 
 const avatarUrl = computed(() => {
   return useHiveAvatarURL({
     hiveAccname: props.hiveAccname,
     size: props.size,
     reason: "HiveAvatarComponent-",
-  })
-})
+  });
+});
 </script>
 
 <style lang="scss" scoped></style>

@@ -23,18 +23,18 @@
 </template>
 
 <script setup>
-import LanguageSelector from "components/utils/LanguageSelector.vue"
-import DarkSelector from "components/utils/DarkSelector.vue"
-import { useAppDetails } from "src/use/useAppDetails.js"
-import TabBar from "components/TabBar.vue"
-import LoggedInUser from "components/utils/LoggedInUser.vue"
-const rightDrawerOpen = defineModel({ default: false })
+import LanguageSelector from "components/utils/LanguageSelector.vue";
+import DarkSelector from "components/utils/DarkSelector.vue";
+import { useAppDetails } from "src/use/useAppDetails.js";
+import TabBar from "components/TabBar.vue";
+import LoggedInUser from "components/utils/LoggedInUser.vue";
+const rightDrawerOpen = defineModel({ default: false });
 
-const { appName, appVersion } = useAppDetails()
-console.log("appName", appName.value, "appVersion", appVersion.value)
+const { appName, appVersion } = useAppDetails();
+console.log("appName", appName.value, "appVersion", appVersion.value);
 const toggleRightDrawer = () => {
-  rightDrawerOpen.value = !rightDrawerOpen.value
-}
+  rightDrawerOpen.value = !rightDrawerOpen.value;
+};
 </script>
 
 <style lang="scss" scoped></style>

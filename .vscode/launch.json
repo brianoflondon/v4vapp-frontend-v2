@@ -14,9 +14,7 @@
       "sourceMapPathOverrides": {
         "webpack://quasar-project/./src/*": "${webRoot}/*"
       },
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "runtimeArgs": [
         // "--lang=lu-LU" // Set the locale to Luxembourg
       ]

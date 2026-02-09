@@ -29,7 +29,7 @@
 <script setup>
 const props = defineProps({
   activeItem: Number,
-})
+});
 </script>
 
 <style lang="scss" scoped>

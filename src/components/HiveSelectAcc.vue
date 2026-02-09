@@ -39,13 +39,13 @@
  * @props {number} maxOptions - Default: 10 - Maximum number of options to show in the dropdown
  * @props {string} size - Default: small - small, medium, large size of the avatar
  */
-import { ref } from "vue"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { useLoadHiveAccountsReputation } from "src/use/useHive"
+import { ref } from "vue";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
+import { useLoadHiveAccountsReputation } from "src/use/useHive";
 
-const options = ref([])
-const modelValue = defineModel()
-const avatarName = ref("")
+const options = ref([]);
+const modelValue = defineModel();
+const avatarName = ref("");
 
 const props = defineProps({
   label: {
@@ -64,37 +64,37 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-})
+});
 
 function enterFn(input) {
   // If Enter or tab is pressed before selecting from the options, the first option is selected
   if (!modelValue.value && options.value.length > 0) {
-    modelValue.value = options.value[0]
+    modelValue.value = options.value[0];
   }
 }
 
 function escFn(input) {
   // If Esc is pressed, the model is cleared
-  modelValue.value = ""
+  modelValue.value = "";
 }
 
 function inputFn(input) {
   // Change the avatar to match the input value
-  avatarName.value = input
+  avatarName.value = input;
 }
 
 async function updateOptions(val) {
   // Finds relevant Hive accounts for the options drop down
   if (val === "") {
-    options.value = []
+    options.value = [];
   } else {
-    const needle = val.toLowerCase().replace(/\s+/g, "")
+    const needle = val.toLowerCase().replace(/\s+/g, "");
     options.value = await useLoadHiveAccountsReputation(
       needle,
-      props.maxOptions
-    )
+      props.maxOptions,
+    );
     if (options.value) {
-      avatarName.value = options.value[0]
+      avatarName.value = options.value[0];
     }
   }
 }
@@ -103,22 +103,21 @@ async function filterFnAutoselect(val, update, abort) {
   // Finds relevant Hive accounts for the options drop down
   update(
     async () => {
-      await updateOptions(val)
+      await updateOptions(val);
     },
     (ref) => {
       if (val !== "" && ref.options.length > 0 && ref.getOptionIndex() === -1) {
-        ref.moveOptionSelection(1, true)
-        ref.toggleOption(ref.options[ref.optionIndex], true)
+        ref.moveOptionSelection(1, true);
+        ref.toggleOption(ref.options[ref.optionIndex], true);
       }
-    }
-  )
+    },
+  );
   abort(() => {
-    abortFilterFn
-  })
+    abortFilterFn;
+  });
 }
 
-const abortFilterFn = () => {
-}
+const abortFilterFn = () => {};
 </script>
 
 <style lang="scss" scoped></style>

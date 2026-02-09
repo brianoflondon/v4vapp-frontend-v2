@@ -1,12 +1,12 @@
-import { defineStore } from "pinia"
-import { useStorage } from "@vueuse/core"
-import { useAppDetails } from "src/use/useAppDetails.js"
-const { appName, appVersion } = useAppDetails()
+import { defineStore } from "pinia";
+import { useStorage } from "@vueuse/core";
+import { useAppDetails } from "src/use/useAppDetails.js";
+const { appName, appVersion } = useAppDetails();
 
-import axios from "axios"
+import axios from "axios";
 
-const coinGeckoApi = "https://api.coingecko.com/api/v3"
-const maxCacheAge = 10 * 60 * 1000 // 10 minutes in milliseconds
+const coinGeckoApi = "https://api.coingecko.com/api/v3";
+const maxCacheAge = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 /**
  * Custom store for Coingecko data.
@@ -43,45 +43,44 @@ export const useCoingeckoStore = defineStore("coingecko", {
 
   actions: {
     async fetchCoingeckoRates() {
-      const storedAppVersion = window.localStorage.getItem("appVersion")
+      const storedAppVersion = window.localStorage.getItem("appVersion");
       if (storedAppVersion !== appVersion.value) {
-        console.log("coingecko appVersion changed")
-        this.exchangeRates = {}
-        this.currencyOptions = {}
-        this.ratesCache = {}
-        this.lastFetched = {}
-        this.lastFetchedHuman = {}
-        window.localStorage.setItem("appVersion", appVersion.value)
+        console.log("coingecko appVersion changed");
+        this.exchangeRates = {};
+        this.currencyOptions = {};
+        this.ratesCache = {};
+        this.lastFetched = {};
+        this.lastFetchedHuman = {};
+        window.localStorage.setItem("appVersion", appVersion.value);
       }
 
       if (this.isCacheValid("exchangeRates")) {
-        return [this.exchangeRates, this.currencyOptions]
+        return [this.exchangeRates, this.currencyOptions];
       }
 
       try {
-        const url = `${coinGeckoApi}/exchange_rates`
-        console.debug("coingecko fetchCoingeckoRates url", url)
-        const res = await axios.get(url)
+        const url = `${coinGeckoApi}/exchange_rates`;
+        console.debug("coingecko fetchCoingeckoRates url", url);
+        const res = await axios.get(url);
 
         if (res.status === 200) {
-          const coingeckoRates = res.data.rates
-          const currencyOptions = this.buildCurrencyOptions(coingeckoRates)
+          const coingeckoRates = res.data.rates;
+          const currencyOptions = this.buildCurrencyOptions(coingeckoRates);
 
-          this.cacheData("exchangeRates", coingeckoRates, currencyOptions)
-          return [coingeckoRates, currencyOptions]
+          this.cacheData("exchangeRates", coingeckoRates, currencyOptions);
+          return [coingeckoRates, currencyOptions];
         }
       } catch (err) {
-        console.error(err)
+        console.error(err);
         if (this.exchangeRates && this.currencyOptions) {
-          return [this.exchangeRates, this.currencyOptions]
+          return [this.exchangeRates, this.currencyOptions];
         }
         if (this.ratesCache["exchangeRates"]) {
-          return this.ratesCache[cacheKey]
+          return this.ratesCache[cacheKey];
         }
-        throw err
+        throw err;
       }
     },
-
 
     /**
      * Fetches Coingecko rates for a given currency.
@@ -90,36 +89,35 @@ export const useCoingeckoStore = defineStore("coingecko", {
      * @throws {Error} - If there is an error fetching the rates.
      */
     async getCoingeckoRate(currency) {
-      const cacheKey = `rates-${currency}`
+      const cacheKey = `rates-${currency}`;
       if (this.isCacheValidRates(cacheKey)) {
-        console.debug("coingecko Using cached rates")
-        return this.ratesCache[cacheKey]
+        console.debug("coingecko Using cached rates");
+        return this.ratesCache[cacheKey];
       }
 
       try {
-        console.debug("coingecko Fetching rates", currency)
-        const url = `${coinGeckoApi}/simple/price`
+        console.debug("coingecko Fetching rates", currency);
+        const url = `${coinGeckoApi}/simple/price`;
         const params = {
           ids: "hive,hive_dollar,btc,usd",
           vs_currencies: `btc,usd,eur,${currency}`,
-        }
-        const res = await axios.get(url, { params })
+        };
+        const res = await axios.get(url, { params });
         if (res.status === 200) {
-          res.data.hive_dollar = res.data.usd
-          this.cacheDataRates(cacheKey, res.data)
-          return res.data
+          res.data.hive_dollar = res.data.usd;
+          this.cacheDataRates(cacheKey, res.data);
+          return res.data;
         }
       } catch (err) {
-        console.error("coingecko Error fetching rates")
-        console.error(err)
+        console.error("coingecko Error fetching rates");
+        console.error(err);
         // return cached data if available
         if (this.ratesCache[cacheKey]) {
-          return this.ratesCache[cacheKey]
+          return this.ratesCache[cacheKey];
         }
-        throw err
+        throw err;
       }
     },
-
 
     /**
      * Caches the data rates with the specified key.
@@ -127,11 +125,10 @@ export const useCoingeckoStore = defineStore("coingecko", {
      * @param {any} data - The data rates to be cached.
      */
     cacheDataRates(key, data) {
-      this.ratesCache[key] = data
-      this.lastFetched[key] = Date.now()
-      this.lastFetchedHuman[key] = new Date().toLocaleString()
+      this.ratesCache[key] = data;
+      this.lastFetched[key] = Date.now();
+      this.lastFetchedHuman[key] = new Date().toLocaleString();
     },
-
 
     /**
      * Checks if the cache for rates is valid.
@@ -141,7 +138,7 @@ export const useCoingeckoStore = defineStore("coingecko", {
     isCacheValidRates(key) {
       return (
         this.ratesCache[key] && Date.now() - this.lastFetched[key] < maxCacheAge
-      )
+      );
     },
 
     /**
@@ -156,11 +153,11 @@ export const useCoingeckoStore = defineStore("coingecko", {
           label: rate.name,
           value: key,
           unit: rate.unit,
-        })
-      )
+        }),
+      );
 
-      currencyOptions.push(...this.getExtraCurrencyOptions())
-      return currencyOptions
+      currencyOptions.push(...this.getExtraCurrencyOptions());
+      return currencyOptions;
     },
 
     /**
@@ -172,18 +169,18 @@ export const useCoingeckoStore = defineStore("coingecko", {
         { label: "Guatemalan Quetzal", value: "GTQ", unit: "gtq" },
         { label: "Cuban Peso", value: "CUP", unit: "cup" },
         { label: "Other", value: "OTH", unit: "$" },
-      ]
+      ];
     },
 
     cacheData(key, exchangeRates, currencyOptions) {
-      this[key] = exchangeRates
-      this.currencyOptions = currencyOptions
-      this.lastFetched[key] = Date.now()
-      this.lastFetchedHuman[key] = new Date().toLocaleString()
+      this[key] = exchangeRates;
+      this.currencyOptions = currencyOptions;
+      this.lastFetched[key] = Date.now();
+      this.lastFetchedHuman[key] = new Date().toLocaleString();
     },
 
     isCacheValid(key) {
-      return this[key] && Date.now() - this.lastFetched[key] < maxCacheAge
+      return this[key] && Date.now() - this.lastFetched[key] < maxCacheAge;
     },
   },
   persist: {
@@ -202,4 +199,4 @@ export const useCoingeckoStore = defineStore("coingecko", {
       },
     ],
   },
-})
+});

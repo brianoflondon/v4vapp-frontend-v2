@@ -32,7 +32,7 @@ const routes = [
         redirect: (to) => {
           // the function receives the target route as the argument
           // we return a redirect path here
-          return "/pos/sales/@" + to.params.hiveAccTo
+          return "/pos/sales/@" + to.params.hiveAccTo;
         },
       },
       { path: "/signup", component: () => import("pages/SignUp.vue") },
@@ -81,6 +81,6 @@ const routes = [
     path: "/:catchAll(.*)*",
     component: () => import("pages/ErrorNotFound.vue"),
   },
-]
+];
 
-export default routes
+export default routes;

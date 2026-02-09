@@ -37,14 +37,14 @@
 </template>
 
 <script setup>
-import LocalCurrency from "src/components/utils/LocalCurrency.vue"
-import ExplanationBox from "src/components/utils/ExplanationBox.vue"
-import ListTransactions from "src/components/hive/ListTransactions.vue"
-import { useI18n } from "vue-i18n"
+import LocalCurrency from "src/components/utils/LocalCurrency.vue";
+import ExplanationBox from "src/components/utils/ExplanationBox.vue";
+import ListTransactions from "src/components/hive/ListTransactions.vue";
+import { useI18n } from "vue-i18n";
 
-const t = useI18n().t
+const t = useI18n().t;
 
-const KeychainDialog = defineModel()
+const KeychainDialog = defineModel();
 </script>
 
 <style lang="scss" scoped></style>

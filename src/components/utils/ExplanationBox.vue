@@ -14,12 +14,12 @@
 
 <script setup>
 // add props for the title and text
-import { onMounted, ref } from "vue"
-import { useI18n } from "vue-i18n"
-const t = useI18n().t
+import { onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+const t = useI18n().t;
 
-const titleHere = ref("")
-const textHere = ref("")
+const titleHere = ref("");
+const textHere = ref("");
 
 const props = defineProps({
   title: {
@@ -30,20 +30,20 @@ const props = defineProps({
     type: String,
     default: "",
   },
-})
+});
 
 onMounted(() => {
   if (props.title === "") {
-    titleHere.value = t("explanation_title")
+    titleHere.value = t("explanation_title");
   } else {
-    titleHere.value = props.title
+    titleHere.value = props.title;
   }
   if (props.text === "") {
-    textHere.value = t("explanation_text")
+    textHere.value = t("explanation_text");
   } else {
-    textHere.value = props.text
+    textHere.value = props.text;
   }
-})
+});
 </script>
 
 <style lang="scss" scoped>

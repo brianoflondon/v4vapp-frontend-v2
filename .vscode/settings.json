@@ -3,15 +3,8 @@
   "editor.guides.bracketPairs": true,
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.codeActionsOnSave": [
-    "source.fixAll.eslint"
-  ],
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "vue"
-  ],
+  "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
   "workbench.colorCustomizations": {
     "activityBar.background": "#fe90008c",
     "titleBar.activeBackground": "#FE9200",
@@ -28,12 +21,8 @@
     "pinia",
     "themify"
   ],
-  "githubPullRequests.ignoredPullRequestBranches": [
-    "develop"
-  ],
-  "i18n-ally.localesPaths": [
-    "src/i18n/*"
-  ],
+  "githubPullRequests.ignoredPullRequestBranches": ["develop"],
+  "i18n-ally.localesPaths": ["src/i18n/*"],
   "i18n-ally.sourceLanguage": "en",
   "i18n-ally.namespace": false,
   "[python]": {

@@ -3,25 +3,25 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue"
-import L from "leaflet"
-import "leaflet-search"
-import "leaflet/dist/leaflet.css"
-import "leaflet-search/dist/leaflet-search.min.css"
+import { onMounted, onUnmounted, ref } from "vue";
+import L from "leaflet";
+import "leaflet-search";
+import "leaflet/dist/leaflet.css";
+import "leaflet-search/dist/leaflet-search.min.css";
 
 L.Icon.Default.imagePath =
   process.env.NODE_ENV === "production"
     ? "/images/leaflet/"
-    : "/node_modules/leaflet/dist/images/"
+    : "/node_modules/leaflet/dist/images/";
 
-const mapContainer = ref(null)
-let mymap = null
+const mapContainer = ref(null);
+let mymap = null;
 
 onMounted(() => {
-  mymap = L.map(mapContainer.value).setView([32.3314, -117.0504], 15)
+  mymap = L.map(mapContainer.value).setView([32.3314, -117.0504], 15);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
-  }).addTo(mymap)
+  }).addTo(mymap);
 
   // Add search control
   const searchControl = new L.Control.Search({
@@ -33,44 +33,45 @@ onMounted(() => {
     autoCollapse: true,
     autoType: false,
     minLength: 2,
-  })
-  mymap.addControl(searchControl)
+  });
+  mymap.addControl(searchControl);
 
   // Add locate control
-  const locateControl = L.control({ position: "topright" })
+  const locateControl = L.control({ position: "topright" });
   locateControl.onAdd = function (map) {
     var div = L.DomUtil.create(
       "div",
-      "leaflet-bar leaflet-control leaflet-control-custom"
-    )
-    div.style.backgroundColor = "white"
-    div.style.backgroundImage = "url(/images/leaflet/location-crosshairs.svg)" // replace with your icon
-    div.style.backgroundSize = "30px 30px"
-    div.style.width = "34px"
-    div.style.height = "34px"
+      "leaflet-bar leaflet-control leaflet-control-custom",
+    );
+    div.style.backgroundColor = "white";
+    div.style.backgroundImage = "url(/images/leaflet/location-crosshairs.svg)"; // replace with your icon
+    div.style.backgroundSize = "30px 30px";
+    div.style.width = "34px";
+    div.style.height = "34px";
     div.onclick = function () {
-      centerMapOnUser()
-    }
-    return div
-  }
-  mymap.addControl(locateControl)
+      centerMapOnUser();
+    };
+    return div;
+  };
+  mymap.addControl(locateControl);
 
-  mymap.on("moveend", searchInView)
+  mymap.on("moveend", searchInView);
 
-  searchInView()
-})
+  searchInView();
+});
 
 function getPaymentMethods(element) {
-  let methods = []
-  if (element.tags["payment:hive"] === "yes") methods.push("Hive")
-  if (element.tags["payment:hbd"] === "yes") methods.push("HBD")
-  if (element.tags["payment:lightning"] === "yes") methods.push("BTC Lightning")
-  return methods.join(", ")
+  let methods = [];
+  if (element.tags["payment:hive"] === "yes") methods.push("Hive");
+  if (element.tags["payment:hbd"] === "yes") methods.push("HBD");
+  if (element.tags["payment:lightning"] === "yes")
+    methods.push("BTC Lightning");
+  return methods.join(", ");
 }
 
 function searchInView() {
-  const bounds = mymap.getBounds()
-  const overpassUrl = "https://overpass-api.de/api/interpreter"
+  const bounds = mymap.getBounds();
+  const overpassUrl = "https://overpass-api.de/api/interpreter";
   const overpassQuery = `
     [out:json];
     (
@@ -79,47 +80,47 @@ function searchInView() {
       node["payment:lightning"="yes"](${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()});
     );
     out body;
-  `
+  `;
 
   fetch(overpassUrl + "?data=" + encodeURIComponent(overpassQuery))
     .then((response) => response.json())
     .then((data) => {
       for (let element of data.elements) {
         if (element.lat && element.lon) {
-          const marker = L.marker([element.lat, element.lon]).addTo(mymap)
-          const name = element.tags.name || "Unnamed"
+          const marker = L.marker([element.lat, element.lon]).addTo(mymap);
+          const name = element.tags.name || "Unnamed";
           const type = element.tags.amenity
             ? capitalizeFirstLetter(element.tags.amenity)
-            : "Unknown"
-          const url = `https://www.openstreetmap.org/node/${element.id}`
-          const paymentMethods = getPaymentMethods(element)
+            : "Unknown";
+          const url = `https://www.openstreetmap.org/node/${element.id}`;
+          const paymentMethods = getPaymentMethods(element);
           marker.bindPopup(
-            `<b>${name}</b><br>${type}<br>Accepts: ${paymentMethods}<br><a href="${url}" target="_blank">View on OpenStreetMap</a>`
-          )
+            `<b>${name}</b><br>${type}<br>Accepts: ${paymentMethods}<br><a href="${url}" target="_blank">View on OpenStreetMap</a>`,
+          );
         }
       }
-    })
+    });
 }
 
 function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
+  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
 function centerMapOnUser() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
-      const { latitude, longitude } = position.coords
-      mymap.setView([latitude, longitude], 15)
-    })
+      const { latitude, longitude } = position.coords;
+      mymap.setView([latitude, longitude], 15);
+    });
   } else {
-    alert("Geolocation is not supported by this browser.")
+    alert("Geolocation is not supported by this browser.");
   }
 }
 
 onUnmounted(() => {
-  mymap.off("moveend", searchInView)
-  mymap.remove()
-})
+  mymap.off("moveend", searchInView);
+  mymap.remove();
+});
 </script>
 
 <style scoped>

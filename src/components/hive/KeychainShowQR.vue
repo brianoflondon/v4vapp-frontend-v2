@@ -167,45 +167,45 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useStoreSales } from "src/stores/storeSales"
+import { computed, onMounted, onBeforeUnmount, ref, onBeforeMount } from "vue";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
+import { useStoreSales } from "src/stores/storeSales";
 
-import { useQuasar, copyToClipboard } from "quasar"
-import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
-import { useTruncateLnbc } from "src/use/useUtils.js"
+import { useQuasar, copyToClipboard } from "quasar";
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue";
+import { useTruncateLnbc } from "src/use/useUtils.js";
 import {
   useGetHiveTransactionHistory,
   useGetCheckCode,
   useGetHiveAmountString,
   useGenerateHiveTransferOp,
-} from "src/use/useHive.js"
-import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js"
-import CreateQRCode from "components/qrcode/CreateQRCode.vue"
-import { useI18n } from "vue-i18n"
-import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils"
-import { encodeOp, Parameters } from "hive-uri"
+} from "src/use/useHive.js";
+import { useGetLightingHiveInvoice } from "src/use/useLightningInvoice.js";
+import CreateQRCode from "components/qrcode/CreateQRCode.vue";
+import { useI18n } from "vue-i18n";
+import { tidyNumber, QRLightningHiveColor } from "src/use/useUtils";
+import { encodeOp, Parameters } from "hive-uri";
 
-const hiveCheckTime = 1 // seconds between each check
-const hiveCheckTimer = ref(100)
+const hiveCheckTime = 1; // seconds between each check
+const hiveCheckTimer = ref(100);
 
-const maxChecks = 100 // 20 checks total
+const maxChecks = 100; // 20 checks total
 
-const checkTimeTotal = hiveCheckTime * maxChecks
-let currentTime = 0
-const progress = ref(1)
+const checkTimeTotal = hiveCheckTime * maxChecks;
+let currentTime = 0;
+const progress = ref(1);
 
-const intervalRef = ref([])
+const intervalRef = ref([]);
 
-const q = useQuasar()
-const t = useI18n().t
+const q = useQuasar();
+const t = useI18n().t;
 
-const KeychainDialog = defineModel()
-const storeApiStatus = useStoreAPIStatus()
-const storeSales = useStoreSales()
-const qrCode = ref(null)
+const KeychainDialog = defineModel();
+const storeApiStatus = useStoreAPIStatus();
+const storeSales = useStoreSales();
+const qrCode = ref(null);
 
-const showLightning = ref(null)
+const showLightning = ref(null);
 
 const titleOptions = ref({
   pos: {
@@ -220,27 +220,27 @@ const titleOptions = ref({
     title: t("convert"),
     showHiveLightning: false,
   },
-})
+});
 
 const fees = computed(() => {
-  const cur = KeychainDialog.value.currencyToSend
+  const cur = KeychainDialog.value.currencyToSend;
   if (showLightning.value === null) {
-    return t("no_fees")
+    return t("no_fees");
   }
   if (!KeychainDialog.value.lndData[cur]) {
-    return t("calculating_fees")
+    return t("calculating_fees");
   }
   return `sats: ${tidyNumber(
     KeychainDialog.value?.lndData[cur]?.amount,
-    0
+    0,
   )} - ${t("Fees")}: ${tidyNumber(calcFees().sats, 0)} (${tidyNumber(
     calcFees().currency,
-    3
-  )} ${KeychainDialog.value.currencyToSend})`
-})
+    3,
+  )} ${KeychainDialog.value.currencyToSend})`;
+});
 
 const convertFees = computed(() => {
-  const feesCalc = calcFees()
+  const feesCalc = calcFees();
   return (
     t("fees") +
     " " +
@@ -249,8 +249,8 @@ const convertFees = computed(() => {
     tidyNumber(feesCalc.currency, 3) +
     " " +
     KeychainDialog.value.currencyToSend
-  )
-})
+  );
+});
 
 const requesting = computed(() => {
   return (
@@ -261,53 +261,57 @@ const requesting = computed(() => {
     t("to") +
     " " +
     KeychainDialog.value.hiveAccTo
-  )
-})
+  );
+});
 
 // const maxUseableWidth = ref(400)
 
 const maxUseableWidth = computed(() => {
   if (q.screen.width < 460) {
-    return q.screen.width - 120
+    return q.screen.width - 120;
   }
-  return 350
-})
+  return 350;
+});
 
 const dotColor = computed(() => {
-  let lightning = true
+  let lightning = true;
   if (showLightning.value === null || !showLightning.value) {
-    lightning = false
+    lightning = false;
   }
-  return QRLightningHiveColor(lightning, KeychainDialog.value.loading, q.dark.isActive)
-})
+  return QRLightningHiveColor(
+    lightning,
+    KeychainDialog.value.loading,
+    q.dark.isActive,
+  );
+});
 
 function dialogShow(event) {
-  console.log("showQrCodeDialog", event)
-  KeychainDialog.value.checkCode = useGetCheckCode()
-  KeychainDialog.value.loading = true
-  KeychainDialog.value.paid = false
-  KeychainDialog.value.lndData = {}
-  updateQRCode()
+  console.log("showQrCodeDialog", event);
+  KeychainDialog.value.checkCode = useGetCheckCode();
+  KeychainDialog.value.loading = true;
+  KeychainDialog.value.paid = false;
+  KeychainDialog.value.lndData = {};
+  updateQRCode();
   useGetHiveTransactionHistory(KeychainDialog.value.hiveAccTo, 20).then(
     (val) => {
-      KeychainDialog.value.transactions = val
-      KeychainDialog.value.paid = false
-      KeychainDialog.value.loading = false
-      checkHiveTransaction()
-      KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
-      startCountdown()
-    }
-  )
+      KeychainDialog.value.transactions = val;
+      KeychainDialog.value.paid = false;
+      KeychainDialog.value.loading = false;
+      checkHiveTransaction();
+      KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive;
+      startCountdown();
+    },
+  );
 }
 
 function dialogClose(event) {
-  console.log("showQrCodeDialog Close", event)
-  KeychainDialog.value.lndData = null
+  console.log("showQrCodeDialog Close", event);
+  KeychainDialog.value.lndData = null;
   if (intervalRef.value) {
-    intervalRef.value.forEach((interval) => clearInterval(interval))
+    intervalRef.value.forEach((interval) => clearInterval(interval));
   }
-  showLightning.value = false
-  KeychainDialog.value.show = false
+  showLightning.value = false;
+  KeychainDialog.value.show = false;
 }
 
 function updateStoreSales() {
@@ -319,10 +323,10 @@ function updateStoreSales() {
     KeychainDialog.value.currencyToSend === "hbd"
       ? "hive_dollar"
       : KeychainDialog.value.currencyToSend === "hive"
-      ? "hive"
-      : ""
+        ? "hive"
+        : "";
   const usd =
-    KeychainDialog.value.amountToSend * storeApiStatus.prices[currency]?.usd
+    KeychainDialog.value.amountToSend * storeApiStatus.prices[currency]?.usd;
   storeSales.updateSale({
     checkCode: KeychainDialog.value.checkCode,
     hiveAccTo: KeychainDialog.value.hiveAccTo,
@@ -334,7 +338,7 @@ function updateStoreSales() {
     timestampUnix: new Date().getTime(),
     usd: usd,
     paid: false,
-  })
+  });
 }
 
 // Calculates the fees charged in the same currency Hive/HBD as
@@ -346,16 +350,18 @@ function calcFees() {
    * @type {string} currencyToSend - The currency to send.
    * @type {number} amountToSend - The amount to send.
    */
-  const { currencyToSend, amountToSend } = KeychainDialog.value
-  const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeApiStatus
+  const { currencyToSend, amountToSend } = KeychainDialog.value;
+  const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeApiStatus;
 
-  const exchangeRate = currencyToSend === "hbd" ? HBDSatsNumber : hiveSatsNumber
-  const rawSats = parseFloat(amountToSend) * exchangeRate
+  const exchangeRate =
+    currencyToSend === "hbd" ? HBDSatsNumber : hiveSatsNumber;
+  const rawSats = parseFloat(amountToSend) * exchangeRate;
 
   const fee =
-    rawSats * apiStatus.config.conv_fee_percent + apiStatus.config.conv_fee_sats
+    rawSats * apiStatus.config.conv_fee_percent +
+    apiStatus.config.conv_fee_sats;
 
-  return { currency: fee / exchangeRate, sats: fee }
+  return { currency: fee / exchangeRate, sats: fee };
 }
 
 /**
@@ -378,19 +384,19 @@ function calcFees() {
  */
 async function updateQRCode() {
   KeychainDialog.value.currencyToSend =
-    KeychainDialog.value.currencyToSend.toLowerCase()
+    KeychainDialog.value.currencyToSend.toLowerCase();
   KeychainDialog.value.amountToSend =
-    KeychainDialog.value.currencyCalc[KeychainDialog.value.currencyToSend]
-  console.log("updateQRCode", KeychainDialog.value)
+    KeychainDialog.value.currencyCalc[KeychainDialog.value.currencyToSend];
+  console.log("updateQRCode", KeychainDialog.value);
 
   KeychainDialog.value.amountString = useGetHiveAmountString(
     KeychainDialog.value.amountToSend,
-    KeychainDialog.value.currencyToSend
-  )
-  updateStoreSales()
+    KeychainDialog.value.currencyToSend,
+  );
+  updateStoreSales();
   if (showLightning.value) {
-    await generateLightningQRCode()
-    return
+    await generateLightningQRCode();
+    return;
   }
 
   // When we are doing a conversion not a sale, we put in the
@@ -398,7 +404,7 @@ async function updateQRCode() {
 
   const sendingAccount = KeychainDialog.value.hiveAccFrom
     ? KeychainDialog.value?.hiveAccFrom
-    : ""
+    : "";
 
   KeychainDialog.value.op = useGenerateHiveTransferOp(
     sendingAccount,
@@ -406,23 +412,23 @@ async function updateQRCode() {
     KeychainDialog.value.amountToSend,
     KeychainDialog.value.currencyToSend,
     KeychainDialog.value.memo,
-    KeychainDialog.value.checkCode
-  )
+    KeychainDialog.value.checkCode,
+  );
 
   // params seems to break Hive Keychain
   let params = {
     // signer: KeychainDialog.value.hiveAccTo,
     // callback: "https://webhook.site/#!/62064ca7-46d9-49fa-88b8-212cfb7590f3",
     // no_broadcast: true,
-  }
+  };
 
   KeychainDialog.value.qrCodeTextHive = encodeOp(
     KeychainDialog.value.op,
-    params
-  )
+    params,
+  );
 
   // KeychainDialog.value.qrCodeTextHive = encodeOp(KeychainDialog.value.op)
-  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive;
 }
 
 async function generateLightningQRCode() {
@@ -431,20 +437,20 @@ async function generateLightningQRCode() {
    *
    * @returns {string} The currency to send.
    */
-  const cur = KeychainDialog.value.currencyToSend
+  const cur = KeychainDialog.value.currencyToSend;
   if (showLightning.value && KeychainDialog.value?.lndData[cur] == null) {
-    KeychainDialog.value.loading = true
+    KeychainDialog.value.loading = true;
     const lndData = await useGetLightingHiveInvoice(
       KeychainDialog.value.hiveAccTo,
       KeychainDialog.value.amountToSend,
       cur,
       KeychainDialog.value.memo,
       KeychainDialog.value.checkCode,
-      checkTimeTotal
-    )
-    KeychainDialog.value.lndData[cur] = lndData
+      checkTimeTotal,
+    );
+    KeychainDialog.value.lndData[cur] = lndData;
 
-    KeychainDialog.value.loading = false
+    KeychainDialog.value.loading = false;
   }
   if (
     KeychainDialog.value.lndData[cur]?.error ||
@@ -452,7 +458,7 @@ async function generateLightningQRCode() {
   ) {
     const message = KeychainDialog.value.lndData[cur]?.error
       ? KeychainDialog.value.lndData[cur]?.error
-      : t("lightning_invoice_not_created")
+      : t("lightning_invoice_not_created");
     q.notify({
       color: "negative",
       avatar: "/site-logo/v4vapp-logo.svg",
@@ -466,95 +472,98 @@ async function generateLightningQRCode() {
           handler: () => {},
         },
       ],
-    })
-    showLightning.value = null
-    return
+    });
+    showLightning.value = null;
+    return;
   }
   if (showLightning.value) {
     KeychainDialog.value.qrCodeTextLightning =
-      "lightning:" + KeychainDialog.value?.lndData[cur]["payment_request"]
-    KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextLightning
-    storeSales.markAsLightning(KeychainDialog.value.checkCode)
+      "lightning:" + KeychainDialog.value?.lndData[cur]["payment_request"];
+    KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextLightning;
+    storeSales.markAsLightning(KeychainDialog.value.checkCode);
   } else {
-    storeSales.markAsHive(KeychainDialog.value.checkCode)
-    KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
+    storeSales.markAsHive(KeychainDialog.value.checkCode);
+    KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive;
   }
 }
 
 function downloadQR(filetype) {
-  let fileName = KeychainDialog.value.hiveAccTo
+  let fileName = KeychainDialog.value.hiveAccTo;
   if (KeychainDialog.value.hiveOrLightning == "Hive") {
-    fileName += "_hive_v4vapp_address"
+    fileName += "_hive_v4vapp_address";
   } else {
-    fileName += "_ln_v4vapp_address"
+    fileName += "_ln_v4vapp_address";
   }
-  qrCode.value.download({ name: fileName, extension: filetype })
+  qrCode.value.download({ name: fileName, extension: filetype });
 }
 
 function startCountdown() {
   // Start the countdown
   const intervalId = setInterval(() => {
-    currentTime += 1 // Increment by 1 second
-    progress.value = 1 - parseFloat(currentTime / checkTimeTotal)
+    currentTime += 1; // Increment by 1 second
+    progress.value = 1 - parseFloat(currentTime / checkTimeTotal);
 
     // Stop the countdown when the progress reaches 0 or the maxChecks time is reached
     if (progress.value <= 0 || currentTime >= checkTimeTotal) {
-      clearInterval(intervalId)
-      currentTime = 0 // Reset currentTime for future runs
+      clearInterval(intervalId);
+      currentTime = 0; // Reset currentTime for future runs
     }
-  }, 1000) // Update every second
+  }, 1000); // Update every second
 
   // Store the interval ID so it can be cleared later if needed
-  intervalRef.value.push(intervalId)
+  intervalRef.value.push(intervalId);
 }
 
 function startHiveCheckTimer() {
-  console.log('startHiveCheckTimer')
-  const intervalId = setInterval(() => {
-    hiveCheckTimer.value -= 2 // Increment by 1 second
-    // Stop the countdown when the progress reaches 0 or the maxChecks time is reached
-    if (hiveCheckTimer.value <= 0) {
-      clearInterval(intervalId)
-      hiveCheckTimer.value = 100 // Reset currentTime for future runs
-    }
-  }, (hiveCheckTime * 1000) / 50) // Update every hiveCheckTime/100 ms
+  console.log("startHiveCheckTimer");
+  const intervalId = setInterval(
+    () => {
+      hiveCheckTimer.value -= 2; // Increment by 1 second
+      // Stop the countdown when the progress reaches 0 or the maxChecks time is reached
+      if (hiveCheckTimer.value <= 0) {
+        clearInterval(intervalId);
+        hiveCheckTimer.value = 100; // Reset currentTime for future runs
+      }
+    },
+    (hiveCheckTime * 1000) / 50,
+  ); // Update every hiveCheckTime/100 ms
 
   // Store the interval ID so it can be cleared later if needed
-  intervalRef.value.push(intervalId)
+  intervalRef.value.push(intervalId);
 }
 
 async function checkHiveTransaction(count = 0) {
-  console.log('checkHiveTransaction', count)
+  console.log("checkHiveTransaction", count);
   try {
     while (count < maxChecks) {
-      count += 1
+      count += 1;
 
       // Wait for hiveCheckTime seconds before checking again
       // also displays the countdown timer
 
       await new Promise((resolve) => {
-        const watchingInterval = setTimeout(resolve, 1000 * hiveCheckTime)
-        intervalRef.value.push(watchingInterval)
-        startHiveCheckTimer()
-      })
+        const watchingInterval = setTimeout(resolve, 1000 * hiveCheckTime);
+        intervalRef.value.push(watchingInterval);
+        startHiveCheckTimer();
+      });
 
       KeychainDialog.value.transactions = await useGetHiveTransactionHistory(
         KeychainDialog.value.hiveAccTo,
-        5
-      )
-      hiveCheckTimer.value = 100
+        5,
+      );
+      hiveCheckTimer.value = 100;
       const transactionFound = findTransactionWithCheckCode(
         KeychainDialog.value.transactions,
-        KeychainDialog.value.checkCode
-      )
+        KeychainDialog.value.checkCode,
+      );
       if (!transactionFound) {
-        continue // Continue to the next iteration of the loop
+        continue; // Continue to the next iteration of the loop
       }
       // Transaction found
 
       const message = `${t("payment")}: ${
         transactionFound?.op[1].amount
-      }\n${useTruncateLnbc(transactionFound?.op[1].memo)}`
+      }\n${useTruncateLnbc(transactionFound?.op[1].memo)}`;
 
       q.notify({
         color: "positive",
@@ -569,17 +578,17 @@ async function checkHiveTransaction(count = 0) {
             handler: () => {},
           },
         ],
-      })
-      KeychainDialog.value.paid = true
+      });
+      KeychainDialog.value.paid = true;
       // wait hiveCheckTime seconds before closing the dialog
       await new Promise((resolve) => {
-        const watchingInterval = setTimeout(resolve, 1000 * hiveCheckTime)
-        intervalRef.value.push(watchingInterval)
-      })
-      KeychainDialog.value.show = false
-      return // Exit the function if the transaction is found
+        const watchingInterval = setTimeout(resolve, 1000 * hiveCheckTime);
+        intervalRef.value.push(watchingInterval);
+      });
+      KeychainDialog.value.show = false;
+      return; // Exit the function if the transaction is found
     } // End of the While Loop
-    const memo = `${t("transfer")}: ${t("not_found")}:`
+    const memo = `${t("transfer")}: ${t("not_found")}:`;
     q.notify({
       color: "negative",
       avatar: "/site-logo/v4vapp-logo.svg",
@@ -593,11 +602,11 @@ async function checkHiveTransaction(count = 0) {
           handler: () => {},
         },
       ],
-    })
-    KeychainDialog.value.show = false
-    return // Exit the function if the transaction is not found after maxChecks
+    });
+    KeychainDialog.value.show = false;
+    return; // Exit the function if the transaction is not found after maxChecks
   } catch (error) {
-    console.error("Error:", error.message)
+    console.error("Error:", error.message);
   }
 }
 
@@ -612,28 +621,28 @@ async function checkHiveTransaction(count = 0) {
  * @returns {Object} The found transaction object, or undefined if no transaction with a matching checkCode is found.
  */
 function findTransactionWithCheckCode(transactions, checkCode) {
-  console.log("checking transactions", checkCode)
+  console.log("checking transactions", checkCode);
   if (!transactions || !checkCode) {
     console.error(
-      "findTransactionWithCheckCode: missing transactions or checkCode"
-    )
-    return
+      "findTransactionWithCheckCode: missing transactions or checkCode",
+    );
+    return;
   }
   const transactionFound = transactions.find((transaction) =>
-    transaction.op[1].memo.endsWith(checkCode)
-  )
+    transaction.op[1].memo.endsWith(checkCode),
+  );
   if (transactionFound) {
-    const trx_id = transactionFound?.trx_id
+    const trx_id = transactionFound?.trx_id;
     // modify the transaction object to include the memo without the checkCode
-    const hiveAccFrom = transactionFound.op[1].from
-    const amountPaid = transactionFound.op[1].amount
+    const hiveAccFrom = transactionFound.op[1].from;
+    const amountPaid = transactionFound.op[1].amount;
     storeSales.markPaid(
       KeychainDialog.value.checkCode,
       trx_id,
       hiveAccFrom,
-      amountPaid
-    )
-    return transactionFound
+      amountPaid,
+    );
+    return transactionFound;
   }
 }
 </script>

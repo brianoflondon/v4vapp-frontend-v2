@@ -7,11 +7,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue"
-import { useQuasar } from "quasar"
-import QRCode from "qrcode"
+import { ref, onMounted, watch } from "vue";
+import { useQuasar } from "quasar";
+import QRCode from "qrcode";
 
-const quasar = useQuasar()
+const quasar = useQuasar();
 const props = defineProps({
   qrText: {
     type: String,
@@ -33,23 +33,23 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-})
-const qrcodeUrl = ref("")
+});
+const qrcodeUrl = ref("");
 
 onMounted(() => {
   if (props.qrText) {
-    generateQRCode()
+    generateQRCode();
   }
-})
+});
 
 watch(
   () => props.qrText,
   () => {
     if (props.qrText) {
-      generateQRCode()
+      generateQRCode();
     }
-  }
-)
+  },
+);
 
 function generateQRCode() {
   const options = {
@@ -61,18 +61,18 @@ function generateQRCode() {
       light: "#1976D2",
       dark: quasar.dark.isActive ? "#03002c" : "#f5f5f5",
     },
-  }
+  };
   QRCode.toDataURL(props.qrText, options)
     .then((url) => {
-      qrcodeUrl.value = url
+      qrcodeUrl.value = url;
     })
     .catch((error) => {
-      console.error("QR code generation failed:", error)
-    })
+      console.error("QR code generation failed:", error);
+    });
 }
 
 function openLinkInNewWindow() {
-  const url = props.qrText
-  window.open(url, "_blank")
+  const url = props.qrText;
+  window.open(url, "_blank");
 }
 </script>

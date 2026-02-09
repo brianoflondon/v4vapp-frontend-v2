@@ -54,17 +54,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from "vue"
-import { useQuasar } from "quasar"
-import { useI18n } from "vue-i18n"
-import { tidyNumber } from "src/use/useUtils"
-import { useStoreUser } from "src/stores/storeUser"
-import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
+import { ref, onMounted, computed, watch, nextTick } from "vue";
+import { useQuasar } from "quasar";
+import { useI18n } from "vue-i18n";
+import { tidyNumber } from "src/use/useUtils";
+import { useStoreUser } from "src/stores/storeUser";
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue";
 
-const t = useI18n().t
-const q = useQuasar()
+const t = useI18n().t;
+const q = useQuasar();
 
-const emit = defineEmits(["amount", "currency", "amountCurrency"])
+const emit = defineEmits(["amount", "currency", "amountCurrency"]);
 const props = defineProps({
   defaultCurrency: {
     type: String,
@@ -78,15 +78,15 @@ const props = defineProps({
     type: String,
     default: "",
   },
-})
-const storeUser = useStoreUser()
+});
+const storeUser = useStoreUser();
 
-const currencyOptions = ref()
-const currencySelected = ref("hbd")
+const currencyOptions = ref();
+const currencySelected = ref("hbd");
 const amount = ref({
   txt: "",
   num: 0,
-})
+});
 
 const CurrencyCalc = ref({
   amount: 0,
@@ -96,28 +96,28 @@ const CurrencyCalc = ref({
   hbd: 0,
   local: 0,
   outOfRange: true,
-})
+});
 
 onMounted(() => {
   if (!storeUser.pos?.receiveCurrency) {
-    storeUser.pos.receiveCurrency = "hbd"
+    storeUser.pos.receiveCurrency = "hbd";
   }
   // Is there a local currency set? Add it to
   if (storeUser.localCurrency) {
-    resetCurrencyOptions(storeUser.localCurrency)
+    resetCurrencyOptions(storeUser.localCurrency);
   }
   if (storeUser.pos.currencySelected) {
-    currencySelected.value = storeUser.pos.currencySelected
-    CurrencyCalc.value.currency = currencySelected.value
+    currencySelected.value = storeUser.pos.currencySelected;
+    CurrencyCalc.value.currency = currencySelected.value;
   } else {
-    currencySelected.value = "hbd"
-    CurrencyCalc.value.currency = "hbd"
+    currencySelected.value = "hbd";
+    CurrencyCalc.value.currency = "hbd";
   }
   if (props.defaultCurrency) {
-    currencySelected.value = props.defaultCurrency
-    CurrencyCalc.value.currency = props.defaultCurrency
+    currencySelected.value = props.defaultCurrency;
+    CurrencyCalc.value.currency = props.defaultCurrency;
   }
-})
+});
 
 /**
  * Updates the selected currency value.
@@ -125,12 +125,12 @@ onMounted(() => {
  * @param {any} val - The new value for the selected currency.
  */
 function updateCurrencySelected(val) {
-  currencySelected.value = val.value
-  CurrencyCalc.value.currency = val.value
-  storeUser.pos.currencySelected = val.value
+  currencySelected.value = val.value;
+  CurrencyCalc.value.currency = val.value;
+  storeUser.pos.currencySelected = val.value;
   nextTick(() => {
-    emitEverything()
-  })
+    emitEverything();
+  });
 }
 
 /**
@@ -143,10 +143,10 @@ const isPaymentValid = computed(() => {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
   if (amount.value.num === 0 || isNaN(amount.value.num)) {
-    return false
+    return false;
   }
-  return true
-})
+  return true;
+});
 
 function enterPressed() {}
 
@@ -166,31 +166,31 @@ function parseLocalizedFloat(val) {
     "fi-FI",
     "el-GR",
     // Add or remove locales as required
-  ]
+  ];
 
-  const currentLocale = q.lang.getLocale()
+  const currentLocale = q.lang.getLocale();
 
   // Check if the current locale is in the list of comma locales
   if (commaLocales.includes(currentLocale)) {
-    val = val.replace(".", "").replace(",", ".")
+    val = val.replace(".", "").replace(",", ".");
   }
 
   // Handle other locale-specific formats as necessary
-  return parseFloat(val)
+  return parseFloat(val);
 }
 
 function clearAmount() {
-  amount.value.txt = ""
-  amount.value.num = 0
-  CurrencyCalc.value.amount = 0
+  amount.value.txt = "";
+  amount.value.num = 0;
+  CurrencyCalc.value.amount = 0;
 }
 
 watch(
   () => storeUser.pos.fixedRate,
   () => {
-    updateAmounts(amount.value.txt)
-  }
-)
+    updateAmounts(amount.value.txt);
+  },
+);
 
 function resetCurrencyOptions(localCurrency) {
   /**
@@ -204,13 +204,13 @@ function resetCurrencyOptions(localCurrency) {
     { label: "HBD", value: "hbd" },
     { label: "HIVE", value: "hive" },
     { label: "SATS", value: "sats" },
-  ]
+  ];
   if (localCurrency) {
     const localCurrencyOpt = {
       label: localCurrency.unit.toUpperCase(),
       value: localCurrency.value,
-    }
-    currencyOptions.value.unshift(localCurrencyOpt) // Add to the beginning
+    };
+    currencyOptions.value.unshift(localCurrencyOpt); // Add to the beginning
   }
 }
 
@@ -220,25 +220,25 @@ function handleCurrencyClicked(currency) {
 
   switch (currency) {
     case "hbd":
-      amount.value.num = CurrencyCalc.value.hbd
-      amount.value.txt = tidyNumber(CurrencyCalc.value.hbd, 2)
-      break
+      amount.value.num = CurrencyCalc.value.hbd;
+      amount.value.txt = tidyNumber(CurrencyCalc.value.hbd, 2);
+      break;
     case "hive":
-      amount.value.num = CurrencyCalc.value.hive
-      amount.value.txt = tidyNumber(CurrencyCalc.value.hive, 2)
-      break
+      amount.value.num = CurrencyCalc.value.hive;
+      amount.value.txt = tidyNumber(CurrencyCalc.value.hive, 2);
+      break;
     case "sats":
-      amount.value.num = CurrencyCalc.value.sats
-      amount.value.txt = tidyNumber(CurrencyCalc.value.sats, 0)
-      break
+      amount.value.num = CurrencyCalc.value.sats;
+      amount.value.txt = tidyNumber(CurrencyCalc.value.sats, 0);
+      break;
     default:
-      amount.value.num = CurrencyCalc.value.local
-      amount.value.txt = tidyNumber(CurrencyCalc.value.local, 2)
+      amount.value.num = CurrencyCalc.value.local;
+      amount.value.txt = tidyNumber(CurrencyCalc.value.local, 2);
   }
-  CurrencyCalc.value.amount = amount.value.num
-  currencySelected.value = currency
-  CurrencyCalc.value.currency = currency
-  storeUser.pos.currencySelected = currency
+  CurrencyCalc.value.amount = amount.value.num;
+  currencySelected.value = currency;
+  CurrencyCalc.value.currency = currency;
+  storeUser.pos.currencySelected = currency;
 }
 
 /**
@@ -248,29 +248,29 @@ function handleCurrencyClicked(currency) {
  */
 function updateAmounts(val) {
   if (val === "" || val === null) {
-    amount.value.num = 0
-    return
+    amount.value.num = 0;
+    return;
   }
-  amount.value.num = parseLocalizedFloat(val)
-  CurrencyCalc.value.amount = amount.value.num
+  amount.value.num = parseLocalizedFloat(val);
+  CurrencyCalc.value.amount = amount.value.num;
   nextTick(() => {
-    emitEverything()
-  })
+    emitEverything();
+  });
 }
 
 function emitEverything() {
-  emit("amount", amount.value.num)
-  emit("currency", currencySelected.value)
+  emit("amount", amount.value.num);
+  emit("currency", currencySelected.value);
   if (["hbd", "hive", "sats"].includes(currencySelected.value)) {
     emit("amountCurrency", {
       amount: amount.value.num,
       currency: currencySelected.value,
-    })
+    });
   } else {
     emit("amountCurrency", {
       amount: CurrencyCalc.value.sats,
       currency: "sats",
-    })
+    });
   }
 }
 </script>

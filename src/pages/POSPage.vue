@@ -272,32 +272,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed, nextTick } from "vue"
-import { tidyNumber, useUsernameFromRouteParam } from "src/use/useUtils"
-import { useQuasar } from "quasar"
-import POSKeychainShowQR from "src/components/hive/POSKeychainShowQR.vue"
-import ExplanationBox from "src/components/utils/ExplanationBox.vue"
-import SetRateBar from "src/components/utils/SetRateBar.vue"
-import { useStoreUser } from "src/stores/storeUser"
-import { useI18n } from "vue-i18n"
-import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
-import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
-import { useRoute } from "vue-router"
-import PosHeader from "src/components/hive/PosHeader.vue"
-import HiveInputAcc from "src/components/HiveInputAcc.vue"
-import LocalCurrency from "src/components/utils/LocalCurrency.vue"
-import ListTransactions from "src/components/hive/ListTransactions.vue"
-import ConfettiExplosion from "vue-confetti-explosion"
-import { useIsEVMAddress } from "src/use/useEVM"
+import { ref, onMounted, watch, computed, nextTick } from "vue";
+import { tidyNumber, useUsernameFromRouteParam } from "src/use/useUtils";
+import { useQuasar } from "quasar";
+import POSKeychainShowQR from "src/components/hive/POSKeychainShowQR.vue";
+import ExplanationBox from "src/components/utils/ExplanationBox.vue";
+import SetRateBar from "src/components/utils/SetRateBar.vue";
+import { useStoreUser } from "src/stores/storeUser";
+import { useI18n } from "vue-i18n";
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue";
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue";
+import { useRoute } from "vue-router";
+import PosHeader from "src/components/hive/PosHeader.vue";
+import HiveInputAcc from "src/components/HiveInputAcc.vue";
+import LocalCurrency from "src/components/utils/LocalCurrency.vue";
+import ListTransactions from "src/components/hive/ListTransactions.vue";
+import ConfettiExplosion from "vue-confetti-explosion";
+import { useIsEVMAddress } from "src/use/useEVM";
 
-const route = useRoute()
-const q = useQuasar()
-const t = useI18n().t
-const currencySelected = ref("hbd")
+const route = useRoute();
+const q = useQuasar();
+const t = useI18n().t;
+const currencySelected = ref("hbd");
 
-const currentTab = ref("sales")
+const currentTab = ref("sales");
 
-const storeUser = useStoreUser()
+const storeUser = useStoreUser();
 
 const hiveAccTo = ref({
   label: "",
@@ -305,9 +305,9 @@ const hiveAccTo = ref({
   caption: "",
   fixedUser: false,
   valid: false,
-})
+});
 
-const KeychainDialog = ref({ show: false, settings: false })
+const KeychainDialog = ref({ show: false, settings: false });
 const CurrencyCalc = ref({
   amount: 0,
   currency: "hbd",
@@ -316,16 +316,16 @@ const CurrencyCalc = ref({
   hbd: 0,
   local: 0,
   outOfRange: true,
-})
+});
 
 const amount = ref({
   txt: "",
   num: 0,
-})
+});
 
-const decimalEntry = ref(0)
+const decimalEntry = ref(0);
 
-const currencyOptions = ref()
+const currencyOptions = ref();
 
 function resetCurrencyOptions(localCurrency) {
   /**
@@ -339,31 +339,31 @@ function resetCurrencyOptions(localCurrency) {
     { label: "HBD", value: "hbd" },
     { label: "HIVE", value: "hive" },
     { label: "SATS", value: "sats" },
-  ]
+  ];
   if (localCurrency) {
     const localCurrencyOpt = {
       label: localCurrency.unit.toUpperCase(),
       value: localCurrency.value,
-    }
-    currencyOptions.value.unshift(localCurrencyOpt) // Add to the beginning
+    };
+    currencyOptions.value.unshift(localCurrencyOpt); // Add to the beginning
     // select this local currency
-    currencySelected.value = localCurrency.value
+    currencySelected.value = localCurrency.value;
   }
 }
 
 /**
  * ConfettiExplosion component
  */
-const visible = ref(false)
+const visible = ref(false);
 const explode = async () => {
-  visible.value = false
-  await nextTick()
-  visible.value = true
-}
+  visible.value = false;
+  await nextTick();
+  visible.value = true;
+};
 
 const destinationAccountType = computed(() => {
-  return useIsEVMAddress(hiveAccTo.value.value) ? "evm" : "hive"
-})
+  return useIsEVMAddress(hiveAccTo.value.value) ? "evm" : "hive";
+});
 
 watch(route, (to, from) => {
   // Code to execute on route change
@@ -379,58 +379,58 @@ watch(route, (to, from) => {
           valid: true,
           caption: storeUser.pos.hiveAccTo.caption,
           fixedUser: false,
-        }
+        };
       }
-    }, 100)
+    }, 100);
   }
-})
+});
 
 watch(
   () => storeUser.localCurrency,
   () => {
-    const baseCurrencies = ["hbd", "hive", "sats"]
+    const baseCurrencies = ["hbd", "hive", "sats"];
     if (!currencyOptions.value.includes(storeUser.localCurrency.value)) {
-      resetCurrencyOptions(storeUser.localCurrency)
+      resetCurrencyOptions(storeUser.localCurrency);
     }
     // If the local currency is one of the base currencies do nothing
     if (baseCurrencies.includes(currencySelected.value)) {
-      updateAmounts(amount.value.txt)
-      return
+      updateAmounts(amount.value.txt);
+      return;
     }
     // if the selected currency is no longer in the options, switch to the
     // newly selected local currency
     if (!currencyOptions.value.includes(currencySelected.value)) {
-      currencySelected.value = storeUser.localCurrency.value
-      CurrencyCalc.value.currency = currencySelected.value
-      storeUser.pos.currencySelected = currencySelected.value
+      currencySelected.value = storeUser.localCurrency.value;
+      CurrencyCalc.value.currency = currencySelected.value;
+      storeUser.pos.currencySelected = currencySelected.value;
     }
-    updateAmounts(amount.value.txt)
-  }
-)
+    updateAmounts(amount.value.txt);
+  },
+);
 
 watch(
   () => storeUser.pos.fixedRate,
   () => {
-    updateAmounts(amount.value.txt)
-  }
-)
+    updateAmounts(amount.value.txt);
+  },
+);
 
 watch(
   () => hiveAccTo.value.value,
   () => {
-    console.log("hiveAccTo changed", hiveAccTo.value.value)
+    console.log("hiveAccTo changed", hiveAccTo.value.value);
 
     if (!hiveAccTo.value.value) {
-      KeychainDialog.value.transactions = []
+      KeychainDialog.value.transactions = [];
     }
     if (destinationAccountType.value === "evm") {
-      storeUser.pos.receiveCurrency = "sats"
-      storeUser.pos.accountType = "evm"
+      storeUser.pos.receiveCurrency = "sats";
+      storeUser.pos.accountType = "evm";
     } else {
-      storeUser.pos.accountType = "hive"
+      storeUser.pos.accountType = "hive";
     }
-  }
-)
+  },
+);
 
 /**
  * Computed property that checks if the payment is valid.
@@ -442,75 +442,75 @@ const isPaymentValid = computed(() => {
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
   if (amount.value.num === 0 || isNaN(amount.value.num)) {
-    return false
+    return false;
   }
   if (!hiveAccTo.value.value || !hiveAccTo.value.valid) {
-    return false
+    return false;
   }
   if (memoHasPipe.value) {
-    return false
+    return false;
   }
-  return true
-})
+  return true;
+});
 
 const memoHasPipe = computed(() => {
   if (!memoInput.value) {
-    return false
+    return false;
   }
   if (memoInput.value.includes("|")) {
-    return true
+    return true;
   }
-  return false
-})
+  return false;
+});
 
 onMounted(() => {
   if (!storeUser.pos?.receiveCurrency) {
-    storeUser.pos.receiveCurrency = "hbd"
+    storeUser.pos.receiveCurrency = "hbd";
   }
   if (!storeUser.pos?.hiveAccTo) {
-    useLoggedInUser()
+    useLoggedInUser();
   }
   // give me the first item in the currencyOptions list
 
-  const path = route.path
+  const path = route.path;
   if (path.includes("/sales")) {
-    currentTab.value = "sales"
+    currentTab.value = "sales";
   } else if (path.includes("/history")) {
-    currentTab.value = "history"
+    currentTab.value = "history";
   } else if (path.includes("/currency")) {
-    currentTab.value = "currency"
+    currentTab.value = "currency";
   }
   if (route.params.hiveAccTo) {
-    const username = useUsernameFromRouteParam(route.params.hiveAccTo)
+    const username = useUsernameFromRouteParam(route.params.hiveAccTo);
     hiveAccTo.value = {
       label: username,
       value: username,
       caption: username,
-    }
-    hiveAccTo.value.fixedUser = true
-    hiveAccTo.value.valid = true
+    };
+    hiveAccTo.value.fixedUser = true;
+    hiveAccTo.value.valid = true;
   } else if (storeUser.pos?.hiveAccTo) {
     hiveAccTo.value = {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
       caption: storeUser.pos.hiveAccTo.caption,
       fixedUser: false,
-    }
+    };
   } else {
-    useLoggedInUser()
+    useLoggedInUser();
   }
   // Is there a local currency set? Add it to
   if (storeUser.localCurrency) {
-    resetCurrencyOptions(storeUser.localCurrency)
+    resetCurrencyOptions(storeUser.localCurrency);
   }
   if (storeUser.pos.currencySelected) {
-    currencySelected.value = storeUser.pos.currencySelected
-    CurrencyCalc.value.currency = currencySelected.value
+    currencySelected.value = storeUser.pos.currencySelected;
+    CurrencyCalc.value.currency = currencySelected.value;
   } else {
-    currencySelected.value = "hbd"
-    CurrencyCalc.value.currency = "hbd"
+    currencySelected.value = "hbd";
+    CurrencyCalc.value.currency = "hbd";
   }
-})
+});
 
 /**
  * Handles the retry of a transaction.
@@ -522,25 +522,25 @@ onMounted(() => {
  * @param {Object} val - The transaction data. Should have properties: `hiveAccTo`, `currencyToSend`, `amount`, and `memo`.
  */
 function handleRetryTransaction(val) {
-  KeychainDialog.value.hiveAccTo = val.hiveAccTo
+  KeychainDialog.value.hiveAccTo = val.hiveAccTo;
 
   hiveAccTo.value = {
     label: val.hiveAccTo,
     value: val.hiveAccTo,
     caption: val.hiveAccTo,
-  }
-  hiveAccTo.value.valid = true
+  };
+  hiveAccTo.value.valid = true;
 
-  handleCurrencyClicked(val.currencyToSend)
+  handleCurrencyClicked(val.currencyToSend);
 
-  amount.value.num = val.amount
-  amount.value.txt = tidyNumber(val.amount, 3)
-  memoInput.value = val.memo
-  updateAmounts(amount.value.txt)
+  amount.value.num = val.amount;
+  amount.value.txt = tidyNumber(val.amount, 3);
+  memoInput.value = val.memo;
+  updateAmounts(amount.value.txt);
   // wait a tick
   setTimeout(() => {
-    showPaymentQR(val.currencyToSend)
-  }, 100)
+    showPaymentQR(val.currencyToSend);
+  }, 100);
 }
 
 function useLoggedInUser() {
@@ -550,7 +550,7 @@ function useLoggedInUser() {
       value: storeUser.hiveAccname,
       caption: storeUser.profileName,
       fixedUser: false,
-    }
+    };
   }
 }
 
@@ -561,11 +561,11 @@ function useLoggedInUser() {
  */
 function updateAmounts(val) {
   if (val === "" || val === null) {
-    amount.value.num = 0
-    return
+    amount.value.num = 0;
+    return;
   }
-  amount.value.num = parseLocalizedFloat(val)
-  CurrencyCalc.value.amount = amount.value.num
+  amount.value.num = parseLocalizedFloat(val);
+  CurrencyCalc.value.amount = amount.value.num;
 }
 
 function handleCurrencyClicked(currency) {
@@ -573,25 +573,25 @@ function handleCurrencyClicked(currency) {
   // modify this to use updateAmounts
   switch (currency) {
     case "hbd":
-      amount.value.num = CurrencyCalc.value.hbd
-      amount.value.txt = tidyNumber(CurrencyCalc.value.hbd, 2)
-      break
+      amount.value.num = CurrencyCalc.value.hbd;
+      amount.value.txt = tidyNumber(CurrencyCalc.value.hbd, 2);
+      break;
     case "hive":
-      amount.value.num = CurrencyCalc.value.hive
-      amount.value.txt = tidyNumber(CurrencyCalc.value.hive, 2)
-      break
+      amount.value.num = CurrencyCalc.value.hive;
+      amount.value.txt = tidyNumber(CurrencyCalc.value.hive, 2);
+      break;
     case "sats":
-      amount.value.num = CurrencyCalc.value.sats
-      amount.value.txt = tidyNumber(CurrencyCalc.value.sats, 0)
-      break
+      amount.value.num = CurrencyCalc.value.sats;
+      amount.value.txt = tidyNumber(CurrencyCalc.value.sats, 0);
+      break;
     default:
-      amount.value.num = CurrencyCalc.value.local
-      amount.value.txt = tidyNumber(CurrencyCalc.value.local, 2)
+      amount.value.num = CurrencyCalc.value.local;
+      amount.value.txt = tidyNumber(CurrencyCalc.value.local, 2);
   }
-  CurrencyCalc.value.amount = amount.value.num
-  currencySelected.value = currency
-  CurrencyCalc.value.currency = currency
-  storeUser.pos.currencySelected = currency
+  CurrencyCalc.value.amount = amount.value.num;
+  currencySelected.value = currency;
+  CurrencyCalc.value.currency = currency;
+  storeUser.pos.currencySelected = currency;
 }
 
 function bookmarkSite() {
@@ -599,13 +599,13 @@ function bookmarkSite() {
   // Since browsers restrict adding bookmarks via script,
   // inform the user how to bookmark the page manually.
   // jump to a different url
-  window.location.href = "/pos/sales/@" + hiveAccTo.value.value
+  window.location.href = "/pos/sales/@" + hiveAccTo.value.value;
 }
 
-const beforeVal = ref("")
-const afterVal = ref("")
-const afterParsed = ref("")
-const currentLocale = ref("")
+const beforeVal = ref("");
+const afterVal = ref("");
+const afterParsed = ref("");
+const currentLocale = ref("");
 
 function parseLocalizedFloat(val) {
   const commaLocales = [
@@ -635,46 +635,46 @@ function parseLocalizedFloat(val) {
     "sk-SK", // Slovakia
     "sl-SI", // Slovenia
     // Add or remove locales as required
-  ]
-  beforeVal.value = val
-  currentLocale.value = q.lang.getLocale()
+  ];
+  beforeVal.value = val;
+  currentLocale.value = q.lang.getLocale();
   // Check if the current locale is in the list of comma locales
   if (commaLocales.includes(currentLocale.value)) {
-    val = val.replace(".", "").replace(",", ".")
+    val = val.replace(".", "").replace(",", ".");
   }
 
   // Handle other locale-specific formats as necessary
-  afterVal.value = val
-  afterParsed.value = parseFloat(val)
-  return parseFloat(val)
+  afterVal.value = val;
+  afterParsed.value = parseFloat(val);
+  return parseFloat(val);
 }
 
 function updateCurrencySelected(val) {
-  currencySelected.value = val.value
-  CurrencyCalc.value.currency = val.value
-  storeUser.pos.currencySelected = val.value
+  currencySelected.value = val.value;
+  CurrencyCalc.value.currency = val.value;
+  storeUser.pos.currencySelected = val.value;
 }
 
 function enterPressed() {}
 
 // Watch the hiveAccTo for changes and update the storeUser.pos Object
 watch(hiveAccTo, async (val) => {
-  KeychainDialog.value.hiveAccTo = val.value
+  KeychainDialog.value.hiveAccTo = val.value;
   storeUser.pos.hiveAccTo = {
     label: val.label,
     value: val.value,
     caption: val.caption,
-  }
-})
+  };
+});
 
 function clearAmount() {
-  decimalEntry.value = 0
-  amount.value.txt = ""
-  amount.value.num = 0
-  CurrencyCalc.value.amount = 0
+  decimalEntry.value = 0;
+  amount.value.txt = "";
+  amount.value.num = 0;
+  CurrencyCalc.value.amount = 0;
 }
 
-const memoInput = ref("")
+const memoInput = ref("");
 
 /**
  * Displays the payment QR code.
@@ -683,33 +683,33 @@ const memoInput = ref("")
  */
 function showPaymentQR(payWith) {
   // always default to not showing lightning invoice first.
-  KeychainDialog.value.showLightning = false
+  KeychainDialog.value.showLightning = false;
   if (!isPaymentValid.value) {
-    return
+    return;
   }
   if (payWith === "sats") {
-    KeychainDialog.value.showLightning = true
+    KeychainDialog.value.showLightning = true;
   }
-  KeychainDialog.value.memo = memoInput.value
-  KeychainDialog.value.currencyToSend = payWith
-  KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
-  KeychainDialog.value.currencyCalc = CurrencyCalc.value
-  KeychainDialog.value.display = "pos"
-  KeychainDialog.value.show = true
+  KeychainDialog.value.memo = memoInput.value;
+  KeychainDialog.value.currencyToSend = payWith;
+  KeychainDialog.value.hiveAccTo = hiveAccTo.value.value;
+  KeychainDialog.value.currencyCalc = CurrencyCalc.value;
+  KeychainDialog.value.display = "pos";
+  KeychainDialog.value.show = true;
 }
 
 watch(
   () => KeychainDialog.value?.paid,
   (paid) => {
     if (paid) {
-      clearAmount(true)
+      clearAmount(true);
       setTimeout(() => {
-        explode()
-      }, 5300)
+        explode();
+      }, 5300);
     } else {
     }
-  }
-)
+  },
+);
 </script>
 
 <style lang="scss" scoped>

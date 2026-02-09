@@ -7,14 +7,14 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
-import VoteProposal from "components/utils/VoteProposal.vue"
+import { ref } from "vue";
+import VoteProposal from "components/utils/VoteProposal.vue";
 
 const voteOptions = ref({
   hiveUser: "",
   showButton: false,
   showDialog: true,
-})
+});
 </script>
 
 <style lang="scss" scoped></style>

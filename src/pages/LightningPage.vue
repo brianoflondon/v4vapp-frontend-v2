@@ -366,65 +366,65 @@
 </style>
 
 <script setup>
-import { computed, ref, watch } from "vue"
-import { tidyNumber } from "src/use/useUtils"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { QrcodeStream } from "vue-qrcode-reader"
-import { useDecodeLightningInvoice } from "src/use/useLightningInvoice"
+import { computed, ref, watch } from "vue";
+import { tidyNumber } from "src/use/useUtils";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
+import { QrcodeStream } from "vue-qrcode-reader";
+import { useDecodeLightningInvoice } from "src/use/useLightningInvoice";
 import {
   useGetHiveTransactionHistory,
   useHiveAccountExists,
   useHiveAvatarURL,
-} from "src/use/useHive.js"
-import { useConfirmPayWithApi } from "src/use/useV4vapp"
-import { useHiveKeychainTransfer } from "src/use/useKeychain"
-import { useEVMAddressExists } from "src/use/useEVM"
-import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
-import AskHASDialog from "components/hive/AskHASDialog.vue"
-import KeychainShowQR from "components/hive/KeychainShowQR.vue"
-import ShowProgress from "components/lightning/ShowProgress.vue"
-import VoteProposal from "components/utils/VoteProposal.vue"
-import CountdownBar from "components/utils/CountdownBar.vue"
-import { useI18n } from "vue-i18n"
-import { useQuasar, QSpinnerGears } from "quasar"
-import CreditCard from "components/hive/CreditCard.vue"
-import { useStoreUser } from "src/stores/storeUser"
-import ExplanationBox from "components/utils/ExplanationBox.vue"
-import { serverHiveAccount } from "boot/axios"
-import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
-import HiveLightningKeepSatsTrans from "src/components/v4vapp/HiveLightningKeepSatsTrans.vue"
-import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
-import ConvertWrapper from "src/components/hive/ConvertWrapper.vue"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import UnlimitedInvoice from "components/utils/UnlimitedInvoice.vue"
-import QRcodeCamera from "src/components/utils/QRcodeCamera.vue"
+} from "src/use/useHive.js";
+import { useConfirmPayWithApi } from "src/use/useV4vapp";
+import { useHiveKeychainTransfer } from "src/use/useKeychain";
+import { useEVMAddressExists } from "src/use/useEVM";
+import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue";
+import AskHASDialog from "components/hive/AskHASDialog.vue";
+import KeychainShowQR from "components/hive/KeychainShowQR.vue";
+import ShowProgress from "components/lightning/ShowProgress.vue";
+import VoteProposal from "components/utils/VoteProposal.vue";
+import CountdownBar from "components/utils/CountdownBar.vue";
+import { useI18n } from "vue-i18n";
+import { useQuasar, QSpinnerGears } from "quasar";
+import CreditCard from "components/hive/CreditCard.vue";
+import { useStoreUser } from "src/stores/storeUser";
+import ExplanationBox from "components/utils/ExplanationBox.vue";
+import { serverHiveAccount } from "boot/axios";
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue";
+import HiveLightningKeepSatsTrans from "src/components/v4vapp/HiveLightningKeepSatsTrans.vue";
+import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue";
+import ConvertWrapper from "src/components/hive/ConvertWrapper.vue";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
+import UnlimitedInvoice from "components/utils/UnlimitedInvoice.vue";
+import QRcodeCamera from "src/components/utils/QRcodeCamera.vue";
 
-const invoiceText = ref(null)
-const invoiceChecking = ref(false)
-const invoiceValid = ref(null)
-const dInvoice = ref(null)
-const callbackResult = ref(null)
-const errorMessage = ref("")
+const invoiceText = ref(null);
+const invoiceChecking = ref(false);
+const invoiceValid = ref(null);
+const dInvoice = ref(null);
+const callbackResult = ref(null);
+const errorMessage = ref("");
 const voteOptions = ref({
   hiveUser: "",
   showButton: true,
   showDialog: false,
-})
+});
 
-const cameraOn = ref(false)
-const cameraShow = ref(false)
-const cameraError = ref("")
+const cameraOn = ref(false);
+const cameraShow = ref(false);
+const cameraError = ref("");
 
-const privateMemo = ref(false)
+const privateMemo = ref(false);
 
-const currentTab = ref("wallet")
+const currentTab = ref("wallet");
 
-const t = useI18n().t
-const q = useQuasar()
-const storeApiStatus = useStoreAPIStatus()
-const storeUser = useStoreUser()
-const payWithSatsAmount = ref(0)
-const adminOverride = ref(false)
+const t = useI18n().t;
+const q = useQuasar();
+const storeApiStatus = useStoreAPIStatus();
+const storeUser = useStoreUser();
+const payWithSatsAmount = ref(0);
+const adminOverride = ref(false);
 
 const payWithSatsButton = computed(() => {
   return (
@@ -433,98 +433,98 @@ const payWithSatsButton = computed(() => {
     " from " +
     storeUser.keepSatsBalance +
     " シ"
-  )
-})
+  );
+});
 
 const enoughKeepSats = computed(() => {
   if (storeUser.keepSatsBalanceNum >= CurrencyCalc.value.sats) {
-    return true
+    return true;
   }
-  return false
-})
+  return false;
+});
 
 const payWithSatsOnly = computed(() => {
   if (dInvoice.value?.payWithSatsOnly) {
-    return true
+    return true;
   }
-  return false
-})
+  return false;
+});
 
-const KeychainDialog = ref({ show: false })
-const HASDialog = ref({ show: false })
-const CurrencyCalc = ref({})
+const KeychainDialog = ref({ show: false });
+const HASDialog = ref({ show: false });
+const CurrencyCalc = ref({});
 
-let timeMessage = ref("")
+let timeMessage = ref("");
 // Invoice hint shows expiry time and sats costs and fee
 const invoiceHint = computed(() => {
   if (!invoiceValid.value) {
-    return t("invoice_hint")
+    return t("invoice_hint");
   } else {
     if (invoiceValid.value && dInvoice.value.timeLeft > 1) {
       const message = `${t("invoice")} ${sats.value} (${t("fee")}: ${
         satsFee.value
-      }) - ${t("expires")} ${timeMessage.value}`
-      return message
+      }) - ${t("expires")} ${timeMessage.value}`;
+      return message;
     }
-    return t("invoice_hint")
+    return t("invoice_hint");
   }
-})
+});
 
 const sats = computed(() => {
   if (dInvoice.value?.millisatoshis) {
-    return tidyNumber(dInvoice.value?.millisatoshis / 1000)
+    return tidyNumber(dInvoice.value?.millisatoshis / 1000);
   }
-  return "---"
-})
+  return "---";
+});
 
 const satsFee = computed(() => {
   if (dInvoice.value?.millisatoshis) {
-    const sats = dInvoice.value?.millisatoshis / 1000
-    const satsFee = (calcSatsFee(sats) - sats).toFixed(0)
-    return tidyNumber(satsFee)
+    const sats = dInvoice.value?.millisatoshis / 1000;
+    const satsFee = (calcSatsFee(sats) - sats).toFixed(0);
+    return tidyNumber(satsFee);
   }
-  return "---"
-})
+  return "---";
+});
 
 function calcSatsFee(sats) {
-  let satsWithFees = sats
+  let satsWithFees = sats;
   console.log(
     "conv_fee_percent",
-    storeApiStatus.apiStatus.config.conv_fee_percent
-  )
-  console.log("conv_fee_sats", storeApiStatus.apiStatus.config.conv_fee_sats)
-  satsWithFees *= 1 + storeApiStatus.apiStatus.config.conv_fee_percent
-  satsWithFees += storeApiStatus.apiStatus.config.conv_fee_sats
-  return satsWithFees
+    storeApiStatus.apiStatus.config.conv_fee_percent,
+  );
+  console.log("conv_fee_sats", storeApiStatus.apiStatus.config.conv_fee_sats);
+  satsWithFees *= 1 + storeApiStatus.apiStatus.config.conv_fee_percent;
+  satsWithFees += storeApiStatus.apiStatus.config.conv_fee_sats;
+  return satsWithFees;
 }
 
 const HBD = computed(() => {
   if (dInvoice.value?.millisatoshis) {
-    const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
-    const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(3)
-    return tidyNumber(HBD) + " HUSD"
+    const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000);
+    const HBD = (sats / storeApiStatus.HBDSatsNumber).toFixed(3);
+    return tidyNumber(HBD) + " HUSD";
   }
-  return "---"
-})
+  return "---";
+});
 
 const Hive = computed(() => {
   if (dInvoice.value?.millisatoshis) {
-    const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000)
-    const hive = (sats / storeApiStatus.hiveSatsNumber).toFixed(3)
-    return tidyNumber(hive) + " Hive"
+    const sats = calcSatsFee(dInvoice.value?.millisatoshis / 1000);
+    const hive = (sats / storeApiStatus.hiveSatsNumber).toFixed(3);
+    return tidyNumber(hive) + " Hive";
   }
-  return "---"
-})
+  return "---";
+});
 
 async function pasteClipboard() {
   if (window.navigator.clipboard) {
     try {
-      const text = await window.navigator.clipboard.readText()
-      invoiceText.value = text
-      decodeInvoice()
+      const text = await window.navigator.clipboard.readText();
+      invoiceText.value = text;
+      decodeInvoice();
     } catch (error) {}
   } else {
-    console.error("Clipboard API not supported in this browser.")
+    console.error("Clipboard API not supported in this browser.");
   }
 }
 
@@ -540,18 +540,18 @@ const invoiceColours = {
     valid: "green-2",
     invalid: "red-2",
   },
-}
+};
 
 const invoiceColor = computed(() => {
-  const colours = invoiceColours[q.dark.isActive]
+  const colours = invoiceColours[q.dark.isActive];
   if (invoiceValid.value === null) {
-    return colours.empty
+    return colours.empty;
   }
   if (invoiceValid.value) {
-    return colours.valid
+    return colours.valid;
   }
-  return colours.invalid
-})
+  return colours.invalid;
+});
 
 const buttonColors = {
   // dark mode is true, light mode is false
@@ -563,12 +563,12 @@ const buttonColors = {
     buttonColor: "grey-6",
     textColor: "grey-9",
   },
-}
+};
 
 const buttonColor = computed(() => {
-  const colours = buttonColors[q.dark.isActive]
-  return colours
-})
+  const colours = buttonColors[q.dark.isActive];
+  return colours;
+});
 
 const invoiceLabels = {
   enter: t("enter_invoice"),
@@ -576,115 +576,115 @@ const invoiceLabels = {
   lightningAddress: t("valid_lightning_address"),
   invalid: t("invalid_invoice"),
   hiveAccname: "Hive Account",
-}
+};
 
 const invoiceLabel = computed(() => {
-  return invoiceLabels[invoiceType()]
-})
+  return invoiceLabels[invoiceType()];
+});
 
 function closeAskDialog(val) {
-  invoiceChecking.value = false
+  invoiceChecking.value = false;
 }
 
 function checkInvoiceProgress(timeLeft) {
-  dInvoice.value.timeLeft = timeLeft
+  dInvoice.value.timeLeft = timeLeft;
   if (timeLeft < 0) {
     // Check if invoice is expired return true if expired
-    dInvoice.value.errors.expired = true
-    dInvoice.value.errors.text.push("invoice_expired")
+    dInvoice.value.errors.expired = true;
+    dInvoice.value.errors.text.push("invoice_expired");
     errorMessage.value = dInvoice.value?.errors.text
       .map((error) => t(error))
-      .join(", ")
-    dInvoice.value.timeLeft = 0
-    invoiceValid.value = false
-    invoiceChecking.value = false
+      .join(", ");
+    dInvoice.value.timeLeft = 0;
+    invoiceValid.value = false;
+    invoiceChecking.value = false;
   }
 }
 
 function receiveNewInvoice(val) {
   if (val?.v4vapp?.type === "hiveAccname") {
     // we have a Hive account to send to.
-    dInvoice.value = val
-    invoiceValid.value = true
-    invoiceChecking.value = false
-    invoiceText.value = `@${val.v4vapp.sendTo}`
-    validHiveAccountToPay()
-    return
+    dInvoice.value = val;
+    invoiceValid.value = true;
+    invoiceChecking.value = false;
+    invoiceText.value = `@${val.v4vapp.sendTo}`;
+    validHiveAccountToPay();
+    return;
   }
   if (val === null) {
     // Need to notify of problem with Lightning service of invoice provider
-    console.debug("Lightning service provider not working")
-    dInvoice.value.askDetails = false
+    console.debug("Lightning service provider not working");
+    dInvoice.value.askDetails = false;
     q.notify({
       message: t("invoice_provider_not_working"),
       color: "warning",
       icon: "report_problem",
       position: "top",
       timeout: 3000,
-    })
-    return
+    });
+    return;
   }
-  callbackResult.value = val
-  invoiceText.value = val.pr
-  decodeInvoice()
+  callbackResult.value = val;
+  invoiceText.value = val.pr;
+  decodeInvoice();
 }
 
 function invoiceType() {
   // Checks the type of the invoice returns bolt11 or lightningAddress
   if (invoiceValid.value === null) {
-    return "enter"
+    return "enter";
   }
-  const type = dInvoice.value?.v4vapp?.type
+  const type = dInvoice.value?.v4vapp?.type;
   if (!type) {
-    return "invalid"
+    return "invalid";
   }
   if (type === "hiveAccname") {
-    return "hiveAccname"
+    return "hiveAccname";
   }
   if (type === "bolt11") {
-    return "bolt11"
+    return "bolt11";
   } else if (type === "lightningAddress") {
-    return "lightningAddress"
+    return "lightningAddress";
   } else {
-    return "invalid"
+    return "invalid";
   }
 }
 
 function clearReset() {
-  errorMessage.value = ""
-  invoiceText.value = null
-  invoiceValid.value = null
-  invoiceChecking.value = false
-  dInvoice.value = {}
-  cameraOn.value = false
-  cameraShow.value = false
-  CurrencyCalc.value.amount = 0
-  payWithSatsAmount.value = 0
-  HASDialog.value = { show: false }
+  errorMessage.value = "";
+  invoiceText.value = null;
+  invoiceValid.value = null;
+  invoiceChecking.value = false;
+  dInvoice.value = {};
+  cameraOn.value = false;
+  cameraShow.value = false;
+  CurrencyCalc.value.amount = 0;
+  payWithSatsAmount.value = 0;
+  HASDialog.value = { show: false };
 }
 
 watch(
   () => storeUser.currentUser,
   async (newVal) => {
     if (newVal === null || newVal === undefined) {
-      currentTab.value = "wallet"
+      currentTab.value = "wallet";
     }
-    return
-  }
-)
+    return;
+  },
+);
 
 async function onDecode(content) {
   // Switch to better QR Code library, handle multiple QR codes
   // scan through them until a valid Lightning invoice is found.
-  console.log("onDecode", content)
-  let i = 0
+  console.log("onDecode", content);
+  let i = 0;
   while (i < content.length && !invoiceValid.value) {
-    const rawValue = content[i].rawValue
+    const rawValue = content[i].rawValue;
 
-    invoiceText.value = rawValue
-    await decodeInvoice()
+    invoiceText.value = rawValue;
+    await decodeInvoice();
 
-    i++
+    i++;
   }
 }
 
@@ -693,68 +693,68 @@ async function onDecode(content) {
  * @returns {Promise<void>} A promise that resolves when the invoice is decoded.
  */
 async function decodeInvoice() {
-  invoiceChecking.value = true
-  invoiceValid.value = null
+  invoiceChecking.value = true;
+  invoiceValid.value = null;
   if (!invoiceText.value) {
-    clearReset()
-    return true
+    clearReset();
+    return true;
   }
   // Clean up invoice text input, strip prefixes
-  invoiceText.value = invoiceText.value.toLowerCase()
+  invoiceText.value = invoiceText.value.toLowerCase();
   if (invoiceText.value.startsWith("lightning:")) {
-    invoiceText.value = invoiceText.value.substring(10)
+    invoiceText.value = invoiceText.value.substring(10);
   }
   if (invoiceText.value.startsWith("bitcoin:")) {
-    const lightningSection = invoiceText.value.match(/lightning=([^&]*)/)
-    invoiceText.value = lightningSection[1]
+    const lightningSection = invoiceText.value.match(/lightning=([^&]*)/);
+    invoiceText.value = lightningSection[1];
   }
   try {
     // MARK: Decode the invoice
     // decode the invoice
     if (invoiceText.value.startsWith("@")) {
-      invoiceText.value = invoiceText.value.substring(1)
+      invoiceText.value = invoiceText.value.substring(1);
     }
     // check if the string has the substring "@.*v4v.app"
     // convert to a Hive account so we don't do a pointless lightning
     // self payment
     if (invoiceText.value.match(/.*@sats.v4v.app/)) {
-      invoiceText.value = invoiceText.value.replace(/@sats.v4v.app/, "")
+      invoiceText.value = invoiceText.value.replace(/@sats.v4v.app/, "");
     }
     // trim invoiceText
-    invoiceText.value = invoiceText.value.trim()
+    invoiceText.value = invoiceText.value.trim();
     const [isHiveAccount, isEVMAccount, dInvoiceValue] = await Promise.all([
       useHiveAccountExists(invoiceText.value),
       useEVMAddressExists(invoiceText.value),
       useDecodeLightningInvoice(invoiceText.value),
-    ])
-    dInvoice.value = dInvoiceValue
+    ]);
+    dInvoice.value = dInvoiceValue;
     if (isHiveAccount.exists || isEVMAccount.valid) {
       if (!storeUser.keepSatsBalanceNum) {
-        errorMessage.value = t("keepssats_error")
+        errorMessage.value = t("keepssats_error");
         dInvoice.value = {
           v4vapp: {
             type: "hiveAccname",
           },
-        }
-        invoiceValid.value = false
-        invoiceChecking.value = false
-        return
+        };
+        invoiceValid.value = false;
+        invoiceChecking.value = false;
+        return;
       }
       if (storeUser.currentUser === isHiveAccount.hiveAccname) {
-        errorMessage.value = t("cannot_send_to_self")
+        errorMessage.value = t("cannot_send_to_self");
         dInvoice.value = {
           v4vapp: {
             type: "hiveAccname",
           },
-        }
-        invoiceValid.value = false
-        invoiceChecking.value = false
-        return
+        };
+        invoiceValid.value = false;
+        invoiceChecking.value = false;
+        return;
       }
-      invoiceValid.value = true
-      errorMessage.value = ""
-      const amountToSend = storeUser.keepsatsBalanceNum > 1000 ? 1 : 1000
-      invoiceChecking.value = true
+      invoiceValid.value = true;
+      errorMessage.value = "";
+      const amountToSend = storeUser.keepsatsBalanceNum > 1000 ? 1 : 1000;
+      invoiceChecking.value = true;
       dInvoice.value = {
         v4vapp: {
           type: "hiveAccname",
@@ -774,65 +774,65 @@ async function decodeInvoice() {
         },
         sending: true,
         askDetailsButton: true,
-      }
-      return
+      };
+      return;
     } else if (dInvoice.value) {
-      CurrencyCalc.value.amount = dInvoice.value?.satoshis
-      CurrencyCalc.value.currency = "sats"
-      payWithSatsAmount.value = CurrencyCalc.value.amount
-      dInvoice.value.progress = []
-      invoiceValid.value = true
-      invoiceChecking.value = false
-      cameraOn.value = false
-      cameraShow.value = false
+      CurrencyCalc.value.amount = dInvoice.value?.satoshis;
+      CurrencyCalc.value.currency = "sats";
+      payWithSatsAmount.value = CurrencyCalc.value.amount;
+      dInvoice.value.progress = [];
+      invoiceValid.value = true;
+      invoiceChecking.value = false;
+      cameraOn.value = false;
+      cameraShow.value = false;
       if (invoiceType() === "lightningAddress") {
         // need to ask for details including amount
         // make sure we clear any earlier errors
-        invoiceValid.value = null
-        errorMessage.value = ""
-        dInvoice.value.sending = true // Flag to show this is for sending Hive to Lightning
-        invoiceChecking.value = true
-        dInvoice.value.askDetailsButton = true
+        invoiceValid.value = null;
+        errorMessage.value = "";
+        dInvoice.value.sending = true; // Flag to show this is for sending Hive to Lightning
+        invoiceChecking.value = true;
+        dInvoice.value.askDetailsButton = true;
         // dInvoice.value.askDetails = true
-        return
+        return;
       } else {
         if (dInvoice.value?.errors.text.length > 0) {
           errorMessage.value = dInvoice.value?.errors.text
             .map((error) => t(error))
-            .join(", ")
+            .join(", ");
           q.notify({
             color: "negative",
             timeout: 2000,
             message: errorMessage.value,
             position: "top",
-          })
-          invoiceValid.value = false
-          invoiceChecking.value = false
-          return errorMessage.value
+          });
+          invoiceValid.value = false;
+          invoiceChecking.value = false;
+          return errorMessage.value;
         }
       }
-      return true
+      return true;
     }
-    errorMessage.value = t("invalid_invoice")
-    invoiceValid.value = false
-    invoiceChecking.value = false
+    errorMessage.value = t("invalid_invoice");
+    invoiceValid.value = false;
+    invoiceChecking.value = false;
   } catch (e) {
-    invoiceValid.value = false
-    invoiceChecking.value = false
-    errorMessage.value = t("invalid_invoice")
-    return false
+    invoiceValid.value = false;
+    invoiceChecking.value = false;
+    errorMessage.value = t("invalid_invoice");
+    return false;
   }
 }
 
 function validHiveAccountToPay() {
-  CurrencyCalc.value.amount = dInvoice.value?.satoshis
-  CurrencyCalc.value.currency = "sats"
-  payWithSatsAmount.value = CurrencyCalc.value.amount
-  dInvoice.value.progress = []
-  invoiceValid.value = true
-  invoiceChecking.value = false
-  cameraOn.value = false
-  cameraShow.value = false
+  CurrencyCalc.value.amount = dInvoice.value?.satoshis;
+  CurrencyCalc.value.currency = "sats";
+  payWithSatsAmount.value = CurrencyCalc.value.amount;
+  dInvoice.value.progress = [];
+  invoiceValid.value = true;
+  invoiceChecking.value = false;
+  cameraOn.value = false;
+  cameraShow.value = false;
 }
 
 const cameraErrors = [
@@ -843,68 +843,68 @@ const cameraErrors = [
   "OverconstrainedError",
   "StreamApiNotSupportedError",
   "InsecureContextError",
-]
+];
 
 function onReady(capabilities) {
-  invoiceChecking.value = true
+  invoiceChecking.value = true;
 
-  cameraOn.value = true
-  cameraShow.value = true
+  cameraOn.value = true;
+  cameraShow.value = true;
 }
 
 function onError(error) {
-  console.error("onError", error.name)
+  console.error("onError", error.name);
   if (cameraErrors.includes(error.name)) {
-    cameraError.value = `${t("error")}: ${t(error.name)}`
+    cameraError.value = `${t("error")}: ${t(error.name)}`;
   } else {
     cameraError.value = `${t("error")}: ${t("OtherError")} ${
       error.name
-    } ${error}`
+    } ${error}`;
   }
-  invoiceChecking.value = false
+  invoiceChecking.value = false;
   q.notify({
     color: "negative",
     timeout: 4000,
     message: cameraError.value,
     position: "top",
-  })
+  });
   setTimeout(() => {
-    cameraError.value = ""
-    cameraOn.value = false
-    cameraShow.value = false
-  }, 500)
-  cameraOn.value = false
-  cameraShow.value = false
-  invoiceChecking.value = false
+    cameraError.value = "";
+    cameraOn.value = false;
+    cameraShow.value = false;
+  }, 500);
+  cameraOn.value = false;
+  cameraShow.value = false;
+  invoiceChecking.value = false;
 }
 
 function toggleCamera() {
-  invoiceChecking.value = !invoiceChecking.value
-  cameraShow.value = cameraOn.value
+  invoiceChecking.value = !invoiceChecking.value;
+  cameraShow.value = cameraOn.value;
 }
 
 async function confirmPayWithApi(message) {
-  let apiPayData = {}
+  let apiPayData = {};
   if (dInvoice.value?.v4vapp.type === "hiveAccname") {
     apiPayData = {
       type: "hiveAccname",
       sendTo: dInvoice.value.v4vapp.sendTo,
       sats: dInvoice.value.satoshis,
       comment: dInvoice.value.v4vapp.comment,
-    }
+    };
   } else {
     apiPayData = {
       type: "bolt11",
       paymentRequest: dInvoice.value.paymentRequest,
-    }
+    };
   }
-  let response = useConfirmPayWithApi(message, apiPayData)
+  let response = useConfirmPayWithApi(message, apiPayData);
   if (response) {
-    storeUser.updateSatsBalance(false)
-    await new Promise((resolve) => setTimeout(resolve, 4000))
-    clearReset()
+    storeUser.updateSatsBalance(false);
+    await new Promise((resolve) => setTimeout(resolve, 4000));
+    clearReset();
   }
-  return
+  return;
 }
 
 /**
@@ -917,44 +917,44 @@ async function confirmPayWithApi(message) {
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
   // Use dynamic fee calculation with a 1% uplift for safety margin
-  let baseSats = dInvoice.value?.millisatoshis / 1000 || 0
-  let satsWithFees = calcSatsFee(baseSats)
-  console.log("satsWithFees", satsWithFees)
-  let uplift = 1.01 // 1% uplift
-  satsWithFees *= uplift // Apply 1% uplift
-  satsWithFees += 100 // Add fixed fee
-  console.log("satsWithFees with uplift and fixed fee", satsWithFees)
+  let baseSats = dInvoice.value?.millisatoshis / 1000 || 0;
+  let satsWithFees = calcSatsFee(baseSats);
+  console.log("satsWithFees", satsWithFees);
+  let uplift = 1.01; // 1% uplift
+  satsWithFees *= uplift; // Apply 1% uplift
+  satsWithFees += 100; // Add fixed fee
+  console.log("satsWithFees with uplift and fixed fee", satsWithFees);
 
-  let amountNum = 0
+  let amountNum = 0;
   if (currency === "HIVE") {
-    amountNum = (satsWithFees / storeApiStatus.hiveSatsNumber).toFixed(3)
+    amountNum = (satsWithFees / storeApiStatus.hiveSatsNumber).toFixed(3);
   } else if (currency === "HBD") {
-    amountNum = (satsWithFees / storeApiStatus.HBDSatsNumber).toFixed(3)
+    amountNum = (satsWithFees / storeApiStatus.HBDSatsNumber).toFixed(3);
   }
 
-  CurrencyCalc.value.amount = parseFloat(amountNum)
-  CurrencyCalc.value.currency = currency.toLowerCase()
+  CurrencyCalc.value.amount = parseFloat(amountNum);
+  CurrencyCalc.value.currency = currency.toLowerCase();
   // next tick which allows currency calc to catch up.
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  let amount = amountNum
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  let amount = amountNum;
 
   // if payWithSats is true add #paywithsats to the end of the memo
   // adds encryption to the memo 2024-02-23
   // add control for encryption 2024-03-06
-  let memo = `${dInvoice.value.paymentRequest}`
+  let memo = `${dInvoice.value.paymentRequest}`;
   if (privateMemo.value) {
-    memo = "#" + memo
+    memo = "#" + memo;
   }
 
-  dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`)
+  dInvoice.value.progress.push(`${t("requesting")} ${amount} ${currency}`);
   // replace null with logged in user
-  let username = null
+  let username = null;
   if (storeUser.currentUser) {
-    username = storeUser.currentUser
+    username = storeUser.currentUser;
   }
-  let result = {}
+  let result = {};
   if (method === "HiveKeychain" && !storeApiStatus.isKeychainIn) {
-    method = "HiveKeychainQR"
+    method = "HiveKeychainQR";
   }
   switch (method) {
     case "HiveKeychainQR":
@@ -972,22 +972,22 @@ async function payInvoice(currency, method) {
             handler: () => {},
           },
         ],
-      })
+      });
       KeychainDialog.value.hiveAccFrom = storeUser.currentUser
         ? storeUser.currentUser
-        : ""
-      KeychainDialog.value.memo = memo
-      KeychainDialog.value.currencyToSend = currency
-      KeychainDialog.value.hiveAccTo = serverHiveAccount
-      KeychainDialog.value.display = "hive"
-      KeychainDialog.value.currencyCalc = CurrencyCalc.value
-      KeychainDialog.value.show = true
+        : "";
+      KeychainDialog.value.memo = memo;
+      KeychainDialog.value.currencyToSend = currency;
+      KeychainDialog.value.hiveAccTo = serverHiveAccount;
+      KeychainDialog.value.display = "hive";
+      KeychainDialog.value.currencyCalc = CurrencyCalc.value;
+      KeychainDialog.value.show = true;
       // After this we need to watch for the result from the KeychainDialog
-      break
+      break;
 
     case "HiveKeychain":
       // Hive Keychain process
-      result = await useHiveKeychainTransfer(username, amount, currency, memo)
+      result = await useHiveKeychainTransfer(username, amount, currency, memo);
       if (result.success) {
         const notif = q.notify({
           avatar: "/site-logo/v4vapp-logo.svg",
@@ -996,13 +996,13 @@ async function payInvoice(currency, method) {
           timeout: 0,
           message: result.message,
           position: "top",
-        })
-        dInvoice.value.progress.push(result.message)
+        });
+        dInvoice.value.progress.push(result.message);
         // Set the username for the Voting Button
-        voteOptions.value.hiveUser = result.data.username
-        checkHiveTransaction(result.data.username, result.result.id, notif)
+        voteOptions.value.hiveUser = result.data.username;
+        checkHiveTransaction(result.data.username, result.result.id, notif);
       } else {
-        dInvoice.value.progress.push(result.message)
+        dInvoice.value.progress.push(result.message);
         q.notify({
           color: "negative",
           avatar: "/site-logo/v4vapp-logo.svg",
@@ -1017,23 +1017,23 @@ async function payInvoice(currency, method) {
               handler: () => {},
             },
           ],
-        })
-        return
+        });
+        return;
       }
-      break
+      break;
     case "HAS":
-      HASDialog.value.show = true
+      HASDialog.value.show = true;
       HASDialog.value.payment = {
         username: username,
         amount: amount,
         currency: currency,
         memo: memo,
-      }
+      };
 
       // result = await useHASTransfer(username, amount, currency, memo)
-      dInvoice.value.progress.push(`${t("open_HAS")}`)
+      dInvoice.value.progress.push(`${t("open_HAS")}`);
       // Code will finish within the useHAS code
-      break
+      break;
   }
 }
 
@@ -1042,8 +1042,8 @@ watch(
   async (value) => {
     if (value) {
       if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_nack") {
-        const message = `${t("rejected_payment")}`
-        dInvoice.value.progress.push(message)
+        const message = `${t("rejected_payment")}`;
+        dInvoice.value.progress.push(message);
         q.notify({
           color: "negative",
           avatar: "/site-logo/v4vapp-logo.svg",
@@ -1058,11 +1058,11 @@ watch(
               handler: () => {},
             },
           ],
-        })
+        });
       }
       if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_ack") {
-        const message = `${t("payment_sent")}`
-        dInvoice.value.progress.push(message)
+        const message = `${t("payment_sent")}`;
+        dInvoice.value.progress.push(message);
         const notif = q.notify({
           avatar: "/site-logo/v4vapp-logo.svg",
           color: "positive",
@@ -1078,17 +1078,17 @@ watch(
               handler: () => {},
             },
           ],
-        })
+        });
         await checkHiveTransaction(
           value.payment.username,
           value.resolvedHAS.data,
-          notif
-        )
+          notif,
+        );
       }
     }
   },
-  { deep: true }
-)
+  { deep: true },
+);
 
 // Watching for a payment result from the KeychainDialog
 watch(
@@ -1097,10 +1097,10 @@ watch(
     if (value) {
       if (value.paid) {
         // get most recent transactions for v4vapp account
-        const transactions = await useGetHiveTransactionHistory("v4vapp")
+        const transactions = await useGetHiveTransactionHistory("v4vapp");
         // get most recent trxId  from transactions
-        const trx_id = transactions[0].trx_id
-        const message = t("payment_sent_hive_keychain")
+        const trx_id = transactions[0].trx_id;
+        const message = t("payment_sent_hive_keychain");
         const notif = q.notify({
           avatar: "/site-logo/v4vapp-logo.svg",
           color: "positive",
@@ -1116,44 +1116,44 @@ watch(
               handler: () => {},
             },
           ],
-        })
-        dInvoice.value.progress.push(message)
-        dInvoice.value.progress.push(`${t("check_lightning")}`)
-        KeychainDialog.value = { show: false }
-        checkHiveTransaction("v4vapp", trx_id, notif)
+        });
+        dInvoice.value.progress.push(message);
+        dInvoice.value.progress.push(`${t("check_lightning")}`);
+        KeychainDialog.value = { show: false };
+        checkHiveTransaction("v4vapp", trx_id, notif);
       } else {
         // Ignore the result
-        return
+        return;
       }
     }
   },
-  { deep: true }
-)
+  { deep: true },
+);
 
 async function checkHiveTransaction(username, trx_id, notif) {
   if (trx_id == null) {
-    return
+    return;
   }
-  const maxRetries = 20
-  let count = 0
-  let transaction_found
+  const maxRetries = 20;
+  let count = 0;
+  let transaction_found;
   while (count < maxRetries) {
-    count++
-    await new Promise((resolve) => setTimeout(resolve, 5000)) // Wait for 5 seconds
-    const transactions = await useGetHiveTransactionHistory(username)
-    transaction_found = findObjectBefore(transactions, trx_id)
+    count++;
+    await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds
+    const transactions = await useGetHiveTransactionHistory(username);
+    transaction_found = findObjectBefore(transactions, trx_id);
 
     if (transaction_found) {
-      break // Exit the loop if the transaction is found
+      break; // Exit the loop if the transaction is found
     }
 
     // If transaction is not found, show the waiting message
-    const message = `${t("waiting_for")} ${count}/20`
-    const progressList = dInvoice.value.progress
+    const message = `${t("waiting_for")} ${count}/20`;
+    const progressList = dInvoice.value.progress;
     if (count > 1) {
-      progressList[progressList.length - 1] = message // Overwrite the last item
+      progressList[progressList.length - 1] = message; // Overwrite the last item
     } else {
-      progressList.push(message) // Add the message as the first item if the list is empty
+      progressList.push(message); // Add the message as the first item if the list is empty
     }
     notif({
       color: "positive",
@@ -1169,52 +1169,52 @@ async function checkHiveTransaction(username, trx_id, notif) {
           handler: () => {},
         },
       ],
-    })
+    });
   }
-  let memo = ""
+  let memo = "";
   if (!transaction_found) {
     // If the transaction wasn't found after maxRetries
-    memo = `${t("transfer")}: ${t("not_found")}:`
+    memo = `${t("transfer")}: ${t("not_found")}:`;
     notif({
       color: "negative",
       avatar: "/site-logo/v4vapp-logo.svg",
       timeout: 10000,
       message: memo,
       position: "top",
-    })
+    });
   } else {
     memo = `${t("transfer")}: ${transaction_found?.op[1].amount}\n${
       transaction_found?.op[1].memo
-    }`
-    dInvoice.value.progress.push(memo)
+    }`;
+    dInvoice.value.progress.push(memo);
 
     // check if the transaction contains the string "Your Lightning Invoice of 1234 sats has been paid"
 
-    let regex = /(Deducting|Your Lightning Invoice of) ([\d,]+).*/
-    console.log("Checking transaction memo:", transaction_found?.op[1].memo)
-    let match = transaction_found?.op[1].memo.match(regex)
+    let regex = /(Deducting|Your Lightning Invoice of) ([\d,]+).*/;
+    console.log("Checking transaction memo:", transaction_found?.op[1].memo);
+    let match = transaction_found?.op[1].memo.match(regex);
     if (match) {
-      let satsPaid = match[2].replace(",", "")
-      await storeUser.updateSatsBalance(false)
-      memo = `${t("transfer")}: ${t("paid")}: ${satsPaid} sats`
-      dInvoice.value.progress.push(memo)
+      let satsPaid = match[2].replace(",", "");
+      await storeUser.updateSatsBalance(false);
+      memo = `${t("transfer")}: ${t("paid")}: ${satsPaid} sats`;
+      dInvoice.value.progress.push(memo);
       notif({
         color: "positive",
         avatar: "/site-logo/v4vapp-logo.svg",
         timeout: 10000,
         message: memo,
         position: "top",
-      })
+      });
     } else {
       // extract the text after the : ""Something went wrong with paying the Lightning Invoice: invoice is already paid, returning all Hive funds"
-      regex = /Lightning error: (.*)/
-      match = transaction_found?.op[1].memo.match(regex)
+      regex = /Lightning error: (.*)/;
+      match = transaction_found?.op[1].memo.match(regex);
       if (match && match[1]) {
         // if match exists and match[1] has a value, include it in the message
-        memo = `${t("transfer")}: ${t("lightning_failed")}: ${match[1]}`
+        memo = `${t("transfer")}: ${t("lightning_failed")}: ${match[1]}`;
       } else {
         // if match[1] does not have a value, exclude it from the message
-        memo = `${t("transfer")}: ${t("lightning_failed")}`
+        memo = `${t("transfer")}: ${t("lightning_failed")}`;
       }
       notif({
         color: "negative",
@@ -1231,14 +1231,14 @@ async function checkHiveTransaction(username, trx_id, notif) {
             },
           },
         ],
-      })
+      });
     }
-    voteOptions.value.showButton = true
-    voteOptions.value.showDialog = false
+    voteOptions.value.showButton = true;
+    voteOptions.value.showDialog = false;
     // pause for 5 seconds to allow the transaction to be found
-    await new Promise((resolve) => setTimeout(resolve, 10000))
-    clearReset()
-    return
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+    clearReset();
+    return;
   }
 }
 
@@ -1252,9 +1252,9 @@ async function checkHiveTransaction(username, trx_id, notif) {
 function findObjectBefore(data, target_trx_id) {
   for (let i = 1; i < data.length; i++) {
     if (data[i].trx_id === target_trx_id) {
-      return data[i - 1]
+      return data[i - 1];
     }
   }
-  return null
+  return null;
 }
 </script>
