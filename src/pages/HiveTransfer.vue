@@ -148,33 +148,33 @@
 </template>
 
 <script setup>
-import { encodeOp } from "hive-uri"
-import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue"
-import { defineComponent, ref, watch, onMounted, computed } from "vue"
-import { useQuasar } from "quasar"
-import { KeychainSDK } from "keychain-sdk"
-import { useStoreUser } from "src/stores/storeUser"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
-import { api } from "boot/axios"
-import { useI18n } from "vue-i18n"
-import CreditCard from "src/components/hive/CreditCard.vue"
+import { encodeOp } from "hive-uri";
+import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue";
+import { defineComponent, ref, watch, onMounted, computed } from "vue";
+import { useQuasar } from "quasar";
+import { KeychainSDK } from "keychain-sdk";
+import { useStoreUser } from "src/stores/storeUser";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
+import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue";
+import { api } from "boot/axios";
+import { useI18n } from "vue-i18n";
+import CreditCard from "src/components/hive/CreditCard.vue";
 
-const t = useI18n().t
-const hiveAccFrom = ref({ label: "", value: "", caption: "" })
-const hiveAccTo = ref({ label: "", value: "", caption: "" })
+const t = useI18n().t;
+const hiveAccFrom = ref({ label: "", value: "", caption: "" });
+const hiveAccTo = ref({ label: "", value: "", caption: "" });
 
-const $q = useQuasar()
-const storeUser = useStoreUser()
-const storeAPIStatus = useStoreAPIStatus()
+const $q = useQuasar();
+const storeUser = useStoreUser();
+const storeAPIStatus = useStoreAPIStatus();
 
-const amount = ref("10")
-const memo = ref("")
+const amount = ref("10");
+const memo = ref("");
 
-const btnAmountsNormal = [10, 100, 200, 500, 1000, 1500, 2000, 3000, 5000]
-const btnAmountsSats = [5000, 10000, 25000, 50000, 100000, 250000]
+const btnAmountsNormal = [10, 100, 200, 500, 1000, 1500, 2000, 3000, 5000];
+const btnAmountsSats = [5000, 10000, 25000, 50000, 100000, 250000];
 
-const btnAmounts = ref(btnAmountsNormal)
+const btnAmounts = ref(btnAmountsNormal);
 
 const optionsCur = {
   HIVE: {
@@ -197,115 +197,115 @@ const optionsCur = {
     label: "USD",
     amount: 0,
   },
-}
+};
 const optionsCurrency = Object.entries(optionsCur).map(([key, value]) => ({
   label: value.label,
   value: key,
-}))
+}));
 
-const optionsSelected = ref("HIVE")
+const optionsSelected = ref("HIVE");
 
 defineComponent({
   name: "TestingTransfers",
-})
+});
 
 const sendingFromLabel = computed(
-  () => t("sending") + " " + t("from") + " " + hiveAccFrom.value.caption
-)
+  () => t("sending") + " " + t("from") + " " + hiveAccFrom.value.caption,
+);
 
 const sendingToLabel = computed(
-  () => t("sending") + " " + t("to") + " " + hiveAccTo.value.caption
-)
+  () => t("sending") + " " + t("to") + " " + hiveAccTo.value.caption,
+);
 
 const hiveAmount = computed(() => {
-  let answer = 0
+  let answer = 0;
   if (optionsSelected.value === "HIVE") {
-    answer = Number(amount.value).toFixed(3)
+    answer = Number(amount.value).toFixed(3);
   }
   if (optionsSelected.value === "HBD") {
-    answer = Number(amount.value / storeAPIStatus.hiveHBDNumber).toFixed(3)
+    answer = Number(amount.value / storeAPIStatus.hiveHBDNumber).toFixed(3);
   }
   if (optionsSelected.value === "sats") {
-    answer = Number(amount.value / storeAPIStatus.hiveSatsNumber).toFixed(3)
+    answer = Number(amount.value / storeAPIStatus.hiveSatsNumber).toFixed(3);
   }
   if (optionsSelected.value === "BTC") {
-    answer = Number(amount.value / storeAPIStatus.hiveBTCNumber).toFixed(3)
+    answer = Number(amount.value / storeAPIStatus.hiveBTCNumber).toFixed(3);
   }
   if (optionsSelected.value === "USD") {
     answer = Number(
-      amount.value / storeAPIStatus.apiStatus.crypto.hive.usd
-    ).toFixed(3)
+      amount.value / storeAPIStatus.apiStatus.crypto.hive.usd,
+    ).toFixed(3);
   }
-  return answer
-})
+  return answer;
+});
 
 const allAmounts = computed(() => {
   return {
     HIVE: Number(hiveAmount.value).toFixed(3),
     HBD: Number(hiveAmount.value * storeAPIStatus.hiveHBDNumber).toFixed(3),
     sats: tidyNumber(
-      (hiveAmount.value * storeAPIStatus.hiveSatsNumber).toFixed(0)
+      (hiveAmount.value * storeAPIStatus.hiveSatsNumber).toFixed(0),
     ),
     USD: tidyNumber(
       (hiveAmount.value * storeAPIStatus.apiStatus?.crypto?.hive?.usd).toFixed(
-        2
-      )
+        2,
+      ),
     ),
     LOCAL: tidyNumber(
       (hiveAmount.value * storeAPIStatus.apiStatus?.crypto?.hive?.usd).toFixed(
-        2
-      )
+        2,
+      ),
     ),
-  }
-})
+  };
+});
 
 function tidyNumber(x) {
   if (x) {
-    const parts = x.toString().split(".")
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-    return parts.join(".")
+    const parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
   } else {
-    return null
+    return null;
   }
 }
 
 async function copyNumToClipboard(value) {
   try {
-    const valueNumber = parseFloat(value.replace(/,/g, ""))
-    await navigator.clipboard.writeText(valueNumber)
+    const valueNumber = parseFloat(value.replace(/,/g, ""));
+    await navigator.clipboard.writeText(valueNumber);
   } catch (error) {
-    console.error("Failed to copy value to clipboard:", error)
+    console.error("Failed to copy value to clipboard:", error);
   }
 }
 
 watch(optionsSelected, () => {
   if (optionsSelected.value === "sats") {
-    btnAmounts.value = btnAmountsSats
+    btnAmounts.value = btnAmountsSats;
   } else {
-    btnAmounts.value = btnAmountsNormal
+    btnAmounts.value = btnAmountsNormal;
   }
-})
+});
 
 const currencyToSend = computed(() => {
   if (optionsSelected.value === "HBD") {
-    return "HBD"
+    return "HBD";
   }
-  return "HIVE"
-})
+  return "HIVE";
+});
 
 const amountToSend = computed(() => {
   if (optionsSelected.value === "HBD") {
-    return parseFloat(amount.value).toFixed(3)
+    return parseFloat(amount.value).toFixed(3);
   }
-  return hiveAmount.value
-})
+  return hiveAmount.value;
+});
 
 async function sendTransfer() {
   try {
-    const keychain = new KeychainSDK(window)
-    let memoToSend = memo.value
+    const keychain = new KeychainSDK(window);
+    let memoToSend = memo.value;
     if (podcastMemo.value) {
-      memoToSend = podcastMemo.value
+      memoToSend = podcastMemo.value;
     }
 
     const formParamsAsObject = {
@@ -318,23 +318,23 @@ async function sendTransfer() {
         currency: currencyToSend.value,
       },
       options: {},
-    }
+    };
     const transfer = await keychain.transfer(
       formParamsAsObject.data,
-      formParamsAsObject.options
-    )
+      formParamsAsObject.options,
+    );
   } catch (error) {
-    console.error("❌ failure")
-    console.error({ error })
-    $q.notify(`${error.message}`)
+    console.error("❌ failure");
+    console.error({ error });
+    $q.notify(`${error.message}`);
   }
 }
 
 const vAutofocus = {
   mounted(el) {
-    el.focus()
+    el.focus();
   },
-}
+};
 
 const qrCodeText = computed(() => {
   const op = [
@@ -345,48 +345,48 @@ const qrCodeText = computed(() => {
       amount: amountToSend.value + " " + currencyToSend.value,
       memo: memo.value,
     },
-  ]
-  const hiveUri = encodeOp(op)
-  return hiveUri
-})
+  ];
+  const hiveUri = encodeOp(op);
+  return hiveUri;
+});
 
 onMounted(async () => {
-  console.log("HiveTransfer.vue: onMounted called")
-  await storeUser.update(false)
-  console.log("HiveTransfer.vue: storeUser.update(false) finished")
-  console.log("HiveTransfer.vue: storeUser.hiveAccname", storeUser.hiveAccname)
-  console.log("HiveTransfer.vue: storeUser.hiveBalance", storeUser.hiveBalance)
+  console.log("HiveTransfer.vue: onMounted called");
+  await storeUser.update(false);
+  console.log("HiveTransfer.vue: storeUser.update(false) finished");
+  console.log("HiveTransfer.vue: storeUser.hiveAccname", storeUser.hiveAccname);
+  console.log("HiveTransfer.vue: storeUser.hiveBalance", storeUser.hiveBalance);
 
   if (storeUser.hiveAccname) {
     hiveAccFrom.value = {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
       caption: storeUser.hiveAccname,
-    }
-    console.log("HiveTransfer.vue: hiveAccFrom set", hiveAccFrom.value)
+    };
+    console.log("HiveTransfer.vue: hiveAccFrom set", hiveAccFrom.value);
     if (storeUser.hiveAccname === "v4vapp.tre") {
       hiveAccTo.value = {
         label: "bdhivesteem",
         value: "bdhivesteem",
         caption: "bdhivesteem",
-      }
-      memo.value = "100116033"
+      };
+      memo.value = "100116033";
       console.log(
         "HiveTransfer.vue: hiveAccTo set for v4vapp.tre",
-        hiveAccTo.value
-      )
+        hiveAccTo.value,
+      );
     }
     if (storeUser.hiveAccname === "v4vapp.dev") {
       hiveAccTo.value = {
         label: "hivehydra",
         value: "hivehydra",
         caption: "hivehydra",
-      }
-      memo.value = "#brianoflondon@sats.v4v.app"
+      };
+      memo.value = "#brianoflondon@sats.v4v.app";
       console.log(
         "HiveTransfer.vue: hiveAccTo set for v4vapp.dev",
-        hiveAccTo.value
-      )
+        hiveAccTo.value,
+      );
     }
   }
 
@@ -398,102 +398,102 @@ onMounted(async () => {
         "HiveTransfer.vue: hiveBalance changed from",
         oldBalance,
         "to",
-        newBalance
-      )
+        newBalance,
+      );
       if (newBalance && newBalance !== "💰💰💰") {
         console.log(
-          "HiveTransfer.vue: hiveBalance is valid, calling autoFillAmountFromBalance"
-        )
-        autoFillAmountFromBalance(50)
+          "HiveTransfer.vue: hiveBalance is valid, calling autoFillAmountFromBalance",
+        );
+        autoFillAmountFromBalance(50);
       } else {
-        console.log("HiveTransfer.vue: hiveBalance is not valid yet")
+        console.log("HiveTransfer.vue: hiveBalance is not valid yet");
       }
     },
-    { immediate: true }
-  )
-})
+    { immediate: true },
+  );
+});
 
 /**
  * Automatically sets the amount based on available balance
  * @param {number} roundToNearest - The increment to round down to (e.g., 50, 100)
  */
 function autoFillAmountFromBalance(roundToNearest = 50) {
-  console.log("HiveTransfer.vue: autoFillAmountFromBalance called")
+  console.log("HiveTransfer.vue: autoFillAmountFromBalance called");
   // defensively coerce the argument to a number (in case an Event was passed)
-  const rn = Number(roundToNearest) || 50
+  const rn = Number(roundToNearest) || 50;
   console.log(
     "HiveTransfer.vue: roundToNearest (coerced) =",
     rn,
     "typeof:",
-    typeof rn
-  )
+    typeof rn,
+  );
 
-  const raw = storeUser.hiveBalance
-  const availableBalance = parseFloat(String(raw).replace(/,/g, ""))
+  const raw = storeUser.hiveBalance;
+  const availableBalance = parseFloat(String(raw).replace(/,/g, ""));
 
   if (isNaN(availableBalance)) {
     console.warn(
       "HiveTransfer.vue: autoFillAmountFromBalance - invalid balance:",
-      raw
-    )
-    return
+      raw,
+    );
+    return;
   }
 
   // Round down to nearest `rn`
-  const rounded = Math.floor(availableBalance / rn) * rn
+  const rounded = Math.floor(availableBalance / rn) * rn;
 
   // If rounding yields 0 (balance < rn), keep a sensible small amount with 3 decimals
   if (rounded > 0) {
-    amount.value = String(rounded)
+    amount.value = String(rounded);
   } else {
-    amount.value = availableBalance.toFixed(3)
+    amount.value = availableBalance.toFixed(3);
   }
 
   console.log(
-    `HiveTransfer.vue: Auto-filled amount: ${amount.value} (rounded down from ${availableBalance} to nearest ${rn})`
-  )
+    `HiveTransfer.vue: Auto-filled amount: ${amount.value} (rounded down from ${availableBalance} to nearest ${rn})`,
+  );
 }
 
 // ----------------- Podcast Index Search -----------------
 
-const searchPodcast = ref("")
-const selectedPodcast = ref()
-const result = ref()
-const valueBlocks = ref()
+const searchPodcast = ref("");
+const selectedPodcast = ref();
+const result = ref();
+const valueBlocks = ref();
 // const podcastMemo = ref("")
 
 watch(searchPodcast, async (newValue, oldValue) => {
-  console.log("searchPodcast", newValue)
+  console.log("searchPodcast", newValue);
   if (newValue.length > 2) {
-    await searchPodcastIndex()
+    await searchPodcastIndex();
   }
-})
+});
 
 const searchPodcastIndex = async () => {
-  const call = `/search/byterm?q=${searchPodcast.value}&val=lightning`
+  const call = `/search/byterm?q=${searchPodcast.value}&val=lightning`;
   const res = await api.get("/pi/", {
     params: { call: call },
-  })
+  });
   if (res?.data?.status === "true") {
-    result.value = res.data
+    result.value = res.data;
   }
-  console.log("res", res)
-}
+  console.log("res", res);
+};
 
 async function getValueBlocks(podcastGuid) {
-  const call = `/value/bypodcastguid?guid=${podcastGuid}`
-  console.log("call", call)
+  const call = `/value/bypodcastguid?guid=${podcastGuid}`;
+  console.log("call", call);
   try {
     const res = await api.get("/pi/", {
       params: { call: call },
-    })
-    console.log(res)
+    });
+    console.log(res);
     if (res?.data?.status === "true") {
-      valueBlocks.value = res.data
+      valueBlocks.value = res.data;
     }
-    console.log("res", res)
+    console.log("res", res);
   } catch (error) {
-    console.error("Error fetching data:", error)
+    console.error("Error fetching data:", error);
   }
 }
 
@@ -510,15 +510,15 @@ const podcastMemo = computed(() => {
       optionsSelected.value +
       " | " +
       memo.value
-    )
+    );
   } else {
-    return ""
+    return "";
   }
-})
+});
 
 async function podcastClicked(item) {
-  getValueBlocks(item.podcastGuid)
-  selectedPodcast.value = item
-  console.log("podcastClicked", item)
+  getValueBlocks(item.podcastGuid);
+  selectedPodcast.value = item;
+  console.log("podcastClicked", item);
 }
 </script>

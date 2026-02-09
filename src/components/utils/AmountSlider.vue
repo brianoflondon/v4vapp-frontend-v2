@@ -38,131 +38,131 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue"
-import { useI18n } from "vue-i18n"
-import { useStoreUser } from "src/stores/storeUser"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { useStoreUser } from "src/stores/storeUser";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
 
-const t = useI18n().t
-const storeUser = useStoreUser()
-const storeApiStatus = useStoreAPIStatus()
+const t = useI18n().t;
+const storeUser = useStoreUser();
+const storeApiStatus = useStoreAPIStatus();
 
-const localAmount = ref(0)
-const AmountCurrency = defineModel()
-const panning = ref(false)
+const localAmount = ref(0);
+const AmountCurrency = defineModel();
+const panning = ref(false);
 
-const emit = defineEmits(["amountUpdated", "panning"])
+const emit = defineEmits(["amountUpdated", "panning"]);
 
 onMounted(() => {
   if (storeApiStatus.minMax) {
     if (AmountCurrency.value.currency === "sats") {
-      updateAmount(parseInt(sliderMinMax.value.mid))
+      updateAmount(parseInt(sliderMinMax.value.mid));
     } else {
-      updateAmount(parseFloat(sliderMinMax.value.mid).toFixed(2))
+      updateAmount(parseFloat(sliderMinMax.value.mid).toFixed(2));
     }
   }
-})
+});
 
 const isDisabled = computed(() => {
   if (sliderMinMax.value.diff) {
-    return true
+    return true;
   }
-  return false
-})
+  return false;
+});
 
 const sliderMinMax = computed(() => {
-  let dest = AmountCurrency.value.currency.toUpperCase()
-  const minMax = getMinMax(dest)
-  return minMax
+  let dest = AmountCurrency.value.currency.toUpperCase();
+  const minMax = getMinMax(dest);
+  return minMax;
 
   if (storeApiStatus.minMax) {
-    let min = 1
-    let max = 400
+    let min = 1;
+    let max = 400;
     if (dest === "SATS") {
-      dest = "sats"
-      min = storeApiStatus.minMax.sats.min
+      dest = "sats";
+      min = storeApiStatus.minMax.sats.min;
       max = Math.min(
         storeUser.keepSatsBalanceNum,
-        storeApiStatus.minMax.sats.max
-      )
+        storeApiStatus.minMax.sats.max,
+      );
     } else {
-      min = storeApiStatus.minMax[dest].min
-      max = storeApiStatus.minMax[dest].max
+      min = storeApiStatus.minMax[dest].min;
+      max = storeApiStatus.minMax[dest].max;
 
-      min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()])
-      max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()])
+      min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()]);
+      max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()]);
     }
-    const diff = max - min
+    const diff = max - min;
 
     // Divide the difference by 100 to get the initial step size
-    let step = diff / 100
+    let step = diff / 100;
 
     // Calculate the power of 10 for the step size
-    const power = Math.floor(Math.log10(step))
+    const power = Math.floor(Math.log10(step));
 
     // Round the step size to the nearest power of 10
-    step = Math.pow(10, power)
-    const mid = diff / 2 + min
-    return { min: min, max: max, step: step, mid: mid }
+    step = Math.pow(10, power);
+    const mid = diff / 2 + min;
+    return { min: min, max: max, step: step, mid: mid };
   }
-  return { min: 1, max: 400, step: 1, diff: 200 }
-})
+  return { min: 1, max: 400, step: 1, diff: 200 };
+});
 
 function getMinMax(dest) {
-  console.log("dest", dest)
+  console.log("dest", dest);
   if (storeApiStatus.minMax) {
-    let min = 1
-    let max = 400
+    let min = 1;
+    let max = 400;
     if (dest === "SATS") {
-      dest = "sats"
-      min = storeApiStatus.minMax.sats.min
+      dest = "sats";
+      min = storeApiStatus.minMax.sats.min;
       max = Math.min(
         storeUser.keepSatsBalanceNum,
-        storeApiStatus.minMax.sats.max
-      )
+        storeApiStatus.minMax.sats.max,
+      );
     } else {
-      min = storeApiStatus.minMax[dest].min
-      max = storeApiStatus.minMax[dest].max
+      min = storeApiStatus.minMax[dest].min;
+      max = storeApiStatus.minMax[dest].max;
 
-      min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()])
-      max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()])
+      min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()]);
+      max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()]);
     }
-    const diff = max - min
+    const diff = max - min;
 
     // Divide the difference by 100 to get the initial step size
-    let step = diff / 100
+    let step = diff / 100;
 
     // Calculate the power of 10 for the step size
-    const power = Math.floor(Math.log10(step))
+    const power = Math.floor(Math.log10(step));
 
     // Round the step size to the nearest power of 10
-    step = Math.pow(10, power)
-    const mid = diff / 2 + min
-    return { min: min, max: max, step: step, mid: mid }
+    step = Math.pow(10, power);
+    const mid = diff / 2 + min;
+    return { min: min, max: max, step: step, mid: mid };
   }
-  return { min: 1, max: 400, step: 1, diff: 200 }
+  return { min: 1, max: 400, step: 1, diff: 200 };
 }
 
 function panStart(val) {
   if (val == "start") {
-    panning.value = true
-    emit("panning", true)
+    panning.value = true;
+    emit("panning", true);
   } else {
-    panning.value = false
-    emit("panning", false)
+    panning.value = false;
+    emit("panning", false);
   }
 }
 
 function updateAmount(val) {
-  panning.value = false
+  panning.value = false;
   if (val === null || val === undefined || val === "" || val === 0) {
-    val = parseInt(sliderMinMax.value.mid)
-    localAmount.value = val
-    AmountCurrency.value.amount = val
+    val = parseInt(sliderMinMax.value.mid);
+    localAmount.value = val;
+    AmountCurrency.value.amount = val;
   }
-  AmountCurrency.value.amount = parseFloat(val)
-  localAmount.value = parseFloat(val)
-  emit("amountUpdated", localAmount.value)
+  AmountCurrency.value.amount = parseFloat(val);
+  localAmount.value = parseFloat(val);
+  emit("amountUpdated", localAmount.value);
 }
 </script>
 

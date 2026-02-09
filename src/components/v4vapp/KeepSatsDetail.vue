@@ -91,35 +91,35 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
-import { useI18n } from "vue-i18n"
-import { tidyNumber } from "src/use/useUtils"
-import { useGenerateTxUrl } from "src/use/useHive"
-import { useShortEVMAddress } from "src/use/useEVM"
+import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { tidyNumber } from "src/use/useUtils";
+import { useGenerateTxUrl } from "src/use/useHive";
+import { useShortEVMAddress } from "src/use/useEVM";
 
-const t = useI18n().t
+const t = useI18n().t;
 const props = defineProps({
   tableData: Array,
-})
+});
 
 // If you have data properties, define them using ref or reactive
-const expandedMemo = ref({})
+const expandedMemo = ref({});
 
 // If you have methods, define them as regular functions
 function toggleExpandedMemo(id) {
-  expandedMemo.value[id] = !expandedMemo.value[id]
+  expandedMemo.value[id] = !expandedMemo.value[id];
 }
 
 const wrapNoWrap = (val) => {
-  return val ? "white-space:wrap;" : "white-space:nowrap;"
-}
+  return val ? "white-space:wrap;" : "white-space:nowrap;";
+};
 
 const totals = computed(() => {
-  const totalHive = props.tableData.reduce((acc, row) => acc + row.hive, 0)
+  const totalHive = props.tableData.reduce((acc, row) => acc + row.hive, 0);
   const totalSats =
-    props.tableData.reduce((acc, row) => acc + row.msats, 0) / 1000
-  return { totalHive, totalSats }
-})
+    props.tableData.reduce((acc, row) => acc + row.msats, 0) / 1000;
+  return { totalHive, totalSats };
+});
 
 const columns = computed(() => [
   {
@@ -152,7 +152,7 @@ const columns = computed(() => [
     align: "center",
     field: "trx_id",
   },
-])
+]);
 </script>
 
 <style lang="scss" scoped>

@@ -16,16 +16,16 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref } from "vue";
 
-const showDetails = ref(true)
+const showDetails = ref(true);
 
 const props = defineProps({
   transaction: {
     type: object,
     required: true,
   },
-})
+});
 </script>
 
 <style lang="scss" scoped></style>

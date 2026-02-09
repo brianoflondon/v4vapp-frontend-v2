@@ -3,17 +3,18 @@
 ## Completed — 2026-02-09 (PR #255)
 
 ### What was upgraded
-| Package | Before | After |
-|---------|--------|-------|
-| quasar | 2.17.5 | 2.18.6 |
-| @quasar/app-vite | 1.11.0 | 2.4.1 |
-| vue | 3.5.13 | 3.5.28 |
-| vue-i18n | 9.14.2 | 11.2.8 |
+
+| Package                    | Before                           | After  |
+| -------------------------- | -------------------------------- | ------ |
+| quasar                     | 2.17.5                           | 2.18.6 |
+| @quasar/app-vite           | 1.11.0                           | 2.4.1  |
+| vue                        | 3.5.13                           | 3.5.28 |
+| vue-i18n                   | 9.14.2                           | 11.2.8 |
 | @intlify/unplugin-vue-i18n | (was vite-plugin-vue-i18n 6.0.3) | 11.0.3 |
-| vue-router | 4.5.0 | 4.6.4 |
-| pinia | 2.3.0 | 2.3.1 |
-| @vueuse/core | 10.11.1 | 12.8.2 |
-| Node.js (min engine) | 14/16/18 | >=20 |
+| vue-router                 | 4.5.0                            | 4.6.4  |
+| pinia                      | 2.3.0                            | 2.3.1  |
+| @vueuse/core               | 10.11.1                          | 12.8.2 |
+| Node.js (min engine)       | 14/16/18                         | >=20   |
 
 ### Lessons learned
 
@@ -37,6 +38,7 @@
 8. **App-vite v2.4.1 bundles Vite 7**, which requires `crypto.hash()` — only available in Node 20.12+. Node 18 will crash.
 
 ### Deferred to follow-up PRs
+
 - eslint 8→9 (requires flat config migration, significant effort)
 - prettier 2→3 (reformats all code, noisy diff)
 - workbox 6→7 (no peer warnings, app-vite v2 bundles its own)

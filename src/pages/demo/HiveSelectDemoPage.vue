@@ -63,23 +63,23 @@
 </template>
 
 <script setup>
-import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
-import HiveSelectAcc from "components/HiveSelectAcc.vue"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { useStoreUser } from "src/stores/storeUser"
-import { ref, onMounted } from "vue"
-import * as webauthn from "@github/webauthn-json"
-import { apiLogin } from "src/boot/axios"
-import AmountCurrencyInput from "components/hive/AmountCurrencyInput.vue"
+import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue";
+import HiveSelectAcc from "components/HiveSelectAcc.vue";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
+import { useStoreUser } from "src/stores/storeUser";
+import { ref, onMounted } from "vue";
+import * as webauthn from "@github/webauthn-json";
+import { apiLogin } from "src/boot/axios";
+import AmountCurrencyInput from "components/hive/AmountCurrencyInput.vue";
 
-const deviceName = ref("")
-const keyList = ref()
-const loginHiveAccname = ref()
+const deviceName = ref("");
+const keyList = ref();
+const loginHiveAccname = ref();
 
-const storeUser = useStoreUser()
-const columns = ref()
+const storeUser = useStoreUser();
+const columns = ref();
 
-const hiveAccname = ref({ label: "", value: "", caption: "" })
+const hiveAccname = ref({ label: "", value: "", caption: "" });
 
 columns.value = [
   {
@@ -90,13 +90,13 @@ columns.value = [
     name: "trx_reason",
     field: "trx_reason",
   },
-]
+];
 
 onMounted(async () => {
-  console.log("HiveSelectDemoPage mounted")
-  console.log("webauthn.supported", webauthn.supported())
-  await storeUser.switchUser(storeUser.hiveAccname)
-})
+  console.log("HiveSelectDemoPage mounted");
+  console.log("webauthn.supported", webauthn.supported());
+  await storeUser.switchUser(storeUser.hiveAccname);
+});
 </script>
 
 <style lang="sass" scoped>

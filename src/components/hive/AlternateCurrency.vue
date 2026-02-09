@@ -29,162 +29,164 @@
 </style>
 
 <script setup>
-import { onMounted, watch } from "vue"
-import { tidyNumber } from "src/use/useUtils"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useStoreUser } from "src/stores/storeUser"
-import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
-import { useCoingeckoStore } from "src/stores/storeCoingecko"
-import { useI18n } from "vue-i18n"
+import { onMounted, watch } from "vue";
+import { tidyNumber } from "src/use/useUtils";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
+import { useStoreUser } from "src/stores/storeUser";
+import HbdLogoIcon from "../utils/HbdLogoIcon.vue";
+import { useCoingeckoStore } from "src/stores/storeCoingecko";
+import { useI18n } from "vue-i18n";
 
-const t = useI18n().t
+const t = useI18n().t;
 
-const storeUser = useStoreUser()
-const storeAPIStatus = useStoreAPIStatus()
-const storeCoingecko = useCoingeckoStore()
+const storeUser = useStoreUser();
+const storeAPIStatus = useStoreAPIStatus();
+const storeCoingecko = useCoingeckoStore();
 
-const CurrencyCalc = defineModel()
+const CurrencyCalc = defineModel();
 
-const emit = defineEmits(["currencyClicked"])
+const emit = defineEmits(["currencyClicked"]);
 
-let localRates = {}
+let localRates = {};
 
 onMounted(async () => {
-  calcAllAmounts()
-})
+  calcAllAmounts();
+});
 
 watch(
   () => CurrencyCalc.value.amount,
   (val) => {
-    CurrencyCalc.value.amount = val
-    calcAllAmounts()
-  }
-)
+    CurrencyCalc.value.amount = val;
+    calcAllAmounts();
+  },
+);
 
 watch(
   [() => CurrencyCalc.value.currency, () => storeUser.localCurrency],
   async ([newCurrency, newLocalCurrency], [oldCurrency, oldLocalCurrency]) => {
     if (newCurrency !== oldCurrency || newLocalCurrency !== oldLocalCurrency) {
       localRates = await storeCoingecko.getCoingeckoRate(
-        storeUser.localCurrency.value
-      )
-      calcAllAmounts()
+        storeUser.localCurrency.value,
+      );
+      calcAllAmounts();
     }
-  }
-)
+  },
+);
 
 watch(
   () => storeUser.pos.fixedRate,
   () => {
-    calcAllAmounts()
-  }
-)
+    calcAllAmounts();
+  },
+);
 
 function emitEvent(currencyType) {
-  emit("currencyClicked", currencyType)
+  emit("currencyClicked", currencyType);
 }
 
 function updateLocalRates() {
   // check if the localRates structure has the storeUser.localCurrency.value in it
   // this is necessary if a user has added their own currency
   if (!localRates.hive[storeUser.localCurrency.value]) {
-    addCurrency(storeUser.localCurrency.value, storeUser.pos.fixedRate)
+    addCurrency(storeUser.localCurrency.value, storeUser.pos.fixedRate);
   }
 }
 
 function addCurrency(currencySymbol, ratePerUSD) {
   // Calculate and add the new currency value for hive and hive_dollar
-  localRates.hive[currencySymbol] = localRates.hive.usd * ratePerUSD
+  localRates.hive[currencySymbol] = localRates.hive.usd * ratePerUSD;
   localRates.hive_dollar[currencySymbol] =
-    localRates.hive_dollar.usd * ratePerUSD
+    localRates.hive_dollar.usd * ratePerUSD;
 }
 
 function setAllZero() {
-  CurrencyCalc.value.sats = 0
-  CurrencyCalc.value.hive = 0
-  CurrencyCalc.value.hbd = 0
-  CurrencyCalc.value.local = 0
+  CurrencyCalc.value.sats = 0;
+  CurrencyCalc.value.hive = 0;
+  CurrencyCalc.value.hbd = 0;
+  CurrencyCalc.value.local = 0;
 }
 
 async function calcAllAmounts() {
   if (CurrencyCalc.value.amount === 0) {
-    setAllZero()
-    return
+    setAllZero();
+    return;
   }
   if (!localRates.hive) {
     localRates = await storeCoingecko.getCoingeckoRate(
-      storeUser.localCurrency.value
-    )
+      storeUser.localCurrency.value,
+    );
   }
   switch (CurrencyCalc.value.currency) {
     case "hbd":
       CurrencyCalc.value.sats =
-        CurrencyCalc.value.amount * storeAPIStatus.HBDSatsNumber
+        CurrencyCalc.value.amount * storeAPIStatus.HBDSatsNumber;
       CurrencyCalc.value.hive =
         (CurrencyCalc.value.amount * storeAPIStatus.HBDSatsNumber) /
-        storeAPIStatus.hiveSatsNumber
-      CurrencyCalc.value.hbd = CurrencyCalc.value.amount
+        storeAPIStatus.hiveSatsNumber;
+      CurrencyCalc.value.hbd = CurrencyCalc.value.amount;
       CurrencyCalc.value.local =
         CurrencyCalc.value.hbd *
-        localRates.hive_dollar[storeUser.localCurrency.value]
-      break
+        localRates.hive_dollar[storeUser.localCurrency.value];
+      break;
     case "hive":
       CurrencyCalc.value.sats =
-        CurrencyCalc.value.amount * storeAPIStatus.hiveSatsNumber
-      CurrencyCalc.value.hive = CurrencyCalc.value.amount
+        CurrencyCalc.value.amount * storeAPIStatus.hiveSatsNumber;
+      CurrencyCalc.value.hive = CurrencyCalc.value.amount;
       CurrencyCalc.value.hbd =
         (CurrencyCalc.value.amount * storeAPIStatus.hiveSatsNumber) /
-        storeAPIStatus.HBDSatsNumber
+        storeAPIStatus.HBDSatsNumber;
       CurrencyCalc.value.local =
-        CurrencyCalc.value.hive * localRates.hive[storeUser.localCurrency.value]
-      break
+        CurrencyCalc.value.hive *
+        localRates.hive[storeUser.localCurrency.value];
+      break;
     case "sats":
-      CurrencyCalc.value.sats = CurrencyCalc.value.amount
+      CurrencyCalc.value.sats = CurrencyCalc.value.amount;
       CurrencyCalc.value.hive =
-        CurrencyCalc.value.amount / storeAPIStatus.hiveSatsNumber
+        CurrencyCalc.value.amount / storeAPIStatus.hiveSatsNumber;
       CurrencyCalc.value.hbd =
-        CurrencyCalc.value.amount / storeAPIStatus.HBDSatsNumber
+        CurrencyCalc.value.amount / storeAPIStatus.HBDSatsNumber;
       CurrencyCalc.value.local =
-        CurrencyCalc.value.hive * localRates.hive[storeUser.localCurrency.value]
-      break
+        CurrencyCalc.value.hive *
+        localRates.hive[storeUser.localCurrency.value];
+      break;
     default:
-      var adustRate = 1
-      updateLocalRates()
+      var adustRate = 1;
+      updateLocalRates();
       if (storeUser.pos.fixedRate) {
         adustRate =
           storeUser.pos.fixedRate /
-          localRates.hive_dollar[storeUser.localCurrency.value]
+          localRates.hive_dollar[storeUser.localCurrency.value];
       }
       CurrencyCalc.value.hive =
         CurrencyCalc.value.amount /
         localRates.hive[storeUser.localCurrency.value] /
-        adustRate
+        adustRate;
       CurrencyCalc.value.hbd =
         CurrencyCalc.value.amount /
         localRates.hive_dollar[storeUser.localCurrency.value] /
-        adustRate
+        adustRate;
       CurrencyCalc.value.sats =
-        (CurrencyCalc.value.hive * storeAPIStatus.hiveSatsNumber) / adustRate
-      CurrencyCalc.value.local = CurrencyCalc.value.amount
+        (CurrencyCalc.value.hive * storeAPIStatus.hiveSatsNumber) / adustRate;
+      CurrencyCalc.value.local = CurrencyCalc.value.amount;
   }
-  console.log("CurrencyCalc range check")
-  CurrencyCalc.value.outOfRange = false
-  CurrencyCalc.value.message = ""
+  console.log("CurrencyCalc range check");
+  CurrencyCalc.value.outOfRange = false;
+  CurrencyCalc.value.message = "";
   if (storeUser.currentKeepSats?.admin) {
     // do nothing for now
   }
   if (storeAPIStatus.minMax) {
     if (CurrencyCalc.value.sats < storeAPIStatus.minMax.sats.min) {
-      CurrencyCalc.value.outOfRange = true
-      CurrencyCalc.value.message = t("too_low_for_sats")
+      CurrencyCalc.value.outOfRange = true;
+      CurrencyCalc.value.message = t("too_low_for_sats");
     } else if (CurrencyCalc.value.sats > storeAPIStatus.minMax.sats.max) {
-      CurrencyCalc.value.outOfRange = true
-      CurrencyCalc.value.message = t("too_high_for_sats")
+      CurrencyCalc.value.outOfRange = true;
+      CurrencyCalc.value.message = t("too_high_for_sats");
     }
     if (CurrencyCalc.value.currency) {
       CurrencyCalc.value.minMax = getMinMax(
-        CurrencyCalc.value.currency.toUpperCase()
-      )
+        CurrencyCalc.value.currency.toUpperCase(),
+      );
     }
   }
 }
@@ -193,36 +195,36 @@ function getMinMax(dest) {
   // check if dest is hive hbd or sats
   if (["hive", "hbd", "sats"].includes(dest.toLowerCase())) {
     if (storeAPIStatus?.minMax) {
-      let min = 1
-      let max = 400
+      let min = 1;
+      let max = 400;
       if (dest === "SATS") {
-        dest = "sats"
-        min = storeAPIStatus.minMax.sats.min
+        dest = "sats";
+        min = storeAPIStatus.minMax.sats.min;
         max = Math.min(
           storeUser.keepSatsBalanceNum,
-          storeAPIStatus.minMax.sats.max
-        )
+          storeAPIStatus.minMax.sats.max,
+        );
       } else {
-        min = storeAPIStatus.minMax[dest].min
-        max = storeAPIStatus.minMax[dest].max
+        min = storeAPIStatus.minMax[dest].min;
+        max = storeAPIStatus.minMax[dest].max;
         // need to error check here if EVMs in play
-        min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()])
-        max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()])
+        min = Math.min(min, storeUser.balancesNum[dest.toLowerCase()]);
+        max = Math.min(max, storeUser.balancesNum[dest.toLowerCase()]);
       }
-      const diff = max - min
+      const diff = max - min;
 
       // Divide the difference by 100 to get the initial step size
-      let step = diff / 100
+      let step = diff / 100;
 
       // Calculate the power of 10 for the step size
-      const power = Math.floor(Math.log10(step))
+      const power = Math.floor(Math.log10(step));
 
       // Round the step size to the nearest power of 10
-      step = Math.pow(10, power)
-      const mid = diff / 2 + min
-      return { min: min, max: max, step: step, mid: mid }
+      step = Math.pow(10, power);
+      const mid = diff / 2 + min;
+      return { min: min, max: max, step: step, mid: mid };
     }
   }
-  return { min: 1, max: 400, step: 1, diff: 200 }
+  return { min: 1, max: 400, step: 1, diff: 200 };
 }
 </script>

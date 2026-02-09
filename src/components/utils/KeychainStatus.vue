@@ -23,12 +23,11 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref } from "vue";
 
 const storeAPIStatus = ref({
   isKeychainIn: true,
-})
-
+});
 </script>
 
 <style lang="scss" scoped></style>

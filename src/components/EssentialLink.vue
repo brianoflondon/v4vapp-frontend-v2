@@ -11,7 +11,6 @@
 </template>
 
 <script setup>
-
 defineProps({
   title: {
     type: String,
@@ -29,5 +28,5 @@ defineProps({
     type: String,
     default: "",
   },
-})
+});
 </script>

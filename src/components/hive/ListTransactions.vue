@@ -205,7 +205,7 @@
     </div>
     <div class="q-px-sm q-py-md">+</div>
     <div class="q-px-sm q-py-md">
-      {{ tidyNumber(totalAmounts.sats,0) }} sats
+      {{ tidyNumber(totalAmounts.sats, 0) }} sats
     </div>
     <div class="q-px-sm q-py-md">=</div>
     <div class="q-px-sm q-py-md">USD ${{ totalAmounts.usd }}</div>
@@ -269,45 +269,48 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue"
-import { useGetHiveTransactionHistory, useGenerateTxUrl } from "src/use/useHive"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
+import { ref, onMounted, computed, watch } from "vue";
+import {
+  useGetHiveTransactionHistory,
+  useGenerateTxUrl,
+} from "src/use/useHive";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
 import {
   formatDateTimeLocale,
   formatTimeDifference,
   formatPrettyDate,
   tidyNumber,
-} from "src/use/useUtils"
-import { useStoreSales } from "src/stores/storeSales"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useStoreUser } from "src/stores/storeUser"
-import { useCoingeckoStore } from "src/stores/storeCoingecko"
-import { useI18n } from "vue-i18n"
-import { Dialog, exportFile } from "quasar"
-import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
-import { useIsEVMAddress, useShortEVMAddress } from "src/use/useEVM"
-import { serverHiveAccountTreasury } from "src/boot/axios"
+} from "src/use/useUtils";
+import { useStoreSales } from "src/stores/storeSales";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
+import { useStoreUser } from "src/stores/storeUser";
+import { useCoingeckoStore } from "src/stores/storeCoingecko";
+import { useI18n } from "vue-i18n";
+import { Dialog, exportFile } from "quasar";
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue";
+import { useIsEVMAddress, useShortEVMAddress } from "src/use/useEVM";
+import { serverHiveAccountTreasury } from "src/boot/axios";
 
-const t = useI18n().t
-const storeAPIStatus = useStoreAPIStatus()
-const storeUser = useStoreUser()
-const storeCoingecko = useCoingeckoStore()
+const t = useI18n().t;
+const storeAPIStatus = useStoreAPIStatus();
+const storeUser = useStoreUser();
+const storeCoingecko = useCoingeckoStore();
 
-const maxNumTransactions = 40 // max number of transactions to show in the table
+const maxNumTransactions = 40; // max number of transactions to show in the table
 
 const totalAmounts = ref({
   hive: 0,
   hbd: 0,
   sats: 0,
   usd: 0,
-})
-const storeSales = useStoreSales()
-const KeychainDialog = defineModel()
-const searchFilter = ref()
-const paidFilter = ref("all")
-const emit = defineEmits(["update-fields"])
+});
+const storeSales = useStoreSales();
+const KeychainDialog = defineModel();
+const searchFilter = ref();
+const paidFilter = ref("all");
+const emit = defineEmits(["update-fields"]);
 
-const rowsExpanded = ref([])
+const rowsExpanded = ref([]);
 const localSalesColumns = ref([
   {
     name: "date",
@@ -335,19 +338,19 @@ const localSalesColumns = ref([
     name: "expand",
     field: "expand",
   },
-])
+]);
 
 const filteredDataLocal = computed(() => {
-  const localData = storeSales.salesAll
+  const localData = storeSales.salesAll;
   const filteredByPaidStatus = localData.filter((row) => {
     return (
       paidFilter.value === "all" ||
       (paidFilter.value === "paid" && row.paid) ||
       (paidFilter.value === "pending" && !row.paid)
-    )
-  })
+    );
+  });
 
-  if (!searchFilter.value) return filteredByPaidStatus
+  if (!searchFilter.value) return filteredByPaidStatus;
   const filteredData = filteredByPaidStatus.filter((row) => {
     return (
       row.hiveAccTo?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
@@ -357,87 +360,87 @@ const filteredDataLocal = computed(() => {
       row.memo?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
       row.checkCode?.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
       row.amountString?.toLowerCase().includes(searchFilter.value.toLowerCase())
-    )
-  })
+    );
+  });
 
-  return filteredData
-})
+  return filteredData;
+});
 
 watch(
   () => filteredDataLocal.value,
   (val) => {
-    calcTotalAmounts()
-  }
-)
+    calcTotalAmounts();
+  },
+);
 
 watch([() => storeUser.localCurrency, () => storeUser.pos.fixedRate], () => {
-  calcTotalAmounts()
-})
+  calcTotalAmounts();
+});
 
 watch(
   () => KeychainDialog.value.checkCode,
   () => {
-    updateTransactions()
-  }
-)
+    updateTransactions();
+  },
+);
 
 async function calcTotalAmounts() {
-  calcLocalTotal()
+  calcLocalTotal();
   let amounts = {
     hive: 0,
     hbd: 0,
     sats: 0,
     usd: 0,
-  }
+  };
   filteredDataLocal.value.forEach((row) => {
     if (row.currencyToSend === "hive") {
-      amounts.hive += parseFloat(row.amount)
+      amounts.hive += parseFloat(row.amount);
     } else if (row.currencyToSend === "hbd") {
-      amounts.hbd += parseFloat(row.amount)
+      amounts.hbd += parseFloat(row.amount);
     } else if (row.currencyToSend === "sats") {
-      amounts.sats += parseFloat(row.amount)
+      amounts.sats += parseFloat(row.amount);
     }
-  })
-  amounts.hive = amounts.hive.toFixed(3)
-  amounts.hbd = amounts.hbd.toFixed(3)
+  });
+  amounts.hive = amounts.hive.toFixed(3);
+  amounts.hbd = amounts.hbd.toFixed(3);
   // convert hive to USD
-  totalAmounts.value = amounts
+  totalAmounts.value = amounts;
   if (storeAPIStatus.prices === "fetching prices") {
     // wait a bit and try again
     setTimeout(() => {
-      calcTotalAmounts()
-    }, 1000)
-    return
+      calcTotalAmounts();
+    }, 1000);
+    return;
   }
-  amounts.usd = amounts.hive * storeAPIStatus.prices?.hive?.usd
-  amounts.usd += amounts.hbd * storeAPIStatus.prices?.hive_dollar?.usd
-  amounts.usd += amounts.sats / storeAPIStatus.prices?.v4vapp?.sats_USD
-  totalAmounts.value.usd = amounts.usd.toFixed(2)
+  amounts.usd = amounts.hive * storeAPIStatus.prices?.hive?.usd;
+  amounts.usd += amounts.hbd * storeAPIStatus.prices?.hive_dollar?.usd;
+  amounts.usd += amounts.sats / storeAPIStatus.prices?.v4vapp?.sats_USD;
+  totalAmounts.value.usd = amounts.usd.toFixed(2);
 }
 
 async function calcLocalTotal() {
   const localRates = await storeCoingecko.getCoingeckoRate(
-    storeUser.localCurrency.value
-  )
-  var adustRate = 1
+    storeUser.localCurrency.value,
+  );
+  var adustRate = 1;
   if (storeUser.pos.fixedRate) {
     adustRate =
       storeUser.pos.fixedRate /
-      localRates.hive_dollar[storeUser.localCurrency.value]
+      localRates.hive_dollar[storeUser.localCurrency.value];
   }
 
   const convertLocal = (amount, currency) => {
     return (
       amount * localRates[currency][storeUser.localCurrency.value] * adustRate
-    )
-  }
+    );
+  };
 
   totalAmounts.value.local = convertLocal(
     totalAmounts.value.usd,
-    "usd"
-  ).toFixed(2)
+    "usd",
+  ).toFixed(2);
 
-  totalAmounts.value.localSymbol = storeUser.localCurrency.unit
+  totalAmounts.value.localSymbol = storeUser.localCurrency.unit;
 }
 
 /**
@@ -452,19 +455,19 @@ watch(
   () => KeychainDialog.value.hiveAccTo,
   async () => {
     // pause for 0.5 seconds to allow the transactions to update
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    await storeSales.clearSales()
-    await importFromHive()
-  }
-)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await storeSales.clearSales();
+    await importFromHive();
+  },
+);
 
 watch(
   () => KeychainDialog.value.paid,
   async (val) => {
-    KeychainDialog.value.paid = val
-    updateTransactions()
-  }
-)
+    KeychainDialog.value.paid = val;
+    updateTransactions();
+  },
+);
 
 /**
  * Toggles the expansion of all rows in the table.
@@ -474,9 +477,9 @@ watch(
  */
 function expandAll() {
   if (rowsExpanded.value.length === 0) {
-    rowsExpanded.value = filteredDataLocal.value.map((row) => row.checkCode)
+    rowsExpanded.value = filteredDataLocal.value.map((row) => row.checkCode);
   } else {
-    rowsExpanded.value = []
+    rowsExpanded.value = [];
   }
 }
 
@@ -492,45 +495,45 @@ function expandAll() {
  * 5. Calculates the number of new transactions.
  */
 async function importFromHive() {
-  const lengthBefore = filteredDataHive.value.length
-  await updateTransactions()
+  const lengthBefore = filteredDataHive.value.length;
+  await updateTransactions();
   // for all the records in transactions add them to the local sales store
   filteredDataHive.value.forEach((transaction) => {
-    let hiveAccTo = transaction.op[1].to
+    let hiveAccTo = transaction.op[1].to;
     if (hiveAccTo === serverHiveAccountTreasury) {
-      hiveAccTo = useShortEVMAddress(KeychainDialog.value.hiveAccTo)
+      hiveAccTo = useShortEVMAddress(KeychainDialog.value.hiveAccTo);
     }
-    let amountString = transaction.op[1].amount
-    let amount = transaction.op[1].amount.split(" ")[0]
-    let currencyToSend = transaction.op[1].amount.split(" ")[1].toLowerCase()
-    const checkCode = transaction.checkCode
-    const hiveAccFrom = transaction.op[1].from
-    const trx_id = transaction.trx_id
-    const timestampUnix = transaction.timestampUnix
-    let strippedMemo = transaction.strippedMemo
+    let amountString = transaction.op[1].amount;
+    let amount = transaction.op[1].amount.split(" ")[0];
+    let currencyToSend = transaction.op[1].amount.split(" ")[1].toLowerCase();
+    const checkCode = transaction.checkCode;
+    const hiveAccFrom = transaction.op[1].from;
+    const trx_id = transaction.trx_id;
+    const timestampUnix = transaction.timestampUnix;
+    let strippedMemo = transaction.strippedMemo;
     let currency =
       currencyToSend === "hbd"
         ? "hive_dollar"
         : currencyToSend === "hive"
-        ? "hive"
-        : ""
+          ? "hive"
+          : "";
     const { sats, extractedMemo } = extractEvmInformation(
-      transaction.op[1].memo
-    )
-    let usd = amount * storeAPIStatus.prices[currency]?.usd
-    console.debug("currency", currency, amount)
+      transaction.op[1].memo,
+    );
+    let usd = amount * storeAPIStatus.prices[currency]?.usd;
+    console.debug("currency", currency, amount);
     if (amount === "0.001" && sats > 0) {
-      console.debug("amount is 0.001")
-      currency = "sats"
-      currencyToSend = "sats"
-      usd = sats / storeAPIStatus.prices["v4vapp"]["sats_USD"]
-      amountString = sats + " sats"
-      amount = sats
-      strippedMemo = extractedMemo
+      console.debug("amount is 0.001");
+      currency = "sats";
+      currencyToSend = "sats";
+      usd = sats / storeAPIStatus.prices["v4vapp"]["sats_USD"];
+      amountString = sats + " sats";
+      amount = sats;
+      strippedMemo = extractedMemo;
     }
 
     // turn timestampUnix into a date object
-    const paidDate = new Date(timestampUnix)
+    const paidDate = new Date(timestampUnix);
 
     const sale = {
       checkCode: checkCode,
@@ -547,33 +550,33 @@ async function importFromHive() {
       lightning: hiveAccFrom === "v4vapp",
       paid: true,
       usd: usd,
-    }
-    storeSales.updateSale(sale)
-  })
-  calcTotalAmounts()
-  const lengthAfter = filteredDataHive.value.length
-  const newTransactions = lengthAfter - lengthBefore
+    };
+    storeSales.updateSale(sale);
+  });
+  calcTotalAmounts();
+  const lengthAfter = filteredDataHive.value.length;
+  const newTransactions = lengthAfter - lengthBefore;
 }
 
 function extractEvmInformation(memo) {
-  console.debug("extractEvmInformation", memo)
-  const parsedMemo = memo.split("|")
-  console.debug("parsedMemo", parsedMemo)
-  let extractedMemo = ""
-  let sats = 0
+  console.debug("extractEvmInformation", memo);
+  const parsedMemo = memo.split("|");
+  console.debug("parsedMemo", parsedMemo);
+  let extractedMemo = "";
+  let sats = 0;
   if (parsedMemo.length > 2 && parsedMemo[1].includes("#sats")) {
-    sats = parseInt(parsedMemo[1].split("#sats")[1])
-    console.debug("sats", sats)
+    sats = parseInt(parsedMemo[1].split("#sats")[1]);
+    console.debug("sats", sats);
     if (parsedMemo[0].includes("evm:")) {
-      extractedMemo = memo.replace(/^evm: 0x[^\s]+\s/, "")
+      extractedMemo = memo.replace(/^evm: 0x[^\s]+\s/, "");
     }
-    return { sats, extractedMemo }
+    return { sats, extractedMemo };
   }
-  return { sats, extractedMemo }
+  return { sats, extractedMemo };
 }
 
 const deleteLocalSalesConfirm = (row) => {
-  let message = ""
+  let message = "";
   if (row?.checkCode) {
     message =
       t("delete_one_pending_message") +
@@ -582,9 +585,9 @@ const deleteLocalSalesConfirm = (row) => {
       "<br>" +
       row.amountString +
       "<br>" +
-      sanitizeHTML(row.memo)
+      sanitizeHTML(row.memo);
   } else {
-    message = t("delete_all_pending_message")
+    message = t("delete_all_pending_message");
   }
   Dialog.create({
     message: message,
@@ -601,13 +604,13 @@ const deleteLocalSalesConfirm = (row) => {
     },
   }).onOk(() => {
     if (row?.checkCode) {
-      storeSales.removeSale(row.checkCode)
+      storeSales.removeSale(row.checkCode);
     } else {
-      storeSales.clearSales()
-      importFromHive()
+      storeSales.clearSales();
+      importFromHive();
     }
-  })
-}
+  });
+};
 
 function sanitizeHTML(str) {
   return str
@@ -615,7 +618,7 @@ function sanitizeHTML(str) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
+    .replace(/'/g, "&#39;");
 }
 
 /**
@@ -638,23 +641,23 @@ function sanitizeHTML(str) {
  */
 async function retryPending(props) {
   if (props.row.paid) {
-    props.expand = !props.expand
+    props.expand = !props.expand;
   } else {
     emit("update-fields", {
       hiveAccTo: props.row.hiveAccTo,
       amount: props.row.amount,
       memo: props.row.memo,
       currencyToSend: props.row.currencyToSend,
-    })
+    });
     // wait a bit for the fields to update
-    await new Promise((resolve) => setTimeout(resolve, 700))
+    await new Promise((resolve) => setTimeout(resolve, 700));
     // After updating fields on the parent, show the dialog
     try {
       // KeychainDialog.value.show = true
       // then delete the previous attempt at the transaction
-      storeSales.removeSale(props.row.checkCode)
+      storeSales.removeSale(props.row.checkCode);
     } catch (e) {
-      console.error("error showing dialog", e)
+      console.error("error showing dialog", e);
     }
   }
 }
@@ -677,46 +680,46 @@ async function retryPending(props) {
  * @returns {void}
  */
 async function updateTransactions() {
-  let checkHiveAccount = KeychainDialog.value.hiveAccTo
-  let evmFilter = false
+  let checkHiveAccount = KeychainDialog.value.hiveAccTo;
+  let evmFilter = false;
   if (useIsEVMAddress(KeychainDialog.value.hiveAccTo)) {
-    checkHiveAccount = serverHiveAccountTreasury
-    evmFilter = true
+    checkHiveAccount = serverHiveAccountTreasury;
+    evmFilter = true;
   }
 
-  const trans = await useGetHiveTransactionHistory(checkHiveAccount, 200)
+  const trans = await useGetHiveTransactionHistory(checkHiveAccount, 200);
 
   if (trans) {
     // Filter out the transactions that are not from the POS
     let posTrans = trans.filter((transaction) => {
-      const memo = transaction.op[1].memo
-      return memo && memo.match(/v4v-\w+$/)
-    })
+      const memo = transaction.op[1].memo;
+      return memo && memo.match(/v4v-\w+$/);
+    });
     // If posTrans is empty, exit early
     if (posTrans.length === 0) {
-      return
+      return;
     }
-    posTrans = posTrans.slice(0, maxNumTransactions)
+    posTrans = posTrans.slice(0, maxNumTransactions);
 
     // Add extra fields to the transactions
     posTrans.forEach((transaction) => {
-      const memo = transaction.op[1].memo
+      const memo = transaction.op[1].memo;
 
       // Convert timestamp to Unix
-      const newDate = new Date(transaction.timestamp + "Z")
-      transaction.timestampUnix = Math.floor(newDate.getTime())
+      const newDate = new Date(transaction.timestamp + "Z");
+      transaction.timestampUnix = Math.floor(newDate.getTime());
 
       // Strip the memo and limit its length
-      transaction.strippedMemo = memo.replace(/v4v-\w+$/, "")
+      transaction.strippedMemo = memo.replace(/v4v-\w+$/, "");
       if (transaction.strippedMemo.length > 30) {
         transaction.strippedMemo =
-          transaction.strippedMemo.substring(0, 30) + "..."
+          transaction.strippedMemo.substring(0, 30) + "...";
       }
 
       // Extract the checkCode
-      transaction.checkCode = memo.match(/v4v-\w+$/)[0]
-    })
-    KeychainDialog.value.transactions = posTrans.reverse()
+      transaction.checkCode = memo.match(/v4v-\w+$/)[0];
+    });
+    KeychainDialog.value.transactions = posTrans.reverse();
   }
 }
 
@@ -729,8 +732,8 @@ async function updateTransactions() {
 onMounted(async () => {
   // KeychainDialog.value.transactions = []
   // updateTransactions()
-  await importFromHive()
-})
+  await importFromHive();
+});
 
 /**
  * Computes a list of filtered transactions based on specific criteria.
@@ -747,24 +750,24 @@ onMounted(async () => {
  * If no transactions exist or they don't match the criteria, an empty array is returned.
  */
 const filteredDataHive = computed(() => {
-  let checkHiveAccount = KeychainDialog.value.hiveAccTo
-  let evmFilter = false
+  let checkHiveAccount = KeychainDialog.value.hiveAccTo;
+  let evmFilter = false;
   if (useIsEVMAddress(KeychainDialog.value.hiveAccTo)) {
-    checkHiveAccount = serverHiveAccountTreasury
-    evmFilter = true
+    checkHiveAccount = serverHiveAccountTreasury;
+    evmFilter = true;
   }
-  const transactions = KeychainDialog.value.transactions
+  const transactions = KeychainDialog.value.transactions;
 
-  if (!Array.isArray(transactions)) return []
+  if (!Array.isArray(transactions)) return [];
 
   // If the transactions exist and is an array, then process them
   transactions.forEach((transaction) => {
-    const newDate = new Date(transaction.timestamp + "Z")
-    transaction.timestampUnix = Math.floor(newDate.getTime())
-  })
+    const newDate = new Date(transaction.timestamp + "Z");
+    transaction.timestampUnix = Math.floor(newDate.getTime());
+  });
   return transactions.filter((transaction) => {
-    const memo = transaction.op[1].memo
-    const to = transaction.op[1].to
+    const memo = transaction.op[1].memo;
+    const to = transaction.op[1].to;
     // EVM transactions have the v4v- in the memo and at the end of the memo.
     if (evmFilter) {
       return (
@@ -772,29 +775,29 @@ const filteredDataHive = computed(() => {
         memo &&
         memo.match(/v4v-\w+/) &&
         memo.includes(KeychainDialog.value.hiveAccTo)
-      )
+      );
     } else {
-      return to === checkHiveAccount && memo && memo.match(/v4v-\w+$/)
+      return to === checkHiveAccount && memo && memo.match(/v4v-\w+$/);
     }
-  })
-})
+  });
+});
 
 function prettyDate(row) {
-  return formatPrettyDate(row.timestampUnix)
+  return formatPrettyDate(row.timestampUnix);
 }
 
 function prettyTime(timestampUnix) {
-  const timeDiff = Date.now() - timestampUnix
-  return formatTimeDifference(timeDiff)
+  const timeDiff = Date.now() - timestampUnix;
+  return formatTimeDifference(timeDiff);
 }
 
 function wrapCsvValue(val, formatFn, row) {
-  let formatted = formatFn !== void 0 ? formatFn(val, row) : val
+  let formatted = formatFn !== void 0 ? formatFn(val, row) : val;
 
   formatted =
-    formatted === void 0 || formatted === null ? "" : String(formatted)
+    formatted === void 0 || formatted === null ? "" : String(formatted);
 
-  formatted = formatted.split('"').join('""')
+  formatted = formatted.split('"').join('""');
   /**
    * Excel accepts \n and \r in strings, but some other CSV parsers do not
    * Uncomment the next two lines to escape new lines
@@ -802,7 +805,7 @@ function wrapCsvValue(val, formatFn, row) {
   // .split('\n').join('\\n')
   // .split('\r').join('\\r')
 
-  return `"${formatted}"`
+  return `"${formatted}"`;
 }
 
 /**
@@ -834,9 +837,9 @@ function exportToCsv() {
     { name: "timestampUnix", label: "timestampUnix" },
     { name: "trx_id", label: "trx_id" },
     { name: "usd", label: "usd" },
-  ]
+  ];
 
-  const rows = filteredDataLocal.value
+  const rows = filteredDataLocal.value;
   // naive encoding to csv format
   const content = [columns.map((col) => wrapCsvValue(col.label))]
     .concat(
@@ -848,22 +851,22 @@ function exportToCsv() {
                 ? col.field(row)
                 : row[col.field === void 0 ? col.name : col.field],
               col.format,
-              row
-            )
+              row,
+            ),
           )
-          .join(",")
-      )
+          .join(","),
+      ),
     )
-    .join("\r\n")
+    .join("\r\n");
 
-  const status = exportFile("table-export.csv", content, "text/csv")
+  const status = exportFile("table-export.csv", content, "text/csv");
 
   if (status !== true) {
     $q.notify({
       message: "Browser denied file download...",
       color: "negative",
       icon: "warning",
-    })
+    });
   }
 }
 </script>

@@ -53,69 +53,69 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue"
-import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
-import { useHAS, useHASTransfer } from "src/use/useHAS"
-import { useStoreUser } from "src/stores/storeUser"
-import CountdownBar from "../utils/CountdownBar.vue"
-import CreateHASQRCode from "components/qrcode/CreateHASQRCode.vue"
+import { onMounted, ref, watch } from "vue";
+import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue";
+import { useHAS, useHASTransfer } from "src/use/useHAS";
+import { useStoreUser } from "src/stores/storeUser";
+import CountdownBar from "../utils/CountdownBar.vue";
+import CreateHASQRCode from "components/qrcode/CreateHASQRCode.vue";
 
-const storeUser = useStoreUser()
-const hiveAccObj = ref(null)
-const HASDialog = defineModel()
-const expiryMessage = ref("")
+const storeUser = useStoreUser();
+const hiveAccObj = ref(null);
+const HASDialog = defineModel();
+const expiryMessage = ref("");
 
-const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS()
+const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS();
 
 onMounted(async () => {
-  await checkUser()
-  console.debug("mounted HASDialog")
-})
+  await checkUser();
+  console.debug("mounted HASDialog");
+});
 
 watch(
   () => resolvedHAS.value,
   (val) => {
-    console.debug("watch HASDialog", val)
-    HASDialog.value["resolvedHAS"] = val
+    console.debug("watch HASDialog", val);
+    HASDialog.value["resolvedHAS"] = val;
     if (val.cmd === "sign_ack") {
-      HASDialog.value.show = false
+      HASDialog.value.show = false;
     }
-  }
-)
+  },
+);
 
 async function checkUser() {
   if (!HASDialog.value?.payment?.username) {
     if (hiveAccObj.value?.value) {
-      console.debug("startHASProcess: has user", hiveAccObj.value.value)
-      HASDialog.value.payment.username = hiveAccObj.value.value
+      console.debug("startHASProcess: has user", hiveAccObj.value.value);
+      HASDialog.value.payment.username = hiveAccObj.value.value;
       // Now check if we have an active HAS session.
-      const activeUser = storeUser.getUser(HASDialog.value.payment.username)
+      const activeUser = storeUser.getUser(HASDialog.value.payment.username);
       if (!activeUser) {
-        console.debug("startHASProcess: no active HAS session")
-        console.debug("logging in process needed")
+        console.debug("startHASProcess: no active HAS session");
+        console.debug("logging in process needed");
       }
     } else {
-      console.debug("startHASProcess: no user")
+      console.debug("startHASProcess: no user");
       if (storeUser?.user?.authKey) {
-        HASDialog.value.payment.username = storeUser.hiveAccname
-        hiveAccObj.value.value = storeUser.hiveAccname
+        HASDialog.value.payment.username = storeUser.hiveAccname;
+        hiveAccObj.value.value = storeUser.hiveAccname;
       }
-      return
+      return;
     }
   }
 }
 
 async function startHASProcess() {
-  await checkUser()
+  await checkUser();
   if (!HASDialog.value?.payment?.username) {
-    return
+    return;
   }
   await useHASTransfer(
     HASDialog.value.payment.username,
     HASDialog.value.payment.amount,
     HASDialog.value.payment.currency,
-    HASDialog.value.payment.memo
-  )
+    HASDialog.value.payment.memo,
+  );
 }
 </script>
 

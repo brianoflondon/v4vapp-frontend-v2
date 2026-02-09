@@ -17,9 +17,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
-const buttonValues = ref([1, 2, 5, 10, 15, 20, 50, 75, 100])
-const emit = defineEmits(["buttonPressed"])
+import { ref } from "vue";
+const buttonValues = ref([1, 2, 5, 10, 15, 20, 50, 75, 100]);
+const emit = defineEmits(["buttonPressed"]);
 </script>
 
 <style lang="scss" scoped></style>

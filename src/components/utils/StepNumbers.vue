@@ -18,8 +18,8 @@
 </template>
 
 <script setup>
-import { buttonActiveNot } from "src/use/useUtils"
-import { ref } from "vue"
+import { buttonActiveNot } from "src/use/useUtils";
+import { ref } from "vue";
 
 const props = defineProps({
   numItems: {
@@ -30,7 +30,7 @@ const props = defineProps({
     type: Number,
     default: 1,
   },
-})
+});
 </script>
 
 <style lang="scss" scoped></style>

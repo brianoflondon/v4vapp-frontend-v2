@@ -131,37 +131,37 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue"
-import { tidyNumber, genRandAlphaNum } from "src/use/useUtils"
-import { useQuasar } from "quasar"
-import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
-import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
-import { useStoreUser } from "src/stores/storeUser"
-import { encodeOp } from "hive-uri"
-import { useI18n } from "vue-i18n"
+import { ref, onMounted, watch, computed } from "vue";
+import { tidyNumber, genRandAlphaNum } from "src/use/useUtils";
+import { useQuasar } from "quasar";
+import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue";
+import KeychainShowQR from "src/components/hive/KeychainShowQR.vue";
+import { useStoreUser } from "src/stores/storeUser";
+import { encodeOp } from "hive-uri";
+import { useI18n } from "vue-i18n";
 
-const q = useQuasar()
-const t = useI18n().t
+const q = useQuasar();
+const t = useI18n().t;
 
-const storeUser = useStoreUser()
-const hiveAccTo = ref({ label: "", value: "", caption: "" })
+const storeUser = useStoreUser();
+const hiveAccTo = ref({ label: "", value: "", caption: "" });
 
-const KeychainDialog = ref({ show: false })
+const KeychainDialog = ref({ show: false });
 const isMobile = computed(() => {
-  return true
-  return q.platform.is.mobile
-})
+  return true;
+  return q.platform.is.mobile;
+});
 
 const amount = ref({
   txt: "0.00",
   num: 0,
-})
+});
 
 const runningTotal = ref({
   txt: "0.00",
   num: 0,
-})
-const runningTotalAwait = ref(false)
+});
+const runningTotalAwait = ref(false);
 const payButtonLabel = computed(() => {
   return (
     t("pay") +
@@ -169,16 +169,16 @@ const payButtonLabel = computed(() => {
     tidyNumber(runningTotal.value.num / 100, 3) +
     " " +
     currency.value
-  )
-})
+  );
+});
 
-const decimalEntry = ref(0)
-const items = ref(0)
+const decimalEntry = ref(0);
+const items = ref(0);
 
-const currencyOptions = ref(["HBD", "HIVE"])
-const currency = ref("HBD")
+const currencyOptions = ref(["HBD", "HIVE"]);
+const currency = ref("HBD");
 
-const specialButtons = ref(["AC", "C", "+", "="])
+const specialButtons = ref(["AC", "C", "+", "="]);
 
 const numButtons = ref([
   "7",
@@ -193,119 +193,119 @@ const numButtons = ref([
   "0",
   ".",
   ".00",
-])
+]);
 
 onMounted(() => {
-  console.log("onMounted")
+  console.log("onMounted");
   if (isMobile.value) {
-    amount.value.txt = ""
+    amount.value.txt = "";
   }
-  console.log("storeUser.pos", storeUser.pos)
-  console.log("storeUser.hiveAccname", storeUser.hiveAccname)
+  console.log("storeUser.pos", storeUser.pos);
+  console.log("storeUser.hiveAccname", storeUser.hiveAccname);
   if (storeUser.pos?.hiveAccTo) {
     hiveAccTo.value = {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
       caption: storeUser.pos.hiveAccTo.caption,
-    }
+    };
   } else {
-    useLoggedInUser()
+    useLoggedInUser();
   }
-})
+});
 
 // When the amount is updated manually deal with that here
 function updateAmounts(val) {
   if (val.endsWith("+")) {
-    amount.value.txt = amount.value.txt.slice(0, -1)
+    amount.value.txt = amount.value.txt.slice(0, -1);
     if (amount.value.txt === "") {
-      amount.value.txt = "0.00"
+      amount.value.txt = "0.00";
     }
-    amount.value.num = parseFloat(val) * 100
-    buttonPushed("+")
+    amount.value.num = parseFloat(val) * 100;
+    buttonPushed("+");
   }
   if (val.endsWith(".")) {
-    amount.value.num = parseFloat(val) * 100
+    amount.value.num = parseFloat(val) * 100;
   }
-  amount.value.num = parseFloat(val) * 100
+  amount.value.num = parseFloat(val) * 100;
   if (isMobile.value) {
     if (parseFloat(val)) {
-      amount.value.txt = parseFloat(val)
-      runningTotal.value.num = amount.value.num
-      runningTotal.value.txt = amount.value.txt
+      amount.value.txt = parseFloat(val);
+      runningTotal.value.num = amount.value.num;
+      runningTotal.value.txt = amount.value.txt;
     }
   }
-  console.log(val)
-  console.log(amount.value.num)
+  console.log(val);
+  console.log(amount.value.num);
 }
 
 function enterPressed() {
-  console.log("enterPressed")
-  buttonPushed("=")
+  console.log("enterPressed");
+  buttonPushed("=");
 }
 
 function useLoggedInUser() {
-  console.log("useLoggedInUser")
+  console.log("useLoggedInUser");
   if (storeUser.hiveAccname) {
     hiveAccTo.value = {
       label: storeUser.hiveAccname,
       value: storeUser.hiveAccname,
       caption: setCaption(storeUser.profileName),
-    }
+    };
   }
 }
 
 function setCaption(profileName) {
-  return t("pay_to") + " " + profileName
+  return t("pay_to") + " " + profileName;
 }
 
 const useStoreUserButtonLabel = computed(() => {
-  return t("use") + "\n@" + storeUser.hiveAccname
-})
+  return t("use") + "\n@" + storeUser.hiveAccname;
+});
 
 // Watch the hiveAccTo for changes and update the storeUser.pos Object
 watch(hiveAccTo, async (val) => {
-  console.debug("hiveAccTo", val)
+  console.debug("hiveAccTo", val);
   storeUser.pos.hiveAccTo = {
     label: val.label,
     value: val.value,
     caption: val.caption,
-  }
-  hiveAccTo.value.caption = setCaption(val.caption)
-})
+  };
+  hiveAccTo.value.caption = setCaption(val.caption);
+});
 
 function clearAmount(clearRunning = false) {
-  decimalEntry.value = 0
-  amount.value.txt = isMobile.value ? "" : "0.00"
-  amount.value.num = 0
-  items.value = 0
+  decimalEntry.value = 0;
+  amount.value.txt = isMobile.value ? "" : "0.00";
+  amount.value.num = 0;
+  items.value = 0;
   if (clearRunning) {
-    runningTotalAwait.value = false
-    runningTotal.value.num = 0
-    runningTotal.value.txt = "0.00"
+    runningTotalAwait.value = false;
+    runningTotal.value.num = 0;
+    runningTotal.value.txt = "0.00";
   }
 }
 
-const memoInput = ref("")
-let isFocused = ref(false)
+const memoInput = ref("");
+let isFocused = ref(false);
 
 const handleFocus = () => {
-  isFocused.value = true
-  console.log("Input is focused:", isFocused.value)
-}
+  isFocused.value = true;
+  console.log("Input is focused:", isFocused.value);
+};
 
 const handleBlur = () => {
-  isFocused.value = false
-  console.log("Input is focused:", isFocused.value)
-}
+  isFocused.value = false;
+  console.log("Input is focused:", isFocused.value);
+};
 
 function handleKeypress(event) {
-  console.log(event)
+  console.log(event);
   if (isFocused.value) {
-    return
+    return;
   }
   if (event.key >= "0" && event.key <= "9") {
-    console.log(`Numeric key pressed: ${event.key}`)
-    buttonPushed(event.key)
+    console.log(`Numeric key pressed: ${event.key}`);
+    buttonPushed(event.key);
   }
   if (
     event.key === "Backspace" ||
@@ -313,26 +313,26 @@ function handleKeypress(event) {
     event.key === "a" ||
     event.key === "A"
   ) {
-    console.log(`Backspace key pressed: ${event.key}`)
-    clearAmount(true)
+    console.log(`Backspace key pressed: ${event.key}`);
+    clearAmount(true);
   }
   if (event.key === "c" || event.key === "C") {
-    console.log(`C key pressed: ${event.key}`)
-    clearAmount(false)
+    console.log(`C key pressed: ${event.key}`);
+    clearAmount(false);
   }
   if (event.key === ".") {
-    console.log(`Decimal key pressed: ${event.key}`)
-    decimalEntry.value = true
-    buttonPushed(".")
+    console.log(`Decimal key pressed: ${event.key}`);
+    decimalEntry.value = true;
+    buttonPushed(".");
   }
   if (event.key === "Enter") {
-    console.log(`Enter key pressed: ${event.key}`)
-    buttonPushed("Pay")
+    console.log(`Enter key pressed: ${event.key}`);
+    buttonPushed("Pay");
   }
 }
 
 function generatePaymentQR() {
-  console.log("generatePaymentQR")
+  console.log("generatePaymentQR");
   // Check if there is a running total, if that is 0 use the amount
   // on the screen
   if (runningTotal.value.num === 0 && amount.value.num === 0) {
@@ -341,8 +341,8 @@ function generatePaymentQR() {
       type: "negative",
       position: "top",
       timeout: 2000,
-    })
-    return
+    });
+    return;
   }
   if (hiveAccTo.value.value === "") {
     q.notify({
@@ -350,28 +350,28 @@ function generatePaymentQR() {
       type: "negative",
       position: "top",
       timeout: 2000,
-    })
-    return
+    });
+    return;
   }
 
   if (runningTotal.value.num === 0) {
-    runningTotal.value.num = amount.value.num
-    runningTotal.value.txt = amount.value.txt
+    runningTotal.value.num = amount.value.num;
+    runningTotal.value.txt = amount.value.txt;
   }
   KeychainDialog.value.amountToSend = parseFloat(
-    runningTotal.value.num / 100
-  ).toFixed(3)
-  KeychainDialog.value.currencyToSend = currency.value
+    runningTotal.value.num / 100,
+  ).toFixed(3);
+  KeychainDialog.value.currencyToSend = currency.value;
   KeychainDialog.value.amountString =
     KeychainDialog.value.amountToSend +
     " " +
-    KeychainDialog.value.currencyToSend
-  KeychainDialog.value.hiveAccTo = hiveAccTo.value.value
+    KeychainDialog.value.currencyToSend;
+  KeychainDialog.value.hiveAccTo = hiveAccTo.value.value;
   // Add a check code onto the memo.
-  KeychainDialog.value.checkCode = "v4v-" + genRandAlphaNum(5)
+  KeychainDialog.value.checkCode = "v4v-" + genRandAlphaNum(5);
   KeychainDialog.value.memo = memoInput.value
     ? memoInput.value + " " + KeychainDialog.value.checkCode
-    : KeychainDialog.value.checkCode
+    : KeychainDialog.value.checkCode;
   const op = [
     "transfer",
     {
@@ -380,90 +380,90 @@ function generatePaymentQR() {
       amount: KeychainDialog.value.amountString,
       memo: KeychainDialog.value.memo,
     },
-  ]
-  console.log(op)
-  KeychainDialog.value.qrCodeTextHive = encodeOp(op)
-  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive
-  KeychainDialog.value.show = true
+  ];
+  console.log(op);
+  KeychainDialog.value.qrCodeTextHive = encodeOp(op);
+  KeychainDialog.value.qrCodeText = KeychainDialog.value.qrCodeTextHive;
+  KeychainDialog.value.show = true;
 }
 
 watch(
   () => KeychainDialog.value?.paid,
   (paid) => {
-    console.log("watch KeychainDialog Paid?", paid)
+    console.log("watch KeychainDialog Paid?", paid);
     if (paid) {
-      console.log("paid")
-      clearAmount(true)
+      console.log("paid");
+      clearAmount(true);
     } else {
-      console.log("not paid")
+      console.log("not paid");
     }
-  }
-)
+  },
+);
 
 function buttonPushed(button) {
   // if (navigator.vibrate) {
   //   console.log("Vibration is supported")
   //   navigator.vibrate(150) // Vibrate for 15ms
   // }
-  console.log("buttonPushed", button)
+  console.log("buttonPushed", button);
   if (button === "AC") {
-    clearAmount(true)
-    return
+    clearAmount(true);
+    return;
   }
   if (button === "C") {
-    clearAmount(false)
-    return
+    clearAmount(false);
+    return;
   }
   if (button === "+") {
-    console.log("need to deal with + slightly differently")
+    console.log("need to deal with + slightly differently");
   }
   if (button === "+" || button === "=") {
-    runningTotalAwait.value = true
-    items.value += 1
-    runningTotal.value.num += amount.value.num
+    runningTotalAwait.value = true;
+    items.value += 1;
+    runningTotal.value.num += amount.value.num;
     runningTotal.value.txt = tidyNumber(
       (runningTotal.value.num / 100).toString(),
-      2
-    )
-    amount.value.txt = runningTotal.value.txt
-    return
+      2,
+    );
+    amount.value.txt = runningTotal.value.txt;
+    return;
   }
 
   if (button === ".") {
-    amount.value.num *= 100
-    amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2)
-    decimalEntry.value = 2
-    return
+    amount.value.num *= 100;
+    amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2);
+    decimalEntry.value = 2;
+    return;
   }
   if (button === ".00") {
-    amount.value.num = 100 * amount.value.num
-    amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2)
-    console.log("Decimal pushed : amount", amount.value)
-    return
+    amount.value.num = 100 * amount.value.num;
+    amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2);
+    console.log("Decimal pushed : amount", amount.value);
+    return;
   }
   if (amount.value.txt === "0.00" || runningTotalAwait.value) {
-    amount.value.txt = "0.0" + button
-    amount.value.num = parseInt(button)
-    runningTotalAwait.value = false
-    return
+    amount.value.txt = "0.0" + button;
+    amount.value.num = parseInt(button);
+    runningTotalAwait.value = false;
+    return;
   }
   if (decimalEntry.value > 0) {
-    console.log("decimalEntry.value", decimalEntry.value)
-    console.log("button", button)
-    console.log("amount.value.num", amount.value.num)
+    console.log("decimalEntry.value", decimalEntry.value);
+    console.log("button", button);
+    console.log("amount.value.num", amount.value.num);
     amount.value.num =
-      amount.value.num + parseInt(button) * 10 ** (decimalEntry.value - 1)
-    decimalEntry.value -= 1
-    console.log(amount.value.num)
-    amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2)
+      amount.value.num + parseInt(button) * 10 ** (decimalEntry.value - 1);
+    decimalEntry.value -= 1;
+    console.log(amount.value.num);
+    amount.value.txt = tidyNumber((amount.value.num / 100).toString(), 2);
 
-    return
+    return;
   }
-  amount.value.num = 10 * amount.value.num
-  amount.value.num += parseInt(button)
-  amount.value.txt = tidyNumber((amount.value.num / 100).toString())
+  amount.value.num = 10 * amount.value.num;
+  amount.value.num += parseInt(button);
+  amount.value.txt = tidyNumber((amount.value.num / 100).toString());
 
-  console.log("amount", amount.value)
+  console.log("amount", amount.value);
 }
 </script>
 

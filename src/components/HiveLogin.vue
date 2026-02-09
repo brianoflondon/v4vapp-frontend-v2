@@ -116,51 +116,51 @@
  *
  */
 
-import { ref, watch, onMounted, onBeforeMount, computed } from "vue"
-import { useStoreUser } from "src/stores/storeUser"
-import HiveInputAcc from "components/HiveInputAcc.vue"
-import { useHiveAvatarURL } from "src/use/useHive"
-import { useGetChallenge, useValidateApi } from "src/use/useUtils"
-import { useShortEVMAddress } from "src/use/useEVM"
+import { ref, watch, onMounted, onBeforeMount, computed } from "vue";
+import { useStoreUser } from "src/stores/storeUser";
+import HiveInputAcc from "components/HiveInputAcc.vue";
+import { useHiveAvatarURL } from "src/use/useHive";
+import { useGetChallenge, useValidateApi } from "src/use/useUtils";
+import { useShortEVMAddress } from "src/use/useEVM";
 // import { useNostrLoginFlow } from "src/use/useNostr"
 import {
   useIsHiveKeychainInstalled,
   useKeychainLoginFlow,
-} from "src/use/useKeychain"
-import { useHAS, useHASLogin, useIsHASAvailable } from "src/use/useHAS"
-import { useEVMLoginFlow } from "src/use/useEVM"
-import { useI18n } from "vue-i18n"
-import { useQuasar, Platform } from "quasar"
-import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue"
-import CountdownBar from "src/components/utils/CountdownBar.vue"
+} from "src/use/useKeychain";
+import { useHAS, useHASLogin, useIsHASAvailable } from "src/use/useHAS";
+import { useEVMLoginFlow } from "src/use/useEVM";
+import { useI18n } from "vue-i18n";
+import { useQuasar, Platform } from "quasar";
+import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue";
+import CountdownBar from "src/components/utils/CountdownBar.vue";
 
-const storeUser = useStoreUser()
-const hiveAccObj = defineModel()
+const storeUser = useStoreUser();
+const hiveAccObj = defineModel();
 
-const displayQRCode = ref(false)
-const timeMessage = ref()
+const displayQRCode = ref(false);
+const timeMessage = ref();
 
-const t = useI18n().t
-const quasar = useQuasar()
+const t = useI18n().t;
+const quasar = useQuasar();
 
-const isHAS = ref(true)
-const isKeychain = ref(true)
-const evmButtonDisabled = ref(true)
-const nostrButtonDisabled = ref(true)
+const isHAS = ref(true);
+const isKeychain = ref(true);
+const evmButtonDisabled = ref(true);
+const nostrButtonDisabled = ref(true);
 
 onBeforeMount(async () => {
-  console.debug("onBeforeMount HiveLogin")
-  nostrButtonDisabled.value = await nostrButtonCheckDisabled()
-  evmButtonDisabled.value = await evmButtonCheckDisabled()
-})
+  console.debug("onBeforeMount HiveLogin");
+  nostrButtonDisabled.value = await nostrButtonCheckDisabled();
+  evmButtonDisabled.value = await evmButtonCheckDisabled();
+});
 
 onMounted(async () => {
   // console.debug("onMounted HiveLogin")
-  isKeychain.value = await useIsHiveKeychainInstalled()
-  isHAS.value = await useIsHASAvailable()
+  isKeychain.value = await useIsHiveKeychainInstalled();
+  isHAS.value = await useIsHASAvailable();
   // console.log("nostrButtonDisabled: ", nostrButtonDisabled.value)
   // console.log("evmButtonDisabled: ", evmButtonDisabled.value)
-})
+});
 
 const keychainButtonDisabled = computed(() => {
   return (
@@ -168,26 +168,26 @@ const keychainButtonDisabled = computed(() => {
     hiveAccObj.value.value === "" ||
     hiveAccObj.value.value === null ||
     isKeychain.value === false
-  )
-})
+  );
+});
 
 const hasButtonDisabled = computed(() => {
   return (
     typeof hiveAccObj.value === "undefined" ||
     hiveAccObj.value.value === "" ||
     hiveAccObj.value.value === null
-  )
-})
+  );
+});
 
 async function nostrButtonCheckDisabled() {
   if (typeof window.nostr !== "undefined") {
-    console.log("Nostr wallet found")
-    return false
+    console.log("Nostr wallet found");
+    return false;
   }
-  return true
+  return true;
 }
 
-const nostrAddressLabel = ref("Nostr Login")
+const nostrAddressLabel = ref("Nostr Login");
 
 const props = defineProps({
   label: {
@@ -198,14 +198,14 @@ const props = defineProps({
     type: String,
     default: "Active",
   },
-})
+});
 
-const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS()
+const { qrCodeTextHAS, expiry, resolvedHAS } = useHAS();
 
 async function loginHAS(username) {
-  let position = "left"
+  let position = "left";
   if (Platform.is.mobile) {
-    position = "top"
+    position = "top";
   }
   try {
     if (!username) {
@@ -215,25 +215,25 @@ async function loginHAS(username) {
         color: "info",
         message: t("enter_hive_account"),
         position: position,
-      })
-      return
+      });
+      return;
     }
-    const answer = await useHASLogin(username)
-    console.debug("HAS Login answer: ", answer)
+    const answer = await useHASLogin(username);
+    console.debug("HAS Login answer: ", answer);
   } catch (error) {
-    console.debug("error: ", error)
+    console.debug("error: ", error);
   }
 }
 
-const evmConnected = ref("")
-const evmAddressLabel = ref("EVM Login")
+const evmConnected = ref("");
+const evmAddressLabel = ref("EVM Login");
 
 async function evmButtonCheckDisabled() {
   if (typeof window.ethereum !== "undefined") {
-    console.log("EVM wallet found")
-    return false
+    console.log("EVM wallet found");
+    return false;
   }
-  return true
+  return true;
 }
 
 /**
@@ -244,25 +244,25 @@ async function evmButtonCheckDisabled() {
 async function connectEVM() {
   if (typeof window.ethereum !== "undefined") {
     try {
-      await window.ethereum.request({ method: "eth_requestAccounts" })
+      await window.ethereum.request({ method: "eth_requestAccounts" });
       // request account Address
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
-      })
+      });
       if (accounts.length > 0) {
-        evmConnected.value = accounts[0]
-        evmAddressLabel.value = useShortEVMAddress(evmConnected.value)
-        console.log("Wallet connected", accounts)
-        console.log("evmConnected.value: ", evmConnected.value)
-        const clientId = storeUser.clientId
-        const challenge = await useGetChallenge(evmConnected.value, clientId)
-        console.log("challenge: ", challenge)
+        evmConnected.value = accounts[0];
+        evmAddressLabel.value = useShortEVMAddress(evmConnected.value);
+        console.log("Wallet connected", accounts);
+        console.log("evmConnected.value: ", evmConnected.value);
+        const clientId = storeUser.clientId;
+        const challenge = await useGetChallenge(evmConnected.value, clientId);
+        console.log("challenge: ", challenge);
         // now we have the challenge, we can sign it
         const signature = await signMessage(
           evmConnected.value,
-          challenge.data.challenge
-        )
-        console.log("signature: ", signature)
+          challenge.data.challenge,
+        );
+        console.log("signature: ", signature);
         // now we can send the signature back to the server
         const signatureData = {
           success: true,
@@ -273,12 +273,12 @@ async function connectEVM() {
           },
           signature: signature,
           account: evmConnected.value,
-        }
-        console.log("signatureData: ", signatureData)
+        };
+        console.log("signatureData: ", signatureData);
         try {
-          const validate = await useValidateApi(clientId, signatureData)
-          console.log("validate: ", validate)
-          console.log("logging in with EVM")
+          const validate = await useValidateApi(clientId, signatureData);
+          console.log("validate: ", validate);
+          console.log("logging in with EVM");
           await storeUser.login(
             evmConnected.value,
             "EVM",
@@ -286,18 +286,18 @@ async function connectEVM() {
             validate.data?.expire * 1000,
             null,
             validate.data.access_token,
-            "evm"
-          )
-          console.log("storeUser.currentUser: ", storeUser.currentUser)
+            "evm",
+          );
+          console.log("storeUser.currentUser: ", storeUser.currentUser);
         } catch (error) {
-          console.error("Error validating signature: ", error)
+          console.error("Error validating signature: ", error);
         }
       }
     } catch (error) {
-      console.error("User denied wallet connection", error)
+      console.error("User denied wallet connection", error);
     }
   } else {
-    console.log("No Ethereum wallet found")
+    console.log("No Ethereum wallet found");
   }
 }
 
@@ -306,29 +306,29 @@ async function signMessage(address, message) {
     const signature = await window.ethereum.request({
       method: "personal_sign",
       params: [message, address],
-    })
-    return signature
+    });
+    return signature;
   } catch (error) {
-    console.error("Error signing message:", error)
+    console.error("Error signing message:", error);
   }
 }
 
 watch(qrCodeTextHAS, (newValue) => {
-  console.debug("qrCodeTextHAS newValue: ", newValue)
+  console.debug("qrCodeTextHAS newValue: ", newValue);
   if (!newValue) {
-    displayQRCode.value = false
-    return
+    displayQRCode.value = false;
+    return;
   }
-  displayQRCode.value = true
-})
+  displayQRCode.value = true;
+});
 
 // Review this later
 // TODO: #46 Review this later
 function adminCheck() {
-  console.debug("storeUser.currentUser: ", storeUser.currentUser)
+  console.debug("storeUser.currentUser: ", storeUser.currentUser);
   if (storeUser.currentUser === "brianoflondon") {
-    return false
+    return false;
   }
-  return false
+  return false;
 }
 </script>

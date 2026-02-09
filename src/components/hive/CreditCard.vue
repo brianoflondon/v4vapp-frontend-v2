@@ -189,27 +189,27 @@
 </template>
 
 <script setup>
-import { useStoreUser } from "src/stores/storeUser"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { nextTick, computed, ref, onMounted, watch } from "vue"
-import { useQuasar } from "quasar"
-import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
-import { tidyNumber } from "src/use/useUtils"
-import { useI18n } from "vue-i18n"
-import { useCoingeckoStore } from "src/stores/storeCoingecko"
-const storeCoingecko = useCoingeckoStore()
+import { useStoreUser } from "src/stores/storeUser";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
+import { nextTick, computed, ref, onMounted, watch } from "vue";
+import { useQuasar } from "quasar";
+import HbdLogoIcon from "../utils/HbdLogoIcon.vue";
+import { tidyNumber } from "src/use/useUtils";
+import { useI18n } from "vue-i18n";
+import { useCoingeckoStore } from "src/stores/storeCoingecko";
+const storeCoingecko = useCoingeckoStore();
 
 // import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
-import ConfettiExplosion from "vue-confetti-explosion"
+import ConfettiExplosion from "vue-confetti-explosion";
 
-const storeUser = useStoreUser()
-const q = useQuasar()
-const savingsToggle = ref(false)
-const currencyToggle = ref(false)
-const t = useI18n().t
+const storeUser = useStoreUser();
+const q = useQuasar();
+const savingsToggle = ref(false);
+const currencyToggle = ref(false);
+const t = useI18n().t;
 
 // emit balances to the parent component
-const emit = defineEmits(["balances"])
+const emit = defineEmits(["balances"]);
 
 const backgroundImage = [
   "sealogo01",
@@ -219,37 +219,37 @@ const backgroundImage = [
   "lightning03",
   "lightning04",
   "dolphins",
-]
+];
 
 /**
  * ConfettiExplosion component
  */
-const visible = ref(false)
+const visible = ref(false);
 async function explode() {
-  visible.value = false
-  await nextTick()
-  visible.value = true
+  visible.value = false;
+  await nextTick();
+  visible.value = true;
 }
 
-let timeoutId = null
+let timeoutId = null;
 
-const maxValue = backgroundImage.length
+const maxValue = backgroundImage.length;
 // generate random number between 0 and 1
-const backgroundIndex = ref(Math.floor(Math.random() * maxValue))
+const backgroundIndex = ref(Math.floor(Math.random() * maxValue));
 
 onMounted(async () => {
-  scheduleUpdate()
-})
+  scheduleUpdate();
+});
 
 watch(
   () => storeUser.keepSatsBalanceNum,
   (newVal, oldVal) => {
     // This function will be called whenever `storeUser.keepSatsBalance` changes
     if (oldVal === "💰💰💰") {
-      oldVal = 0
+      oldVal = 0;
     }
     if (newVal === "💰💰💰") {
-      newVal = 0
+      newVal = 0;
     }
     console.debug(
       "keepSatsBalance changed from",
@@ -257,14 +257,14 @@ watch(
       "to",
       newVal,
       "delta:",
-      newVal - oldVal
-    )
-    const satsChange = tidyNumber(newVal - oldVal, 0)
+      newVal - oldVal,
+    );
+    const satsChange = tidyNumber(newVal - oldVal, 0);
     // check if satsChange is a number and not 0
 
     if (oldVal !== undefined && satsChange !== 0) {
-      const color = newVal - oldVal > 0 ? "positive" : "negative"
-      explode()
+      const color = newVal - oldVal > 0 ? "positive" : "negative";
+      explode();
       q.notify({
         message: `${t("balance_changed")} ${satsChange} sats`,
         color: color,
@@ -279,57 +279,57 @@ watch(
             handler: () => {},
           },
         ],
-      })
+      });
     }
     // You can add your own code here to do something when `storeUser.keepSatsBalance` changes
-  }
-)
+  },
+);
 
 function handleSwipe(e) {
-  const users = Object.values(storeUser.users)
-  const currentUser = storeUser.currentUser
+  const users = Object.values(storeUser.users);
+  const currentUser = storeUser.currentUser;
 
   if (!Array.isArray(users)) {
-    console.error("storeUser.users is not an array")
-    return
+    console.error("storeUser.users is not an array");
+    return;
   }
 
   const currentIndex = users.findIndex(
-    (user) => user.hiveAccname === currentUser
-  )
+    (user) => user.hiveAccname === currentUser,
+  );
 
   if (e.direction === "left") {
     // Switch to the next user
-    const nextIndex = (currentIndex + 1) % users.length
-    storeUser.switchUser(users[nextIndex].hiveAccname)
+    const nextIndex = (currentIndex + 1) % users.length;
+    storeUser.switchUser(users[nextIndex].hiveAccname);
   } else if (e.direction === "right") {
     // Switch to the previous user
-    const nextIndex = (currentIndex - 1 + users.length) % users.length
-    storeUser.switchUser(users[nextIndex].hiveAccname)
+    const nextIndex = (currentIndex - 1 + users.length) % users.length;
+    storeUser.switchUser(users[nextIndex].hiveAccname);
   }
 }
 
 async function scheduleUpdate() {
-  await storeUser.update(false)
+  await storeUser.update(false);
   // Schedule the next update after 5 minutes
-  timeoutId = setTimeout(scheduleUpdate, 5 * 60 * 1000)
+  timeoutId = setTimeout(scheduleUpdate, 5 * 60 * 1000);
 }
 
 const lightDark = computed(() => {
   if (q.dark.isActive) {
-    return "dark"
+    return "dark";
   }
-  return "light"
-})
+  return "light";
+});
 
 const nonZeroKeepSats = computed(() => {
   if (storeUser.currentKeepSats) {
     if (storeUser.currentKeepSats !== "0") {
-      return true
+      return true;
     }
   }
-  return false
-})
+  return false;
+});
 
 const balances = computed(() => {
   if (currencyToggle.value) {
@@ -341,7 +341,7 @@ const balances = computed(() => {
         totalSats: storeUser.totalSatsBalance,
         keepSats: storeUser.keepSatsBalanceLocal,
         bitcoinDisplay: storeUser.bitcoinDisplay,
-      }
+      };
     } else {
       return {
         hive: storeUser.hiveBalanceLocal,
@@ -350,7 +350,7 @@ const balances = computed(() => {
         totalSats: storeUser.totalSatsBalance,
         keepSats: storeUser.keepSatsBalanceLocal,
         bitcoinDisplay: storeUser.bitcoinDisplay,
-      }
+      };
     }
   } else {
     if (savingsToggle.value) {
@@ -361,7 +361,7 @@ const balances = computed(() => {
         totalSats: storeUser.totalSatsBalance,
         keepSats: storeUser.keepSatsBalance,
         bitcoinDisplay: storeUser.bitcoinDisplay,
-      }
+      };
     } else {
       return {
         hive: storeUser.hiveBalance,
@@ -370,44 +370,44 @@ const balances = computed(() => {
         totalSats: storeUser.totalSatsBalance,
         keepSats: storeUser.keepSatsBalance,
         bitcoinDisplay: storeUser.bitcoinDisplay,
-      }
+      };
     }
   }
-})
+});
 
 const creditCardStripStyle = computed(() => {
   if (q.dark.isActive) {
-    return "background: rgba(0, 0, 0, 0.4)"
+    return "background: rgba(0, 0, 0, 0.4)";
   } else {
-    return "background: rgba(200, 200, 200, 0.8)"
+    return "background: rgba(200, 200, 200, 0.8)";
   }
-})
+});
 const creditCardOverlay = computed(() => {
-  return `/credit-card/overlay/${lightDark.value}/credit-card.webp`
-})
+  return `/credit-card/overlay/${lightDark.value}/credit-card.webp`;
+});
 const creditCardBackground = computed(() => {
   return `/credit-card/backgrounds/${
     backgroundImage[backgroundIndex.value]
-  }.webp`
-})
+  }.webp`;
+});
 const creditCardShading = computed(() => {
   if (q.dark.isActive) {
-    return "background: rgba(0, 0, 0, 0.6)"
+    return "background: rgba(0, 0, 0, 0.6)";
   } else {
-    return "background: rgba(0, 0, 0, 0)"
+    return "background: rgba(0, 0, 0, 0)";
   }
-})
+});
 
 function changeBackground() {
-  backgroundIndex.value = (backgroundIndex.value + 1) % maxValue
-  storeUser.update(false)
-  explode()
+  backgroundIndex.value = (backgroundIndex.value + 1) % maxValue;
+  storeUser.update(false);
+  explode();
 }
 
 watch([() => storeUser.localCurrency, () => storeUser.pos.fixedRate], () => {
-  storeCoingecko.getCoingeckoRate(storeUser.localCurrency.value)
-  storeUser.update()
-})
+  storeCoingecko.getCoingeckoRate(storeUser.localCurrency.value);
+  storeUser.update();
+});
 </script>
 
 <style lang="scss" scoped>

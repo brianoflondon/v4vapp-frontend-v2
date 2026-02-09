@@ -1,16 +1,16 @@
-          <template #body="props">
-            <q-tr :props="props">
-              <q-td :props="props" style="text-align: left">
-                {{ props.row }}
-                <!-- {{ formatPrettyDate(props.row.timestamp) }} -->
-              </q-td>
-              <!-- <q-td :props="props" style="text-align: right">
+<template #body="props">
+  <q-tr :props="props">
+    <q-td :props="props" style="text-align: left">
+      {{ props.row }}
+      <!-- {{ formatPrettyDate(props.row.timestamp) }} -->
+    </q-td>
+    <!-- <q-td :props="props" style="text-align: right">
                 {{ tidyNumber(props.row.net_hive, 0) }}
               </q-td> -->
-              <!-- <q-td :props="props" style="text-align: left">
+    <!-- <q-td :props="props" style="text-align: left">
                 {{ props.row.reason }}
               </q-td> -->
-              <!-- <q-td :props="props" style="text-align: right">
+    <!-- <q-td :props="props" style="text-align: right">
                 <q-btn
                   round
                   flat
@@ -29,6 +29,6 @@
                   "
                 ></q-btn>
               </q-td> -->
-            </q-tr>
-            <q-tr v-if="props.expand"> expanded </q-tr>
-          </template>
+  </q-tr>
+  <q-tr v-if="props.expand"> expanded </q-tr>
+</template>

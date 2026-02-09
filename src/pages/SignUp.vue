@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import NewAccount from "components/hive/NewAccount.vue"
+import NewAccount from "components/hive/NewAccount.vue";
 </script>
 
 <style lang="scss" scoped></style>

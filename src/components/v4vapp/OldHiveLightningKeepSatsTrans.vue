@@ -28,11 +28,6 @@
         </div>
       </div>
 
-
-
-
-
-
       <!--End  Refresh button and days select  -->
       <div class="transaction-data-tables row">
         <!-- Hive to Sats Table -->
@@ -59,7 +54,12 @@
             </template>
             <template v-slot:body-cell-net_hive="props">
               <q-td :props="props" class="text-right">
-                <strong v-if="Math.abs(props.row.net_hive) > Math.abs(props.row.sats / 100000)">
+                <strong
+                  v-if="
+                    Math.abs(props.row.net_hive) >
+                    Math.abs(props.row.sats / 100000)
+                  "
+                >
                   {{ tidyNumber(props.row.net_hive, 3) }}
                 </strong>
                 <span v-else>
@@ -69,7 +69,12 @@
             </template>
             <template v-slot:body-cell-sats="props">
               <q-td :props="props" class="text-right">
-                <strong v-if="Math.abs(props.row.sats) > Math.abs(props.row.net_hive * 100000)">
+                <strong
+                  v-if="
+                    Math.abs(props.row.sats) >
+                    Math.abs(props.row.net_hive * 100000)
+                  "
+                >
                   {{ tidyNumber(props.row.sats, 0) }}
                 </strong>
                 <span v-else>
@@ -99,7 +104,12 @@
               <q-tr class="text-bold">
                 <q-td colspan="2" class="text-left">Total</q-td>
                 <q-td class="text-right">
-                  <strong v-if="Math.abs(totals.totalHive) > Math.abs(totals.totalSats / 100000)">
+                  <strong
+                    v-if="
+                      Math.abs(totals.totalHive) >
+                      Math.abs(totals.totalSats / 100000)
+                    "
+                  >
                     {{ tidyNumber(totals.totalHive, 3) }}
                   </strong>
                   <span v-else>
@@ -107,7 +117,12 @@
                   </span>
                 </q-td>
                 <q-td class="text-right">
-                  <strong v-if="Math.abs(totals.totalSats) > Math.abs(totals.totalHive * 100000)">
+                  <strong
+                    v-if="
+                      Math.abs(totals.totalSats) >
+                      Math.abs(totals.totalHive * 100000)
+                    "
+                  >
                     {{ tidyNumber(totals.totalSats, 0) }}
                   </strong>
                   <span v-else>
@@ -180,7 +195,12 @@
                 {{ useShortEVMAddress(props.row.reason_str) }}
               </q-td>
               <q-td :props="props" style="text-align: right" key="hive">
-                <strong v-if="Math.abs(props.row.hive) > Math.abs(props.row.msats / 100000)">
+                <strong
+                  v-if="
+                    Math.abs(props.row.hive) >
+                    Math.abs(props.row.msats / 100000)
+                  "
+                >
                   {{ tidyNumber(props.row.hive, 3) }}
                 </strong>
                 <span v-else>
@@ -188,7 +208,12 @@
                 </span>
               </q-td>
               <q-td :props="props" style="text-align: right" key="sats">
-                <strong v-if="Math.abs(props.row.msats / 1000) > Math.abs(props.row.hive * 100000)">
+                <strong
+                  v-if="
+                    Math.abs(props.row.msats / 1000) >
+                    Math.abs(props.row.hive * 100000)
+                  "
+                >
                   {{ tidyNumber(props.row.msats / 1000, 0) }}
                 </strong>
                 <span v-else>
@@ -220,7 +245,11 @@
             <q-tr class="text-bold">
               <q-td class="text-left" colspan="2">Total</q-td>
               <q-td class="text-right">
-                <strong v-if="Math.abs(keepHiveTotal) > Math.abs(keepSatsTotal / 100000)">
+                <strong
+                  v-if="
+                    Math.abs(keepHiveTotal) > Math.abs(keepSatsTotal / 100000)
+                  "
+                >
                   {{ tidyNumber(keepHiveTotal, 3) }}
                 </strong>
                 <span v-else>
@@ -228,7 +257,11 @@
                 </span>
               </q-td>
               <q-td class="text-right">
-                <strong v-if="Math.abs(keepSatsTotal) > Math.abs(keepHiveTotal * 100000)">
+                <strong
+                  v-if="
+                    Math.abs(keepSatsTotal) > Math.abs(keepHiveTotal * 100000)
+                  "
+                >
                   {{ tidyNumber(keepSatsTotal, 0) }}
                 </strong>
                 <span v-else>
@@ -247,32 +280,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue"
-import { useI18n } from "vue-i18n"
-import { useStoreUser } from "src/stores/storeUser"
-import { useFetchSatsHistory, useKeepSats } from "src/use/useV4vapp"
-import { useGenerateTxUrl } from "src/use/useHive"
-import KeepSatsDetail from "src/components/v4vapp/KeepSatsDetail.vue"
-import { formatPrettyDate, tidyNumber } from "src/use/useUtils"
-import { useShortEVMAddress } from "src/use/useEVM"
-const storeUser = useStoreUser()
-const data = ref([])
-const dataDays = ref({ label: "7 days", value: 7 })
-const totals = ref({ totalHive: 0, totalSats: 0 })
+import { ref, onMounted, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useStoreUser } from "src/stores/storeUser";
+import { useFetchSatsHistory, useKeepSats } from "src/use/useV4vapp";
+import { useGenerateTxUrl } from "src/use/useHive";
+import KeepSatsDetail from "src/components/v4vapp/KeepSatsDetail.vue";
+import { formatPrettyDate, tidyNumber } from "src/use/useUtils";
+import { useShortEVMAddress } from "src/use/useEVM";
+const storeUser = useStoreUser();
+const data = ref([]);
+const dataDays = ref({ label: "7 days", value: 7 });
+const totals = ref({ totalHive: 0, totalSats: 0 });
 
-const keepSatsDataReasonFilter = ref("All")
-const keepSatsDataReasons = ref([])
-const keepSatsDataCategoryFilter = ref("All")
-const keepSatsDataCategories = ref(["All"])
-const keepSatsDataFiltered = ref([])
+const keepSatsDataReasonFilter = ref("All");
+const keepSatsDataReasons = ref([]);
+const keepSatsDataCategoryFilter = ref("All");
+const keepSatsDataCategories = ref(["All"]);
+const keepSatsDataFiltered = ref([]);
 
-const t = useI18n().t
+const t = useI18n().t;
 
-const rowsExpanded = ref([])
+const rowsExpanded = ref([]);
 
 const props = defineProps({
   adminOverride: Boolean,
-})
+});
 
 const columns = computed(() => {
   return [
@@ -318,12 +351,12 @@ const columns = computed(() => {
       field: "trx_id",
       format: (val) => val,
     },
-  ]
-})
+  ];
+});
 
-const keepSatsData = ref([])
-const keepSatsTotal = ref(0)
-const keepHiveTotal = ref(0)
+const keepSatsData = ref([]);
+const keepSatsTotal = ref(0);
+const keepHiveTotal = ref(0);
 const keepSatsColumns = computed(() => {
   return [
     {
@@ -365,22 +398,22 @@ const keepSatsColumns = computed(() => {
       name: "expand",
       field: "expand",
     },
-  ]
-})
+  ];
+});
 
 watch(
   () => storeUser.currentUser,
   async (newVal) => {
     if (newVal) {
-      await fetchData()
+      await fetchData();
     }
     if (newVal === null || newVal === undefined) {
-      data.value = []
-      keepSatsData.value = []
+      data.value = [];
+      keepSatsData.value = [];
     }
-    return
-  }
-)
+    return;
+  },
+);
 
 /**
  * Fetches data from the server.
@@ -389,98 +422,99 @@ watch(
  * @returns {Promise} - A promise that resolves with the fetched data.
  */
 async function fetchData(newValue = dataDays.value) {
-  storeUser.dataLoading = true
+  storeUser.dataLoading = true;
   if (!storeUser.hiveAccname) {
-    data.value = []
-    keepSatsData.value = []
-    return
+    data.value = [];
+    keepSatsData.value = [];
+    return;
   }
   const [satsHistory, keepSats] = await Promise.all([
     useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
     useKeepSats(false, true, props.adminOverride),
-  ])
+  ]);
 
   // Process the KeepSats transactions
   if (keepSats.summary_transactions) {
-    const oldTimestamp = new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value
+    const oldTimestamp =
+      new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value;
     keepSatsData.value = keepSats.summary_transactions.filter(
-      (trx) => trx.reason !== "Fees" && trx.timestamp > oldTimestamp
-    )
+      (trx) => trx.reason !== "Fees" && trx.timestamp > oldTimestamp,
+    );
   }
-  data.value = satsHistory
+  data.value = satsHistory;
 
   // Process the Hive sats transactions
   // calculate totals for hive and sats
   if (data.value) {
-    totals.value.totalHive = 0
-    totals.value.totalSats = 0
+    totals.value.totalHive = 0;
+    totals.value.totalSats = 0;
     for (let i = 0; i < data.value.length; i++) {
-      totals.value.totalHive += data.value[i].net_hive
-      totals.value.totalSats += data.value[i].sats
+      totals.value.totalHive += data.value[i].net_hive;
+      totals.value.totalSats += data.value[i].sats;
     }
   }
-  await getKeepSatsReasons()
-  await getKeepSatsCategories()
-  await updateKeepSatsDataFiltered()
-  await updateKeepSatsTotals()
-  storeUser.dataLoading = false
+  await getKeepSatsReasons();
+  await getKeepSatsCategories();
+  await updateKeepSatsDataFiltered();
+  await updateKeepSatsTotals();
+  storeUser.dataLoading = false;
 }
 
 async function updateKeepSatsDataFiltered() {
   // filter categories first
   if (keepSatsDataCategoryFilter.value !== "All") {
     keepSatsDataFiltered.value = keepSatsData.value.filter(
-      (trx) => trx.category === keepSatsDataCategoryFilter.value
-    )
+      (trx) => trx.category === keepSatsDataCategoryFilter.value,
+    );
   } else {
-    keepSatsDataFiltered.value = keepSatsData.value
+    keepSatsDataFiltered.value = keepSatsData.value;
   }
-  await getKeepSatsReasons()
+  await getKeepSatsReasons();
   if (keepSatsDataReasonFilter.value !== "All") {
     keepSatsDataFiltered.value = keepSatsDataFiltered.value.filter(
-      (trx) => trx.reason === keepSatsDataReasonFilter.value
-    )
+      (trx) => trx.reason === keepSatsDataReasonFilter.value,
+    );
   }
-  await updateKeepSatsTotals()
+  await updateKeepSatsTotals();
 }
 
 async function updateKeepSatsTotals() {
-  const tempTotal = keepSatsDataFiltered.value
-  console.log("number of entries", tempTotal.length)
-  keepSatsTotal.value = 0
-  keepHiveTotal.value = 0
+  const tempTotal = keepSatsDataFiltered.value;
+  console.log("number of entries", tempTotal.length);
+  keepSatsTotal.value = 0;
+  keepHiveTotal.value = 0;
   for (let i = 0; i < tempTotal.length; i++) {
-    keepSatsTotal.value += tempTotal[i].msats
-    keepHiveTotal.value += tempTotal[i].hive
+    keepSatsTotal.value += tempTotal[i].msats;
+    keepHiveTotal.value += tempTotal[i].hive;
   }
-  keepSatsTotal.value = keepSatsTotal.value / 1000
+  keepSatsTotal.value = keepSatsTotal.value / 1000;
 }
 
 async function getKeepSatsReasons() {
   // extract a list of reasons from the keepsats data
-  keepSatsDataReasons.value = ["All"]
+  keepSatsDataReasons.value = ["All"];
   keepSatsDataReasons.value = keepSatsDataReasons.value.concat(
-    keepSatsDataFiltered.value.map((trx) => trx.reason)
-  )
+    keepSatsDataFiltered.value.map((trx) => trx.reason),
+  );
   // remove duplicates from list
-  keepSatsDataReasons.value = Array.from(new Set(keepSatsDataReasons.value))
+  keepSatsDataReasons.value = Array.from(new Set(keepSatsDataReasons.value));
 }
 
 async function getKeepSatsCategories() {
   // extract a list of categories from the keepsats data
-  keepSatsDataCategories.value = ["All"]
+  keepSatsDataCategories.value = ["All"];
   keepSatsDataCategories.value = keepSatsDataCategories.value.concat(
-    keepSatsData.value.map((trx) => trx.category)
-  )
+    keepSatsData.value.map((trx) => trx.category),
+  );
   // remove duplicates from list
   keepSatsDataCategories.value = Array.from(
-    new Set(keepSatsDataCategories.value)
-  )
+    new Set(keepSatsDataCategories.value),
+  );
 }
 
 onMounted(() => {
-  fetchData()
-})
+  fetchData();
+});
 
 /**
  * Toggles the expansion of all rows in the table.
@@ -490,9 +524,9 @@ onMounted(() => {
  */
 function expandAll() {
   if (rowsExpanded.value.length === 0) {
-    rowsExpanded.value = keepSatsData.value.map((row) => row.group_id)
+    rowsExpanded.value = keepSatsData.value.map((row) => row.group_id);
   } else {
-    rowsExpanded.value = []
+    rowsExpanded.value = [];
   }
 }
 </script>

@@ -36,18 +36,18 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
-import VoteProposal from "components/utils/VoteProposal.vue"
-import { useAppDetails } from "src/use/useAppDetails.js"
+import { ref } from "vue";
+import VoteProposal from "components/utils/VoteProposal.vue";
+import { useAppDetails } from "src/use/useAppDetails.js";
 
-const { appName, appVersion } = useAppDetails()
-console.debug("appName", appName, "appVersion", appVersion)
+const { appName, appVersion } = useAppDetails();
+console.debug("appName", appName, "appVersion", appVersion);
 
 const voteOptions = ref({
   hiveUser: "",
   showButton: true,
   showDialog: false,
-})
+});
 </script>
 
 <style lang="sass" scoped></style>

@@ -57,22 +57,22 @@
  * @props {string} size - Default: small - small, medium, large size of the avatar
  * @props {boolean} fancyOptions - Default: false - Whether to use the fancy options template
  */
-import { ref } from "vue"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { useI18n } from "vue-i18n"
+import { ref } from "vue";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
+import { useI18n } from "vue-i18n";
 import {
   useLoadHiveAccountsReputation,
   useBlankProfileURL,
   useHiveProfile,
-} from "src/use/useHive"
+} from "src/use/useHive";
 
-const t = useI18n().t
+const t = useI18n().t;
 
-const options = ref([])
+const options = ref([]);
 const modelValue = defineModel({
   default: { label: "", value: "", caption: "" },
-})
-const avatarName = ref("")
+});
+const avatarName = ref("");
 const props = defineProps({
   label: {
     type: String,
@@ -90,23 +90,23 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-})
+});
 
 function enterFn(input) {}
 
 function escFn(input) {
   // If Esc is pressed, the model is cleared
   // modelValue.value = null
-  modelValue.value = { label: "", value: "", caption: "" }
+  modelValue.value = { label: "", value: "", caption: "" };
 }
 
 function inputFn(input) {
   // Change the avatar to match the input value
-  avatarName.value = input
+  avatarName.value = input;
 }
 
 function handleImageError(event) {
-  avatar.value = useBlankProfileURL()
+  avatar.value = useBlankProfileURL();
 }
 
 async function filterFnAutoselect(val, update, abort) {
@@ -115,58 +115,58 @@ async function filterFnAutoselect(val, update, abort) {
   update(
     async () => {
       if (val === "") {
-        options.value = []
+        options.value = [];
       } else {
-        const needle = val.toLowerCase().replace(/\s+/g, "")
+        const needle = val.toLowerCase().replace(/\s+/g, "");
         const simpleList = await useLoadHiveAccountsReputation(
           needle,
-          props.maxOptions
-        )
+          props.maxOptions,
+        );
         if (simpleList) {
-          avatarName.value = simpleList[0]
+          avatarName.value = simpleList[0];
         }
-        options.value = buildOptions(simpleList)
+        options.value = buildOptions(simpleList);
       }
-      await slowFillCaptions()
+      await slowFillCaptions();
     },
     (ref) => {
       if (val !== "" && ref.options.length > 0 && ref.getOptionIndex() === -1) {
-        ref.moveOptionSelection(1, true)
-        ref.toggleOption(ref.options[ref.optionIndex], true)
+        ref.moveOptionSelection(1, true);
+        ref.toggleOption(ref.options[ref.optionIndex], true);
       }
-    }
-  )
+    },
+  );
   abort(() => {
-    abortFilterFn
-  })
+    abortFilterFn;
+  });
 }
 
 function buildOptions(simpleList) {
   // Builds the options data structure
   if (!simpleList) {
-    return []
+    return [];
   }
   const objectList = simpleList.map((item) => {
-    return { value: item, label: item, caption: t("loading") }
-  })
-  return objectList
+    return { value: item, label: item, caption: t("loading") };
+  });
+  return objectList;
 }
 
 async function slowFillCaptions() {
   // Fills in the captions for the options drop down
   options.value = await Promise.all(
     options.value.map(async (item) => {
-      const result = await useHiveProfile(item.value)
-      const caption = result?.metadata?.profile?.name
+      const result = await useHiveProfile(item.value);
+      const caption = result?.metadata?.profile?.name;
       return {
         ...item,
         caption: caption,
-      }
-    })
-  )
+      };
+    }),
+  );
 }
 
-const abortFilterFn = () => {}
+const abortFilterFn = () => {};
 </script>
 
 <style lang="scss" scoped>

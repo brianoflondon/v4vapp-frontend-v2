@@ -174,41 +174,41 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from "vue"
-import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue"
-import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue"
-import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
-import AskHASDialog from "src/components/hive/AskHASDialog.vue"
-import KeychainShowQR from "src/components/hive/KeychainShowQR.vue"
+import { ref, computed, nextTick } from "vue";
+import ConvertKeepsats from "src/components/hive/ConvertKeepsats.vue";
+import ReceiveKeepsats from "src/components/hive/ReceiveKeepsats.vue";
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue";
+import AskHASDialog from "src/components/hive/AskHASDialog.vue";
+import KeychainShowQR from "src/components/hive/KeychainShowQR.vue";
 
-import { useStoreUser } from "src/stores/storeUser"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useConfirmPayWithApi } from "src/use/useV4vapp"
-import { useHiveKeychainTransfer } from "src/use/useKeychain"
-import { serverHiveAccount } from "boot/axios"
-import { useI18n } from "vue-i18n"
-import { useQuasar } from "quasar"
-import { tidyNumber } from "src/use/useUtils"
+import { useStoreUser } from "src/stores/storeUser";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
+import { useConfirmPayWithApi } from "src/use/useV4vapp";
+import { useHiveKeychainTransfer } from "src/use/useKeychain";
+import { serverHiveAccount } from "boot/axios";
+import { useI18n } from "vue-i18n";
+import { useQuasar } from "quasar";
+import { tidyNumber } from "src/use/useUtils";
 
-const t = useI18n().t
-const q = useQuasar()
-const storeUser = useStoreUser()
-const storeAPIStatus = useStoreAPIStatus()
+const t = useI18n().t;
+const q = useQuasar();
+const storeUser = useStoreUser();
+const storeAPIStatus = useStoreAPIStatus();
 
-const KeychainDialog = ref({ show: false })
-const HASDialog = ref({ show: false })
+const KeychainDialog = ref({ show: false });
+const HASDialog = ref({ show: false });
 
 const options = {
   sats: { label: "SATS", value: "sats" },
   hbd: { label: "HUSD", value: "hbd" },
   hive: { label: "HIVE", value: "hive" },
-}
-const CurrencyCalcFrom = ref({ amount: 0, currency: "hbd" })
-const CurrencyCalcTo = ref({ amount: 0, currency: "sats" })
+};
+const CurrencyCalcFrom = ref({ amount: 0, currency: "hbd" });
+const CurrencyCalcTo = ref({ amount: 0, currency: "sats" });
 
-const convertTab = ref("toHive")
-const fromCurrency = ref(options["hbd"])
-const toCurrency = ref(options["sats"])
+const convertTab = ref("toHive");
+const fromCurrency = ref(options["hbd"]);
+const toCurrency = ref(options["sats"]);
 
 const buttonColors = {
   // dark mode is true, light mode is false
@@ -220,97 +220,99 @@ const buttonColors = {
     buttonColor: "grey-6",
     textColor: "grey-9",
   },
-}
+};
 
 const buttonColor = computed(() => {
-  const colours = buttonColors[q.dark.isActive]
-  return colours
-})
+  const colours = buttonColors[q.dark.isActive];
+  return colours;
+});
 
 let validationRule = computed(() => [
   (val) => validateRange(val) || validationFailMessage.value,
-])
+]);
 
 function validateRange(val) {
   if (val === null || val === undefined || val === "" || val === 0) {
-    val = CurrencyCalcFrom.value[CurrencyCalcFrom.value.currency]
+    val = CurrencyCalcFrom.value[CurrencyCalcFrom.value.currency];
   }
   return (
     CurrencyCalcFrom.value.minMax &&
     val >= CurrencyCalcFrom.value.minMax.min &&
     val <= CurrencyCalcFrom.value.minMax.max
-  )
+  );
 }
 
 const validationFailMessage = computed(() => {
   if (!CurrencyCalcFrom.value.minMax) {
-    return true
+    return true;
   }
   if (CurrencyCalcFrom.value.currency === "sats") {
     return `${tidyNumber(CurrencyCalcFrom.value.minMax.min, 0)} -> ${tidyNumber(
       CurrencyCalcFrom.value.minMax.max,
-      0
-    )}`
+      0,
+    )}`;
   } else {
     return `${tidyNumber(CurrencyCalcFrom.value.minMax.min, 3)} -> ${tidyNumber(
       CurrencyCalcFrom.value.minMax.max,
-      3
-    )}`
+      3,
+    )}`;
   }
-})
+});
 
 async function swapCurrencies() {
-  const temp = fromCurrency.value
-  fromCurrency.value = toCurrency.value
-  toCurrency.value = temp
-  CurrencyCalcFrom.value.currency = fromCurrency.value.value
-  CurrencyCalcTo.value.currency = toCurrency.value.value
-  const amount = CurrencyCalcFrom.value.amount
-  CurrencyCalcFrom.value.amount = CurrencyCalcTo.value.amount
-  CurrencyCalcTo.value.amount = amount
+  const temp = fromCurrency.value;
+  fromCurrency.value = toCurrency.value;
+  toCurrency.value = temp;
+  CurrencyCalcFrom.value.currency = fromCurrency.value.value;
+  CurrencyCalcTo.value.currency = toCurrency.value.value;
+  const amount = CurrencyCalcFrom.value.amount;
+  CurrencyCalcFrom.value.amount = CurrencyCalcTo.value.amount;
+  CurrencyCalcTo.value.amount = amount;
 }
 
 async function syncToFromCurrency(val, direction) {
   if (direction === "from") {
-    toCurrency.value = val.value === "sats" ? options["hbd"] : options["sats"]
+    toCurrency.value = val.value === "sats" ? options["hbd"] : options["sats"];
   } else {
-    fromCurrency.value = val.value === "sats" ? options["hbd"] : options["sats"]
+    fromCurrency.value =
+      val.value === "sats" ? options["hbd"] : options["sats"];
   }
-  CurrencyCalcFrom.value.currency = fromCurrency.value.value
-  CurrencyCalcTo.value.currency = toCurrency.value.value
-  amountUpdated(CurrencyCalcFrom.value.amount, "from")
+  CurrencyCalcFrom.value.currency = fromCurrency.value.value;
+  CurrencyCalcTo.value.currency = toCurrency.value.value;
+  amountUpdated(CurrencyCalcFrom.value.amount, "from");
 }
 
 async function amountUpdated(val, direction) {
-  await nextTick()
+  await nextTick();
   if (!val || val === "" || val === "0") {
-    val = ""
+    val = "";
   } else {
-    val = parseFloat(val)
+    val = parseFloat(val);
   }
 
   if (direction === "from") {
-    CurrencyCalcFrom.value.amount = val
-    await nextTick()
-    CurrencyCalcTo.value.amount = CurrencyCalcFrom.value[toCurrency.value.value]
-    CurrencyCalcTo.value.currency = toCurrency.value.value
+    CurrencyCalcFrom.value.amount = val;
+    await nextTick();
+    CurrencyCalcTo.value.amount =
+      CurrencyCalcFrom.value[toCurrency.value.value];
+    CurrencyCalcTo.value.currency = toCurrency.value.value;
     // limit number to 3 decimal places
   } else {
-    CurrencyCalcTo.value.amount = val
-    await nextTick()
+    CurrencyCalcTo.value.amount = val;
+    await nextTick();
     CurrencyCalcFrom.value.amount =
-      CurrencyCalcTo.value[fromCurrency.value.value]
-    CurrencyCalcFrom.value.currency = fromCurrency.value.value
+      CurrencyCalcTo.value[fromCurrency.value.value];
+    CurrencyCalcFrom.value.currency = fromCurrency.value.value;
   }
   KeychainDialog.value.currencyToSend =
-    CurrencyCalcFrom.value.currency.toLowerCase()
-  KeychainDialog.value.amountToSend = CurrencyCalcFrom.value.amount
-  reformatValues()
+    CurrencyCalcFrom.value.currency.toLowerCase();
+  KeychainDialog.value.amountToSend = CurrencyCalcFrom.value.amount;
+  reformatValues();
 }
 
 function truncateDecimal(number, decimalPlaces) {
-  const factor = Math.pow(10, decimalPlaces)
-  return Math.floor(number * factor) / factor
+  const factor = Math.pow(10, decimalPlaces);
+  return Math.floor(number * factor) / factor;
 }
 
 function reformatValues() {
@@ -318,21 +320,21 @@ function reformatValues() {
   if (CurrencyCalcFrom.value.currency === "sats") {
     CurrencyCalcFrom.value.amount = truncateDecimal(
       CurrencyCalcFrom.value.amount,
-      0
-    )
+      0,
+    );
     CurrencyCalcTo.value.amount = truncateDecimal(
       CurrencyCalcTo.value.amount,
-      3
-    )
+      3,
+    );
   } else {
     CurrencyCalcFrom.value.amount = truncateDecimal(
       CurrencyCalcFrom.value.amount,
-      3
-    )
+      3,
+    );
     CurrencyCalcTo.value.amount = truncateDecimal(
       CurrencyCalcTo.value.amount,
-      0
-    )
+      0,
+    );
   }
 }
 
@@ -341,63 +343,63 @@ async function confirmMakePayment() {
     // converting from sats to hbd
     const message = `${t("convert_confirm")} ${tidyNumber(
       CurrencyCalcFrom.value.amount,
-      0
+      0,
     )} ${CurrencyCalcFrom.value.currency} to ${tidyNumber(
       CurrencyCalcTo.value.amount,
-      3
-    )} ${CurrencyCalcTo.value.currency.toUpperCase()}`
+      3,
+    )} ${CurrencyCalcTo.value.currency.toUpperCase()}`;
     const apiPayData = {
       type: "convertSats",
       sats: CurrencyCalcFrom.value.sats,
       currency: CurrencyCalcTo.value.currency,
-    }
+    };
     try {
-      const response = await useConfirmPayWithApi(message, apiPayData)
+      const response = await useConfirmPayWithApi(message, apiPayData);
       if (response) {
-        await new Promise((resolve) => setTimeout(resolve, 10000))
-        storeUser.update(false)
-        amountUpdated(0, "from")
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+        storeUser.update(false);
+        amountUpdated(0, "from");
       }
     } catch (error) {
-      console.error("error", error)
+      console.error("error", error);
     }
   }
 }
 
 // TODO: #214 move this to the Hive payment component
 async function makeHivePayment(method) {
-  const fixedAmount = CurrencyCalcFrom.value.amount
+  const fixedAmount = CurrencyCalcFrom.value.amount;
 
   // Adds encryption to the memo 2024-02-23
-  let memo = `${storeUser.currentUser} Deposit to #SATS`
+  let memo = `${storeUser.currentUser} Deposit to #SATS`;
   // if (privateMemo.value) {
   //   memo = "#" + memo
   // }
 
   if (method === "HiveKeychain" && !storeAPIStatus.isKeychainIn) {
-    method = "HiveKeychainQR"
+    method = "HiveKeychainQR";
   }
   switch (method) {
     case "HiveKeychainQR":
-      KeychainDialog.value.memo = memo
+      KeychainDialog.value.memo = memo;
       KeychainDialog.value.currencyToSend =
-        CurrencyCalcFrom.value.currency.toLowerCase()
-      KeychainDialog.value.hiveAccFrom = storeUser.currentUser
-      KeychainDialog.value.hiveAccTo = serverHiveAccount
-      KeychainDialog.value.amountToSend = CurrencyCalcFrom.value.amount
-      KeychainDialog.value.display = "convert"
-      KeychainDialog.value.currencyCalc = CurrencyCalcFrom.value
-      KeychainDialog.value.show = true
-      checkForSats()
-      break
+        CurrencyCalcFrom.value.currency.toLowerCase();
+      KeychainDialog.value.hiveAccFrom = storeUser.currentUser;
+      KeychainDialog.value.hiveAccTo = serverHiveAccount;
+      KeychainDialog.value.amountToSend = CurrencyCalcFrom.value.amount;
+      KeychainDialog.value.display = "convert";
+      KeychainDialog.value.currencyCalc = CurrencyCalcFrom.value;
+      KeychainDialog.value.show = true;
+      checkForSats();
+      break;
 
     case "HiveKeychain":
       const result = await useHiveKeychainTransfer(
         storeUser.currentUser,
         fixedAmount,
         CurrencyCalcFrom.value.currency.toUpperCase(),
-        memo
-      )
+        memo,
+      );
       if (result.success) {
         q.notify({
           avatar: "/site-logo/v4vapp-logo.svg",
@@ -411,8 +413,8 @@ async function makeHivePayment(method) {
               handler: () => {},
             },
           ],
-        })
-        checkForSats()
+        });
+        checkForSats();
       } else {
         q.notify({
           message: result.message,
@@ -425,30 +427,30 @@ async function makeHivePayment(method) {
               handler: () => {},
             },
           ],
-        })
+        });
       }
-      break
+      break;
     case "HAS":
-      HASDialog.value.show = true
+      HASDialog.value.show = true;
       HASDialog.value.payment = {
         username: storeUser.currentUser,
         amount: fixedAmount,
         currency: CurrencyCalcFrom.value.currency.toUpperCase(),
         memo: memo,
-      }
-      break
+      };
+      break;
   }
-  storeUser.update(false)
+  storeUser.update(false);
 }
 
 async function checkForSats(oldNetSats = 0, count = 0) {
-  let currentSatsBalance = 0
+  let currentSatsBalance = 0;
   if (oldNetSats === 0) {
-    currentSatsBalance = storeUser.currentKeepSats.net_sats
+    currentSatsBalance = storeUser.currentKeepSats.net_sats;
   } else {
-    currentSatsBalance = oldNetSats
+    currentSatsBalance = oldNetSats;
   }
-  await storeUser.updateSatsBalance(false)
+  await storeUser.updateSatsBalance(false);
   if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
     q.notify({
       message: `You now have ${
@@ -466,23 +468,23 @@ async function checkForSats(oldNetSats = 0, count = 0) {
           handler: () => {},
         },
       ],
-    })
+    });
     // quit checking
-    amountUpdated(0, "from")
-    storeUser.update(false)
-    return
+    amountUpdated(0, "from");
+    storeUser.update(false);
+    return;
   }
 
   if (count > 10) {
-    return
+    return;
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 1000 * 5))
-  return checkForSats(currentSatsBalance, count + 1)
+  await new Promise((resolve) => setTimeout(resolve, 1000 * 5));
+  return checkForSats(currentSatsBalance, count + 1);
 }
 
 const convertFees = computed(() => {
-  const feesCalc = calcFees()
+  const feesCalc = calcFees();
   return (
     t("Fees") +
     " " +
@@ -493,8 +495,8 @@ const convertFees = computed(() => {
     feesCalc.currencyExchange +
     " " +
     feesCalc.percentString
-  )
-})
+  );
+});
 
 // Calculates the fees charged in the same currency Hive/HBD as
 // the amount being sent.
@@ -508,36 +510,36 @@ function calcFees() {
   const currencyExchange =
     CurrencyCalcFrom.value.currency !== "sats"
       ? CurrencyCalcFrom.value.currency
-      : CurrencyCalcTo.value.currency
-  const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeAPIStatus
+      : CurrencyCalcTo.value.currency;
+  const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeAPIStatus;
   if (!apiStatus?.config) {
     return {
       currencyFee: 0,
       currencyExchange: currencyExchange,
       satsFee: 0,
       percentString: "",
-    }
+    };
   }
 
-  const satsValue = CurrencyCalcFrom.value.sats
+  const satsValue = CurrencyCalcFrom.value.sats;
   const fee =
     satsValue * apiStatus.config.conv_fee_percent +
-    apiStatus.config.conv_fee_sats
+    apiStatus.config.conv_fee_sats;
 
   const exchangeRate =
-    currencyExchange === "hbd" ? HBDSatsNumber : hiveSatsNumber
+    currencyExchange === "hbd" ? HBDSatsNumber : hiveSatsNumber;
 
-  let percentString = ""
+  let percentString = "";
   if (satsValue > 0) {
-    const percent = (fee / satsValue) * 100
-    percentString = "(" + percent.toFixed(2) + "%)"
+    const percent = (fee / satsValue) * 100;
+    percentString = "(" + percent.toFixed(2) + "%)";
   }
   return {
     currencyFee: fee / exchangeRate,
     currencyExchange: currencyExchange,
     satsFee: fee,
     percentString: percentString,
-  }
+  };
 }
 </script>
 

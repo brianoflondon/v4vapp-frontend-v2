@@ -46,11 +46,11 @@
 </template>
 
 <script setup>
-import HiveSelectAcc2 from "components/HiveSelectAcc2.vue"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { ref } from "vue"
+import HiveSelectAcc2 from "components/HiveSelectAcc2.vue";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
+import { ref } from "vue";
 
-const hiveAccname = ref("")
+const hiveAccname = ref("");
 </script>
 
 <style lang="sass" scoped>
