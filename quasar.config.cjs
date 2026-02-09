@@ -1,4 +1,4 @@
-/* eslint-env node */
+/* global require, __dirname, module, process */
 
 /*
  * This file runs in a Node context (it's NOT transpiled by Babel), so use only

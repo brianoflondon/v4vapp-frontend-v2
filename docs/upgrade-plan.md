@@ -37,9 +37,13 @@
 
 8. **App-vite v2.4.1 bundles Vite 7**, which requires `crypto.hash()` — only available in Node 20.12+. Node 18 will crash.
 
+9. **Never delete `package-lock.json` when upgrading packages.** Deleting the lockfile and running `npm install` fresh can resolve different sub-dependency versions (especially Vite internals) that break Node.js polyfilling for browser code. Libraries like `hive-tx.min.js` and `bolt11.min.js` depend on Node.js built-ins (`Buffer`, `util`, `stream`) being available — a regenerated lockfile can silently change how Vite handles these. Always use incremental `npm install` or `--legacy-peer-deps` to work around peer dependency conflicts while preserving the lockfile.
+
+10. **`eslint-plugin-vue@10` requires `vue-eslint-parser` and `typescript` as peer dependencies.** When using `--legacy-peer-deps`, these must be installed explicitly since automatic peer dep installation is skipped.
+
 ### Deferred to follow-up PRs
 
-- eslint 8→9 (requires flat config migration, significant effort)
-- prettier 2→3 (reformats all code, noisy diff)
+- ~~eslint 8→9 (requires flat config migration, significant effort)~~ Done in PR #257
+- ~~prettier 2→3 (reformats all code, noisy diff)~~ Done in PR #256
 - workbox 6→7 (no peer warnings, app-vite v2 bundles its own)
 - pinia 2→3 and vue-router 4→5 (new majors with breaking changes, review separately)
