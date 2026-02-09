@@ -1,5 +1,5 @@
 # Stage 1: Build the Quasar project
-FROM node:18 AS build
+FROM node:20 AS build
 
 # Install SSH client
 # RUN apt-get update && apt-get install -y openssh-client

@@ -10,6 +10,7 @@
 
 const { configure } = require("quasar/wrappers")
 const path = require("path")
+require("dotenv").config() // load .env for config-time use (e.g. HTTPS)
 
 module.exports = configure(function (/* ctx */) {
   return {
@@ -49,7 +50,7 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
-      env: require("dotenv").config().parsed,
+      // env vars are now auto-loaded from .env files by @quasar/app-vite v2
       target: {
         browser: ["es2019", "edge88", "firefox78", "chrome87", "safari13.1"],
         node: "node18",
@@ -83,15 +84,8 @@ module.exports = configure(function (/* ctx */) {
 
       vitePlugins: [
         [
-          "@intlify/vite-plugin-vue-i18n",
+          "@intlify/unplugin-vue-i18n/vite",
           {
-            // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
-            // compositionOnly: false,
-
-            // if you want to use named tokens in your Vue I18n messages, such as 'Hello {name}',
-            // you need to set `runtimeOnly: false`
-            // runtimeOnly: false,
-
             // you need to set i18n resource including paths !
             include: path.resolve(__dirname, "./src/i18n/**"),
           },
@@ -172,7 +166,7 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: "generateSW", // or 'injectManifest'
+      workboxMode: "GenerateSW", // or 'InjectManifest'
       injectPwaMetaTags: true,
       swFilename: "sw.js",
       manifestFilename: "manifest.json",
