@@ -51,7 +51,7 @@
       :class="{ 'keepsats-table': true, 'mobile-table': isMobileView }"
     >
       <template v-slot:body-cell-description="props">
-        <q-td :props="props">
+        <q-td :props="props" :class="{ 'mobile-desc-cell': isMobileView }">
           <div v-if="isMobileView" class="description-cell">
             <q-expansion-item
               dense
@@ -72,7 +72,7 @@
                         <i class="fa-brands fa-hive" />
                       </a>
                     </span>
-                    {{ props.row.ledger_type_str }}
+                    {{ truncateMobile(props.value) }}
                   </span>
                   <q-icon name="expand_more" class="expansion-icon" />
                 </div>
@@ -147,7 +147,7 @@
       <template v-slot:body-cell-timestamp="props">
         <q-td :props="props" :class="{ 'mobile-date-cell': isMobileView }">
           {{
-            formatPrettyDate(props.row.timestamp_unix || props.row.timestamp)
+            formatDate(props.row.timestamp_unix || props.row.timestamp)
           }}
         </q-td>
       </template>
@@ -228,6 +228,31 @@ const props = defineProps({
 
 // Check if screen width is less than 700px
 const isMobileView = computed(() => $q.screen.width < 700);
+
+/**
+ * Formats a date, abbreviating time units on mobile view.
+ * "X minutes" -> "X min", "X hours" -> "X hr"
+ */
+function formatDate(timestamp) {
+  const pretty = formatPrettyDate(timestamp);
+  if (!isMobileView.value) return pretty;
+  return pretty
+    .replace(/\b(\d+)\s+minutes?\b/, "$1 min")
+    .replace(/\b(\d+)\s+hours?\b/, "$1 hr")
+    .replace(/\b(\d+)\s+days?\b/, "$1 d")
+    .replace(/\b(\d+)\s+secs?\b/, "$1 s");
+}
+
+/**
+ * Truncates a description string for mobile display.
+ * Shows as much as fits, with ellipsis if truncated.
+ */
+function truncateMobile(text) {
+  if (!text) return "";
+  const maxLen = 25;
+  if (text.length <= maxLen) return text;
+  return text.substring(0, maxLen) + "…";
+}
 
 const ledgerColumns = computed(() => {
   const columns = [
@@ -439,44 +464,47 @@ function isPrimaryAmount(row, field) {
 
 <style lang="scss" scoped>
 .keepsats-table .q-table__container .q-table tbody tr td {
-  padding: 5px;
+  padding: 1px;
 }
 
 .mobile-table {
-  .q-table__container .q-table {
-    tbody tr td {
-      padding: 1px 1px 1px 0px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    }
-
-    thead tr th {
-      padding: 2px 1px 2px 1px;
-      font-size: 0.75rem;
-    }
+  :deep(table tbody tr td) {
+    padding: 1px 1px 1px 1px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   }
 
-  .q-table tbody tr {
-    &:hover {
-      background-color: transparent;
-    }
+  :deep(table thead tr th) {
+    padding: 2px 2px 2px 2px;
+    padding-right: 4px;
+    font-size: 0.75rem;
+  }
+
+  :deep(table thead tr th:first-child) {
+    padding-left: 2px;
+    text-align: left;
+  }
+
+
+  :deep(table tbody tr:hover) {
+    background-color: transparent;
   }
 }
 
 .mobile-date-cell {
-  width: 60px;
-  min-width: 60px;
-  max-width: 60px;
+  // width: 20px;
+  // min-width: 20px;
+  // max-width: 20px;
   font-size: 0.7rem;
-  padding-right: 1px !important;
+  padding: 1px 2px 1px 2px !important;
+  white-space: nowrap;
+  text-align: left;
 }
 
 .mobile-compact-cell {
-  width: 50px;
-  min-width: 50px;
-  max-width: 50px;
   font-size: 0.75rem;
   text-align: right;
-  padding: 1px 3px 1px 1px !important;
+  padding: 1px 2px 1px 0px !important;
+  white-space: nowrap;
 }
 .description-cell {
   width: 100%;
@@ -494,6 +522,11 @@ function isPrimaryAmount(row, field) {
   font-size: 0.875rem;
   line-height: 1.2;
   margin-right: 8px;
+}
+
+.mobile-table .short-description {
+  font-size: 0.75rem;
+  margin-right: 2px;
 }
 
 .expansion-icon {
@@ -523,9 +556,39 @@ function isPrimaryAmount(row, field) {
   }
 }
 
+.mobile-desc-cell {
+  padding: 1px 0px 1px 0px !important;
+}
+
+.mobile-table .description-expansion {
+  :deep(.q-expansion-item__header) {
+    padding: 2px 0px;
+    min-height: auto;
+  }
+
+  :deep(.q-item__section--main) {
+    padding: 0;
+  }
+
+  :deep(.q-item__section--side) {
+    padding: 0;
+    min-width: 0;
+  }
+
+  :deep(.q-item) {
+    min-height: 0;
+    padding: 0;
+  }
+}
+
 .description-card {
   margin-top: 8px;
   border-left: 3px solid var(--q-primary);
+}
+
+.mobile-table .description-card {
+  margin-top: 4px;
+  margin-left: 0;
 }
 
 .description-full {
@@ -552,10 +615,12 @@ function isPrimaryAmount(row, field) {
   }
 }
 
+// To show or hide the rate-line edit this.
 .rate-line {
   margin-top: 8px;
   font-size: 0.9rem;
   color: var(--q-text-secondary);
+  display: none;
 }
 
 .hive-link-icon {
