@@ -196,12 +196,14 @@ function validateInvoice(decodedInvoice) {
     return null;
   }
   decodedInvoice.payWithSatsOnly = false;
-  if (decodedInvoice.payeeNodeKey === myNodePubKey) {
-    // if this is a self payment i.e. going to the v4v.app node
-    // only pay it with KeepSats
-    console.log("decodedInvoice.payeeNodeKey", decodedInvoice.payeeNodeKey);
-    // decodedInvoice.payWithSatsOnly = true
-  }
+
+  // STOP THE RESTRICTION FOR SELF PAYMENT INVOICES FOR NOW. ..DATE: 06/11/2024
+  // if (decodedInvoice.payeeNodeKey === myNodePubKey) {
+  //   // if this is a self payment i.e. going to the v4v.app node
+  //   // only pay it with KeepSats
+  //   console.log("decodedInvoice.payeeNodeKey", decodedInvoice.payeeNodeKey);
+  //   // decodedInvoice.payWithSatsOnly = true
+  // }
   const amount = Math.floor(decodedInvoice.millisatoshis / 1000);
   const minimumPayment =
     storeAPIStatus.apiStatus.config.minimum_invoice_payment_sats;

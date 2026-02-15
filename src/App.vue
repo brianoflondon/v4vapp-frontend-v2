@@ -17,7 +17,7 @@ export default defineComponent({
         const dialog = Dialog.create({
           title: "Maintenance Notice",
           message:
-            "v4v.app will be down for a big upgrade starting on Wednesday 11th February at 10am UTC. I hope to have it back up and running within a few hours but this may take up to two days.",
+            "v4v.app is still down but getting close to re-launch. PLEASE DO NOT USE THIS SITE UNTIL FURTHER NOTICE. We will post updates on our Hive blog and X",
           persistent: true,
           ok: "Latest News",
           cancel: "OK",
