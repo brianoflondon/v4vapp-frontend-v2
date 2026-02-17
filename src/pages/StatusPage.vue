@@ -85,11 +85,10 @@
                 These are the current fees charged by
                 <strong>@V4VApp</strong> when swapping Hive or HBD into or from
                 Lightning. All fees are converted from Sats to Hive/HBD using
-                live rates from
-                <a
-                  href="https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,hive,hive_dollar&vs_currencies=btc,usd,eur,aud"
-                  target="_blank"
-                  >@coingecko's API</a
+                live rates which are averaged from a number of sources including
+                CoinGecko, Binance and Hive's internal HBD market: 
+                <a href="https://api.v4v.app/v1/cryptoprices/" target="_blank"
+                  >@V4VApp's API</a
                 >.
               </p>
               <q-markup-table flat bordered separator="cell" wrap-cells>
