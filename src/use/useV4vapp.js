@@ -1,14 +1,16 @@
 // useV4vapp.js
 //
 
-import { Notify, Dialog, QSpinnerGears } from "quasar"
-import { api, apiLogin } from "src/boot/axios"
-import { checkCache, putInCache } from "src/use/useUtils"
-import { i18n } from "boot/i18n"
+import { Notify, Dialog, QSpinnerGears } from "quasar";
+import { api, apiLogin } from "src/boot/axios";
+import { checkCache, putInCache } from "src/use/useUtils";
+import { i18n } from "boot/i18n";
 // import { useStoreUser } from "src/store/user"
 // const storeUser = useStoreUser()
 
-let paymentInProgressDialog = null
+const API_BASE = "/v2/v4vapp/";
+
+let paymentInProgressDialog = null;
 
 /**
  * Checks if the API token is valid.
@@ -16,16 +18,16 @@ let paymentInProgressDialog = null
  */
 export async function useCheckApiTokenValid(username, apiToken) {
   // Check if the user has an API token
-  if (!apiToken) return false
-  apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
-  const resp = await apiLogin.get("/auth/check/")
-  const respData = resp.data
-  const now = new Date()
-  const expiryDate = new Date(respData.expires)
-  const diffInMilliseconds = expiryDate - now
-  const diffInMinutes = Math.floor(diffInMilliseconds / 1000 / 60)
-  if (resp.status === 200) return true
-  return false
+  if (!apiToken) return false;
+  apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`;
+  const resp = await apiLogin.get("/auth/check/");
+  const respData = resp.data;
+  const now = new Date();
+  const expiryDate = new Date(respData.expires);
+  const diffInMilliseconds = expiryDate - now;
+  const diffInMinutes = Math.floor(diffInMilliseconds / 1000 / 60);
+  if (resp.status === 200) return true;
+  return false;
 }
 
 /**
@@ -39,7 +41,7 @@ export async function useCheckApiTokenValid(username, apiToken) {
 export async function useKeepSats(
   useCache = true,
   transactions = true,
-  adminOverride = false
+  adminOverride = false,
 ) {
   // if (!apiToken) return null
   // apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
@@ -48,14 +50,14 @@ export async function useKeepSats(
       useCache: useCache,
       transactions: transactions,
       admin: adminOverride,
-    }
-    const resp = await apiLogin.get("/v1/v4vapp/keepsats", {
+    };
+    const resp = await apiLogin.get(`${API_BASE}keepsats`, {
       params,
-    })
-    return resp.data
+    });
+    return resp.data;
   } catch (error) {
-    console.error("useKeepSats", error)
-    const t = i18n.global.t
+    console.error("useKeepSats", error);
+    const t = i18n.global.t;
     if (
       error.response.data.detail === "Hive Key authorization failure" ||
       error.response.data.detail === "Could not validate credentials"
@@ -72,16 +74,16 @@ export async function useKeepSats(
             handler: () => {},
           },
         ],
-      })
-      return error.response.data
+      });
+      return error.response.data;
     } else {
       Notify.create({
         message: "Communication issues, try again soon",
         color: "negative",
         position: "bottom",
         timeout: 2000,
-      })
-      return null
+      });
+      return null;
     }
   }
 }
@@ -94,33 +96,33 @@ export async function useKeepSats(
  */
 export async function useFetchSatsHistory(username, days = 7 * 4) {
   // if (!apiToken) return null
-  const expiryTimeInMinutes = 1
+  const expiryTimeInMinutes = 1;
   const params = {
     // hours to look back
     age: days * 24,
     successOnly: true,
-  }
+  };
   try {
     // check cache first
-    const cacheKey = `satsHistory-${username}-${days}`
-    let data = await checkCache(cacheKey)
+    const cacheKey = `satsHistory-${username}-${days}`;
+    let data = await checkCache(cacheKey);
     if (data) {
-      return data
+      return data;
     }
 
-    const response = await apiLogin.get("/v1/v4vapp/hivetosats", {
+    const response = await apiLogin.get(`${API_BASE}hivetosats`, {
       params,
-    })
+    });
     if (Array.isArray(response.data) && response.data.length > 0) {
-      data = response.data[0].transactions
+      data = response.data[0].transactions;
     }
 
     // Store the data and timestamp in the cache
-    await putInCache(cacheKey, data, expiryTimeInMinutes)
+    await putInCache(cacheKey, data, expiryTimeInMinutes);
 
-    return data
+    return data;
   } catch (error) {
-    console.error("fetchHistory error", error)
+    console.error("fetchHistory error", error);
   }
 }
 
@@ -135,35 +137,35 @@ export async function useFetchSatsHistory(username, days = 7 * 4) {
 export async function useKeepSatsTransfer(hiveTo, amountSats, memo) {
   // convert amount sats to an int and check it is > 0
   if (isNaN(amountSats) || amountSats <= 0) {
-    console.error("Invalid amountSats", amountSats)
-    return
+    console.error("Invalid amountSats", amountSats);
+    return;
   }
   if (!hiveTo) {
-    console.error("Invalid hiveTo", hiveTo)
-    return
+    console.error("Invalid hiveTo", hiveTo);
+    return;
   }
   //check amountSats doesn't have a , or any other punctuation
-  amountSats = parseInt(amountSats)
+  amountSats = parseInt(amountSats);
 
   const data = {
     hiveAccnameTo: hiveTo,
     sats: amountSats,
     memo: memo,
-  }
+  };
 
   try {
-    const response = await apiLogin.post("/v1/v4vapp/keepsats/transfer", data)
+    const response = await apiLogin.post(`${API_BASE}keepsats/transfer`, data);
     if (response.status === 200) {
-      return response.data
+      return response.data;
     }
   } catch (error) {
-    console.error(error)
-    return error
+    console.error(error);
+    return error;
   }
 }
 
 function showPaying() {
-  const t = i18n.global.t
+  const t = i18n.global.t;
 
   paymentInProgressDialog = Dialog.create({
     title: t("processing"),
@@ -174,7 +176,7 @@ function showPaying() {
     },
     persistent: true, // we want the user to not be able to close it
     ok: false, // we want the user to not be able to close it
-  })
+  });
 }
 
 /**
@@ -185,10 +187,10 @@ function showPaying() {
  * @returns {Promise<boolean>} A promise that resolves to `true` if the payment is successful, or `false` if the payment is cancelled or encounters an error.
  */
 export async function useConfirmPayWithApi(message, apiPayData) {
-  const t = i18n.global.t
+  const t = i18n.global.t;
 
   if (!message) {
-    message = t("confirm")
+    message = t("confirm");
   }
 
   return new Promise((resolve, reject) => {
@@ -199,8 +201,8 @@ export async function useConfirmPayWithApi(message, apiPayData) {
       persistent: true,
     })
       .onOk(() => {
-        showPaying()
-        payWithApi(apiPayData).then(resolve(true)).catch(reject)
+        showPaying();
+        payWithApi(apiPayData).then(resolve(true)).catch(reject);
       })
       .onCancel(() => {
         Notify.create({
@@ -216,13 +218,13 @@ export async function useConfirmPayWithApi(message, apiPayData) {
               handler: () => {},
             },
           ],
-        })
-        resolve(false)
+        });
+        resolve(false);
       })
       .onDismiss(() => {
-        resolve(false)
-      })
-  })
+        resolve(false);
+      });
+  });
 }
 
 /**
@@ -240,26 +242,26 @@ export async function useConfirmPayWithApi(message, apiPayData) {
  * @throws {Error} - If an error occurs during the payment process.
  */
 async function payWithApi(apiPayData) {
-  const t = i18n.global.t
+  const t = i18n.global.t;
   try {
-    let response
+    let response;
     if (apiPayData.type === "hiveAccname") {
       response = await useKeepSatsTransfer(
         apiPayData.sendTo,
         apiPayData.sats,
-        apiPayData.comment
-      )
+        apiPayData.comment,
+      );
     } else if (apiPayData.type === "bolt11") {
-      response = await useKeepSatsInvoice(apiPayData.paymentRequest)
+      response = await useKeepSatsInvoice(apiPayData.paymentRequest);
     } else if (apiPayData.type === "convertSats") {
       response = await useKeepSatsConvert(
         apiPayData.sats,
         apiPayData.currency,
-        apiPayData.memo
-      )
+        apiPayData.memo,
+      );
     }
     // extract the message from this response
-    paymentInProgressDialog.hide()
+    paymentInProgressDialog.hide();
     if (response.success) {
       Notify.create({
         color: "positive",
@@ -274,10 +276,10 @@ async function payWithApi(apiPayData) {
             handler: () => {},
           },
         ],
-      })
-      return true
+      });
+      return true;
     } else {
-      const message = `${t("payment_failed")} - ${response?.message}`
+      const message = `${t("payment_failed")} - ${response?.message}`;
       Notify.create({
         color: "negative",
         timeout: 5000,
@@ -288,22 +290,22 @@ async function payWithApi(apiPayData) {
             label: "OK",
             color: "white",
             handler: () => {
-              return
+              return;
             },
           },
         ],
-      })
-      return false
+      });
+      return false;
     }
   } catch (e) {
-    console.error("Error in payWithApi", e)
+    console.error("Error in payWithApi", e);
     Notify.create({
       color: "negative",
       timeout: 5000,
       message: t("payment_failed"),
       position: "top",
-    })
-    return false
+    });
+    return false;
   }
 }
 
@@ -317,14 +319,14 @@ export async function useKeepSatsInvoice(paymentRequest) {
   try {
     const data = {
       memo: paymentRequest,
-    }
-    const response = await apiLogin.post("/v1/v4vapp/keepsats/invoice", data)
+    };
+    const response = await apiLogin.post(`${API_BASE}keepsats/invoice`, data);
     if (response.status === 200) {
-      return response.data
+      return response.data;
     }
   } catch (error) {
-    console.error(error)
-    return error
+    console.error(error);
+    return error;
   }
 }
 
@@ -341,14 +343,14 @@ export async function useKeepSatsConvert(satsToConvert, currency, memo = "") {
       sats: satsToConvert,
       currency: currency,
       memo: memo,
-    }
-    const response = await apiLogin.post("/v1/v4vapp/keepsats/convert", data)
+    };
+    const response = await apiLogin.post(`${API_BASE}keepsats/convert`, data);
     if (response.status === 200) {
-      return response.data
+      return response.data;
     }
   } catch (error) {
-    console.error(error)
-    return error
+    console.error(error);
+    return error;
   }
 }
 
@@ -358,10 +360,10 @@ export async function useKeepSatsConvert(satsToConvert, currency, memo = "") {
  */
 export async function useNewAccountCost() {
   try {
-    const response = await api.get("/account/cost")
-    return response.data
+    const response = await api.get("/account/cost");
+    return response.data;
   } catch (error) {
-    console.error(error)
-    return null
+    console.error(error);
+    return null;
   }
 }

@@ -120,39 +120,39 @@
 </template>
 
 <script setup>
-import CreateQRCode from "components/qrcode/CreateQRCode.vue"
-import { onMounted, ref, watch } from "vue"
-import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
-import { useStoreUser } from "src/stores/storeUser"
-import { useI18n } from "vue-i18n"
-import { useQuasar, copyToClipboard } from "quasar"
-import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
+import CreateQRCode from "components/qrcode/CreateQRCode.vue";
+import { onMounted, ref, watch } from "vue";
+import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue";
+import { useStoreUser } from "src/stores/storeUser";
+import { useI18n } from "vue-i18n";
+import { useQuasar, copyToClipboard } from "quasar";
+import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue";
 import {
   useDecodeLightningInvoice,
   useCreateInvoice,
-} from "src/use/useLightningInvoice"
-import ExplanationBox from "src/components/utils/ExplanationBox.vue"
+} from "src/use/useLightningInvoice";
+import ExplanationBox from "src/components/utils/ExplanationBox.vue";
 
-import VoteProposal from "components/utils/VoteProposal.vue"
+import VoteProposal from "components/utils/VoteProposal.vue";
 
 const voteOptions = ref({
   hiveUser: "",
   showButton: true,
   showDialog: false,
-})
+});
 
-const dInvoice = ref({})
-const amounts = ref({})
-const storeUser = useStoreUser()
-const amountButton = ref("")
-const hiveHbd = ref("hbd")
-const loading = ref(false)
-const hiveAccTo = ref({ label: "", value: "", caption: "" })
-const t = useI18n().t
-const quasar = useQuasar()
+const dInvoice = ref({});
+const amounts = ref({});
+const storeUser = useStoreUser();
+const amountButton = ref("");
+const hiveHbd = ref("hbd");
+const loading = ref(false);
+const hiveAccTo = ref({ label: "", value: "", caption: "" });
+const t = useI18n().t;
+const quasar = useQuasar();
 
-const qrText = ref("")
-const qrCode = ref(null)
+const qrText = ref("");
+const qrCode = ref(null);
 
 onMounted(() => {
   if (storeUser.pos?.hiveAccTo) {
@@ -160,89 +160,89 @@ onMounted(() => {
       label: storeUser.pos.hiveAccTo.label,
       value: storeUser.pos.hiveAccTo.value,
       caption: storeUser.pos.hiveAccTo.caption,
-    }
+    };
   } else {
-    useLoggedInUser()
+    useLoggedInUser();
   }
-  resetValues()
-})
+  resetValues();
+});
 
 watch(storeUser, async (val) => {
   hiveAccTo.value = {
     label: val.hiveAccname,
     value: val.hiveAccname,
     caption: val.profileName,
-  }
-  resetValues()
-})
+  };
+  resetValues();
+});
 
 watch(hiveAccTo, async (val) => {
-  resetValues()
-})
+  resetValues();
+});
 
 // If the amount has been set, rerun with the amount.
 watch(hiveHbd, async (newVal, oldVal) => {
   if (amounts.value?.sats) {
-    loading.value = true
-    qrText.value = "lightning:" + getHiveHbdAddress(hiveAccTo.value.value)
+    loading.value = true;
+    qrText.value = "lightning:" + getHiveHbdAddress(hiveAccTo.value.value);
     if (dInvoice.value.v4vapp.comment) {
       dInvoice.value.v4vapp.comment = dInvoice.value.v4vapp.comment
         .replace(/#HBD/g, "")
-        .trim()
+        .trim();
     }
-    const oldMetadata = dInvoice.value.v4vapp.metadata
-    dInvoice.value.hiveHbd = newVal
-    dInvoice.value = await useDecodeLightningInvoice(qrText.value)
-    dInvoice.value.v4vapp.metadata = oldMetadata
-    dInvoice.value.v4vapp.amountToSend = amounts.value.satsNum
-    const invoice = await useCreateInvoice(dInvoice.value)
-    receiveNewInvoice(invoice)
-    loading.value = false
+    const oldMetadata = dInvoice.value.v4vapp.metadata;
+    dInvoice.value.hiveHbd = newVal;
+    dInvoice.value = await useDecodeLightningInvoice(qrText.value);
+    dInvoice.value.v4vapp.metadata = oldMetadata;
+    dInvoice.value.v4vapp.amountToSend = amounts.value.satsNum;
+    const invoice = await useCreateInvoice(dInvoice.value);
+    receiveNewInvoice(invoice);
+    loading.value = false;
   } else {
-    resetValues()
+    resetValues();
   }
-})
+});
 
 function resetValues() {
-  amounts.value = {}
-  setLightningAddress()
-  setAmountButton()
+  amounts.value = {};
+  setLightningAddress();
+  setAmountButton();
 }
 
 function setLightningAddress() {
   if (!hiveAccTo.value.value) {
-    qrText.value = "lightning:v4vapp@v4v.app"
+    qrText.value = "lightning:v4vapp@v4v.app";
   }
-  qrText.value = "lightning:" + getHiveHbdAddress(hiveAccTo.value.value)
+  qrText.value = "lightning:" + getHiveHbdAddress(hiveAccTo.value.value);
 }
 
 function setAmountButton() {
   if (amounts.value?.sats) {
-    amountButton.value = amounts.value.sats + " sats"
+    amountButton.value = amounts.value.sats + " sats";
   } else {
-    amountButton.value = t("amount")
+    amountButton.value = t("amount");
   }
 }
 
 function getHiveHbdAddress(username) {
   if (hiveHbd.value === "hbd") {
-    return username + `@hbd.v4v.app`
+    return username + `@hbd.v4v.app`;
   } else {
-    return username + `@v4v.app`
+    return username + `@v4v.app`;
   }
 }
 
 function copyText() {
-  copyToClipboard(qrText.value)
+  copyToClipboard(qrText.value);
   quasar.notify({
     message: t("copied"),
     color: "positive",
     icon: "check_circle",
-  })
+  });
 }
 
 function downloadQRCode() {
-  qrCode.value.download({ name: hiveAccTo.value.value, extension: "webp" })
+  qrCode.value.download({ name: hiveAccTo.value.value, extension: "webp" });
 }
 
 async function setAmount() {
@@ -251,31 +251,31 @@ async function setAmount() {
       color: "negative",
       position: "top",
       timeout: 2000,
-    })
-    return
+    });
+    return;
   }
   if (dInvoice.value) {
-    dInvoice.value = {}
-    setLightningAddress()
+    dInvoice.value = {};
+    setLightningAddress();
   }
   try {
-    dInvoice.value = await useDecodeLightningInvoice(qrText.value)
-    dInvoice.value.makingInvoice = true
-    dInvoice.value.hiveHbd = hiveHbd.value
-    dInvoice.value.sending = false // Flag to show this is for receiving Lightning to Hive
-    dInvoice.value.askDetails = true
+    dInvoice.value = await useDecodeLightningInvoice(qrText.value);
+    dInvoice.value.makingInvoice = true;
+    dInvoice.value.hiveHbd = hiveHbd.value;
+    dInvoice.value.sending = false; // Flag to show this is for receiving Lightning to Hive
+    dInvoice.value.askDetails = true;
   } catch (e) {
-    console.error("error:", e)
+    console.error("error:", e);
   }
 }
 
 function receiveNewInvoice(val) {
-  qrText.value = "lightning:" + val.pr
+  qrText.value = "lightning:" + val.pr;
 }
 
 async function receiveAmounts(val) {
-  amounts.value = val
-  setAmountButton()
+  amounts.value = val;
+  setAmountButton();
 }
 </script>
 

@@ -55,55 +55,55 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue"
-import { useStoreUser } from "src/stores/storeUser"
-import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue"
-import { useI18n } from "vue-i18n"
-import { tidyNumber } from "src/use/useUtils"
-import { useGetUnlimitedInvoice } from "src/use/useLightningInvoice"
-import { copyToClipboard } from "quasar"
+import { ref, onMounted, computed, watch } from "vue";
+import { useStoreUser } from "src/stores/storeUser";
+import HiveSelectFancyAcc from "src/components/HiveSelectFancyAcc.vue";
+import { useI18n } from "vue-i18n";
+import { tidyNumber } from "src/use/useUtils";
+import { useGetUnlimitedInvoice } from "src/use/useLightningInvoice";
+import { copyToClipboard } from "quasar";
 
-const t = useI18n().t
+const t = useI18n().t;
 
-const storeUser = useStoreUser()
-const hiveAccTo = ref({ label: "", value: "", caption: "" })
-const amountSats = ref(0)
+const storeUser = useStoreUser();
+const hiveAccTo = ref({ label: "", value: "", caption: "" });
+const amountSats = ref(0);
 const amountDisplay = computed(() => {
-  return tidyNumber(amountSats.value, 0)
-})
-const invoice = ref({})
-const amountChanged = ref(false)
+  return tidyNumber(amountSats.value, 0);
+});
+const invoice = ref({});
+const amountChanged = ref(false);
 
 // track changes to the logged in user
 watch(storeUser, () => {
-  resetValues()
-})
+  resetValues();
+});
 
 onMounted(() => {
   // on load set the hiveAccTo to the current user
-  resetValues
-})
+  resetValues;
+});
 
 function resetValues() {
   hiveAccTo.value = {
     label: storeUser.hiveAccname,
     value: storeUser.hiveAccname,
     caption: storeUser.profileName,
-  }
+  };
   const specialUsers = [
     "v4vapp.tre",
     "devtre.v4vapp",
     "brianoflondon",
     "v4vapp-test",
-  ]
+  ];
   if (specialUsers.includes(storeUser.currentUser)) {
-    amountSats.value = 999900
+    amountSats.value = 999900;
   }
-  amountChanged.value = true
+  amountChanged.value = true;
 }
 
 function handleInput() {
-  amountChanged.value = true
+  amountChanged.value = true;
 }
 
 async function generateUnlimitedInvoice() {
@@ -111,17 +111,17 @@ async function generateUnlimitedInvoice() {
     invoice.value = await useGetUnlimitedInvoice(
       hiveAccTo.value.value,
       amountSats.value,
-      "v4v.app"
-    )
+      "v4v.app",
+    );
     if (invoice.value.error) {
-      invoice.value.pr = invoice.value.error
-      return
+      invoice.value.pr = invoice.value.error;
+      return;
     }
-    amountChanged.value = false
-    copyToClipboard(invoice.value.pr)
+    amountChanged.value = false;
+    copyToClipboard(invoice.value.pr);
   } catch (error) {
-    invoice.value.pr = "Error"
-    console.error(error)
+    invoice.value.pr = "Error";
+    console.error(error);
   }
 }
 </script>

@@ -30,7 +30,7 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
       if (!state.apiStatus) return "💰💰💰"
       return tidyNumber(
         (state.apiStatus.crypto.hive.btc * 100000000).toFixed(0),
-        0
+        0,
       )
     },
     hiveHBDNumber: (state) => {
@@ -114,6 +114,7 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
 
   actions: {
     update() {
+      console.log("Updating API status...")
       const onDownload = async () => {
         try {
           const res = await api.get("", {
@@ -124,6 +125,7 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
           this.apiError = null
           this.apiStatus.crypto = prettyPrices(this.apiStatus.crypto)
           this.statusDisp = "🟢"
+          console.log("API status updated:", this.apiStatus)
         } catch (err) {
           let age = (Date.now() - this.fetchTimestamp) / 1000
           if (age > 5 && this.apiStatus) {

@@ -35,7 +35,6 @@
         :options="options"
         @filter="filterFnAutoselect"
         @filter-abort="abortFilterFn"
-
         style="width: 250px"
       >
         <template v-slot:no-option>
@@ -49,14 +48,14 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue"
-import { useLoadHiveAccountsReputation } from "src/use/useHive"
+import { ref, watch } from "vue";
+import { useLoadHiveAccountsReputation } from "src/use/useHive";
 
-const stringOptions = []
+const stringOptions = [];
 
-const options = ref(stringOptions)
-const model = ref()
-const emit = defineEmits(["updateValue"])
+const options = ref(stringOptions);
+const model = ref();
+const emit = defineEmits(["updateValue"]);
 
 watch(model, (newValue) => {
   emit("updateValue", newValue);
@@ -67,20 +66,20 @@ function filterFn(val, update, abort) {
     update(
       async () => {
         if (val === "") {
-          options.value = stringOptions
+          options.value = stringOptions;
         } else {
-          const needle = val.toLowerCase().trim()
-          options.value = await useLoadHiveAccountsReputation(needle)
+          const needle = val.toLowerCase().trim();
+          options.value = await useLoadHiveAccountsReputation(needle);
         }
       },
       (ref) => {
         if (val !== "" && ref.options.length > 0) {
-          ref.setOptionIndex(-1)
-          ref.moveOptionSelection(1, true)
+          ref.setOptionIndex(-1);
+          ref.moveOptionSelection(1, true);
         }
-      }
-    )
-  }, 300)
+      },
+    );
+  }, 300);
 }
 
 async function filterFnAutoselect(val, update, abort) {
@@ -88,21 +87,20 @@ async function filterFnAutoselect(val, update, abort) {
   update(
     async () => {
       if (val === "") {
-        options.value = stringOptions
+        options.value = stringOptions;
       } else {
-        const needle = val.toLowerCase().replace(/\s+/g, "")
-        options.value = await useLoadHiveAccountsReputation(needle)
+        const needle = val.toLowerCase().replace(/\s+/g, "");
+        options.value = await useLoadHiveAccountsReputation(needle);
       }
     },
     (ref) => {
       if (val !== "" && ref.options.length > 0 && ref.getOptionIndex() === -1) {
-        ref.moveOptionSelection(1, true)
-        ref.toggleOption(ref.options[ref.optionIndex], true)
+        ref.moveOptionSelection(1, true);
+        ref.toggleOption(ref.options[ref.optionIndex], true);
       }
-    }
-  )
+    },
+  );
 }
 
-const abortFilterFn = () => {
-}
+const abortFilterFn = () => {};
 </script>

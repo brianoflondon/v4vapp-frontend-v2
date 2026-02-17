@@ -153,161 +153,161 @@
 </template>
 
 <script setup>
-import { computed, watch, ref, onMounted } from "vue"
-import { useStoreUser } from "src/stores/storeUser"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import CreateQRCode from "components/qrcode/CreateQRCode.vue"
-import { useQuasar, copyToClipboard } from "quasar"
-import { useI18n } from "vue-i18n"
-import ExplanationBox from "src/components/utils/ExplanationBox.vue"
-import { QRLightningHiveColor } from "src/use/useUtils"
-import { useShortEVMAddress } from "src/use/useEVM"
-import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
-import AskHASDialog from "src/components/hive/AskHASDialog.vue"
-import { useGenerateHiveTransferOp } from "src/use/useHive"
-import { useHiveKeychainTransfer } from "src/use/useKeychain"
+import { computed, watch, ref, onMounted } from "vue";
+import { useStoreUser } from "src/stores/storeUser";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
+import CreateQRCode from "components/qrcode/CreateQRCode.vue";
+import { useQuasar, copyToClipboard } from "quasar";
+import { useI18n } from "vue-i18n";
+import ExplanationBox from "src/components/utils/ExplanationBox.vue";
+import { QRLightningHiveColor } from "src/use/useUtils";
+import { useShortEVMAddress } from "src/use/useEVM";
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue";
+import AskHASDialog from "src/components/hive/AskHASDialog.vue";
+import { useGenerateHiveTransferOp } from "src/use/useHive";
+import { useHiveKeychainTransfer } from "src/use/useKeychain";
 import {
   serverHiveAccount,
   lightningAddressDomainPrefix,
   lightningAddressDomainSuffix,
-} from "src/boot/axios"
-import { encodeOp } from "hive-uri"
-import AlternateCurrency from "src/components/hive/AlternateCurrency.vue"
-import AmountSlider from "src/components/utils/AmountSlider.vue"
+} from "src/boot/axios";
+import { encodeOp } from "hive-uri";
+import AlternateCurrency from "src/components/hive/AlternateCurrency.vue";
+import AmountSlider from "src/components/utils/AmountSlider.vue";
 
-const t = useI18n().t
-const q = useQuasar()
+const t = useI18n().t;
+const q = useQuasar();
 
 const options = ref([
   { label: "", value: "sats", slot: "lightning" },
   { label: "", value: "hbd", slot: "hbd" },
   { label: "", value: "hive", slot: "hive" },
-])
+]);
 
-const HASDialog = ref({ show: false })
-const storeUser = useStoreUser()
-const storeApiStatus = useStoreAPIStatus()
-const loading = ref(false)
-const destination = ref("sats")
-const qrCode = ref("") // QrCode object emitted from CreateQRCode
-const privateMemo = ref(false)
+const HASDialog = ref({ show: false });
+const storeUser = useStoreUser();
+const storeApiStatus = useStoreAPIStatus();
+const loading = ref(false);
+const destination = ref("sats");
+const qrCode = ref(""); // QrCode object emitted from CreateQRCode
+const privateMemo = ref(false);
 
-const bech32 = ref("")
-const amount = ref(0)
+const bech32 = ref("");
+const amount = ref(0);
 
-const CurrencyCalc = ref({ amount: 0, currency: "hbd" })
+const CurrencyCalc = ref({ amount: 0, currency: "hbd" });
 
 const dotColor = computed(() => {
-  let isLightning = destination.value === "sats"
-  return QRLightningHiveColor(isLightning, loading.value, q.dark.isActive)
-})
+  let isLightning = destination.value === "sats";
+  return QRLightningHiveColor(isLightning, loading.value, q.dark.isActive);
+});
 
 const lightningAddressPrefix = computed(() => {
   if (!storeUser.currentUser) {
-    return ""
+    return "";
   }
   const path =
-    `${lightningAddressDomainPrefix}${destination.value}.${lightningAddressDomainSuffix}`.toLowerCase()
+    `${lightningAddressDomainPrefix}${destination.value}.${lightningAddressDomainSuffix}`.toLowerCase();
   const address = `lightning:${String(
-    storeUser.currentUser
-  ).toLowerCase()}@${path}`
-  return address
-})
+    storeUser.currentUser,
+  ).toLowerCase()}@${path}`;
+  return address;
+});
 
 const lightningAddress = computed(() => {
   if (!storeUser.currentUser) {
-    return ""
+    return "";
   }
   const path =
-    `${lightningAddressDomainPrefix}${destination.value}.${lightningAddressDomainSuffix}`.toLowerCase()
-  const address = `${String(storeUser.currentUser).toLowerCase()}@${path}`
-  return address
-})
+    `${lightningAddressDomainPrefix}${destination.value}.${lightningAddressDomainSuffix}`.toLowerCase();
+  const address = `${String(storeUser.currentUser).toLowerCase()}@${path}`;
+  return address;
+});
 
 const lightningAddressLabel = computed(() => {
   if (!storeUser.currentUser) {
-    return ""
+    return "";
   }
   const path =
-    `${lightningAddressDomainPrefix}${destination.value}.${lightningAddressDomainSuffix}`.toLowerCase()
-  const name = useShortEVMAddress(String(storeUser.currentUser).toLowerCase())
-  return `${name}@${path}`
-})
+    `${lightningAddressDomainPrefix}${destination.value}.${lightningAddressDomainSuffix}`.toLowerCase();
+  const name = useShortEVMAddress(String(storeUser.currentUser).toLowerCase());
+  return `${name}@${path}`;
+});
 
 const qrCodeHive = computed(() => {
   // For hive/hbd destinations we want a BECH32 lightning address prefixed with 'lightning:'
-  if (!bech32.value) return ""
-  const raw = String(bech32.value)
+  if (!bech32.value) return "";
+  const raw = String(bech32.value);
   // avoid double prefix
   const withoutPrefix = raw.toLowerCase().startsWith("lightning:")
     ? raw.slice(10)
-    : raw
-  return `lightning:${withoutPrefix}`.toLowerCase()
-})
+    : raw;
+  return `lightning:${withoutPrefix}`.toLowerCase();
+});
 
 const qrCodeSats = computed(() => {
-  return bech32.value ? String(bech32.value).toLowerCase() : ""
-})
+  return bech32.value ? String(bech32.value).toLowerCase() : "";
+});
 
 const qrText = computed(() => {
   return (
     (destination.value === "sats" ? qrCodeSats.value : qrCodeHive.value) || ""
-  )
-})
+  );
+});
 
 const props = defineProps({
   justHive: {
     type: Boolean,
     default: false,
   },
-})
+});
 
 onMounted(async () => {
-  console.log("ReceiveKeepsats.vue mounted", props.justHive)
+  console.log("ReceiveKeepsats.vue mounted", props.justHive);
   if (props.justHive) {
     options.value = [
       { label: "", value: "hbd", slot: "hbd" },
       { label: "", value: "hive", slot: "hive" },
-    ]
-    destination.value = "hbd"
+    ];
+    destination.value = "hbd";
   }
-  updateDestination()
-})
+  updateDestination();
+});
 
 watch(storeUser, (val) => {
   if (val) {
-    updateDestination()
+    updateDestination();
   }
-})
+});
 
 async function updateDestination() {
   CurrencyCalc.value = {
     amount: parseFloat(amount.value),
     currency: destination.value,
-  }
-  updateAmount(amount.value)
-  loading.value = true
+  };
+  updateAmount(amount.value);
+  loading.value = true;
   // fetch bech32 for the currently selected destination (sats/hbd/hive)
   try {
-    const bech32Data = await storeUser.bech32Address(destination.value)
+    const bech32Data = await storeUser.bech32Address(destination.value);
     // store the returned prefix/address depending on implementation
-    bech32.value = bech32Data.prefix || bech32Data.address || bech32Data
+    bech32.value = bech32Data.prefix || bech32Data.address || bech32Data;
   } catch (err) {
     console.error(
       "ReceiveKeepsats.vue: updateDestination bech32 fetch failed",
-      err
-    )
-    bech32.value = ""
+      err,
+    );
+    bech32.value = "";
   }
-  loading.value = false
+  loading.value = false;
 }
 
 function updateAmount(val) {
-  amount.value = parseFloat(val)
+  amount.value = parseFloat(val);
   CurrencyCalc.value = {
     amount: parseFloat(val),
     currency: destination.value,
-  }
+  };
 }
 
 // Calculates the fees charged in the same currency Hive/HBD as
@@ -316,40 +316,42 @@ function calcFees(amount) {
   const { currencyToSend, amountToSend } = {
     currencyToSend: destination.value,
     amountToSend: amount,
-  }
-  const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeApiStatus
+  };
+  const { HBDSatsNumber, hiveSatsNumber, apiStatus } = storeApiStatus;
 
-  const exchangeRate = currencyToSend === "HBD" ? HBDSatsNumber : hiveSatsNumber
-  const rawSats = parseFloat(amountToSend) * exchangeRate
+  const exchangeRate =
+    currencyToSend === "HBD" ? HBDSatsNumber : hiveSatsNumber;
+  const rawSats = parseFloat(amountToSend) * exchangeRate;
 
   const fee =
-    rawSats * apiStatus.config.conv_fee_percent + apiStatus.config.conv_fee_sats
+    rawSats * apiStatus.config.conv_fee_percent +
+    apiStatus.config.conv_fee_sats;
 
-  return { currency: fee / exchangeRate, sats: fee }
+  return { currency: fee / exchangeRate, sats: fee };
 }
 
 function copyText() {
-  const textToCopy = qrText.value || lightningAddress.value
-  copyToClipboard(textToCopy)
+  const textToCopy = qrText.value || lightningAddress.value;
+  copyToClipboard(textToCopy);
   q.notify({
     message: t("copied"),
     color: "positive",
     icon: "check_circle",
-  })
+  });
 }
 
 // TODO: #214 move this to the Hive payment component
 async function makePayment(method) {
   if (destination.value === "sats") {
-    return
+    return;
   }
 
-  const fixedAmount = parseFloat(amount.value).toFixed(3)
+  const fixedAmount = parseFloat(amount.value).toFixed(3);
 
   // Adds encryption to the memo 2024-02-23
-  let memo = `${storeUser.currentUser} Deposit to #SATS`
+  let memo = `${storeUser.currentUser} Deposit to #SATS`;
   if (privateMemo.value) {
-    memo = "#" + memo
+    memo = "#" + memo;
   }
 
   if (method === "HiveKeychain") {
@@ -358,39 +360,39 @@ async function makePayment(method) {
         message: t("keychain_not_installed"),
         color: "negative",
         icon: "error",
-      })
-      return
+      });
+      return;
     }
     const result = await useHiveKeychainTransfer(
       storeUser.currentUser,
       fixedAmount,
       destination.value.toUpperCase(),
-      memo
-    )
+      memo,
+    );
     if (result.success) {
       q.notify({
         avatar: "/site-logo/v4vapp-logo.svg",
         message: result.message,
         color: "positive",
         icon: "check_circle",
-      })
-      checkForSats()
+      });
+      checkForSats();
     } else {
       q.notify({
         message: result.message,
         color: "negative",
         icon: "error",
-      })
+      });
     }
   }
   if (method === "HAS") {
-    HASDialog.value.show = true
+    HASDialog.value.show = true;
     HASDialog.value.payment = {
       username: storeUser.currentUser,
       amount: fixedAmount,
       currency: destination.value.toUpperCase(),
       memo: memo,
-    }
+    };
   }
 }
 
@@ -399,17 +401,17 @@ watch(
   async (value) => {
     if (value) {
       if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_nack") {
-        const message = `${t("rejected_payment")}`
+        const message = `${t("rejected_payment")}`;
         q.notify({
           color: "negative",
           avatar: "/site-logo/v4vapp-logo.svg",
           timeout: 5000,
           message: message,
           position: "top",
-        })
+        });
       }
       if (value.resolvedHAS && value.resolvedHAS.cmd === "sign_ack") {
-        const message = `${t("payment_sent")}`
+        const message = `${t("payment_sent")}`;
         q.notify({
           avatar: "/site-logo/v4vapp-logo.svg",
           color: "positive",
@@ -417,37 +419,41 @@ watch(
           timeout: 3000,
           message: message,
           position: "top",
-        })
-        checkForSats()
+        });
+        checkForSats();
       }
     }
   },
-  { deep: true }
-)
+  { deep: true },
+);
 async function checkForSats(oldNetSats = 0, count = 0) {
-  let currentSatsBalance = 0
+  let currentSatsBalance = 0;
   if (oldNetSats === 0) {
-    currentSatsBalance = storeUser.currentKeepSats.net_sats
+    currentSatsBalance = storeUser.currentKeepSats.net_sats;
   } else {
-    currentSatsBalance = oldNetSats
+    currentSatsBalance = oldNetSats;
   }
-  await storeUser.updateSatsBalance(false)
+  await storeUser.updateSatsBalance(false);
   if (currentSatsBalance != storeUser.currentKeepSats.net_sats) {
     q.notify({
-      message: `You now have ${storeUser.currentKeepSats.net_sats} KeepSats`,
+      message: `You now have ${
+        storeUser.currentKeepSats.net_sats === 0
+          ? 0
+          : storeUser.currentKeepSats.net_sats
+      } KeepSats`,
       color: "positive",
       icon: "check_circle",
-    })
+    });
     // quit checking
-    return
+    return;
   }
 
   if (count > 10) {
-    return
+    return;
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 1000 * 5))
-  return checkForSats(currentSatsBalance, count + 1)
+  await new Promise((resolve) => setTimeout(resolve, 1000 * 5));
+  return checkForSats(currentSatsBalance, count + 1);
 }
 
 const buttonColors = {
@@ -460,12 +466,12 @@ const buttonColors = {
     buttonColor: "grey-6",
     textColor: "grey-9",
   },
-}
+};
 
 const buttonColor = computed(() => {
-  const colours = buttonColors[q.dark.isActive]
-  return colours
-})
+  const colours = buttonColors[q.dark.isActive];
+  return colours;
+});
 </script>
 
 <style lang="scss" scoped>

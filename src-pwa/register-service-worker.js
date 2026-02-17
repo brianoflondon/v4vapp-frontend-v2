@@ -1,5 +1,6 @@
 import { Notify } from "quasar"
 import { register } from "register-service-worker"
+import { version } from "../package.json"
 
 // The ready(), registered(), cached(), updatefound() and updated()
 // events passes a ServiceWorkerRegistration instance in their arguments.
@@ -28,7 +29,7 @@ register(process.env.SERVICE_WORKER_FILE, {
   updatefound(/* registration */) {
     console.log("New version of app is downloading.")
     Notify.create({
-      message: "New version of app is downloading.",
+      message: `Updating from v${version} — downloading new version...`,
       progress: true,
       color: "positive",
       position: "bottom",
@@ -50,7 +51,7 @@ register(process.env.SERVICE_WORKER_FILE, {
   updated(/* registration */) {
     console.log("New version of app is available; please refresh.")
     Notify.create({
-      message: "New version of app is available; please refresh.",
+      message: `New version available (current: v${version}). Please refresh.`,
       progress: true,
       color: "positive",
       position: "bottom",

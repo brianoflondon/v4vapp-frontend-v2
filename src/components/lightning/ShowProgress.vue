@@ -23,9 +23,7 @@
 </template>
 
 <script setup>
-
-const dInvoice = defineModel()
-
+const dInvoice = defineModel();
 </script>
 
 <style lang="scss" scoped></style>

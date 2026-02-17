@@ -1,5 +1,5 @@
-import { defineStore } from "pinia"
-import { useStorage } from "@vueuse/core"
+import { defineStore } from "pinia";
+import { useStorage } from "@vueuse/core";
 
 export const useStoreSales = defineStore("storeSales", {
   state: () => ({
@@ -9,81 +9,81 @@ export const useStoreSales = defineStore("storeSales", {
   getters: {
     salesUnpaid() {
       // filter for unpaid sales
-      return this.requestedSales.filter((sale) => !sale.paid)
+      return this.requestedSales.filter((sale) => !sale.paid);
     },
     salesPaid() {
       // filter for paid sales
-      return this.requestedSales.filter((sale) => sale.paid)
+      return this.requestedSales.filter((sale) => sale.paid);
     },
     salesAll() {
       // filter for all sales
       // sort this by timestampUnix descending
-      return this.requestedSales
+      return this.requestedSales;
     },
   },
 
   actions: {
     addSale(sale) {
       // insert in reverse order
-      this.requestedSales.unshift(sale)
+      this.requestedSales.unshift(sale);
     },
 
     updateSale(sale) {
       const index = this.requestedSales.findIndex(
-        (s) => s.checkCode === sale.checkCode
-      )
+        (s) => s.checkCode === sale.checkCode,
+      );
       if (index === -1) {
-        this.addSale(sale)
+        this.addSale(sale);
       } else {
         // Update only the properties of the sale that have changed
-        Object.assign(this.requestedSales[index], sale)
+        Object.assign(this.requestedSales[index], sale);
       }
     },
     markAsLightning(checkCode) {
       const index = this.requestedSales.findIndex(
-        (s) => s.checkCode === checkCode
-      )
-      this.requestedSales[index].lightning = true
+        (s) => s.checkCode === checkCode,
+      );
+      this.requestedSales[index].lightning = true;
     },
     markAsHive(checkCode) {
       const index = this.requestedSales.findIndex(
-        (s) => s.checkCode === checkCode
-      )
-      this.requestedSales[index].lightning = false
+        (s) => s.checkCode === checkCode,
+      );
+      this.requestedSales[index].lightning = false;
     },
     removeSale(checkCode) {
       const index = this.requestedSales.findIndex(
-        (s) => s.checkCode === checkCode
-      )
+        (s) => s.checkCode === checkCode,
+      );
       if (index !== -1) {
-        this.requestedSales.splice(index, 1)
+        this.requestedSales.splice(index, 1);
       }
     },
     markPaid(checkCode, trx_id, hiveAccFrom, amountPaid) {
       const index = this.requestedSales.findIndex(
-        (sale) => sale.checkCode === checkCode
-      )
+        (sale) => sale.checkCode === checkCode,
+      );
       if (index !== -1) {
-        this.requestedSales[index].paid = true
-        this.requestedSales[index].trx_id = trx_id
-        this.requestedSales[index].hiveAccFrom = hiveAccFrom
-        this.requestedSales[index].paidDate = new Date()
-        this.requestedSales[index].amountPaid = amountPaid
+        this.requestedSales[index].paid = true;
+        this.requestedSales[index].trx_id = trx_id;
+        this.requestedSales[index].hiveAccFrom = hiveAccFrom;
+        this.requestedSales[index].paidDate = new Date();
+        this.requestedSales[index].amountPaid = amountPaid;
       }
     },
     findSale(checkCode) {
-      return this.requestedSales.find((sale) => sale.checkCode === checkCode)
+      return this.requestedSales.find((sale) => sale.checkCode === checkCode);
     },
     clearSales() {
-      this.requestedSales = []
+      this.requestedSales = [];
     },
     clearOldSales() {
       // remove sales older than 10 minutes
-      const now = new Date()
-      const oneWeekAgo = new Date(now - 10 * 60 * 60 * 1000)
+      const now = new Date();
+      const oneWeekAgo = new Date(now - 10 * 60 * 60 * 1000);
       this.requestedSales = this.requestedSales.filter(
-        (sale) => sale.timestamp > oneWeekAgo
-      )
+        (sale) => sale.timestamp > oneWeekAgo,
+      );
     },
   },
   persist: {
@@ -95,4 +95,4 @@ export const useStoreSales = defineStore("storeSales", {
       },
     ],
   },
-})
+});

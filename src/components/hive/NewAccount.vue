@@ -88,9 +88,9 @@
               </div>
               <div class="flex row wrap justify-center">
                 <div class="q-ma-sm">
+                  <!-- Download or copy your keys and master password -->
                   <q-btn
                     :label="t('download_keys')"
-                    :disable="activeItem < 2"
                     icon="download"
                     :color="buttonActiveNot(!activeItem < 2).color"
                     :text-color="buttonActiveNot(!activeItem < 2).textColor"
@@ -100,7 +100,6 @@
                 <div class="q-ma-sm">
                   <q-btn
                     :label="t('copy_keys')"
-                    :disable="activeItem < 2"
                     icon="content_copy"
                     :color="buttonActiveNot(!activeItem < 2).color"
                     :text-color="buttonActiveNot(!activeItem < 2).textColor"
@@ -268,54 +267,54 @@
 <script setup>
 //MARK: script setup
 
-import { ref, computed, watch, onMounted } from "vue"
-import { useQuasar, copyToClipboard } from "quasar"
-import { useHiveAccountExists } from "src/use/useHive"
-import { buttonActiveNot } from "src/use/useUtils"
-import { PrivateKey } from "@hiveio/dhive"
-import { genRandAlphaNum } from "src/use/useUtils"
-import { api } from "src/boot/axios"
-import { useAppStr } from "src/use/useAppDetails"
-import { useStoreUser } from "src/stores/storeUser"
-import { QRLightningHiveColor } from "src/use/useUtils"
-import { Notify } from "quasar"
-import { useI18n } from "vue-i18n"
-import { nextTick } from "vue"
-import CreateQRCode from "src/components/qrcode/CreateQRCode.vue"
-import StepNumbers from "src/components/utils/StepNumbers.vue"
-import ConfirmNewAccount from "src/components/hive/ConfirmNewAccount.vue"
-import GetKeychain from "src/components/hive/GetKeychain.vue"
-import { useNewAccountCost } from "src/use/useV4vapp"
-import { tidyNumber } from "src/use/useUtils"
+import { ref, computed, watch, onMounted } from "vue";
+import { useQuasar, copyToClipboard } from "quasar";
+import { useHiveAccountExists } from "src/use/useHive";
+import { buttonActiveNot } from "src/use/useUtils";
+import { PrivateKey } from "@hiveio/dhive";
+import { genRandAlphaNum } from "src/use/useUtils";
+import { api } from "src/boot/axios";
+import { useAppStr } from "src/use/useAppDetails";
+import { useStoreUser } from "src/stores/storeUser";
+import { QRLightningHiveColor } from "src/use/useUtils";
+import { Notify } from "quasar";
+import { useI18n } from "vue-i18n";
+import { nextTick } from "vue";
+import CreateQRCode from "src/components/qrcode/CreateQRCode.vue";
+import StepNumbers from "src/components/utils/StepNumbers.vue";
+import ConfirmNewAccount from "src/components/hive/ConfirmNewAccount.vue";
+import GetKeychain from "src/components/hive/GetKeychain.vue";
+import { useNewAccountCost } from "src/use/useV4vapp";
+import { tidyNumber } from "src/use/useUtils";
 
-const t = useI18n().t
-const storeUser = useStoreUser()
-const q = useQuasar()
+const t = useI18n().t;
+const storeUser = useStoreUser();
+const q = useQuasar();
 
 const isClosed = computed(() => {
-  return !newAccountCost.value?.isOpen
-})
+  return !newAccountCost.value?.isOpen;
+});
 
 // Define the account name and master password
-const accountName = ref("")
-const nameCheck = ref(true)
-const nameCheckError = ref("")
-const masterPassword = ref("")
-const keys = ref({})
-const keychainLink = ref("")
-const progress = ref(0)
-const voucher = ref("")
-const respPaid = ref({})
-const paymentRequest = ref({}) // Payment request object
-const invoiceLoading = ref(false) // Loading state for the invoice
-const activeItem = ref(1) // Active item in the stepper
-const downloadedKeys = ref(false) // Checks if the keys have been downloaded
-const showPayment = ref(false) // Shows the payment dialog
-const invoicePaid = ref(false)
-let initialTime = 0
-const accountConfirm = ref(false) // Dialog to confirm account creation
+const accountName = ref("");
+const nameCheck = ref(true);
+const nameCheckError = ref("");
+const masterPassword = ref("");
+const keys = ref({});
+const keychainLink = ref("");
+const progress = ref(0);
+const voucher = ref("");
+const respPaid = ref({});
+const paymentRequest = ref({}); // Payment request object
+const invoiceLoading = ref(false); // Loading state for the invoice
+const activeItem = ref(1); // Active item in the stepper
+const downloadedKeys = ref(false); // Checks if the keys have been downloaded
+const showPayment = ref(false); // Shows the payment dialog
+const invoicePaid = ref(false);
+let initialTime = 0;
+const accountConfirm = ref(false); // Dialog to confirm account creation
 
-const newAccountCost = ref({})
+const newAccountCost = ref({});
 
 const payButton = computed(() => {
   return (
@@ -323,49 +322,49 @@ const payButton = computed(() => {
     " Hive (" +
     tidyNumber(newAccountCost.value.sats, 0) +
     " sats)"
-  )
-})
+  );
+});
 
 onMounted(async () => {
-  newAccountCost.value = await useNewAccountCost()
-})
+  newAccountCost.value = await useNewAccountCost();
+});
 
 // Watch for changes in downloadedKeys
 watch(downloadedKeys, (newVal) => {
   if (newVal) {
-    activeItem.value = 4
+    activeItem.value = 4;
   }
-})
+});
 
 const maxUseableWidth = computed(() => {
   if (q.screen.width < 460) {
-    return q.screen.width - 120
+    return q.screen.width - 120;
   }
-  return 350
-})
+  return 350;
+});
 
 const dotColor = computed(() => {
-  return QRLightningHiveColor(true, false, q.dark.isActive)
-})
+  return QRLightningHiveColor(true, false, q.dark.isActive);
+});
 
 async function checkHiveAccountName() {
   if (accountName.value === null || accountName.value === "") {
-    accountName.value = ""
-    nameCheck.value = true
-    nameCheckError.value = ""
-    activeItem.value = 1
-    return
+    accountName.value = "";
+    nameCheck.value = true;
+    nameCheckError.value = "";
+    activeItem.value = 1;
+    return;
   }
-  accountName.value = accountName.value.toLowerCase()
-  const resp = await useHiveAccountExists(accountName.value)
-  nameCheck.value = resp.valid
-  nameCheckError.value = resp.error
+  accountName.value = accountName.value.toLowerCase();
+  const resp = await useHiveAccountExists(accountName.value);
+  nameCheck.value = resp.valid;
+  nameCheckError.value = resp.error;
   if (resp.exists) {
-    keys.value = {}
+    keys.value = {};
   } else if (resp.valid) {
-    randomMasterPassword()
-    generateKeys()
-    activeItem.value = 2
+    randomMasterPassword();
+    generateKeys();
+    activeItem.value = 2;
   } else {
     // error
   }
@@ -373,84 +372,84 @@ async function checkHiveAccountName() {
 
 function randomMasterPassword() {
   // Generate a random master password
-  masterPassword.value = genRandAlphaNum(32)
-  generateKeys()
-  return
+  masterPassword.value = genRandAlphaNum(32);
+  generateKeys();
+  return;
 }
 
 function handleReset() {
-  accountName.value = ""
-  nameCheck.value = true
-  nameCheckError.value = ""
-  masterPassword.value = ""
-  keys.value = {}
-  progress.value = 1
-  activeItem.value = 1
-  paymentRequest.value = ""
-  downloadedKeys.value = false
-  showPayment.value = false
-  accountConfirm.value = false
+  accountName.value = "";
+  nameCheck.value = true;
+  nameCheckError.value = "";
+  masterPassword.value = "";
+  keys.value = {};
+  progress.value = 1;
+  activeItem.value = 1;
+  paymentRequest.value = "";
+  downloadedKeys.value = false;
+  showPayment.value = false;
+  accountConfirm.value = false;
 }
 
 async function handleSubmit() {
-  requestInvoice()
+  requestInvoice();
 }
 
 async function handleCancel() {
-  clearTimeout(checkTimeout)
-  showPayment.value = false
-  paymentRequest.value = {}
-  progress.value = 1
-  activeItem.value = 2
-  downloadedKeys.value = false
+  clearTimeout(checkTimeout);
+  showPayment.value = false;
+  paymentRequest.value = {};
+  progress.value = 1;
+  activeItem.value = 2;
+  downloadedKeys.value = false;
   Notify.create({
     message: t("invoice_canceled"),
     color: "negative",
     position: "top",
     timeout: 2000,
-  })
-  invoiceLoading.value = false
-  invoicePaid.value = false
-  randomMasterPassword()
-  generateKeys()
+  });
+  invoiceLoading.value = false;
+  invoicePaid.value = false;
+  randomMasterPassword();
+  generateKeys();
 }
 
 async function requestInvoice() {
   // First call to get an invoice
-  showPayment.value = true
-  invoiceLoading.value = true
+  showPayment.value = true;
+  invoiceLoading.value = true;
   const accountData = {
     accountName: accountName.value,
     appId: useAppStr(),
     clientId: storeUser.clientId,
-  }
+  };
   try {
-    let resp
+    let resp;
     while (true) {
       try {
-        resp = await api.post("/account/create", accountData)
+        resp = await api.post("/account/create", accountData);
         if (resp.status !== 429) {
-          break
+          break;
         }
       } catch (error) {
-        console.error("error in first /account/create", error)
+        console.error("error in first /account/create", error);
       }
-      await new Promise((resolve) => setTimeout(resolve, 5000))
+      await new Promise((resolve) => setTimeout(resolve, 5000));
     }
-    paymentRequest.value = resp.data
+    paymentRequest.value = resp.data;
     paymentRequest.value["payment_request"] =
-      "lightning:" + resp.data.payment_request
-    progress.value = 100
-    initialTime = Math.floor(Date.now() / 1000) // Store the initial time
-    invoiceLoading.value = false
-    checkPayment(resp.data.expires_at)
+      "lightning:" + resp.data.payment_request;
+    progress.value = 100;
+    initialTime = Math.floor(Date.now() / 1000); // Store the initial time
+    invoiceLoading.value = false;
+    checkPayment(resp.data.expires_at);
   } catch (error) {
-    console.error("error", error)
+    console.error("error", error);
   }
 }
 
 // used to cancel payment
-let checkTimeout = null
+let checkTimeout = null;
 
 // MARK: CheckPayment
 // function to loop and call api invoice/check every second to check if payment is made
@@ -458,66 +457,66 @@ async function checkPayment(expiresAt) {
   try {
     const resp = await api.post(`check_invoice`, {
       r_hash: paymentRequest.value.r_hash,
-    })
+    });
     if (resp.data.paid) {
-      respPaid.value = resp.data
-      handlePaid()
-      return
+      respPaid.value = resp.data;
+      handlePaid();
+      return;
     }
     if (voucher.value) {
-      respPaid.value = resp.data
-      handlePaid()
-      return
+      respPaid.value = resp.data;
+      handlePaid();
+      return;
     }
     if (resp.data.expired) {
-      handleExpired()
-      return
+      handleExpired();
+      return;
     }
     // Calculate progress
     if (expiresAt) {
-      const currentTime = Math.floor(Date.now() / 1000) // get current time in seconds
-      const totalDuration = expiresAt - currentTime
-      const totalTime = expiresAt - initialTime
-      progress.value = totalDuration / totalTime
-      checkTimeout = setTimeout(() => checkPayment(expiresAt), 1000)
+      const currentTime = Math.floor(Date.now() / 1000); // get current time in seconds
+      const totalDuration = expiresAt - currentTime;
+      const totalTime = expiresAt - initialTime;
+      progress.value = totalDuration / totalTime;
+      checkTimeout = setTimeout(() => checkPayment(expiresAt), 1000);
     }
   } catch (error) {
-    clearTimeout(checkTimeout)
-    console.error("error", error)
+    clearTimeout(checkTimeout);
+    console.error("error", error);
   }
 }
 function handleExpired() {
-  clearTimeout(checkTimeout)
-  invoiceLoading.value = true
-  paymentRequest.value = {}
-  progress.value = 1
-  activeItem.value = 2
-  downloadedKeys.value = false
+  clearTimeout(checkTimeout);
+  invoiceLoading.value = true;
+  paymentRequest.value = {};
+  progress.value = 1;
+  activeItem.value = 2;
+  downloadedKeys.value = false;
   Notify.create({
     message: t("invoice_expired"),
     color: "negative",
     position: "top",
     timeout: 5000,
-  })
-  invoiceLoading.value = true
-  showPayment.value = false
-  invoiceLoading.value = false
-  invoicePaid.value = false
-  randomMasterPassword()
-  generateKeys()
+  });
+  invoiceLoading.value = true;
+  showPayment.value = false;
+  invoiceLoading.value = false;
+  invoicePaid.value = false;
+  randomMasterPassword();
+  generateKeys();
 }
 
 async function handlePaid() {
-  clearTimeout(checkTimeout)
+  clearTimeout(checkTimeout);
   nextTick(() => {
-    invoicePaid.value = true
-  })
+    invoicePaid.value = true;
+  });
   Notify.create({
     message: t("invoice_paid"),
     color: "positive",
     position: "top",
     timeout: 5000,
-  })
+  });
   const accountData = {
     accountName: accountName.value,
     appId: useAppStr(),
@@ -526,29 +525,29 @@ async function handlePaid() {
     r_preimage: respPaid.value.r_preimage,
     payment_hash: paymentRequest.value.payment_hash,
     r_hash: paymentRequest.value.r_hash,
-  }
+  };
   if (voucher.value) {
-    accountData["paymentVoucher"] = voucher.value
+    accountData["paymentVoucher"] = voucher.value;
   }
   try {
-    let resp
+    let resp;
     while (true) {
       try {
-        resp = await api.post("/account/create_complete", accountData)
+        resp = await api.post("/account/create_complete", accountData);
         if (resp.status !== 429) {
-          break
+          break;
         }
       } catch (error) {
-        console.error("error", error)
+        console.error("error", error);
       }
-      await new Promise((resolve) => setTimeout(resolve, 5000))
+      await new Promise((resolve) => setTimeout(resolve, 5000));
     }
     // This is where we have to enforce key download and checks.
     if (resp.data.masterPassword === masterPassword.value) {
-      console.log("Master Passwords match")
+      console.log("Master Passwords match");
     }
     if (resp.data.accountName === accountName.value) {
-      console.log("Account Names match")
+      console.log("Account Names match");
     }
     if (resp.data.success) {
       Notify.create({
@@ -556,25 +555,25 @@ async function handlePaid() {
         color: "positive",
         position: "top",
         timeout: 5000,
-      })
-      accountConfirm.value = true
-      invoicePaid.value = false
+      });
+      accountConfirm.value = true;
+      invoicePaid.value = false;
     } else {
       Notify.create({
         message: t("account_not_created"),
         color: "negative",
         position: "top",
         timeout: 5000,
-      })
-      invoicePaid.value = false
+      });
+      invoicePaid.value = false;
     }
   } catch (error) {
-    invoicePaid.value = false
-    console.error("error", error)
+    invoicePaid.value = false;
+    console.error("error", error);
   }
-  paymentRequest.value = ""
-  progress.value = 1
-  invoicePaid.value = false
+  paymentRequest.value = "";
+  progress.value = 1;
+  invoicePaid.value = false;
   // Copy the ke
 }
 
@@ -583,23 +582,23 @@ function generateKeys() {
   const ownerKey = PrivateKey.fromLogin(
     accountName.value,
     masterPassword.value,
-    "owner"
-  )
+    "owner",
+  );
   const activeKey = PrivateKey.fromLogin(
     accountName.value,
     masterPassword.value,
-    "active"
-  )
+    "active",
+  );
   const postingKey = PrivateKey.fromLogin(
     accountName.value,
     masterPassword.value,
-    "posting"
-  )
+    "posting",
+  );
   const memoKey = PrivateKey.fromLogin(
     accountName.value,
     masterPassword.value,
-    "memo"
-  )
+    "memo",
+  );
 
   // Store the keys
   keys.value = {
@@ -628,55 +627,58 @@ function generateKeys() {
         memoPubkey: memoKey.createPublic().toString(),
       },
     },
-  }
+  };
   keychainLink.value = `keychain://add_account=${JSON.stringify(
-    keys.value.keychain
-  )}`
+    keys.value.keychain,
+  )}`;
 }
 
 function copyKeys() {
   // Copy the keys to the clipboard
-  activeItem.value = 3
-  copyToClipboard(keysText.value)
+  activeItem.value = 3;
+  copyToClipboard(keysText.value);
 }
 function downloadKeys() {
   // Generate the text file
-  activeItem.value = 3
+  activeItem.value = 3;
 
   // Create a Blob from the data
-  const blob = new Blob([keysText.value], { type: "text/plain" })
-  const url = URL.createObjectURL(blob)
+  const blob = new Blob([keysText.value], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
 
   // Create a link and programmatically click it
-  const link = document.createElement("a")
-  link.href = url
-  link.download = `HIVE_${accountName.value.toUpperCase()}_KEYS.txt`
-  document.body.appendChild(link) // Append the link to the body
-  link.click()
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `HIVE_${accountName.value.toUpperCase()}_KEYS.txt`;
+  document.body.appendChild(link); // Append the link to the body
+  link.click();
 
   // Remove the link from the DOM
-  document.body.removeChild(link)
+  document.body.removeChild(link);
 
   // Revoke the URL to free up memory
-  URL.revokeObjectURL(url)
+  URL.revokeObjectURL(url);
 }
 
 const keysText = computed(() => {
   const data = `
-  Hive Username: ${accountName.value}
-
-  Owner Key: ${keys.value.private.owner}
-
-  Active Key: ${keys.value.private.active}
-
-  Posting Key: ${keys.value.private.posting}
-
-  Memo Key: ${keys.value.private.memo}
-
+  Hive Username:            ${accountName.value}
   Backup (Master) Password: ${masterPassword.value}
-  `
-  return data
-})
+  Private Keys:
+    Owner:   ${keys.value.private.owner}
+    Active:  ${keys.value.private.active}
+    Posting: ${keys.value.private.posting}
+    Memo:    ${keys.value.private.memo}
+
+
+  Public Keys:
+    Owner:   ${keys.value.public.owner}
+    Active:  ${keys.value.public.active}
+    Posting: ${keys.value.public.posting}
+    Memo:    ${keys.value.public.memo}
+  `;
+  return data;
+});
 </script>
 
 <style lang="scss" scoped>

@@ -4,9 +4,9 @@
       <q-card v-for="background in backgroundImage" :key="background">
         <q-card-section style="min-width: 400px">
           <q-img :src="'credit-card/backgrounds/' + background + '.webp'">
-          <div class="absolute-bottom text-subtitle2 text-center">
-            {{ background }}
-          </div>
+            <div class="absolute-bottom text-subtitle2 text-center">
+              {{ background }}
+            </div>
           </q-img>
         </q-card-section>
       </q-card>
@@ -23,7 +23,7 @@ const backgroundImage = [
   "lightning03",
   "lightning04",
   "dolphins",
-]
+];
 </script>
 
 <style lang="scss" scoped></style>

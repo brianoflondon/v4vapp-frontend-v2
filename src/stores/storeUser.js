@@ -1,17 +1,17 @@
-import { defineStore } from "pinia"
-import { useHiveDetails } from "../use/useHive.js"
-import { useStorage, formatTimeAgo } from "@vueuse/core"
-import { useStoreAPIStatus } from "./storeAPIStatus.js"
-import { useCoingeckoStore } from "src/stores/storeCoingecko"
-import { tidyNumber, generateUUID } from "src/use/useUtils.js"
-import { useShortEVMAddress } from "src/use/useEVM.js"
-import { apiLogin, api } from "src/boot/axios"
-import { useKeepSats } from "src/use/useV4vapp"
-import { Notify } from "quasar"
-import { i18n } from "boot/i18n"
+import { defineStore } from "pinia";
+import { useHiveDetails } from "../use/useHive.js";
+import { useStorage, formatTimeAgo } from "@vueuse/core";
+import { useStoreAPIStatus } from "./storeAPIStatus.js";
+import { useCoingeckoStore } from "src/stores/storeCoingecko";
+import { tidyNumber, generateUUID } from "src/use/useUtils.js";
+import { useShortEVMAddress } from "src/use/useEVM.js";
+import { apiLogin, api } from "src/boot/axios";
+import { useKeepSats } from "src/use/useV4vapp";
+import { Notify } from "quasar";
+import { i18n } from "boot/i18n";
 
-const storeAPIStatus = useStoreAPIStatus()
-const storeCoingecko = useCoingeckoStore()
+const storeAPIStatus = useStoreAPIStatus();
+const storeCoingecko = useCoingeckoStore();
 
 export class HiveUser {
   /**
@@ -36,18 +36,18 @@ export class HiveUser {
     expire = null,
     token = null,
     apiToken = null,
-    loginType = "hive"
+    loginType = "hive",
   ) {
-    this.hiveAccname = hiveAccname
-    this.profileName = profileName
-    this.keySelected = keySelected
-    this.authKey = authKey
-    this.expire = expire
-    this.token = token
-    this.apiToken = apiToken
-    this.loginType = loginType
-    if (!timestamp) timestamp = Date.now()
-    this.timestamp = timestamp
+    this.hiveAccname = hiveAccname;
+    this.profileName = profileName;
+    this.keySelected = keySelected;
+    this.authKey = authKey;
+    this.expire = expire;
+    this.token = token;
+    this.apiToken = apiToken;
+    this.loginType = loginType;
+    if (!timestamp) timestamp = Date.now();
+    this.timestamp = timestamp;
   }
 
   toJSON() {
@@ -61,71 +61,70 @@ export class HiveUser {
       token: this.token,
       apiToken: this.apiToken,
       loginType: this.loginType,
-    }
+    };
   }
 
   setApiToken() {
     // Set the token for the user
-    if (!this.apiToken) return false
-    apiLogin.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${this.apiToken}`
+    if (!this.apiToken) return false;
+    apiLogin.defaults.headers.common["Authorization"] =
+      `Bearer ${this.apiToken}`;
     // need to test if the API token is working
-    return true
+    return true;
   }
 
   clearApiToken() {
     // Clear the token for the user
-    this.apiToken = null
-    apiLogin.defaults.headers.common["Authorization"] = ""
-    return true
+    this.apiToken = null;
+    apiLogin.defaults.headers.common["Authorization"] = "";
+    return true;
   }
 
   get hasApiToken() {
-    if (this.apiToken) return true
-    return false
+    if (this.apiToken) return true;
+    return false;
   }
 
   // Return the time since the login in seconds
   get loginAge() {
-    return (Date.now() - this.timestamp) / 1000
+    return (Date.now() - this.timestamp) / 1000;
   }
 
   // Return the time ago since the login Human readable
   get loginAgeHuman() {
-    return formatTimeAgo(this.timestamp)
+    return formatTimeAgo(this.timestamp);
   }
 
   // Return the time left before the HAS login expires
   get loginHASExpire() {
-    if (!this.expire) return null
-    return (this.expire - Date.now()) / 1000
+    if (!this.expire) return null;
+    return (this.expire - Date.now()) / 1000;
   }
 
   get loginHASExpireHuman() {
-    if (!this.expire) return null
-    return formatTimeAgo(this.expire)
+    if (!this.expire) return null;
+    return formatTimeAgo(this.expire);
   }
 
   get isHAS() {
-    if (this.evm) return false
-    if (!this.apiToken) return false
-    if (this.authKey) return true
-    return false
+    if (this.evm) return false;
+    if (!this.apiToken) return false;
+    if (this.authKey) return true;
+    return false;
   }
 
   get isKeychain() {
-    if (!this.apiToken) return false
-    if (this.authKey) return false
-    return true
+    if (!this.apiToken) return false;
+    if (this.authKey) return false;
+    return true;
   }
 
   get isHive() {
-    if (this.loginType === "hive") return true
+    if (this.loginType === "hive") return true;
   }
 
   get isEVM() {
-    if (this.loginType === "evm") return true
+    if (this.loginType === "evm") return true;
   }
 
   get allData() {
@@ -141,7 +140,7 @@ export class HiveUser {
       timestamp: this.timestamp,
       loginAge: this.loginAge,
       loginType: this.loginType,
-    }
+    };
   }
 }
 
@@ -164,51 +163,51 @@ export const useStoreUser = defineStore("useStoreUser", {
 
   getters: {
     hiveAccname() {
-      if (!this.currentUser) return null
-      return this.users[this.currentUser].hiveAccname
+      if (!this.currentUser) return null;
+      return this.users[this.currentUser].hiveAccname;
     },
     profileName() {
-      if (!this.currentUser) return null
-      return this.users[this.currentUser].profileName
+      if (!this.currentUser) return null;
+      return this.users[this.currentUser].profileName;
     },
     loginAge() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      return (Date.now() - hiveUser.timestamp) / 1000
+      if (!this.currentUser) return null;
+      const hiveUser = this.users[this.currentUser];
+      return (Date.now() - hiveUser.timestamp) / 1000;
     },
     loginHASExpire() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      if (!hiveUser.expire) return null
-      return (hiveUser.expire - Date.now()) / 1000
+      if (!this.currentUser) return null;
+      const hiveUser = this.users[this.currentUser];
+      if (!hiveUser.expire) return null;
+      return (hiveUser.expire - Date.now()) / 1000;
     },
     authKey() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      if (!hiveUser.authKey) return null
-      return hiveUser.authKey
+      if (!this.currentUser) return null;
+      const hiveUser = this.users[this.currentUser];
+      if (!hiveUser.authKey) return null;
+      return hiveUser.authKey;
     },
     token() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      if (!hiveUser.token) return null
-      return hiveUser.token
+      if (!this.currentUser) return null;
+      const hiveUser = this.users[this.currentUser];
+      if (!hiveUser.token) return null;
+      return hiveUser.token;
     },
     apiToken() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      if (!hiveUser.apiToken) return null
-      return hiveUser.apiToken
+      if (!this.currentUser) return null;
+      const hiveUser = this.users[this.currentUser];
+      if (!hiveUser.apiToken) return null;
+      return hiveUser.apiToken;
     },
     loginType() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      return hiveUser.loginType
+      if (!this.currentUser) return null;
+      const hiveUser = this.users[this.currentUser];
+      return hiveUser.loginType;
     },
     user() {
       // Return the HiveUser object for the passed user hiveAccname
-      if (!this.currentUser) return null
-      return this.users[this.currentUser]
+      if (!this.currentUser) return null;
+      return this.users[this.currentUser];
     },
     /**
      * Returns the number of users in the store.
@@ -216,31 +215,31 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {number} The number of users.
      */
     numUsers() {
-      console.debug("numUsers", Object.keys(this.users).length)
-      return Object.keys(this.users).length
+      console.debug("numUsers", Object.keys(this.users).length);
+      return Object.keys(this.users).length;
     },
     /**
      * Determines the login method for the current user.
      * @returns {string} The login method. Possible values are "none", "has", or "keychain".
      */
     loginMethod() {
-      if (!this.currentUser) return "HiveKeychainQR"
-      const hiveUser = this.users[this.currentUser]
-      if (hiveUser.authKey) return "HAS"
-      return "HiveKeychain"
+      if (!this.currentUser) return "HiveKeychainQR";
+      const hiveUser = this.users[this.currentUser];
+      if (hiveUser.authKey) return "HAS";
+      return "HiveKeychain";
     },
     isHAS() {
-      if (!this.currentUser) return false
-      const hiveUser = this.users[this.currentUser]
-      console.debug(hiveUser)
-      if (hiveUser.authKey) return true
-      return false
+      if (!this.currentUser) return false;
+      const hiveUser = this.users[this.currentUser];
+      console.debug(hiveUser);
+      if (hiveUser.authKey) return true;
+      return false;
     },
     isKeychain() {
-      if (!this.currentUser) return false
-      const hiveUser = this.users[this.currentUser]
-      if (hiveUser.authKey) return false
-      return true
+      if (!this.currentUser) return false;
+      const hiveUser = this.users[this.currentUser];
+      if (hiveUser.authKey) return false;
+      return true;
     },
     /**
      * Represents a Hive User.
@@ -257,8 +256,8 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     getUser: (state) => {
       return (hiveAccname) => {
-        const temp = state.users[hiveAccname]
-        if (!temp) return null
+        const temp = state.users[hiveAccname];
+        if (!temp) return null;
         const hiveUser = new HiveUser(
           temp.hiveAccname,
           temp.profileName,
@@ -268,10 +267,10 @@ export const useStoreUser = defineStore("useStoreUser", {
           temp.expire,
           temp.token,
           temp.apiToken,
-          temp.loginType
-        )
-        return hiveUser
-      }
+          temp.loginType,
+        );
+        return hiveUser;
+      };
     },
     // Return true if the user is logged in via Hive Keychain
     // Returns false if the user is logged in via HAS
@@ -282,73 +281,87 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     getKeychain: (state) => {
       return (hiveAccname) => {
-        const temp = state.users[hiveAccname]
-        if (!temp) return null
-        if (temp.authKey) return false
-        return true
-      }
+        const temp = state.users[hiveAccname];
+        if (!temp) return null;
+        if (temp.authKey) return false;
+        return true;
+      };
     },
     balancesNum() {
-      if (!this.currentDetails) return null
+      if (!this.currentDetails) return null;
       return {
         hive: parseFloat(this.currentDetails.balance),
         hbd: parseFloat(this.currentDetails.hbd_balance),
-        keepSats: this.currentKeepSats?.net_sats,
-        sats: this.currentKeepSats?.net_sats,
-      }
+        keepSats:
+          this.currentKeepSats?.net_sats === 0
+            ? 0
+            : this.currentKeepSats?.net_sats,
+        sats:
+          this.currentKeepSats?.net_sats === 0
+            ? 0
+            : this.currentKeepSats?.net_sats,
+      };
     },
     balancesDisplay() {
-      if (!this.currentDetails) return null
+      if (!this.currentDetails) return null;
+      // Ensure net_sats is never -0
+      const netSats =
+        this.currentKeepSats?.net_sats === 0
+          ? 0
+          : this.currentKeepSats?.net_sats;
       return {
         hive: tidyNumber(parseFloat(this.currentDetails.balance), 3),
         hbd: tidyNumber(parseFloat(this.currentDetails.hbd_balance), 3),
-        keepSats: tidyNumber(this.currentKeepSats?.net_sats, 0),
-        sats: tidyNumber(this.currentKeepSats?.net_sats, 0),
-      }
+        keepSats: tidyNumber(netSats, 0),
+        sats: tidyNumber(netSats, 0),
+      };
     },
     hiveBalance() {
-      if (!this.currentDetails) return "💰💰💰"
-      const balNum = parseFloat(this.currentDetails.balance).toFixed(3)
-      return tidyNumber(balNum)
+      if (!this.currentDetails) return "💰💰💰";
+      const balNum = parseFloat(this.currentDetails.balance).toFixed(3);
+      return tidyNumber(balNum);
     },
     hiveBalanceLocal() {
-      if (!this.currentDetails) return "💰💰💰"
-      return this.convertToLocalCurrency(this.currentDetails.balance, "hive")
+      if (!this.currentDetails) return "💰💰💰";
+      return this.convertToLocalCurrency(this.currentDetails.balance, "hive");
     },
     savingsHiveBalance() {
-      if (!this.currentDetails) return "💰💰💰"
-      const balNum = parseFloat(this.currentDetails.savings_balance).toFixed(3)
-      return tidyNumber(balNum)
+      if (!this.currentDetails) return "💰💰💰";
+      const balNum = parseFloat(this.currentDetails.savings_balance).toFixed(3);
+      return tidyNumber(balNum);
     },
     savingsHiveBalanceLocal() {
-      if (!this.currentDetails) return "💰💰💰"
+      if (!this.currentDetails) return "💰💰💰";
       return this.convertToLocalCurrency(
         this.currentDetails.savings_balance,
-        "hive"
-      )
+        "hive",
+      );
     },
     hbdBalance() {
-      if (!this.currentDetails) return "💰💰💰"
-      const balNum = parseFloat(this.currentDetails.hbd_balance).toFixed(3)
-      return tidyNumber(balNum)
+      if (!this.currentDetails) return "💰💰💰";
+      const balNum = parseFloat(this.currentDetails.hbd_balance).toFixed(3);
+      return tidyNumber(balNum);
     },
     hbdBalanceLocal() {
-      if (!this.currentDetails) return "💰💰💰"
-      return this.convertToLocalCurrency(this.currentDetails.hbd_balance, "hbd")
+      if (!this.currentDetails) return "💰💰💰";
+      return this.convertToLocalCurrency(
+        this.currentDetails.hbd_balance,
+        "hbd",
+      );
     },
     savingsHbdBalance() {
-      if (!this.currentDetails) return "💰💰💰"
+      if (!this.currentDetails) return "💰💰💰";
       const balNum = parseFloat(
-        this.currentDetails.savings_hbd_balance
-      ).toFixed(3)
-      return tidyNumber(balNum)
+        this.currentDetails.savings_hbd_balance,
+      ).toFixed(3);
+      return tidyNumber(balNum);
     },
     savingsHbdBalanceLocal() {
-      if (!this.currentDetails) return "💰💰💰"
+      if (!this.currentDetails) return "💰💰💰";
       return this.convertToLocalCurrency(
         this.currentDetails.savings_hbd_balance,
-        "hbd"
-      )
+        "hbd",
+      );
     },
     /**
      * Calculates the sum of Hive and HBD balances converted into sats.
@@ -361,19 +374,19 @@ export const useStoreUser = defineStore("useStoreUser", {
         !storeAPIStatus.HBDSatsNumber ||
         !storeAPIStatus.hiveHBDNumber
       ) {
-        return "💰💰💰"
+        return "💰💰💰";
       }
-      const hiveBalance = parseFloat(this.currentDetails.balance)
-      const hbdBalance = parseFloat(this.currentDetails.hbd_balance)
+      const hiveBalance = parseFloat(this.currentDetails.balance);
+      const hbdBalance = parseFloat(this.currentDetails.hbd_balance);
       if (isNaN(hiveBalance) || isNaN(hbdBalance)) {
-        return "Invalid balance"
+        return "Invalid balance";
       }
-      const hiveTotal = hiveBalance + hbdBalance / storeAPIStatus.hiveHBDNumber
+      const hiveTotal = hiveBalance + hbdBalance / storeAPIStatus.hiveHBDNumber;
 
       const satsTotal = Math.round(
-        hiveTotal * storeAPIStatus.hiveSatsNumber
-      ).toLocaleString()
-      return satsTotal
+        hiveTotal * storeAPIStatus.hiveSatsNumber,
+      ).toLocaleString();
+      return satsTotal;
     },
     /**
      * Checks if the current bitcoin balance is greater than 1000000 net sats.
@@ -381,12 +394,12 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     bitcoinDisplay() {
       if (this.currentKeepSats === null) {
-        return false
+        return false;
       }
       if (this.currentKeepSats?.net_sats > 1000000) {
-        return true
+        return true;
       }
-      return false
+      return false;
     },
     /**
      * Calculates and returns the keepSats balance.
@@ -397,20 +410,28 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     keepSatsBalance() {
       if (this.currentKeepSats === null) {
-        console.debug("Need to reauthenticate to get keepSatsBalance")
-        console.debug("check if logged in with HAS or Keychain")
-        return "💰💰💰"
+        console.debug("Need to reauthenticate to get keepSatsBalance");
+        console.debug("check if logged in with HAS or Keychain");
+        return "💰💰💰";
       }
 
       if (this.currentKeepSats?.net_sats > 1000000) {
-        const netBitcoin = this.currentKeepSats?.net_sats / 100000000
-        return tidyNumber(netBitcoin, 3)
+        const netBitcoin = this.currentKeepSats?.net_sats / 100000000;
+        return tidyNumber(netBitcoin, 3);
       }
-      return tidyNumber(this.currentKeepSats?.net_sats, 0)
+      // Ensure net_sats is never -0
+      const netSats =
+        this.currentKeepSats?.net_sats === 0
+          ? 0
+          : this.currentKeepSats?.net_sats;
+      return tidyNumber(netSats, 0);
     },
     keepSatsBalanceLocal() {
-      if (!this.currentKeepSats) return "💰💰💰"
-      return this.convertToLocalCurrency(this.currentKeepSats.net_sats, "sats")
+      if (!this.currentKeepSats) return "💰💰💰";
+      // Ensure net_sats is never -0
+      const netSats =
+        this.currentKeepSats.net_sats === 0 ? 0 : this.currentKeepSats.net_sats;
+      return this.convertToLocalCurrency(netSats, "sats");
     },
     /**
      * Retrieves the balance of keepSats and returns it as a formatted number or string.
@@ -420,59 +441,67 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     keepSatsBalanceNumDisplay() {
       if (this.currentKeepSats === null) {
-        console.debug("Need to reauthenticate to get keepSatsBalance")
-        console.debug("check if logged in with HAS or Keychain")
-        return "💰💰💰"
+        console.debug("Need to reauthenticate to get keepSatsBalance");
+        console.debug("check if logged in with HAS or Keychain");
+        return "💰💰💰";
       }
       if (this.currentKeepSats?.net_sats > 1000000) {
-        return this.currentKeepSats?.net_sats / 100000000
+        return this.currentKeepSats?.net_sats / 100000000;
       }
-      return this.currentKeepSats?.net_sats
+      // Ensure net_sats is never -0
+      return this.currentKeepSats?.net_sats === 0
+        ? 0
+        : this.currentKeepSats?.net_sats;
     },
     keepSatsBalanceNum() {
       if (this.currentKeepSats === null) {
-        console.debug("Need to reauthenticate to get keepSatsBalance")
-        console.debug("check if logged in with HAS or Keychain")
-        return 0
+        console.debug("Need to reauthenticate to get keepSatsBalance");
+        console.debug("check if logged in with HAS or Keychain");
+        return 0;
       }
-      return this.currentKeepSats?.net_sats
+      // Ensure net_sats is never -0
+      return this.currentKeepSats?.net_sats === 0
+        ? 0
+        : this.currentKeepSats?.net_sats;
     },
     savingsSatsBalance() {
-      if (this.satsBalance === "💰💰💰") return "💰💰💰"
-      const savingsHiveBalance = parseFloat(this.currentDetails.savings_balance)
+      if (this.satsBalance === "💰💰💰") return "💰💰💰";
+      const savingsHiveBalance = parseFloat(
+        this.currentDetails.savings_balance,
+      );
       const savingsHbdBalance = parseFloat(
-        this.currentDetails.savings_hbd_balance
-      )
+        this.currentDetails.savings_hbd_balance,
+      );
       if (isNaN(savingsHiveBalance) || isNaN(savingsHbdBalance)) {
-        return "Invalid balance"
+        return "Invalid balance";
       }
       const savingsHiveTotal =
-        savingsHiveBalance + savingsHbdBalance / storeAPIStatus.hiveHBDNumber
+        savingsHiveBalance + savingsHbdBalance / storeAPIStatus.hiveHBDNumber;
       const savingsSatsTotal = Math.round(
-        savingsHiveTotal * storeAPIStatus.hiveSatsNumber
-      ).toLocaleString()
-      return savingsSatsTotal
+        savingsHiveTotal * storeAPIStatus.hiveSatsNumber,
+      ).toLocaleString();
+      return savingsSatsTotal;
     },
     totalSatsBalance() {
-      if (this.satsBalance === "💰💰💰") return "💰💰💰"
-      if (this.savingsSatsBalance === "💰💰💰") return this.satsBalance
+      if (this.satsBalance === "💰💰💰") return "💰💰💰";
+      if (this.savingsSatsBalance === "💰💰💰") return this.satsBalance;
       const totalSatsBalance = (
         parseInt(this.satsBalance.replace(/,/g, ""), 10) +
         parseInt(this.savingsSatsBalance.replace(/,/g, ""), 10)
-      ).toLocaleString()
-      return totalSatsBalance
+      ).toLocaleString();
+      return totalSatsBalance;
     },
   },
   actions: {
     initialize() {
       // called once from the HiveLogin component. If we change any settings in the store,
       // we can update them here.
-      console.log("Store initialized")
+      console.log("Store initialized");
       // Iterate over users and set loginType to "hive" if not set change in v 1.19.0 and later
       for (const userId in this.users) {
-        const user = this.users[userId]
+        const user = this.users[userId];
         if (!user.loginType) {
-          user.loginType = "hive"
+          user.loginType = "hive";
         }
       }
     },
@@ -481,24 +510,24 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @param {boolean} useCache - Indicates whether to use cached data or not. Default is true.
      */
     async update(useCache = true) {
-      this.apiTokenSet()
-      this.expireCheck()
-      console.log("storeUser.js: update called for", this.currentUser)
-      const details = await useHiveDetails(this.currentUser)
-      console.log("storeUser.js: useHiveDetails returned", details)
+      this.apiTokenSet();
+      this.expireCheck();
+      console.log("storeUser.js: update called for", this.currentUser);
+      const details = await useHiveDetails(this.currentUser);
+      console.log("storeUser.js: useHiveDetails returned", details);
       if (!details) {
         console.error(
-          "storeUser.js: useHiveDetails returned null or undefined!"
-        )
+          "storeUser.js: useHiveDetails returned null or undefined!",
+        );
       } else if (!details.balance) {
         console.error(
           "storeUser.js: details object missing 'balance' property!",
-          details
-        )
+          details,
+        );
       }
-      this.currentDetails = details
-      await this.updateSatsBalance(useCache)
-      this.currentProfile = details?.profile
+      this.currentDetails = details;
+      await this.updateSatsBalance(useCache);
+      this.currentProfile = details?.profile;
     },
     /**
      * Updates the sats balance for the current user.
@@ -508,32 +537,43 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     async updateSatsBalance(useCache = true) {
       if (this.currentUser && this.apiToken) {
-        const currentSatsBalance = this.currentKeepSats?.net_sats
+        const currentSatsBalance = this.currentKeepSats?.net_sats;
         try {
-          this.dataLoading = true
-          let answer = null
+          this.dataLoading = true;
+          let answer = null;
           try {
-            answer = await useKeepSats(useCache, false)
+            answer = await useKeepSats(useCache, false);
             if (answer?.detail === "Could not validate credentials") {
-              console.log("Need to log out")
-              this.logout()
-              return false
+              console.log("Need to log out");
+              this.logout();
+              return false;
             }
           } catch (err) {
-            console.error(err)
+            console.error(err);
           }
-          this.currentKeepSats = answer
-          this.dataLoading = false
-          console.debug("currentKeepSats", this.currentKeepSats)
+          this.currentKeepSats = answer;
+          // Ensure net_sats is never -0
+          if (this.currentKeepSats && this.currentKeepSats.net_sats === 0) {
+            this.currentKeepSats.net_sats = 0;
+          }
+          this.dataLoading = false;
+          console.debug("currentKeepSats", this.currentKeepSats);
           if (this.currentKeepSats) {
-            if (currentSatsBalance !== this.currentKeepSats.net_sats) {
-              return true
+            // Ensure net_sats is never -0 for comparison
+            const normalizedCurrent =
+              currentSatsBalance === 0 ? 0 : currentSatsBalance;
+            const normalizedNew =
+              this.currentKeepSats.net_sats === 0
+                ? 0
+                : this.currentKeepSats.net_sats;
+            if (normalizedCurrent !== normalizedNew) {
+              return true;
             }
           }
-          return false
+          return false;
         } catch (err) {
-          console.error(err)
-          return null
+          console.error(err);
+          return null;
         }
       }
     },
@@ -554,16 +594,16 @@ export const useStoreUser = defineStore("useStoreUser", {
       expire = null,
       token = null,
       apiToken = null,
-      loginType = "hive"
+      loginType = "hive",
     ) {
       try {
-        console.log("login", hiveAccname, keySelected)
-        this.dataLoading = true
-        const hiveDetails = await useHiveDetails(hiveAccname)
-        this.dataLoading = false
-        let newUser
+        console.log("login", hiveAccname, keySelected);
+        this.dataLoading = true;
+        const hiveDetails = await useHiveDetails(hiveAccname);
+        this.dataLoading = false;
+        let newUser;
         if (hiveDetails) {
-          const profileName = hiveDetails?.profile?.name || hiveAccname
+          const profileName = hiveDetails?.profile?.name || hiveAccname;
           newUser = new HiveUser(
             hiveAccname,
             profileName,
@@ -573,11 +613,11 @@ export const useStoreUser = defineStore("useStoreUser", {
             expire,
             token,
             apiToken,
-            loginType
-          )
+            loginType,
+          );
         } else {
-          console.log("EVM login no Hive details")
-          const profileName = useShortEVMAddress(hiveAccname)
+          console.log("EVM login no Hive details");
+          const profileName = useShortEVMAddress(hiveAccname);
           newUser = new HiveUser(
             hiveAccname,
             profileName,
@@ -587,23 +627,22 @@ export const useStoreUser = defineStore("useStoreUser", {
             expire,
             token,
             apiToken,
-            loginType
-          )
+            loginType,
+          );
         }
         if (apiToken) {
-          apiLogin.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${apiToken}`
+          apiLogin.defaults.headers.common["Authorization"] =
+            `Bearer ${apiToken}`;
         }
-        this.users[hiveAccname] = newUser
-        this.currentUser = hiveAccname
+        this.users[hiveAccname] = newUser;
+        this.currentUser = hiveAccname;
         if (hiveDetails) {
-          this.currentDetails = hiveDetails
-          this.currentProfile = hiveDetails.profile
+          this.currentDetails = hiveDetails;
+          this.currentProfile = hiveDetails.profile;
         }
-        this.update()
+        this.update();
       } catch (err) {
-        console.error(err)
+        console.error(err);
       }
     },
     /**
@@ -612,16 +651,21 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     switchUser(hiveAccname) {
       try {
-        console.debug("switchUser to ", hiveAccname, " from ", this.currentUser)
-        this.dataLoading = true
+        console.debug(
+          "switchUser to ",
+          hiveAccname,
+          " from ",
+          this.currentUser,
+        );
+        this.dataLoading = true;
         if (hiveAccname in this.users) {
-          this.currentUser = hiveAccname
-          this.apiTokenSet(hiveAccname)
-          this.expireCheck()
-          this.update()
+          this.currentUser = hiveAccname;
+          this.apiTokenSet(hiveAccname);
+          this.expireCheck();
+          this.update();
         }
       } catch (err) {
-        console.debug(err)
+        console.debug(err);
       }
     },
     /**
@@ -630,21 +674,20 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
      */
     apiTokenSet(hiveAccname = this.currentUser) {
-      console.debug("Setting API Token for", hiveAccname)
+      console.debug("Setting API Token for", hiveAccname);
       if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
-        apiLogin.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${this.users[hiveAccname].apiToken}`
+        apiLogin.defaults.headers.common["Authorization"] =
+          `Bearer ${this.users[hiveAccname].apiToken}`;
         // need to test if the API token is working
-        return true
+        return true;
       }
-      return false
+      return false;
     },
     expireCheck() {
       // loop through users and check the expire time and if they
       // have expired, log them out.
       for (const user in this.users) {
-        const t = i18n.global.t
+        const t = i18n.global.t;
         if (this.users[user].expire < Date.now()) {
           Notify.create({
             message: t("expired_login") + " - " + t("need_to_logout_login"),
@@ -658,13 +701,13 @@ export const useStoreUser = defineStore("useStoreUser", {
                 handler: () => {},
               },
             ],
-          })
-          console.debug("User expired", user)
-          delete this.logout()
+          });
+          console.debug("User expired", user);
+          delete this.logout();
         }
       }
       if (this.users.length === 0 || Object.keys(this.users).length === 0) {
-        this.logoutAll()
+        this.logoutAll();
       }
     },
     /**
@@ -674,39 +717,39 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     async logout() {
       if (this.currentUser in this.users) {
-        delete this.users[this.currentUser]
+        delete this.users[this.currentUser];
       }
-      this.currentUser = null
-      this.currentDetails = null
-      this.currentProfile = null
-      this.currentKeepSats = null
+      this.currentUser = null;
+      this.currentDetails = null;
+      this.currentProfile = null;
+      this.currentKeepSats = null;
     },
     /**
      * Logs out all users and resets the current user, details, profile, and keepSats.
      * @async
      */
     async logoutAll() {
-      this.users = {}
-      this.currentUser = null
-      this.currentDetails = null
-      this.currentProfile = null
-      this.currentKeepSats = null
+      this.users = {};
+      this.currentUser = null;
+      this.currentDetails = null;
+      this.currentProfile = null;
+      this.currentKeepSats = null;
     },
     async bech32Address(currency = "hive") {
       const getBech32 = async (currency) => {
-        const params = { currency: currency, no_image: false, json: true }
-        const url = `/lnurlp/bech32/${this.currentUser}`
+        const params = { currency: currency, no_image: false, json: true };
+        const url = `/lnurlp/bech32/${this.currentUser}`;
         try {
-          const res = await api.get(url, { params })
-          return res.data
+          const res = await api.get(url, { params });
+          return res.data;
         } catch (err) {
-          console.error(err)
-          return `${this.currentUser}@${currency}.v4v.app`
+          console.error(err);
+          return `${this.currentUser}@${currency}.v4v.app`;
         }
-      }
-      const answer = await getBech32(currency)
-      if (answer) return answer
-      return null
+      };
+      const answer = await getBech32(currency);
+      if (answer) return answer;
+      return null;
     },
     /**
      * Converts the given amount from the specified currency to the storeUser's local currency.
@@ -723,13 +766,13 @@ export const useStoreUser = defineStore("useStoreUser", {
        * If the localRates structure does not have the storeUser's local currency,
        * it adds the currency with the fixed rate from the storeUser.
        */
-      if (!this.localCurrency.value) return "💰💰💰"
+      if (!this.localCurrency.value) return "💰💰💰";
       function updateLocalRates() {
         // check if the localRates structure has the storeUser.localCurrency.value in it
         // this is necessary if a user has added their own currency
         try {
           if (!localRates.hive[this.localCurrency.value]) {
-            addCurrency(this.localCurrency.value, this.pos.fixedRate)
+            addCurrency(this.localCurrency.value, this.pos.fixedRate);
           }
         } catch (err) {
           // do nothing
@@ -738,33 +781,33 @@ export const useStoreUser = defineStore("useStoreUser", {
 
       function addCurrency(currencySymbol, ratePerUSD) {
         // Calculate and add the new currency value for hive and hive_dollar
-        localRates.hive[currencySymbol] = localRates.hive.usd * ratePerUSD
+        localRates.hive[currencySymbol] = localRates.hive.usd * ratePerUSD;
         localRates.hive_dollar[currencySymbol] =
-          localRates.hive_dollar.usd * ratePerUSD
+          localRates.hive_dollar.usd * ratePerUSD;
       }
-      currency = currency === "hbd" ? "hive_dollar" : currency
-      let localRates = storeCoingecko.exchangeRates
-      if (!localRates) return "💰💰💰"
-      const cacheKey = `rates-${this.localCurrency.value}`
-      const exchangeRate = storeCoingecko.ratesCache[cacheKey]
-      if (!exchangeRate) return "💰💰💰"
-      updateLocalRates()
-      let rawBalance = 0
+      currency = currency === "hbd" ? "hive_dollar" : currency;
+      let localRates = storeCoingecko.exchangeRates;
+      if (!localRates) return "💰💰💰";
+      const cacheKey = `rates-${this.localCurrency.value}`;
+      const exchangeRate = storeCoingecko.ratesCache[cacheKey];
+      if (!exchangeRate) return "💰💰💰";
+      updateLocalRates();
+      let rawBalance = 0;
       if (currency === "sats") {
-        const usdBalance = amount / exchangeRate.usd.btc / 100000000
-        rawBalance = usdBalance * exchangeRate.usd[this.localCurrency.value]
+        const usdBalance = amount / exchangeRate.usd.btc / 100000000;
+        rawBalance = usdBalance * exchangeRate.usd[this.localCurrency.value];
       } else {
-        if (!exchangeRate[currency][this.localCurrency.value]) return "💰💰💰"
+        if (!exchangeRate[currency][this.localCurrency.value]) return "💰💰💰";
         rawBalance =
-          parseFloat(amount) * exchangeRate[currency][this.localCurrency.value]
+          parseFloat(amount) * exchangeRate[currency][this.localCurrency.value];
       }
-      let adjustRate = 1
+      let adjustRate = 1;
       if (this.pos.fixedRate) {
         adjustRate =
           this.pos.fixedRate /
-          exchangeRate.hive_dollar[this.localCurrency.value]
+          exchangeRate.hive_dollar[this.localCurrency.value];
       }
-      return tidyNumber(rawBalance / adjustRate)
+      return tidyNumber(rawBalance / adjustRate);
     },
   },
   persist: {
@@ -776,4 +819,4 @@ export const useStoreUser = defineStore("useStoreUser", {
       },
     ],
   },
-})
+});

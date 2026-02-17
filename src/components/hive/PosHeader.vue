@@ -14,26 +14,26 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue"
-import { useStoreUser } from "src/stores/storeUser"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import { onMounted } from "vue"
-import { useHiveProfile } from "src/use/useHive"
+import { computed, ref } from "vue";
+import { useStoreUser } from "src/stores/storeUser";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
+import { onMounted } from "vue";
+import { useHiveProfile } from "src/use/useHive";
 
-const storeUser = useStoreUser()
-const hiveProfileMetadata = ref({ profile: { name: "" } })
+const storeUser = useStoreUser();
+const hiveProfileMetadata = ref({ profile: { name: "" } });
 
 const displayName = computed(() => {
   return hiveProfileMetadata.value?.profile?.name
     ? hiveProfileMetadata.value.profile.name
-    : storeUser.pos.hiveAccTo.value
-})
+    : storeUser.pos.hiveAccTo.value;
+});
 
 onMounted(async () => {
-  hiveProfileMetadata.value.profile.name = storeUser.pos.hiveAccTo.value
-  const hiveProfile = await useHiveProfile(storeUser.pos.hiveAccTo.value)
-  hiveProfileMetadata.value = hiveProfile?.metadata
-})
+  hiveProfileMetadata.value.profile.name = storeUser.pos.hiveAccTo.value;
+  const hiveProfile = await useHiveProfile(storeUser.pos.hiveAccTo.value);
+  hiveProfileMetadata.value = hiveProfile?.metadata;
+});
 </script>
 
 <style lang="scss" scoped></style>

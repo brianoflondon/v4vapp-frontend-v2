@@ -1,0 +1,542 @@
+<template>
+  <!-- Refresh button and days select  -->
+  <div class="row wrap justify-center">
+    <div class="col-auto">
+      <div class="refresh-days-button-select row justify-evenly q-py-sm">
+        <div class="refresh-button q-px-sm">
+          <q-btn
+            label="Refresh"
+            :loading="storeUser.dataLoading"
+            rounded
+            @click="fetchData(dataDays)"
+          ></q-btn>
+        </div>
+        <div class="days-select q-px-sm">
+          <q-select
+            v-model="dataDays"
+            :options="[
+              { label: '3 days', value: 3 },
+              { label: '7 days', value: 7 },
+              { label: '30 days', value: 30 },
+              { label: '90 days', value: 90 },
+              { label: '365 days', value: 365 },
+            ]"
+            label="Days"
+            dense
+            @update:model-value="fetchData($event)"
+          ></q-select>
+        </div>
+      </div>
+
+      <!--End  Refresh button and days select  -->
+      <div class="transaction-data-tables row">
+        <!-- Hive to Sats Table -->
+        <div class="hivetosats-table q-pa-sm">
+          Hive -> Sats
+          <q-table
+            class="hive-sats-table"
+            dense
+            :rows="data"
+            row-key="trx_id"
+            :columns="columns"
+            :visible-columns="[
+              'net_hive',
+              'sats',
+              'timestamp',
+              'link',
+              'reason',
+            ]"
+          >
+            <template v-slot:body-cell-timestamp="props">
+              <q-td :props="props">
+                {{ formatPrettyDate(props.row.timestamp) }}
+              </q-td>
+            </template>
+            <template v-slot:body-cell-net_hive="props">
+              <q-td :props="props" class="text-right">
+                <strong
+                  v-if="
+                    Math.abs(props.row.net_hive) >
+                    Math.abs(props.row.sats / 100000)
+                  "
+                >
+                  {{ tidyNumber(props.row.net_hive, 3) }}
+                </strong>
+                <span v-else>
+                  {{ tidyNumber(props.row.net_hive, 3) }}
+                </span>
+              </q-td>
+            </template>
+            <template v-slot:body-cell-sats="props">
+              <q-td :props="props" class="text-right">
+                <strong
+                  v-if="
+                    Math.abs(props.row.sats) >
+                    Math.abs(props.row.net_hive * 100000)
+                  "
+                >
+                  {{ tidyNumber(props.row.sats, 0) }}
+                </strong>
+                <span v-else>
+                  {{ tidyNumber(props.row.sats, 0) }}
+                </span>
+              </q-td>
+            </template>
+            <template v-slot:body-cell-link="props">
+              <q-td :props="props">
+                <a
+                  :href="useGenerateTxUrl(props.row.trx_id)"
+                  target="_blank"
+                  class="custom-link"
+                >
+                  <q-btn
+                    size="xs"
+                    color="accent"
+                    flat
+                    dense
+                    icon="fa-brands fa-hive"
+                    name="open_in_new"
+                  />
+                </a>
+              </q-td>
+            </template>
+            <template v-slot:bottom-row v-if="data?.length > 0">
+              <q-tr class="text-bold">
+                <q-td colspan="2" class="text-left">Total</q-td>
+                <q-td class="text-right">
+                  <strong
+                    v-if="
+                      Math.abs(totals.totalHive) >
+                      Math.abs(totals.totalSats / 100000)
+                    "
+                  >
+                    {{ tidyNumber(totals.totalHive, 3) }}
+                  </strong>
+                  <span v-else>
+                    {{ tidyNumber(totals.totalHive, 3) }}
+                  </span>
+                </q-td>
+                <q-td class="text-right">
+                  <strong
+                    v-if="
+                      Math.abs(totals.totalSats) >
+                      Math.abs(totals.totalHive * 100000)
+                    "
+                  >
+                    {{ tidyNumber(totals.totalSats, 0) }}
+                  </strong>
+                  <span v-else>
+                    {{ tidyNumber(totals.totalSats, 0) }}
+                  </span>
+                </q-td>
+                <q-td colspan="1"></q-td>
+              </q-tr>
+            </template>
+          </q-table>
+        </div>
+        <!-- End Hive to Sats Table -->
+      </div>
+    </div>
+    <div class="col-auto">
+      <!-- Keep Sats Table -->
+      <div class="keepsats-table-outer q-pa-sm"></div>
+      <div class="category-reasons-selectors flex">
+        <div class="category-select q-px-sm col-grow">
+          <q-select
+            v-model="keepSatsDataCategoryFilter"
+            @update:model-value="updateKeepSatsDataFiltered"
+            :options="keepSatsDataCategories"
+            label="Category"
+            dense
+          ></q-select>
+        </div>
+        <div class="reasons-select q-px-sm col-grow">
+          <q-select
+            v-model="keepSatsDataReasonFilter"
+            @update:model-value="updateKeepSatsDataFiltered"
+            :options="keepSatsDataReasons"
+            label="Reason"
+            dense
+          ></q-select>
+        </div>
+      </div>
+      <div class="keepsats-table" v-if="keepSatsDataFiltered">
+        KeepSats
+        <q-table
+          dense
+          :rows="keepSatsDataFiltered"
+          :columns="keepSatsColumns"
+          v-model:expanded="rowsExpanded"
+          row-key="group_id"
+          :visible-columns="['timestamp', 'sats', 'hive', 'reason', 'expand']"
+        >
+          <!-- Expansion icon header of the table -->
+          <template v-slot:header-cell-expand="props">
+            <q-th :props="props" style="text-align: right">
+              <q-btn
+                round
+                flat
+                dense
+                :icon="
+                  rowsExpanded.length === 0 ? 'expand_more' : 'expand_less'
+                "
+                @click="expandAll"
+              ></q-btn>
+            </q-th>
+          </template>
+          <!-- End Expansion icon header of the table -->
+
+          <template #body="props">
+            <q-tr :props="props">
+              <q-td :props="props" style="text-align: left" key="timestamp">
+                {{ formatPrettyDate(props.row.timestamp) }}
+              </q-td>
+              <q-td :props="props" style="text-align: left" key="reason">
+                {{ useShortEVMAddress(props.row.reason_str) }}
+              </q-td>
+              <q-td :props="props" style="text-align: right" key="hive">
+                <strong
+                  v-if="
+                    Math.abs(props.row.hive) >
+                    Math.abs(props.row.msats / 100000)
+                  "
+                >
+                  {{ tidyNumber(props.row.hive, 3) }}
+                </strong>
+                <span v-else>
+                  {{ tidyNumber(props.row.hive, 3) }}
+                </span>
+              </q-td>
+              <q-td :props="props" style="text-align: right" key="sats">
+                <strong
+                  v-if="
+                    Math.abs(props.row.msats / 1000) >
+                    Math.abs(props.row.hive * 100000)
+                  "
+                >
+                  {{ tidyNumber(props.row.msats / 1000, 0) }}
+                </strong>
+                <span v-else>
+                  {{ tidyNumber(props.row.msats / 1000, 0) }}
+                </span>
+              </q-td>
+              <q-td :props="props" key="expand" style="text-align: right">
+                <q-btn
+                  round
+                  size="sm"
+                  flat
+                  dense
+                  :icon="props.expand ? 'expand_less' : 'expand_more'"
+                  @click="props.expand = !props.expand"
+                ></q-btn>
+              </q-td>
+            </q-tr>
+            <!-- Expansion Item -->
+            <q-tr v-if="props.expand">
+              <q-td :colspan="5">
+                <KeepSatsDetail :tableData="props.row.details" />
+              </q-td>
+            </q-tr>
+            <!-- End Expansion Item -->
+          </template>
+
+          <!-- Show total for this age range at the bottom -->
+          <template v-slot:bottom-row v-if="keepSatsDataFiltered?.length > 0">
+            <q-tr class="text-bold">
+              <q-td class="text-left" colspan="2">Total</q-td>
+              <q-td class="text-right">
+                <strong
+                  v-if="
+                    Math.abs(keepHiveTotal) > Math.abs(keepSatsTotal / 100000)
+                  "
+                >
+                  {{ tidyNumber(keepHiveTotal, 3) }}
+                </strong>
+                <span v-else>
+                  {{ tidyNumber(keepHiveTotal, 3) }}
+                </span>
+              </q-td>
+              <q-td class="text-right">
+                <strong
+                  v-if="
+                    Math.abs(keepSatsTotal) > Math.abs(keepHiveTotal * 100000)
+                  "
+                >
+                  {{ tidyNumber(keepSatsTotal, 0) }}
+                </strong>
+                <span v-else>
+                  {{ tidyNumber(keepSatsTotal, 0) }}
+                </span>
+              </q-td>
+              <q-td colspan="1"></q-td>
+            </q-tr>
+          </template>
+          <!-- End Show total for this age range at the bottom -->
+        </q-table>
+      </div>
+      <!-- End Keep Sats Table -->
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useStoreUser } from "src/stores/storeUser";
+import { useFetchSatsHistory, useKeepSats } from "src/use/useV4vapp";
+import { useGenerateTxUrl } from "src/use/useHive";
+import KeepSatsDetail from "src/components/v4vapp/KeepSatsDetail.vue";
+import { formatPrettyDate, tidyNumber } from "src/use/useUtils";
+import { useShortEVMAddress } from "src/use/useEVM";
+const storeUser = useStoreUser();
+const data = ref([]);
+const dataDays = ref({ label: "7 days", value: 7 });
+const totals = ref({ totalHive: 0, totalSats: 0 });
+
+const keepSatsDataReasonFilter = ref("All");
+const keepSatsDataReasons = ref([]);
+const keepSatsDataCategoryFilter = ref("All");
+const keepSatsDataCategories = ref(["All"]);
+const keepSatsDataFiltered = ref([]);
+
+const t = useI18n().t;
+
+const rowsExpanded = ref([]);
+
+const props = defineProps({
+  adminOverride: Boolean,
+});
+
+const columns = computed(() => {
+  return [
+    {
+      name: "timestamp",
+      required: true,
+      sortable: true,
+      label: t("date"),
+      align: "left",
+      field: "timestamp",
+      format: (val) => formatPrettyDate(val),
+    },
+    {
+      name: "reason",
+      required: true,
+      label: t("reason"),
+      align: "left",
+      field: "reason",
+      format: (val) => val,
+    },
+    {
+      name: "net_hive",
+      required: true,
+      sortable: true,
+      label: t("hive"),
+      align: "right",
+      field: "net_hive",
+      format: (val) => tidyNumber(val, 3),
+    },
+    {
+      name: "sats",
+      required: true,
+      sortable: true,
+      label: "Sats シ",
+      align: "right",
+      field: "sats",
+      format: (val) => tidyNumber(val, 0),
+    },
+    {
+      name: "link",
+      required: true,
+      align: "center",
+      field: "trx_id",
+      format: (val) => val,
+    },
+  ];
+});
+
+const keepSatsData = ref([]);
+const keepSatsTotal = ref(0);
+const keepHiveTotal = ref(0);
+const keepSatsColumns = computed(() => {
+  return [
+    {
+      name: "timestamp",
+      required: true,
+      sortable: true,
+      label: t("date"),
+      align: "left",
+      field: "timestamp",
+      format: (val) => formatPrettyDate(val),
+    },
+    {
+      name: "reason",
+      required: true,
+      label: t("reason"),
+      align: "left",
+      field: "reason",
+      format: (val) => val,
+    },
+    {
+      name: "hive",
+      required: true,
+      sortable: true,
+      label: "Hive",
+      align: "right",
+      field: "hive",
+      format: (val) => tidyNumber(val, 3),
+    },
+    {
+      name: "sats",
+      required: true,
+      sortable: true,
+      label: "Sats シ",
+      align: "right",
+      field: "sats",
+      format: (val) => tidyNumber(val, 0),
+    },
+    {
+      name: "expand",
+      field: "expand",
+    },
+  ];
+});
+
+watch(
+  () => storeUser.currentUser,
+  async (newVal) => {
+    if (newVal) {
+      await fetchData();
+    }
+    if (newVal === null || newVal === undefined) {
+      data.value = [];
+      keepSatsData.value = [];
+    }
+    return;
+  },
+);
+
+/**
+ * Fetches data from the server.
+ *
+ * @param {number} [newValue=dataDays.value] - The value to use for fetching data. Defaults to the value of `dataDays.value`.
+ * @returns {Promise} - A promise that resolves with the fetched data.
+ */
+async function fetchData(newValue = dataDays.value) {
+  storeUser.dataLoading = true;
+  if (!storeUser.hiveAccname) {
+    data.value = [];
+    keepSatsData.value = [];
+    return;
+  }
+  const [satsHistory, keepSats] = await Promise.all([
+    useFetchSatsHistory(storeUser.hiveAccname, newValue.value),
+    useKeepSats(false, true, props.adminOverride),
+  ]);
+
+  // Process the KeepSats transactions
+  if (keepSats.summary_transactions) {
+    const oldTimestamp =
+      new Date() - 1000 * 60 * 60 * 24 * dataDays.value.value;
+    keepSatsData.value = keepSats.summary_transactions.filter(
+      (trx) => trx.reason !== "Fees" && trx.timestamp > oldTimestamp,
+    );
+  }
+  data.value = satsHistory;
+
+  // Process the Hive sats transactions
+  // calculate totals for hive and sats
+  if (data.value) {
+    totals.value.totalHive = 0;
+    totals.value.totalSats = 0;
+    for (let i = 0; i < data.value.length; i++) {
+      totals.value.totalHive += data.value[i].net_hive;
+      totals.value.totalSats += data.value[i].sats;
+    }
+  }
+  await getKeepSatsReasons();
+  await getKeepSatsCategories();
+  await updateKeepSatsDataFiltered();
+  await updateKeepSatsTotals();
+  storeUser.dataLoading = false;
+}
+
+async function updateKeepSatsDataFiltered() {
+  // filter categories first
+  if (keepSatsDataCategoryFilter.value !== "All") {
+    keepSatsDataFiltered.value = keepSatsData.value.filter(
+      (trx) => trx.category === keepSatsDataCategoryFilter.value,
+    );
+  } else {
+    keepSatsDataFiltered.value = keepSatsData.value;
+  }
+  await getKeepSatsReasons();
+  if (keepSatsDataReasonFilter.value !== "All") {
+    keepSatsDataFiltered.value = keepSatsDataFiltered.value.filter(
+      (trx) => trx.reason === keepSatsDataReasonFilter.value,
+    );
+  }
+  await updateKeepSatsTotals();
+}
+
+async function updateKeepSatsTotals() {
+  const tempTotal = keepSatsDataFiltered.value;
+  console.log("number of entries", tempTotal.length);
+  keepSatsTotal.value = 0;
+  keepHiveTotal.value = 0;
+  for (let i = 0; i < tempTotal.length; i++) {
+    keepSatsTotal.value += tempTotal[i].msats;
+    keepHiveTotal.value += tempTotal[i].hive;
+  }
+  keepSatsTotal.value = keepSatsTotal.value / 1000;
+}
+
+async function getKeepSatsReasons() {
+  // extract a list of reasons from the keepsats data
+  keepSatsDataReasons.value = ["All"];
+  keepSatsDataReasons.value = keepSatsDataReasons.value.concat(
+    keepSatsDataFiltered.value.map((trx) => trx.reason),
+  );
+  // remove duplicates from list
+  keepSatsDataReasons.value = Array.from(new Set(keepSatsDataReasons.value));
+}
+
+async function getKeepSatsCategories() {
+  // extract a list of categories from the keepsats data
+  keepSatsDataCategories.value = ["All"];
+  keepSatsDataCategories.value = keepSatsDataCategories.value.concat(
+    keepSatsData.value.map((trx) => trx.category),
+  );
+  // remove duplicates from list
+  keepSatsDataCategories.value = Array.from(
+    new Set(keepSatsDataCategories.value),
+  );
+}
+
+onMounted(() => {
+  fetchData();
+});
+
+/**
+ * Toggles the expansion of all rows in the table.
+ *
+ * If no rows are currently expanded, it expands all rows by setting `rowsExpanded.value` to an array of all checkCodes.
+ * If there are any expanded rows, it collapses all rows by setting `rowsExpanded.value` to an empty array.
+ */
+function expandAll() {
+  if (rowsExpanded.value.length === 0) {
+    rowsExpanded.value = keepSatsData.value.map((row) => row.group_id);
+  } else {
+    rowsExpanded.value = [];
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.bordered-div {
+  border: 1px solid #e0e0e0;
+}
+
+.keepsats-table .q-table__container .q-table tbody tr td {
+  padding: 5px;
+}
+</style>

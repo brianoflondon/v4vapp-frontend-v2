@@ -21,16 +21,15 @@
 // }
 
 .body--light {
-  .user-list-active
-  .text-caption {
-    color: $grey-7
+  .user-list-active .text-caption {
+    color: $grey-7;
   }
 }
 
 .body--light {
   .top-bar,
   .price-bar,
-  .user-list-active, {
+  .user-list-active {
     background-color: $bar-bg-light;
     color: whitesmoke;
   }

@@ -14,7 +14,11 @@ const myNodePubKey =
 
 // const myNodePubKey = ""
 // Don't change
-let useLocal = false
+let useLocal = false;
+
+// Helper to check env vars that may be boolean or string (app-vite v2 auto-parses)
+const envIsTrue = (val) => val === true || val === "true";
+const envIsFalse = (val) => val === false || val === "false";
 
 const isLocalhost =
   window.location.href.includes("localhost") ||
@@ -22,13 +26,13 @@ const isLocalhost =
   window.location.href.includes("192.168") ||
   window.location.href.includes("10.0")
 
-if (process.env.VUE_APP_LOCAL_API === "true" || isLocalhost) {
-  useLocal = process.env.VUE_APP_LOCAL_API !== "false"
+if (envIsTrue(process.env.VUE_APP_LOCAL_API) || isLocalhost) {
+  useLocal = !envIsFalse(process.env.VUE_APP_LOCAL_API)
 }
 
 const isDev = window.location.href.includes("dev.v4v.app")
 
-const useDev = isDev || process.env.VUE_APP_DEV_API === "true"
+const useDev = isDev || envIsTrue(process.env.VUE_APP_DEV_API)
 
 const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
 const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
@@ -36,6 +40,7 @@ const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 let apiURL = rootUrl
 let apiLoginURL = rootLoginUrl
 
+console.log("useLocal:", useLocal)
 if (useLocal) {
   apiURL = "http://localhost:1818/v1"
   apiLoginURL = "http://localhost:1818/"

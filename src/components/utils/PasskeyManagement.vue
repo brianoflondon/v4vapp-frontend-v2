@@ -199,7 +199,7 @@
 </template>
 
 <script setup>
-import { watch, computed, ref, nextTick } from "vue"
+import { watch, computed, ref, nextTick } from "vue";
 import {
   useListCredentials,
   useNumCredentials,
@@ -207,68 +207,68 @@ import {
   usePasskeyRegister,
   usePasskeyDelete,
   usePasskeyUpdate,
-} from "src/use/usePasskeys"
-import { useIsEVMAddress } from "src/use/useEVM"
-import { useStoreUser } from "src/stores/storeUser"
-import { useI18n } from "vue-i18n"
-import HiveInputAcc from "components/HiveInputAcc.vue"
-import HiveAvatar from "components/utils/HiveAvatar.vue"
-import ConfettiExplosion from "vue-confetti-explosion"
-import { formatTimeAgo } from "@vueuse/core"
-import { Notify } from "quasar"
+} from "src/use/usePasskeys";
+import { useIsEVMAddress } from "src/use/useEVM";
+import { useStoreUser } from "src/stores/storeUser";
+import { useI18n } from "vue-i18n";
+import HiveInputAcc from "components/HiveInputAcc.vue";
+import HiveAvatar from "components/utils/HiveAvatar.vue";
+import ConfettiExplosion from "vue-confetti-explosion";
+import { formatTimeAgo } from "@vueuse/core";
+import { Notify } from "quasar";
 
-const storeUser = useStoreUser()
-const t = useI18n().t
+const storeUser = useStoreUser();
+const t = useI18n().t;
 
-const showDialog = ref(false)
-const confirmDelete = ref(false)
-const confirmDeleteCred = ref()
-const confirmEdit = ref(false)
-const confirmEditCred = ref()
-const hiveAccObj = ref()
+const showDialog = ref(false);
+const confirmDelete = ref(false);
+const confirmDeleteCred = ref();
+const confirmEdit = ref(false);
+const confirmEditCred = ref();
+const hiveAccObj = ref();
 
-const passkeyName = ref("")
-const showError = ref(false)
-const listCredentials = ref()
-const loadingCredentials = ref(false)
-const numCredentials = ref(0)
+const passkeyName = ref("");
+const showError = ref(false);
+const listCredentials = ref();
+const loadingCredentials = ref(false);
+const numCredentials = ref(0);
 
 /**
  * ConfettiExplosion component
  */
-const visibleConfetti = ref(false)
+const visibleConfetti = ref(false);
 async function explode() {
-  visibleConfetti.value = false
-  await nextTick()
-  visibleConfetti.value = true
+  visibleConfetti.value = false;
+  await nextTick();
+  visibleConfetti.value = true;
 }
 
 // Watch for changes in the current user
 watch(storeUser, async (newVal) => {
   if (newVal.currentUser === null) {
-    updatePasskeyList(false)
+    updatePasskeyList(false);
   }
   if (newVal.currentUser !== hiveAccObj.value?.value) {
-    listCredentials.value = []
-    numCredentials.value = 0
+    listCredentials.value = [];
+    numCredentials.value = 0;
   }
-})
+});
 
 const isValid = computed(() => {
   if (hiveAccObj.value && hiveAccObj.value.valid) {
-    return true
+    return true;
   } else {
-    return false
+    return false;
   }
-})
+});
 
 // Need to watch this computed derivative of hiveAccObj
 watch(isValid, async (newVal) => {
-  console.debug("isValid changed to:", newVal)
+  console.debug("isValid changed to:", newVal);
   if (newVal) {
-    await updatePasskeyList()
+    await updatePasskeyList();
   }
-})
+});
 
 /**
  * Updates the passkey list.
@@ -277,40 +277,40 @@ watch(isValid, async (newVal) => {
  * @returns {Promise} - A promise that resolves when the passkey list is updated.
  */
 async function updatePasskeyList(useCache = true) {
-  loadingCredentials.value = true
-  let checkHiveAcc = storeUser.currentUser
+  loadingCredentials.value = true;
+  let checkHiveAcc = storeUser.currentUser;
   if (!hiveAccObj.value) {
     if (storeUser.currentUser) {
-      checkHiveAcc = storeUser.currentUser
+      checkHiveAcc = storeUser.currentUser;
     } else {
-      checkHiveAcc = ""
+      checkHiveAcc = "";
     }
   } else {
-    checkHiveAcc = hiveAccObj.value.value
+    checkHiveAcc = hiveAccObj.value.value;
   }
-  numCredentials.value = await useNumCredentials(checkHiveAcc, useCache)
+  numCredentials.value = await useNumCredentials(checkHiveAcc, useCache);
   if (
     storeUser.currentUser === checkHiveAcc &&
     storeUser.currentUser &&
     numCredentials.value > 0
   ) {
-    listCredentials.value = await useListCredentials(useCache)
+    listCredentials.value = await useListCredentials(useCache);
   } else {
-    listCredentials.value = []
+    listCredentials.value = [];
   }
-  loadingCredentials.value = false
+  loadingCredentials.value = false;
 }
 
 async function doPasskeyLogin() {
-  console.debug("doPasskeyLogin")
+  console.debug("doPasskeyLogin");
   if (!hiveAccObj.value.value) {
-    return
+    return;
   }
-  const result = await usePasskeyLogin(hiveAccObj.value.value)
+  const result = await usePasskeyLogin(hiveAccObj.value.value);
   if (result.success) {
-    let expireDate = new Date()
-    const loginType = useIsEVMAddress(hiveAccObj.value.value) ? "evm" : "hive"
-    expireDate.setDate(expireDate.getDate() + 7)
+    let expireDate = new Date();
+    const loginType = useIsEVMAddress(hiveAccObj.value.value) ? "evm" : "hive";
+    expireDate.setDate(expireDate.getDate() + 7);
     // StoreUser.login
     await storeUser.login(
       hiveAccObj.value.value,
@@ -319,138 +319,138 @@ async function doPasskeyLogin() {
       expireDate,
       null,
       result.token,
-      loginType
-    )
+      loginType,
+    );
     Notify.create({
       message: "Logged in with passkey",
       color: "positive",
       position: "top",
-    })
-    explode()
-    await updatePasskeyList(false)
+    });
+    explode();
+    await updatePasskeyList(false);
   } else {
     Notify.create({
       message: result.message,
       color: "negative",
       position: "top",
-    })
-    console.debug("doPasskeyLogin failed")
-    console.debug("result", result.message)
+    });
+    console.debug("doPasskeyLogin failed");
+    console.debug("result", result.message);
   }
 }
 
 async function doPasskeyManage() {
-  console.debug("doPasskeyManage")
-  showDialog.value = true
+  console.debug("doPasskeyManage");
+  showDialog.value = true;
   hiveAccObj.value = {
     label: storeUser.currentUser,
     value: storeUser.currentUser,
     caption: storeUser.getUser(storeUser.currentUser).profileName,
-  }
-  await updatePasskeyList(false)
+  };
+  await updatePasskeyList(false);
 }
 
 async function doPasskeyManageClose() {
-  showDialog.value = false
-  listCredentials.value = []
-  numCredentials.value = 0
+  showDialog.value = false;
+  listCredentials.value = [];
+  numCredentials.value = 0;
 }
 
 async function doPasskeyRegister() {
-  loadingCredentials.value = true
-  console.debug("doPasskeyRegister")
+  loadingCredentials.value = true;
+  console.debug("doPasskeyRegister");
   if (!passkeyName.value) {
-    showError.value = true
-    return
+    showError.value = true;
+    return;
   }
   // strip trailing spaces from passkeyName
-  passkeyName.value = passkeyName.value.trim()
+  passkeyName.value = passkeyName.value.trim();
   const result = await usePasskeyRegister(
     storeUser.currentUser,
-    passkeyName.value
-  )
+    passkeyName.value,
+  );
   if (result.success) {
-    await updatePasskeyList()
-    passkeyName.value = ""
-    showError.value = false
+    await updatePasskeyList();
+    passkeyName.value = "";
+    showError.value = false;
     Notify.create({
       message: "Passkey registered",
       color: "positive",
       position: "top",
-    })
-    explode()
-    await updatePasskeyList(false)
+    });
+    explode();
+    await updatePasskeyList(false);
   } else {
     Notify.create({
       message: result.message,
       color: "negative",
       position: "top",
-    })
-    console.debug("doPasskeyRegister failed")
-    console.debug("result", result.message)
+    });
+    console.debug("doPasskeyRegister failed");
+    console.debug("result", result.message);
   }
-  loadingCredentials.value = false
+  loadingCredentials.value = false;
 }
 
 async function doPasskeyDeleteAsk(evt, cred) {
-  console.debug("doPasskeyDelete", cred)
-  confirmDeleteCred.value = cred
-  confirmDelete.value = true
+  console.debug("doPasskeyDelete", cred);
+  confirmDeleteCred.value = cred;
+  confirmDelete.value = true;
 }
 
 async function doPasskeyUpdateAsk(evt, cred) {
-  console.debug("do PasskeyUpdate", cred)
-  passkeyName.value = cred.device_name
-  confirmEditCred.value = cred
-  confirmEdit.value = true
+  console.debug("do PasskeyUpdate", cred);
+  passkeyName.value = cred.device_name;
+  confirmEditCred.value = cred;
+  confirmEdit.value = true;
 }
 
 async function doPasskeyDelete(evt, cred) {
-  console.debug("doPasskeyDelete", cred)
-  confirmDelete.value = false
-  await usePasskeyDelete(cred._id)
-  await updatePasskeyList(false)
+  console.debug("doPasskeyDelete", cred);
+  confirmDelete.value = false;
+  await usePasskeyDelete(cred._id);
+  await updatePasskeyList(false);
   Notify.create({
     message: "Passkey deleted",
     color: "positive",
     position: "top",
-  })
+  });
 }
 
 async function doPasskeyUpdate(evt, cred) {
-  console.debug("doPasskeyUpdate", cred)
-  confirmEdit.value = false
-  console.debug("old name", cred.device_name)
-  console.debug("new name", passkeyName.value)
-  await usePasskeyUpdate(cred._id, passkeyName.value)
-  await updatePasskeyList(false)
+  console.debug("doPasskeyUpdate", cred);
+  confirmEdit.value = false;
+  console.debug("old name", cred.device_name);
+  console.debug("new name", passkeyName.value);
+  await usePasskeyUpdate(cred._id, passkeyName.value);
+  await updatePasskeyList(false);
   Notify.create({
     message: "Passkey edited",
     color: "positive",
     position: "top",
-  })
+  });
 }
 
 async function doManageKey(cred) {
-  console.debug("doManageKey", cred)
-  console.debug("cred._id", cred._id)
-  console.debug("cred.device_name", cred.device_name)
-  console.debug("formatTimeAgo(cred.last_used)", cred.last_used)
+  console.debug("doManageKey", cred);
+  console.debug("cred._id", cred._id);
+  console.debug("cred.device_name", cred.device_name);
+  console.debug("formatTimeAgo(cred.last_used)", cred.last_used);
 }
 
 function credCountText(cred) {
   if (cred.count === 0) {
-    return t("unused")
+    return t("unused");
   }
   return `${t("used")}: ${cred.count} time${
     cred.count > 1 ? "s" : ""
-  } ${myFormatTimeAgo(cred.last_used)}`
+  } ${myFormatTimeAgo(cred.last_used)}`;
 }
 
 function myFormatTimeAgo(timeString) {
-  const date = new Date(timeString + "Z")
-  const localTimeString = date.toLocaleString()
-  return formatTimeAgo(date)
+  const date = new Date(timeString + "Z");
+  const localTimeString = date.toLocaleString();
+  return formatTimeAgo(date);
 }
 </script>
 

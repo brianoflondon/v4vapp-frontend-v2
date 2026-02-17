@@ -5,10 +5,7 @@
 </template>
 
 <script setup>
-
-import MyMap from "components/utils/MyMap.vue"
-
-
+import MyMap from "components/utils/MyMap.vue";
 </script>
 
 <style lang="sass" scoped>

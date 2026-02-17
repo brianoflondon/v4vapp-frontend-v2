@@ -1,11 +1,6 @@
 <template>
   <div v-if="dInvoice">
-    <q-dialog
-      class="q-ma-lg"
-      v-model="dInvoice.askDetails"
-      @show="showDialog"
-      @hide="hideDialog"
-    >
+    <q-dialog class="q-ma-lg" v-model="dInvoice.askDetails" @hide="hideDialog">
       <q-card
         class="q-pa-none"
         :style="{
@@ -58,7 +53,7 @@
                   @keyup.enter="createInvoice"
                   :error-message="errorMessage"
                   :error="errorState"
-                  tabindex="1"
+                  tabindex="7"
                 />
               </div>
               <!-- USD INPUT -->
@@ -73,6 +68,7 @@
                   debounce="1000"
                   :input-style="{ 'text-align': 'right' }"
                   @update:model-value="(val) => updateAmounts(val, 'hbd')"
+                  tabindex="8"
                 />
               </div>
               <!-- USD INPUT -->
@@ -87,6 +83,7 @@
                   debounce="1000"
                   :input-style="{ 'text-align': 'right' }"
                   @update:model-value="(val) => updateAmounts(val, 'hive')"
+                  tabindex="9"
                 />
               </div>
             </div>
@@ -112,6 +109,7 @@
                 label
                 switch-label-side
                 @update:model-value="(val) => updateAmounts(val, 'hbd')"
+                tabindex="10"
               ></q-slider>
             </div>
             <div class="row sats-slider q-py-sm">
@@ -125,6 +123,7 @@
                 label
                 switch-label-side
                 @update:model-value="(val) => updateAmounts(val, 'sats')"
+                tabindex="11"
               ></q-slider>
             </div>
           </q-card-section>
@@ -132,6 +131,7 @@
         <div>
           <q-card-section>
             <AmountCurrencyInput
+              ref="amountCurrencyInput"
               :error-state="errorState"
               :error-message="errorMessage"
               defaultCurrency="sats"
@@ -151,7 +151,7 @@
             :label="$t('comment')"
             type="text"
             counter
-            tabindex="2"
+            tabindex="3"
             :rules="[
               (val) =>
                 val.length <= dInvoice?.v4vapp?.metadata?.commentLength ||
@@ -162,20 +162,25 @@
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-toggle class="q-px-md" v-model="oldStyle" label="Old Style" />
+          <q-toggle
+            class="q-px-md"
+            v-model="oldStyle"
+            label="Old Style"
+            tabindex="-1"
+          />
 
           <q-btn
             :label="$t('cancel')"
             color="primary"
             v-close-popup
-            tabindex="4"
+            tabindex="5"
           ></q-btn>
           <q-btn
             :label="$t('ok')"
             color="primary"
             @click="createInvoice"
             :disabled="errorState"
-            tabindex="3"
+            tabindex="4"
           ></q-btn>
         </q-card-actions>
       </q-card>
@@ -184,171 +189,197 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
-import { useQuasar } from "quasar"
-import { useCreateInvoice } from "src/use/useLightningInvoice"
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { tidyNumber } from "src/use/useUtils"
-import { useI18n } from "vue-i18n"
-import { useHiveAvatarURL } from "src/use/useHive"
-import NumberButtons from "components/utils/NumberButtons.vue"
-import AmountCurrencyInput from "components/hive/AmountCurrencyInput.vue"
-const t = useI18n().t
-const q = useQuasar()
+import { ref, computed, nextTick, watch } from "vue";
+import { useQuasar } from "quasar";
+import { useCreateInvoice } from "src/use/useLightningInvoice";
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
+import { tidyNumber } from "src/use/useUtils";
+import { useI18n } from "vue-i18n";
+import { useHiveAvatarURL } from "src/use/useHive";
+import NumberButtons from "components/utils/NumberButtons.vue";
+import AmountCurrencyInput from "components/hive/AmountCurrencyInput.vue";
+const t = useI18n().t;
+const q = useQuasar();
 
 // Use the old style dialog box.
-const oldStyle = ref(false)
+const oldStyle = ref(false);
 
-const storeAPIStatus = useStoreAPIStatus()
-const dInvoice = defineModel()
-const emit = defineEmits(["newInvoice", "amounts", "closeAskDialog"])
-const errorMessage = ref("")
-const errorState = ref(false)
+const storeAPIStatus = useStoreAPIStatus();
+const dInvoice = defineModel();
+const emit = defineEmits(["newInvoice", "amounts", "closeAskDialog"]);
+const errorMessage = ref("");
+const errorState = ref(false);
 const amounts = ref({
   sats: 0,
   hbd: 0,
   hive: 0,
   satsNum: 1000,
-})
-const main_message = ref("")
+});
+const main_message = ref("");
+const amountCurrencyInput = ref(null);
+
+watch(
+  () => dInvoice.value?.askDetails,
+  (newVal) => {
+    if (newVal) {
+      showDialog();
+      // Focus the amount input field when dialog opens
+      nextTick(() => {
+        if (amountCurrencyInput.value) {
+          // Find the input element within the AmountCurrencyInput component
+          if (
+            amountCurrencyInput.value?.$el &&
+            typeof amountCurrencyInput.value.$el.querySelector === "function"
+          ) {
+            const inputElement =
+              amountCurrencyInput.value.$el.querySelector("input");
+            if (inputElement) {
+              inputElement.focus();
+            }
+          }
+        }
+      });
+    }
+  },
+);
 
 const headerBarTitle = computed(() => {
   if (dInvoice.value.v4vapp.type === "hiveAccname") {
-    return t("send_to_hive")
+    return t("send_to_hive");
   }
-  return t("send_to_lightning")
-})
+  return t("send_to_lightning");
+});
 
 const headerIcon = computed(() => {
   if (dInvoice.value.v4vapp.type === "hiveAccname") {
-    return "fa-brands fa-hive"
+    return "fa-brands fa-hive";
   }
-  return "fa-sharp fa-solid fa-bolt"
-})
+  return "fa-sharp fa-solid fa-bolt";
+});
 
 const hiveAvatar = computed(() => {
   if (!dInvoice.value?.v4vapp?.sendTo) {
-    return
+    return;
   }
-  const ans = useHiveAvatarURL({ hiveAccname: dInvoice.value.v4vapp.sendTo })
-  return ans
-})
+  const ans = useHiveAvatarURL({ hiveAccname: dInvoice.value.v4vapp.sendTo });
+  return ans;
+});
 
 function showDialog() {
   if (dInvoice.value?.makingInvoice) {
-    main_message.value = t("making_invoice")
+    main_message.value = t("making_invoice");
   } else {
-    main_message.value = t("asking_details")
+    main_message.value = t("asking_details");
   }
   if (dInvoice.value.v4vapp.amountToSend) {
-    updateAmounts(dInvoice.value.v4vapp.amountToSend, "sats")
+    updateAmounts(dInvoice.value.v4vapp.amountToSend, "sats");
   }
 }
 
 function hideDialog() {
-  emit("closeAskDialog", "true")
+  emit("closeAskDialog", "true");
 }
 
 function calcSatsFeeOnly(sats) {
-  let satsWithFees = sats
-  satsWithFees *= 1 + storeAPIStatus.apiStatus.config.conv_fee_percent
-  satsWithFees += storeAPIStatus.apiStatus.config.conv_fee_sats
-  return satsWithFees - sats
+  let satsWithFees = sats;
+  satsWithFees *= 1 + storeAPIStatus.apiStatus.config.conv_fee_percent;
+  satsWithFees += storeAPIStatus.apiStatus.config.conv_fee_sats;
+  return satsWithFees - sats;
 }
 
 function updateAmounts(amount, currency) {
   if (amount === "") {
-    amount = "1"
+    amount = "1";
   }
   // strip out all the commas
   // check if amount is a string
   if (typeof amount === "string") {
-    amount = parseFloat(amount.replace(/,/g, ""), 10)
+    amount = parseFloat(amount.replace(/,/g, ""), 10);
   }
-  let sats, hive, hbd
+  let sats, hive, hbd;
   // Sending is true for sending Hive to Lightning
-  const sending = dInvoice.value.sending
+  const sending = dInvoice.value.sending;
   switch (currency) {
     case "sats":
-      sats = parseInt(amount)
+      sats = parseInt(amount);
       if (sending) {
-        amount += calcSatsFeeOnly(sats)
+        amount += calcSatsFeeOnly(sats);
       } else {
-        amount -= calcSatsFeeOnly(sats)
+        amount -= calcSatsFeeOnly(sats);
       }
-      hive = amount / storeAPIStatus.hiveSatsNumber
-      hbd = amount / storeAPIStatus.HBDSatsNumber
-      break
+      hive = amount / storeAPIStatus.hiveSatsNumber;
+      hbd = amount / storeAPIStatus.HBDSatsNumber;
+      break;
 
     case "hive":
-      sats = amount * storeAPIStatus.hiveSatsNumber
+      sats = amount * storeAPIStatus.hiveSatsNumber;
       if (sending) {
-        sats -= calcSatsFeeOnly(sats)
+        sats -= calcSatsFeeOnly(sats);
       } else {
-        sats += calcSatsFeeOnly(sats)
+        sats += calcSatsFeeOnly(sats);
       }
-      hive = amount
+      hive = amount;
       hbd =
-        (amount * storeAPIStatus.hiveSatsNumber) / storeAPIStatus.HBDSatsNumber
-      break
+        (amount * storeAPIStatus.hiveSatsNumber) / storeAPIStatus.HBDSatsNumber;
+      break;
 
     case "hbd":
-      sats = amount * storeAPIStatus.HBDSatsNumber
+      sats = amount * storeAPIStatus.HBDSatsNumber;
       if (sending) {
-        sats -= calcSatsFeeOnly(sats)
+        sats -= calcSatsFeeOnly(sats);
       } else {
-        sats += calcSatsFeeOnly(sats)
+        sats += calcSatsFeeOnly(sats);
       }
       hive =
-        (amount * storeAPIStatus.HBDSatsNumber) / storeAPIStatus.hiveSatsNumber
-      hbd = amount
-      break
+        (amount * storeAPIStatus.HBDSatsNumber) / storeAPIStatus.hiveSatsNumber;
+      hbd = amount;
+      break;
 
     default:
-      return
+      return;
   }
-  dInvoice.value.v4vapp.amountToSend = parseInt(sats)
+  dInvoice.value.v4vapp.amountToSend = parseInt(sats);
   const allowedRange = `${tidyNumber(
     dInvoice.value.v4vapp.metadata.minSats,
-    0
-  )} - ${tidyNumber(dInvoice.value.v4vapp.metadata.maxSats, 0)} sats`
+    0,
+  )} - ${tidyNumber(dInvoice.value.v4vapp.metadata.maxSats, 0)} sats`;
   if (sats < dInvoice.value.v4vapp.metadata.minSats) {
-    errorMessage.value = allowedRange
-    errorState.value = true
+    errorMessage.value = allowedRange;
+    errorState.value = true;
   } else if (sats > dInvoice.value.v4vapp.metadata.maxSats) {
-    errorMessage.value = allowedRange
-    errorState.value = true
+    errorMessage.value = allowedRange;
+    errorState.value = true;
   } else {
-    errorMessage.value = allowedRange
-    errorState.value = false
+    errorMessage.value = allowedRange;
+    errorState.value = false;
   }
-  amounts.value.satsNum = parseFloat(sats.toFixed(0))
-  amounts.value.hbdNum = parseFloat(hbd.toFixed(2))
-  amounts.value.sats = tidyNumber(sats.toFixed(0), 0)
-  amounts.value.hive = tidyNumber(hive.toFixed(3))
-  amounts.value.hbd = tidyNumber(hbd.toFixed(2))
+  amounts.value.satsNum = parseFloat(sats.toFixed(0));
+  amounts.value.hbdNum = parseFloat(hbd.toFixed(2));
+  amounts.value.sats = tidyNumber(sats.toFixed(0), 0);
+  amounts.value.hive = tidyNumber(hive.toFixed(3));
+  amounts.value.hbd = tidyNumber(hbd.toFixed(2));
 }
 
 const vAutofocus = {
   mounted(el) {
-    el.focus()
+    el.focus();
   },
-}
+};
 
 async function createInvoice() {
   if (dInvoice.value.v4vapp.type === "hiveAccname") {
-    let amountSats
+    let amountSats;
     if (typeof amounts.value.sats === "string") {
-      amountSats = parseFloat(amounts.value.sats.replace(/,/g, ""), 10)
+      amountSats = parseFloat(amounts.value.sats.replace(/,/g, ""), 10);
     }
-    dInvoice.value.askDetails = false
-    dInvoice.value.satoshis = amountSats
-    dInvoice.value.v4vapp.amountToSend = amountSats
-    emit("newInvoice", dInvoice.value)
-    return
+    dInvoice.value.askDetails = false;
+    dInvoice.value.satoshis = amountSats;
+    dInvoice.value.v4vapp.amountToSend = amountSats;
+    emit("newInvoice", dInvoice.value);
+    return;
   }
-  const newInvoice = await useCreateInvoice(dInvoice.value)
-  emit("newInvoice", newInvoice)
+  const newInvoice = await useCreateInvoice(dInvoice.value);
+  emit("newInvoice", newInvoice);
   // emit("amounts", amounts.value)
 }
 </script>
