@@ -10,7 +10,7 @@ export default defineComponent({
   name: "App",
   setup() {
     // Toggle this to true/false to show/hide the message of the day
-    const showMOTD = true
+    const showMOTD = false
 
     onMounted(() => {
       if (showMOTD) {
