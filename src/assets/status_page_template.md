@@ -14,15 +14,14 @@
 
 ---
 
-# v4vapp [Hive to LND Gateway is OPEN](https://v4v.app)
+<to_lnd_gateway_status>
 You can swap Hive or HBD for sats at: [v4v.app](https://v4v.app)
 
-# v4vapp [LND to Hive Gateway is OPEN](https://v4v.app/hive)
+<to_hive_gateway_status>
 You can send LND as Hive or HBD to any Hive account: [v4v.app/hive](https://v4v.app/hive)
 
 # Current fees
-## UTC: 10:37 19 Nov 2025
-
+## <date_time_now_utc>
 
 These are the current fees charged by the @V4VApp when swapping Hive or HBD into or Lightning. All fees are converted from Sats to Hive/HBD using live rates from @coingecko's [API](https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,hive,hive_dollar&vs_currencies=btc,usd,eur,aud&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true&include_last_updated_at=true)
 
@@ -39,29 +38,7 @@ This services is offered as an experiemental service: if you have any issues usi
 
 | | Fees| Sats | Hive | HBD |
 |-|-|-| -|-|
-| Conversion fee (flat) ||      50 sats |   0.417 Hive |   0.047 HBD |
-| Conversion fee (percentage) || 1.70% || |
-| Minimum invoice ||     250 sats |    2.09 Hive |    0.24 HBD |
-| Maximum invoice || 150,000 sats | 1,251.65 Hive |  142.32 HBD |
-### Rate Limits
-
-Each Hive user is limited to the following amounts in the following periods:
-
-| Hours | Limit sats | Hive | HBD |
-|-|-|-|-|
-|   4 hours | 400,000 | 3,337.7 Hive |   379.5 HBD |
-|  72 hours | 800,000 | 6,675.5 Hive |   759.1 HBD |
-| 168 hours | 1,200,000 | 10,013.2 Hive | 1,138.6 HBD |
-
-
-### HBD to Sats Examples
-
-The following amounts of HBD will give approximately this amount in sats:
-| HBD | Sats |
-|-|-|
-|    1 |     982 |
-|    2 |   2,014 |
-|    5 |   5,109 |
-|   10 |  10,269 |
-|   20 |  20,587 |
-|   50 |  51,544 |
+| Conversion fee (flat) || <conv_fee_sats> sats | <conv_fee_hive> Hive | <conv_fee_HBD> HBD |
+| Conversion fee (percentage) || <conv_fee_percent> || |
+| Minimum invoice || <min_inv_sats> sats | <min_inv_hive> Hive | <min_inv_HBD> HBD |
+| Maximum invoice || <max_inv_sats> sats | <max_inv_hive> Hive | <max_inv_HBD> HBD |
