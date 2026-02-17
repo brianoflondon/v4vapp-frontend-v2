@@ -68,8 +68,8 @@
                 </p>
                 <p v-if="!hiveConfig.closed_get_hive">
                   You can send Lightning as Hive or HBD to any Hive account:
-                  <a href="https://v4v.app/hive" target="_blank"
-                    >v4v.app/hive</a
+                  <a href="https://v4v.app/pos" target="_blank"
+                    >v4v.app/pos</a
                   >
                 </p>
               </div>
@@ -86,7 +86,7 @@
                 <strong>@V4VApp</strong> when swapping Hive or HBD into or from
                 Lightning. All fees are converted from Sats to Hive/HBD using
                 live rates which are averaged from a number of sources including
-                CoinGecko, Binance and Hive's internal HBD market: 
+                CoinGecko, Binance and Hive's internal HBD market:
                 <a href="https://api.v4v.app/v1/cryptoprices/" target="_blank"
                   >@V4VApp's API</a
                 >.
