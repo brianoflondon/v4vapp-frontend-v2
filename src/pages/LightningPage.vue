@@ -1190,7 +1190,7 @@ async function checkHiveTransaction(username, trx_id, notif) {
 
     // check if the transaction contains the string "Your Lightning Invoice of 1234 sats has been paid"
 
-    let regex = /(Deducting|Your Lightning Invoice of) ([\d,]+).*/;
+    let regex = /(Deducting|Your payment of) ([\d,]+).*/;
     console.log("Checking transaction memo:", transaction_found?.op[1].memo);
     let match = transaction_found?.op[1].memo.match(regex);
     if (match) {
