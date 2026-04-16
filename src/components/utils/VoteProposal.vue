@@ -65,26 +65,25 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
-import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue";
-import { KeychainSDK } from "keychain-sdk";
-import { useStoreUser } from "src/stores/storeUser";
-import { useQuasar } from "quasar";
-import { useI18n } from "vue-i18n";
+import { onMounted, ref, watch } from "vue"
+import HiveSelectFancyAcc from "components/HiveSelectFancyAcc.vue"
+import { useStoreUser } from "src/stores/storeUser"
+import { useQuasar } from "quasar"
+import { useI18n } from "vue-i18n"
 import {
   useCheckProxyVote,
   useGetHiveProposalVotes,
   useGetHiveWitnessVotes,
-} from "src/use/useHive";
-const t = useI18n().t;
-const q = useQuasar();
-const showThankYou = ref(false);
-const storeUser = useStoreUser();
+} from "src/use/useHive"
+const t = useI18n().t
+const q = useQuasar()
+const showThankYou = ref(false)
+const storeUser = useStoreUser()
 const votedFor = ref({
   proposal: false,
   witness: false,
-});
-const proxy = ref(false);
+})
+const proxy = ref(false)
 
 const modelValue = defineModel({
   hiveUser: {
@@ -103,95 +102,138 @@ const modelValue = defineModel({
     type: Boolean,
     default: false,
   },
-});
+})
 
 const hiveAccname = ref({
   label: "",
   value: modelValue.value.hiveUser,
   caption: "",
-});
+})
 
 if (!modelValue.value?.proposalId) {
-  modelValue.value.proposalId = "303";
+  modelValue.value.proposalId = "303"
 }
 
 onMounted(async () => {
-  storeUser.update();
+  storeUser.update()
   if (storeUser.currentUser) {
-    hiveAccname.value["value"] = storeUser.currentUser;
-    modelValue.value.hiveUser = storeUser.currentUser;
+    hiveAccname.value["value"] = storeUser.currentUser
+    modelValue.value.hiveUser = storeUser.currentUser
   }
-});
+})
 
 // Watches to see if a new hive account name is selected
 watch(
   () => hiveAccname.value.value,
   async (newVal, oldVal) => {
     if (newVal && oldVal === null) {
-      modelValue.value.hiveUser = newVal;
+      modelValue.value.hiveUser = newVal
     }
-    await checkVotes(modelValue.value.hiveUser, modelValue.value.proposalId);
+    await checkVotes(modelValue.value.hiveUser, modelValue.value.proposalId)
   },
-);
+)
 
 async function checkVotes(username, proposalId) {
-  const votes = await useGetHiveProposalVotes(username, proposalId);
+  const votes = await useGetHiveProposalVotes(username, proposalId)
   if (votes) {
-    votedFor.value.proposal = true;
+    votedFor.value.proposal = true
   }
-  proxy.value = await useCheckProxyVote(username);
-  username = proxy.value || username;
+  proxy.value = await useCheckProxyVote(username)
+  username = proxy.value || username
 
-  const witnessVotes = await useGetHiveWitnessVotes(username, "brianoflondon");
-  votedFor.value.witness = witnessVotes;
+  const witnessVotes = await useGetHiveWitnessVotes(username, "brianoflondon")
+  votedFor.value.witness = witnessVotes
 }
 
 // Function run when the vote button is clicked
 async function vote() {
   if (!modelValue.value.hiveUser) {
-    modelValue.value.hiveUser =
-      hiveAccname.value.value || storeUser.currentUser;
+    modelValue.value.hiveUser = hiveAccname.value.value || storeUser.currentUser
   }
-  hiveAccname.value.value = modelValue.value.hiveUser;
-  modelValue.value.showDialog = true;
+  hiveAccname.value.value = modelValue.value.hiveUser
+  modelValue.value.showDialog = true
 }
 
 async function doVotes() {
-  let username = modelValue.value.hiveUser;
+  let username = modelValue.value.hiveUser
   if (hiveAccname.value.value) {
-    username = hiveAccname.value.value;
+    username = hiveAccname.value.value
   }
   if (!votedFor.value.proposal) {
     try {
-      const keychain = new KeychainSDK(window);
-      const formParamsAsObject = {
-        data: {
-          username: username,
-          proposal_ids: [modelValue.value.proposalId],
-          approve: true,
-          extensions: [modelValue.value.proposalId],
-        },
-      };
-      const updateproposalvote = await keychain.updateProposalVote(
-        formParamsAsObject.data,
-      );
-      votedFor.value.proposal = true;
-    } catch (error) {}
+      const keychain =
+        typeof window !== "undefined" ? window.hive_keychain : null
+      if (!keychain) {
+        q.notify({ message: t("keychain_not_installed"), type: "warning" })
+        return
+      }
+
+      const operations = [
+        [
+          "update_proposal_votes",
+          {
+            voter: username,
+            proposal_ids: [Number(modelValue.value.proposalId)],
+            approve: true,
+            extensions: [],
+          },
+        ],
+      ]
+      await new Promise((resolve, reject) => {
+        keychain.requestBroadcast(
+          username,
+          operations,
+          "Active",
+          (response) => {
+            if (response?.success) {
+              resolve(response)
+            } else {
+              reject(new Error(response?.message || "Proposal vote failed"))
+            }
+          },
+        )
+      })
+      votedFor.value.proposal = true
+    } catch (error) {
+      console.error({ error })
+    }
   }
   if (!votedFor.value.witness && !proxy.value) {
     try {
-      const keychain = new KeychainSDK(window);
-      const formParamsAsObject = {
-        data: {
-          username: username,
-          witness: "brianoflondon",
-          vote: true,
-        },
-      };
-      const witnessvote = await keychain.witnessVote(formParamsAsObject.data);
-      votedFor.value.witness = true;
+      const keychain =
+        typeof window !== "undefined" ? window.hive_keychain : null
+      if (!keychain) {
+        q.notify({ message: t("keychain_not_installed"), type: "warning" })
+        return
+      }
+
+      const operations = [
+        [
+          "account_witness_vote",
+          {
+            account: username,
+            witness: "brianoflondon",
+            approve: true,
+          },
+        ],
+      ]
+      await new Promise((resolve, reject) => {
+        keychain.requestBroadcast(
+          username,
+          operations,
+          "Active",
+          (response) => {
+            if (response?.success) {
+              resolve(response)
+            } else {
+              reject(new Error(response?.message || "Witness vote failed"))
+            }
+          },
+        )
+      })
+      votedFor.value.witness = true
     } catch (error) {
-      console.error({ error });
+      console.error({ error })
     }
   } else if (proxy.value) {
   }
@@ -201,18 +243,18 @@ async function doVotes() {
       type: "positive",
       position: "bottom",
       timeout: 5000,
-    });
+    })
   }
   // wait 5 seconds and then close the dialog
   setTimeout(() => {
-    modelValue.value.showDialog = false;
-  }, 5000);
+    modelValue.value.showDialog = false
+  }, 5000)
 }
 
 function hideDialog() {
-  modelValue.value.hiveUser = "";
-  hiveAccname.value = { label: "", value: "", caption: "" };
-  modelValue.value.showDialog = false;
+  modelValue.value.hiveUser = ""
+  hiveAccname.value = { label: "", value: "", caption: "" }
+  modelValue.value.showDialog = false
 }
 </script>
 

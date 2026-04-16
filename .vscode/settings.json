@@ -8,7 +8,15 @@
   "workbench.colorCustomizations": {
     "activityBar.background": "#fe90008c",
     "titleBar.activeBackground": "#FE9200",
-    "titleBar.activeForeground": "#010508"
+    "titleBar.activeForeground": "#010508",
+    "titleBar.inactiveBackground": "#8A4E00",
+    "titleBar.inactiveForeground": "#FFFAF3",
+    "statusBar.background": "#8A4E00",
+    "statusBar.foreground": "#FFFAF3",
+    "statusBar.debuggingBackground": "#8A4E00",
+    "statusBar.debuggingForeground": "#FFFAF3",
+    "statusBar.noFolderBackground": "#8A4E00",
+    "statusBar.noFolderForeground": "#FFFAF3"
   },
   "cSpell.words": [
     "axios",
