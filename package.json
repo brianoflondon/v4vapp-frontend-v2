@@ -25,7 +25,7 @@
     "hive-uri": "^0.2.5",
     "leaflet": "^1.9.4",
     "leaflet-search": "^4.0.0",
-    "pinia": "^2.3.1",
+    "pinia": "^3.0.4",
     "qr-code-styling": "^1.6.0-rc.1",
     "qrcode": "^1.5.3",
     "quasar": "^2.18.6",
