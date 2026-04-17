@@ -58,42 +58,70 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
       return state.apiStatus ? state.apiStatus.crypto : "fetching prices"
     },
     minMax(state) {
-      if (!state.apiStatus) return null
+      if (
+        !state.apiStatus?.config?.min_max?.min ||
+        !state.apiStatus?.config?.min_max?.max
+      ) {
+        return null
+      }
+      const minSource = state.apiStatus.config.min_max.min
+      const maxSource = state.apiStatus.config.min_max.max
+
+      const readLimit = (source, key) => {
+        if (!source) return null
+        if (source[key] != null) return source[key]
+        const lower = key.toLowerCase()
+        if (source[lower] != null) return source[lower]
+        const upper = key.toUpperCase()
+        if (source[upper] != null) return source[upper]
+        return null
+      }
+
+      const hiveMin = readLimit(minSource, "HIVE")
+      const hiveMax = readLimit(maxSource, "HIVE")
+      const hbdMin = readLimit(minSource, "HBD")
+      const hbdMax = readLimit(maxSource, "HBD")
+      const usdMin = readLimit(minSource, "USD")
+      const usdMax = readLimit(maxSource, "USD")
+      const satsMin = readLimit(minSource, "sats")
+      const satsMax = readLimit(maxSource, "sats")
+
+      if (
+        hiveMin == null ||
+        hiveMax == null ||
+        hbdMin == null ||
+        hbdMax == null ||
+        satsMin == null ||
+        satsMax == null
+      ) {
+        return null
+      }
+
       const ans = {
         HIVE: {
-          min: state.apiStatus.config.min_max.min.HIVE,
-          max: state.apiStatus.config.min_max.max.HIVE,
+          min: hiveMin,
+          max: hiveMax,
         },
         HBD: {
-          min: state.apiStatus.config.min_max.min.HBD,
-          max: state.apiStatus.config.min_max.max.HBD,
+          min: hbdMin,
+          max: hbdMax,
         },
         USD: {
-          min: state.apiStatus.config.min_max.min.USD,
-          max: state.apiStatus.config.min_max.max.USD,
+          min: usdMin,
+          max: usdMax,
         },
         sats: {
-          min: state.apiStatus.config.min_max.min.sats,
-          max: state.apiStatus.config.min_max.max.sats,
+          min: satsMin,
+          max: satsMax,
         },
       }
       return ans
     },
-    hiveMinMax: (state) => {
-      return state.apiStatus
-        ? {
-            min: state.apiStatus.config.min_max.min.HIVE,
-            max: state.apiStatus.config.min_max.max.HIVE,
-          }
-        : null
+    hiveMinMax() {
+      return this.minMax?.HIVE || null
     },
-    HBDMinMax: (state) => {
-      return state.apiStatus
-        ? {
-            min: state.apiStatus.config.min_max.min.HBD,
-            max: state.apiStatus.config.min_max.max.HBD,
-          }
-        : null
+    HBDMinMax() {
+      return this.minMax?.HBD || null
     },
     textBar() {
       // autocompletion ✨
