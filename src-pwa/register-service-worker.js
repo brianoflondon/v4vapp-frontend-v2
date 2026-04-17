@@ -75,6 +75,14 @@ register(process.env.SERVICE_WORKER_FILE, {
   },
 
   error(err) {
+    const message = String(err?.message || "")
+    if (message.includes("SSL certificate error")) {
+      console.warn(
+        "Service worker skipped due to local SSL certificate trust issue. Trust the local cert or run local HTTP dev for non-PWA work.",
+        err,
+      )
+      return
+    }
     console.error("Error during service worker registration:", err)
   },
 })

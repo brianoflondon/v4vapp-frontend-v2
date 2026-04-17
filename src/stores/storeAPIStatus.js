@@ -1,10 +1,7 @@
 import { defineStore } from "pinia"
 import { api } from "boot/axios"
-import { KeychainSDK } from "keychain-sdk"
 import { tidyNumber } from "src/use/useUtils"
 import { useDateFormat } from "@vueuse/core"
-
-const keychain = new KeychainSDK(window)
 
 export const useStoreAPIStatus = defineStore("storeAPIStatus", {
   state: () => ({
@@ -137,7 +134,8 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
       }
       const checkKeychain = async () => {
         try {
-          this.isKeychainIn = await keychain.isKeychainInstalled()
+          this.isKeychainIn =
+            typeof window !== "undefined" && !!window.hive_keychain
         } catch (error) {
           console.error({ error })
         }
