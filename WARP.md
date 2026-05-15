@@ -17,13 +17,13 @@ V4V.app is a **Quasar Vue 3** application serving as a bridge between Hive block
 ### Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Start development server
 
 ```bash
-npm run dev
+pnpm run dev
 # or
 quasar dev
 ```
@@ -33,19 +33,19 @@ The dev server runs on port 9200 by default with HTTPS support when `.env` has `
 ### Linting
 
 ```bash
-npm run lint
+pnpm run lint
 ```
 
 ### Formatting
 
 ```bash
-npm run format
+pnpm run format
 ```
 
 ### Build for production
 
 ```bash
-npm run build
+pnpm run build
 # or
 quasar build
 ```
@@ -55,7 +55,7 @@ Builds a PWA (Progressive Web App) to `dist/pwa/`.
 ### Version and release
 
 ```bash
-npm run patch
+pnpm run patch
 ```
 
 Bumps patch version, commits, tags, and pushes to remote.
@@ -189,7 +189,7 @@ Dark mode is auto-detected via Quasar's `Dark.isActive`. Check this when serving
 
 Multi-stage Dockerfile:
 
-1. Build stage: Node 18, npm ci, quasar build --mode pwa
+1. Build stage: Node 20, `pnpm install --frozen-lockfile`, `pnpm exec quasar build --mode pwa`
 2. Serve stage: nginx:stable serves from `dist/pwa`
 
 Build image:
@@ -208,7 +208,7 @@ docker build -t v4vapp-frontend-v2 .
 
 ## Testing
 
-Currently no automated tests configured (`npm test` exits 0). Consider adding Vitest or Playwright for future test coverage.
+Currently no automated tests configured (`pnpm run test` exits 0). Consider adding Vitest or Playwright for future test coverage.
 
 ## Important Notes
 
