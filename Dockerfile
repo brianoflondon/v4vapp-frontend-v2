@@ -6,34 +6,21 @@ FROM node:20 AS build
 
 # Set working directory
 WORKDIR /app
+# Copy dependency manifests and npmrc for registry settings
+COPY package.json pnpm-lock.yaml .npmrc ./
 
-#### YARN PROBLEMS with keychain-sdk
-#### Switch to NPM
-# # Copy package*.json and yarn.lock
-# COPY package*.json ./
-# COPY yarn.lock ./
+# Enable Corepack and activate a pinned pnpm version
+RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
 
-# # Install dependencies
-# RUN yarn install
-
-# Copy package*.json and package-lock.json
-COPY package*.json ./
-COPY package-lock.json ./
-
-# Install dependencies using NPM
-RUN npm ci
+# Install dependencies using pnpm
+RUN pnpm install --frozen-lockfile
 
 
 # Copy the rest of the application code
 COPY . .
 
 # Build the Quasar app for production
-RUN npx quasar build --mode pwa
-
-# This was added when npx didn't work.
-# The correct solution was removing @quasar/app-webpac from package.json
-# RUN yarn global add @quasar/cli
-# RUN quasar build
+RUN pnpm exec quasar build --mode pwa
 
 # Stage 2: Serve the project using Nginx
 FROM nginx:stable
