@@ -60,9 +60,7 @@ As I progress I plan to put this in to the DHF as a new self contained project. 
 ## Install the dependencies
 
 ```bash
-yarn
-# or
-npm install
+pnpm install
 ```
 
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
@@ -74,17 +72,13 @@ quasar dev
 ### Lint the files
 
 ```bash
-yarn lint
-# or
-npm run lint
+pnpm run lint
 ```
 
 ### Format the files
 
 ```bash
-yarn format
-# or
-npm run format
+pnpm run format
 ```
 
 ### Build the app for production
