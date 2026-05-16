@@ -1,0 +1,10 @@
+allowBuilds:
+  '@parcel/watcher': false
+  core-js: false
+  esbuild: true
+  secp256k1: false
+blockExoticSubdeps: true
+minimumReleaseAge: 1440
+minimumReleaseAgeStrict: true
+strictDepBuilds: true
+trustPolicy: no-downgrade
