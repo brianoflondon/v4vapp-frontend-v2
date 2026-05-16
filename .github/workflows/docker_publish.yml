@@ -1,4 +1,7 @@
 name: Docker publish
+env:
+  NODE_VERSION: "24.15.0"
+  PNPM_VERSION: "10.33.4"
 
 on:
   push:
@@ -22,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4 # Updated to use Node.js 20-compatible version
+        uses: actions/checkout@v4
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3 # This action doesn't need to be updated
       - name: Docker Setup Buildx
@@ -39,7 +42,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest
       - name: Login to DockerHub
-        uses: docker/login-action@v2.2.0 # Updated to use Node.js 20-compatible version
+        uses: docker/login-action@v2.2.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -51,5 +54,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NODE_VERSION=${{ env.NODE_VERSION }}
+            PNPM_VERSION=${{ env.PNPM_VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

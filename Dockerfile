@@ -1,5 +1,8 @@
 # Stage 1: Build the Quasar project
-FROM node:20 AS build
+ARG NODE_VERSION=24.15.0
+ARG PNPM_VERSION=10.33.4
+FROM node:${NODE_VERSION} AS build
+ARG PNPM_VERSION
 
 # Install SSH client
 # RUN apt-get update && apt-get install -y openssh-client
@@ -10,7 +13,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml .npmrc ./
 
 # Enable Corepack and activate a pinned pnpm version
-RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 # Install dependencies using pnpm
 RUN pnpm install --frozen-lockfile
