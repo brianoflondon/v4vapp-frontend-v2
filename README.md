@@ -63,6 +63,14 @@ As I progress I plan to put this in to the DHF as a new self contained project. 
 pnpm install
 ```
 
+If your install is blocked by pnpm with `ERR_PNPM_TRUST_DOWNGRADE` (current workspace policy is strict), use a scoped one-time exception:
+
+```bash
+pnpm add hive-tx --trust-policy-exclude chokidar@4.0.3
+```
+
+This keeps the default strict policy in `pnpm-workspace.yaml` and only excludes the known blocked package/version for this install.
+
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
 
 ```bash

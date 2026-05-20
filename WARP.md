@@ -136,7 +136,7 @@ Routes support Hive account patterns: `/@username` dynamically matches Hive acco
 
 ### External Integrations
 
-- **Hive blockchain**: Uses `hive-tx.min.js` library (global `hiveTx` object) configured to use `api.deathwing.me` node
+- **Hive blockchain**: Uses npm `hive-tx` package (`callRPC` + `config.nodes`) with multi-node failover
 - **Lightning Network**: Invoice parsing via `useLightningInvoice.js`
 - **Hive Keychain**: Browser extension integration via `keychain-sdk`
 - **Hive Auth (HAS)**: Secure authentication via `hive-auth-wrapper`
@@ -161,8 +161,8 @@ Create in `src/use/useFeatureName.js` and export functions. Import in components
 Use `apiLogin` instance for authenticated endpoints:
 
 ```javascript
-import { apiLogin } from "src/boot/axios";
-const response = await apiLogin.get("/endpoint", { params });
+import { apiLogin } from "src/boot/axios"
+const response = await apiLogin.get("/endpoint", { params })
 ```
 
 Bearer token is automatically included if user is logged in.

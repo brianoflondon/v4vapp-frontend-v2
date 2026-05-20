@@ -65,17 +65,17 @@ The optional props are described in the comment section.
  * @props {string} size - Default: small - small, medium, large size of the avatar
  * @emits {string} updateValue - Emitted value of selected Hive Account
  */
-import { ref, watch } from "vue";
+import { ref, watch } from "vue"
 import {
   useLoadHiveAccountsReputation,
   useBlankProfileURL,
   useHiveAvatarURL,
-} from "src/use/useHive";
+} from "src/use/useHive"
 
-const options = ref([]);
-const model = ref();
-const avatar = ref(useBlankProfileURL());
-const emit = defineEmits(["updateValue"]);
+const options = ref([])
+const model = ref()
+const avatar = ref(useBlankProfileURL())
+const emit = defineEmits(["updateValue"])
 
 const props = defineProps({
   label: {
@@ -94,38 +94,38 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
 watch(model, (newValue) => {
   // Watches the model which holds the selected value
-  avatar.value = useHiveAvatarURL({ hiveAccname: newValue, size: props.size });
-  emit("updateValue", newValue);
-});
+  avatar.value = useHiveAvatarURL({ hiveAccname: newValue, size: props.size })
+  emit("updateValue", newValue)
+})
 
 function enterFn(input) {
   // If Enter or tab is pressed before selecting from the options, the first option is selected
   if (!model.value && options.value.length > 0) {
-    model.value = options.value[0];
+    model.value = options.value[0]
   }
-  emit("updateValue", model.value);
+  emit("updateValue", model.value)
 }
 
 function escFn(input) {
   // If Esc is pressed, the model is cleared
-  model.value = "";
+  model.value = ""
 }
 
 function inputFn(input) {
   // Change the avatar to match the input value
-  setHiveAvatar(input);
+  setHiveAvatar(input)
 }
 
 function setHiveAvatar(hiveAccname) {
-  avatar.value = useHiveAvatarURL({ hiveAccname, size: props.size });
+  avatar.value = useHiveAvatarURL({ hiveAccname, size: props.size })
 }
 
 function handleImageError(event) {
-  avatar.value = useBlankProfileURL();
+  avatar.value = useBlankProfileURL()
 }
 
 async function filterFnAutoselect(val, update, abort) {
@@ -133,35 +133,35 @@ async function filterFnAutoselect(val, update, abort) {
   update(
     async () => {
       if (val === "") {
-        options.value = [];
+        options.value = []
       } else {
         // Fetch the sorted list of Hive accounts after converting
         // the input to lowercase and removing spaces
-        const needle = val.toLowerCase().replace(/\s+/g, "");
+        const needle = val.toLowerCase().replace(/\s+/g, "")
         options.value = await useLoadHiveAccountsReputation(
           needle,
           props.maxOptions,
-        );
+        )
         // Sets the displayed Hive avatar to the first option in the
         // options list
         if (options.value) {
-          setHiveAvatar(options.value[0]);
+          setHiveAvatar(options.value[0])
         }
       }
     },
     (ref) => {
       if (val !== "" && ref.options.length > 0 && ref.getOptionIndex() === -1) {
-        ref.moveOptionSelection(1, true);
-        ref.toggleOption(ref.options[ref.optionIndex], true);
+        ref.moveOptionSelection(1, true)
+        ref.toggleOption(ref.options[ref.optionIndex], true)
       }
     },
-  );
+  )
   abort(() => {
-    abortFilterFn;
-  });
+    abortFilterFn
+  })
 }
 
-const abortFilterFn = () => {};
+const abortFilterFn = () => {}
 </script>
 
 <style lang="scss" scoped></style>
@@ -169,9 +169,7 @@ const abortFilterFn = () => {};
 
 ### Hive Functions
 
-First note is that I'm using the HiveTx library. [Hive-tx-js](https://github.com/mahdiyari/hive-tx-js). I was unable to get this to work successfullyy by installing with `yarn` so I copied the minified js file into my project and I import it like this:
-
-`import "src/assets/hive-tx.min.js"`
+First note is that this project uses the HiveTx library from npm: [hive-tx](https://github.com/mahdiyari/hive-tx).
 
 You can see the complete file here: [useHive.js](https://github.com/brianoflondon/v4vapp-frontend-v2/blob/b2d442d248e5f3ae0a61c45f4156ef9db8dc9e1b/src/use/useHive.js)
 
@@ -184,7 +182,7 @@ This should be all you need to put the object in your own project. Once this obj
   <HiveSelectAcc
     @updateValue="
       (value) => {
-        hiveAccname = value;
+        hiveAccname = value
       }
     "
   />

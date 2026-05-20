@@ -23,6 +23,7 @@
     "axios": "^1.15.0",
     "base-x": "^5.0.1",
     "hive-auth-wrapper": "^1.0.0",
+    "hive-tx": "^7.1.1",
     "hive-uri": "^0.2.5",
     "leaflet": "^1.9.4",
     "leaflet-search": "^4.0.0",
