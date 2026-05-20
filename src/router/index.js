@@ -1,37 +1,36 @@
-import { route } from "quasar/wrappers";
+import { route } from "quasar/wrappers"
 import {
   createRouter,
   createMemoryHistory,
   createWebHistory,
   createWebHashHistory,
-} from "vue-router";
-import routes from "./routes";
+} from "vue-router"
+import routes from "./routes"
 
 export default route(function (/* { store, ssrContext } */) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : process.env.VUE_ROUTER_MODE === "history"
       ? createWebHistory
-      : createWebHashHistory;
+      : createWebHashHistory
 
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
     history: createHistory(process.env.VUE_ROUTER_BASE),
-  });
+  })
 
   // Navigation guard to handle @ and . in URLs
-  Router.beforeEach((to, from, next) => {
+  Router.beforeEach((to) => {
     // Check if the URL contains @ and has a .
     if (to.path.includes("@") && to.path.includes(".")) {
       // Implement logic based on your requirement
       // For example, redirecting to a specific route or handling as a non-file request
-      // next({ path: '/someRoute' }); // Redirect to a specific route
-      next(); // Proceed with the navigation as usual
-    } else {
-      next(); // Proceed with the navigation as usual
+      // return { path: '/someRoute' }; // Redirect to a specific route
+      return true // Proceed with the navigation as usual
     }
-  });
+    return true // Proceed with the navigation as usual
+  })
 
-  return Router;
-});
+  return Router
+})
