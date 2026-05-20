@@ -10,8 +10,12 @@
       "sourceMapPathOverrides": {
         "webpack://quasar-project/./src/*": "${webRoot}/*"
       },
-      "skipFiles": ["<node_internals>/**"],
-      "runtimeArgs": ["--allow-insecure-localhost"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--allow-insecure-localhost"
+      ]
     },
     {
       "type": "chrome",
@@ -19,7 +23,9 @@
       "name": "Quasar App: chrome",
       "url": "https://localhost:9000",
       "webRoot": "${workspaceFolder}/src",
-      "runtimeArgs": ["--allow-insecure-localhost"],
+      "runtimeArgs": [
+        "--allow-insecure-localhost"
+      ],
       "sourceMapPathOverrides": {
         "webpack://quasar-project/./src/*": "${webRoot}/*"
       }
