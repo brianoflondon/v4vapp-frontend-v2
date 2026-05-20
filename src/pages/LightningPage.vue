@@ -753,7 +753,7 @@ async function decodeInvoice() {
       }
       invoiceValid.value = true
       errorMessage.value = ""
-      const amountToSend = storeUser.keepsatsBalanceNum > 1000 ? 1 : 1000
+      const amountToSend = storeUser.keepSatsBalanceNum > 1000 ? 1 : 1000
       invoiceChecking.value = true
       dInvoice.value = {
         v4vapp: {
@@ -1168,6 +1168,9 @@ async function checkHiveTransaction(username, trx_id, notif) {
     count++
     await new Promise((resolve) => setTimeout(resolve, 5000)) // Wait for 5 seconds
     const transactions = await useGetHiveTransactionHistory(username)
+    if (!Array.isArray(transactions)) {
+      continue
+    }
     transaction_found = findObjectBefore(transactions, trx_id)
 
     if (transaction_found) {

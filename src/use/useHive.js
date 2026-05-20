@@ -2,7 +2,7 @@
 //
 // Functions related to Hive
 // ----------------------------------------------------------------------------
-import { apiURL, api, apiLogin } from "boot/axios"
+import { apiURL, api} from "boot/axios"
 import { useIsEVMAddress } from "src/use/useEVM"
 import { Dark } from "quasar"
 import { genRandAlphaNum } from "src/use/useUtils"

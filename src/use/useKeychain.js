@@ -7,15 +7,6 @@ import { useGetChallenge, useValidateApi } from "src/use/useUtils"
 
 const storeUser = useStoreUser()
 
-const keychainDebugEnabled =
-  typeof import.meta !== "undefined" && !!import.meta.env?.DEV
-
-function logKeychainDebug(event, payload = {}) {
-  if (!keychainDebugEnabled) return
-  const timestamp = new Date().toISOString()
-  console.debug(`[Keychain][${timestamp}] ${event}`, payload)
-}
-
 function getHiveKeychain() {
   if (typeof window === "undefined") return null
   return window.hive_keychain || null
@@ -30,12 +21,6 @@ function normalizeKeyType(keyType = "active") {
 
 function requestSignBuffer({ username, message, keyType }) {
   const hiveKeychain = getHiveKeychain()
-  logKeychainDebug("requestSignBuffer:start", {
-    username,
-    keyType: normalizeKeyType(keyType),
-    messagePreview: String(message || "").slice(0, 120),
-    hasKeychain: !!hiveKeychain,
-  })
   if (!hiveKeychain) {
     return Promise.resolve({
       success: false,
@@ -50,13 +35,6 @@ function requestSignBuffer({ username, message, keyType }) {
       message,
       normalizeKeyType(keyType),
       (response) => {
-        logKeychainDebug("requestSignBuffer:callback", {
-          username,
-          success: response?.success,
-          message: response?.message,
-          hasResult: !!response?.result,
-          response,
-        })
         resolve({
           ...response,
           data: {
@@ -75,15 +53,6 @@ function requestSignBuffer({ username, message, keyType }) {
 
 function requestTransfer({ username, to, amount, memo, currency, enforce }) {
   const hiveKeychain = getHiveKeychain()
-  logKeychainDebug("requestTransfer:start", {
-    username,
-    to,
-    amount,
-    currency,
-    enforce,
-    memoPreview: String(memo || "").slice(0, 160),
-    hasKeychain: !!hiveKeychain,
-  })
   if (!hiveKeychain) {
     return Promise.resolve({
       success: false,
@@ -100,16 +69,6 @@ function requestTransfer({ username, to, amount, memo, currency, enforce }) {
       memo,
       currency,
       (response) => {
-        logKeychainDebug("requestTransfer:callback", {
-          username,
-          to,
-          amount,
-          currency,
-          success: response?.success,
-          message: response?.message,
-          txId: response?.result?.id || response?.result?.tx_id || response?.id,
-          response,
-        })
         resolve({
           ...response,
           data: { username, to, amount, memo, enforce, currency },
@@ -303,13 +262,6 @@ export async function useHiveKeychainTransfer(
 ) {
   try {
     amount = parseFloat(amount).toFixed(3)
-    logKeychainDebug("useHiveKeychainTransfer:prepared", {
-      username,
-      to: serverHiveAccount,
-      amount,
-      currency,
-      memoPreview: String(memo || "").slice(0, 160),
-    })
     const transfer = await requestTransfer({
       username,
       to: serverHiveAccount,
@@ -318,17 +270,9 @@ export async function useHiveKeychainTransfer(
       enforce: false,
       currency,
     })
-    logKeychainDebug("useHiveKeychainTransfer:result", {
-      success: transfer?.success,
-      message: transfer?.message,
-      txId:
-        transfer?.result?.id || transfer?.result?.tx_id || transfer?.id || null,
-      transfer,
-    })
     return transfer
   } catch (error) {
     console.error({ error })
-    logKeychainDebug("useHiveKeychainTransfer:error", { error })
     return error
   }
 }
