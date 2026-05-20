@@ -2,25 +2,35 @@
 //
 // Functions related to Hive
 // ----------------------------------------------------------------------------
-import { apiURL, api, apiLogin } from "boot/axios";
-import { useIsEVMAddress } from "src/use/useEVM";
-import { Dark } from "quasar";
-import { genRandAlphaNum } from "src/use/useUtils";
-import "src/assets/hive-tx.min.js";
+import { apiURL, api, apiLogin } from "boot/axios"
+import { useIsEVMAddress } from "src/use/useEVM"
+import { Dark } from "quasar"
+import { genRandAlphaNum } from "src/use/useUtils"
+import { callRPC, config as hiveTxConfig } from "hive-tx"
 
-hiveTx.config.node = "https://api.deathwing.me";
-const useHiveImages = true;
+const hiveNodes = [
+  "https://api.hive.blog",
+  "https://api.deathwing.me",
+  "https://api.openhive.network",
+  "https://rpc.mahdiyari.info",
+  "https://techcoderx.com",
+  "https://hiveapi.actifit.io",
+  "https://api.c0ff33a.uk",
+]
+
+hiveTxConfig.nodes = hiveNodes
+const useHiveImages = true
 
 const useHiveAccountRegex =
-  /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/;
+  /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
 
-const baseURLBlockExplorer = "https://hivehub.dev/tx/";
+const baseURLBlockExplorer = "https://hivehub.dev/tx/"
 
 export function useGenerateTxUrl(txId) {
   if (!txId) {
-    return null;
+    return null
   }
-  return `${baseURLBlockExplorer}${txId}`;
+  return `${baseURLBlockExplorer}${txId}`
 }
 
 /**
@@ -31,18 +41,19 @@ export function useGenerateTxUrl(txId) {
  */
 export async function useHiveDetails(hiveAccname) {
   if (!hiveAccname?.match(useHiveAccountRegex)) {
-    console.debug("Invalid Hive hiveAccname");
-    return null;
+    console.debug("Invalid Hive hiveAccname")
+    return null
   }
   try {
-    const res = await hiveTx.call("condenser_api.get_accounts", [
-      [hiveAccname],
-    ]);
-    let hiveDetails = res.result[0];
-    hiveDetails["profile"] = await extractProfile(hiveDetails);
-    return hiveDetails;
+    const res = await callRPC("condenser_api.get_accounts", [[hiveAccname]])
+    if (!Array.isArray(res) || res.length === 0) {
+      return null
+    }
+    let hiveDetails = res[0]
+    hiveDetails["profile"] = await extractProfile(hiveDetails)
+    return hiveDetails
   } catch (e) {
-    return null;
+    return null
   }
 }
 
@@ -64,59 +75,57 @@ export async function useHiveAccountExists(hiveAccname) {
       valid: false,
       error: "Name must not start with a number",
       hiveAccname: hiveAccname,
-    };
+    }
   }
   if (hiveAccname.length < 3 || hiveAccname.length > 16) {
-    const errorText = hiveAccname.length < 3 ? "Too short" : "Too long";
+    const errorText = hiveAccname.length < 3 ? "Too short" : "Too long"
 
     return {
       exists: false,
       valid: false,
       error: `${errorText}: 3 to 16 chars`,
       hiveAccname: hiveAccname,
-    };
+    }
   }
   if (!hiveAccname?.match(useHiveAccountRegex)) {
-    return { exists: false, valid: false, error: "Invalid Hive account name" };
+    return { exists: false, valid: false, error: "Invalid Hive account name" }
   }
   try {
-    const res = await hiveTx.call("condenser_api.get_accounts", [
-      [hiveAccname],
-    ]);
-    if (res.result.length > 0) {
+    const res = await callRPC("condenser_api.get_accounts", [[hiveAccname]])
+    if (res.length > 0) {
       return {
         exists: true,
         valid: false,
         error: "Account Name taken",
         hiveAccname: hiveAccname,
-      };
+      }
     }
     return {
       exists: false,
       valid: true,
       error: "Available Account Name",
       hiveAccname: hiveAccname,
-    };
+    }
   } catch (e) {
-    return { exists: false, valid: null, error: e, hiveAccname: hiveAccname };
+    return { exists: false, valid: null, error: e, hiveAccname: hiveAccname }
   }
 }
 
 export async function useHiveProfile(hiveAccname) {
   // returns Hive Profile for a given Hive hiveAccname
   if (!hiveAccname?.match(useHiveAccountRegex)) {
-    console.debug("Invalid Hive hiveAccname");
-    return null;
+    console.debug("Invalid Hive hiveAccname")
+    return null
   }
   try {
-    const profile = await hiveTx.call("bridge.get_profile", [
+    const profile = await callRPC("bridge.get_profile", [
       hiveAccname, // account to look up
       hiveAccname, // observer account
-    ]);
-    return profile.result;
+    ])
+    return profile
   } catch (e) {
-    console.error("Error:", e);
-    return null;
+    console.error("Error:", e)
+    return null
   }
 }
 
@@ -131,24 +140,24 @@ export function useHiveAvatarRef({
 }) {
   const hiveAvatar = ref(
     useHiveAvatarURL({ hiveAccname: hiveAccname, size: size, reason: reason }),
-  );
-  return hiveAvatar;
+  )
+  return hiveAvatar
 }
 
 export function useBlankProfileURL(type = "hive") {
   // Returns the blank profile image
   if (type === "hive") {
     if (Dark.isActive) {
-      return "/avatars/hive_logo_dark.svg";
+      return "/avatars/hive_logo_dark.svg"
     } else {
-      return "/avatars/hive_logo_light.svg";
+      return "/avatars/hive_logo_light.svg"
     }
   }
   if (type === "evm") {
-    return "/avatars/login-icons/ethereum-eth-logo.svg";
+    return "/avatars/login-icons/ethereum-eth-logo.svg"
   }
   if (type === "nostr") {
-    return "/avatars/login-icons/nostr_logo_prpl_wht_rnd.svg";
+    return "/avatars/login-icons/nostr_logo_prpl_wht_rnd.svg"
   }
 }
 
@@ -161,13 +170,13 @@ export function useHiveAvatarURL({
   // Returns null if the hiveAccname is blank or not a valid name.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     if (hiveAccname && useIsEVMAddress(hiveAccname)) {
-      return useBlankProfileURL("evm");
+      return useBlankProfileURL("evm")
     }
-    return useBlankProfileURL();
+    return useBlankProfileURL()
   }
   return useHiveImages
     ? "https://images.hive.blog/u/" + hiveAccname + "/avatar/" + size
-    : apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason;
+    : apiURL + "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
 }
 
 export async function useHiveAvatarBlob({
@@ -179,27 +188,27 @@ export async function useHiveAvatarBlob({
   // Returns null if the hiveAccname is blank or not a valid name.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
     if (hiveAccname && useIsEVMAddress(hiveAccname)) {
-      return useBlankProfileURL("evm");
+      return useBlankProfileURL("evm")
     }
-    return useBlankProfileURL();
+    return useBlankProfileURL()
   }
   const url = useHiveImages
     ? "https://images.hive.blog/u/" + hiveAccname + "/avatar/" + size
-    : "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason;
+    : "/hive/avatar/" + hiveAccname + "/" + size + "?reason=" + reason
   try {
-    const response = await api.get(url, { responseType: "blob" });
-    const blob = new Blob([response.data], { type: response.data.type });
+    const response = await api.get(url, { responseType: "blob" })
+    const blob = new Blob([response.data], { type: response.data.type })
 
     // Check if the image is not 0 bytes
     if (blob.size > 0) {
-      return URL.createObjectURL(blob);
+      return URL.createObjectURL(blob)
     } else {
-      return useBlankProfileURL();
+      return useBlankProfileURL()
     }
   } catch (e) {
-    console.error(e);
+    console.error(e)
   }
-  return useBlankProfileURL();
+  return useBlankProfileURL()
 }
 
 // -------- Helper functions --------
@@ -210,14 +219,14 @@ export async function useHiveAvatarBlob({
  */
 async function extractProfile(data) {
   try {
-    const profile = await JSON.parse(data["posting_json_metadata"])["profile"];
-    return profile;
+    const profile = await JSON.parse(data["posting_json_metadata"])["profile"]
+    return profile
   } catch (e) {
     try {
-      const profile = await JSON.parse(data["json_metadata"])["profile"];
-      return profile;
+      const profile = await JSON.parse(data["json_metadata"])["profile"]
+      return profile
     } catch (e) {
-      return null;
+      return null
     }
   }
 }
@@ -232,31 +241,30 @@ async function extractProfile(data) {
  */
 export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
   if (val.length < 2) {
-    return;
+    return
   }
   try {
-    const res = await hiveTx.call("condenser_api.get_account_reputations", [
+    const reputations = await callRPC("condenser_api.get_account_reputations", [
       val,
       maxAcc + 10,
-    ]);
-    const reputations = res.result;
-    reputations.sort((a, b) => b.reputation - a.reputation);
+    ])
+    reputations.sort((a, b) => b.reputation - a.reputation)
 
     const exactMatchIndex = reputations.findIndex(
       (item) => item.account === val,
-    );
+    )
     if (exactMatchIndex > -1) {
-      const exactMatch = reputations.splice(exactMatchIndex, 1);
-      reputations.unshift(exactMatch[0]);
+      const exactMatch = reputations.splice(exactMatchIndex, 1)
+      reputations.unshift(exactMatch[0])
     }
 
     const sortedAccounts = reputations
       .map((item) => item.account)
-      .slice(0, maxAcc);
+      .slice(0, maxAcc)
 
-    return sortedAccounts;
+    return sortedAccounts
   } catch (error) {
-    console.error(error);
+    console.error(error)
   }
 }
 
@@ -272,13 +280,13 @@ export async function useLoadHiveAccountsReputation(val, maxAcc = 6) {
  */
 export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
-    return null;
+    return null
   }
 
-  let shouldFetchNextPage = true;
-  let lastProcessedProposalId = 0;
-  const pageSize = 100;
-  proposalId = parseInt(proposalId, 10);
+  let shouldFetchNextPage = true
+  let lastProcessedProposalId = 0
+  const pageSize = 100
+  proposalId = parseInt(proposalId, 10)
 
   while (shouldFetchNextPage) {
     try {
@@ -288,84 +296,81 @@ export async function useGetHiveProposalVotes(hiveAccname, proposalId) {
         "by_voter_proposal",
         "ascending",
         "votable",
-      ];
+      ]
 
-      const response = await hiveTx.call(
+      const response = await callRPC(
         "condenser_api.list_proposal_votes",
         params,
-      );
-      const userVotedItems = response.result.filter(
+      )
+      const userVotedItems = response.filter(
         (item) => item.voter === hiveAccname,
-      );
+      )
 
       if (!userVotedItems.length) {
-        return null;
+        return null
       }
 
       if (userVotedItems.length < pageSize) {
-        shouldFetchNextPage = false;
+        shouldFetchNextPage = false
       }
 
       const matchingProposals = userVotedItems.filter(
         (item) => item.proposal.proposal_id === proposalId,
-      );
+      )
 
       if (matchingProposals.length > 0) {
-        return matchingProposals;
+        return matchingProposals
       }
 
       lastProcessedProposalId =
-        userVotedItems[userVotedItems.length - 1].proposal.proposal_id + 1;
+        userVotedItems[userVotedItems.length - 1].proposal.proposal_id + 1
     } catch (error) {
-      console.error("An error occurred while fetching proposal votes:", error);
-      return null;
+      console.error("An error occurred while fetching proposal votes:", error)
+      return null
     }
   }
-  return false;
+  return false
 }
 
 // Returns the proxy vote if one exists or false
 export async function useCheckProxyVote(hiveAccname) {
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
-    return null;
+    return null
   }
 
-  const details = await useHiveDetails(hiveAccname);
-  const proxy = details?.proxy;
+  const details = await useHiveDetails(hiveAccname)
+  const proxy = details?.proxy
 
   if (proxy) {
-    return proxy;
+    return proxy
   }
-  return false;
+  return false
 }
 
 export async function useGetHiveWitnessVotes(hiveAccname, witness) {
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
-    return null;
+    return null
   }
 
   const params = {
     start: [witness, hiveAccname],
     limit: 1,
     order: "by_witness_account",
-  };
+  }
   try {
-    const response = await hiveTx.call(
-      "database_api.list_witness_votes",
-      params,
-    );
-    if (response.result?.votes.length > 0) {
+    const response = await callRPC("database_api.list_witness_votes", params)
+    if (response?.votes?.length > 0) {
       if (
-        response.result.votes[0].witness === witness &&
-        response.result.votes[0].account === hiveAccname
+        response.votes[0].witness === witness &&
+        response.votes[0].account === hiveAccname
       ) {
-        return true;
+        return true
       }
     }
-    return false;
+    return false
   } catch (error) {
-    console.error("An error occurred while fetching witness votes:", error);
-    return null;
+    console.error("An error occurred while fetching witness votes:", error)
+    return null
   }
 }
 
@@ -389,44 +394,44 @@ export async function useGetHiveTransactionHistory(
 ) {
   // Returns the account history for the given account.
   if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
-    return null;
+    return null
   }
   try {
-    const history = await hiveTx.call("condenser_api.get_account_history", [
+    const history = await callRPC("condenser_api.get_account_history", [
       hiveAccname,
       start,
       limit,
       opFilterLow,
       opFilterHigh,
-    ]);
+    ])
     // This removes the un-necessary double list structure
-    if (!history.result) {
-      return null;
+    if (!Array.isArray(history) || history.length === 0) {
+      return null
     }
-    return history.result.reverse().map((item) => item[1]);
+    return history.reverse().map((item) => item[1])
   } catch (error) {
-    console.error({ error });
-    return null;
+    console.error({ error })
+    return null
   }
 }
 
 export function useGetHiveAmountString(amount, currency) {
   // Returns a string with the amount and currency
   // convert currency to uppercase
-  console.log("useGetHiveAmountString", amount, currency);
-  currency = currency.toUpperCase();
+  console.log("useGetHiveAmountString", amount, currency)
+  currency = currency.toUpperCase()
   if (!["HIVE", "HBD"].includes(currency)) {
-    return null;
+    return null
   }
   if (amount <= 0) {
-    return null;
+    return null
   }
-  return amount.toFixed(3) + " " + currency;
+  return amount.toFixed(3) + " " + currency
 }
 
 export function useGetCheckCode() {
   // Returns a string with the amount and currency
-  return "v4v-" + genRandAlphaNum(5);
+  return "v4v-" + genRandAlphaNum(5)
 }
 
 /**
@@ -450,14 +455,14 @@ export function useGenerateHiveTransferOp(
 ) {
   // Returns a Hive transfer operation
   if (!from) {
-    from = "";
+    from = ""
   }
   if (!to) {
-    return null;
+    return null
   }
-  const amountString = useGetHiveAmountString(amountToSend, currencyToSend);
+  const amountString = useGetHiveAmountString(amountToSend, currencyToSend)
   if (checkCode) {
-    memo = memo ? memo + " " + checkCode : checkCode;
+    memo = memo ? memo + " " + checkCode : checkCode
   }
   const op = [
     "transfer",
@@ -467,6 +472,6 @@ export function useGenerateHiveTransferOp(
       amount: amountString,
       memo: memo,
     },
-  ];
-  return op;
+  ]
+  return op
 }
