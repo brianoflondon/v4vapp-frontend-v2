@@ -30,6 +30,7 @@ export default {
   no: "No",
   all: "All",
   keepsats: "KeepSats",
+  cannot_send_to_self: "You can't send to yourself",
   // Error
   expired_login: "Your login has expired",
   need_to_logout_login: "You need to logout and login again",
@@ -276,4 +277,4 @@ export default {
     "Put Username and Master Password direct into Hive Keychain.",
   store_safely: "Store the master password safely in a Password manager.",
   no_forgot_option: 'There is no "I forgot my keys option" on Hive.',
-};
+}

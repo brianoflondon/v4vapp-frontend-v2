@@ -4,6 +4,26 @@ import { useStoreUser } from "src/stores/storeUser"
 import { useGetChallenge, useValidateApi } from "src/use/useUtils"
 
 /**
+ * Checks if the given string is a likely valid BTC address format.
+ * Supports common mainnet/testnet legacy and segwit address prefixes.
+ *
+ * @param {string} address
+ * @returns {{ exists: boolean, valid: boolean, error: string, hiveAccname: string }}
+ */
+export function useBTCAddressExists(address) {
+  const value = String(address || "").trim()
+  const btcRegex = /^(bc1|tb1|bcrt1)[ac-hj-np-z02-9]{11,87}$|^[13mn2][a-km-zA-HJ-NP-Z1-9]{25,62}$/
+  const valid = btcRegex.test(value)
+
+  return {
+    exists: valid,
+    valid,
+    error: valid ? "" : "Invalid Bitcoin address",
+    hiveAccname: value,
+  }
+}
+
+/**
  * Returns a shortened Bitcoin address label suitable for button text.
  *
  * @param {string} address

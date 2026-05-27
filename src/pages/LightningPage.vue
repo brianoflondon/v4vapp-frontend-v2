@@ -379,6 +379,7 @@ import {
 import { useConfirmPayWithApi } from "src/use/useV4vapp"
 import { useHiveKeychainTransfer } from "src/use/useKeychain"
 import { useEVMAddressExists } from "src/use/useEVM"
+import { useBTCAddressExists } from "src/use/useBTC"
 import AskDetailsDialog from "components/lightning/AskDetailsDialog.vue"
 import AskHASDialog from "components/hive/AskHASDialog.vue"
 import KeychainShowQR from "components/hive/KeychainShowQR.vue"
@@ -722,13 +723,15 @@ async function decodeInvoice() {
     }
     // trim invoiceText
     invoiceText.value = invoiceText.value.trim()
-    const [isHiveAccount, isEVMAccount, dInvoiceValue] = await Promise.all([
+    const [isHiveAccount, isEVMAccount, isBTCAccount, dInvoiceValue] =
+      await Promise.all([
       useHiveAccountExists(invoiceText.value),
       useEVMAddressExists(invoiceText.value),
+      useBTCAddressExists(invoiceText.value),
       useDecodeLightningInvoice(invoiceText.value),
-    ])
+      ])
     dInvoice.value = dInvoiceValue
-    if (isHiveAccount.exists || isEVMAccount.valid) {
+    if (isHiveAccount.exists || isEVMAccount.valid || isBTCAccount.valid) {
       if (!storeUser.keepSatsBalanceNum) {
         errorMessage.value = t("keepssats_error")
         dInvoice.value = {
