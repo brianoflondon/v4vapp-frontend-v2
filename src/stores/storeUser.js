@@ -508,6 +508,21 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.apiTokenSet()
       this.expireCheck()
       console.log("storeUser.js: update called for", this.currentUser)
+
+      const currentLoginType = this.users[this.currentUser]?.loginType
+      if (currentLoginType && currentLoginType !== "hive") {
+        console.log(
+          "storeUser.js: skipping Hive API update for loginType",
+          currentLoginType,
+        )
+        this.currentDetails = null
+        this.currentProfile = {
+          name: this.users[this.currentUser]?.profileName || this.currentUser,
+        }
+        await this.updateSatsBalance(useCache)
+        return
+      }
+
       const details = await useHiveDetails(this.currentUser)
       console.log("storeUser.js: useHiveDetails returned", details)
       if (!details) {
@@ -597,9 +612,13 @@ export const useStoreUser = defineStore("useStoreUser", {
     ) {
       try {
         console.log("login", hiveAccname, keySelected)
-        this.dataLoading = true
-        const hiveDetails = await useHiveDetails(hiveAccname)
-        this.dataLoading = false
+        let hiveDetails = null
+        if (loginType === "hive") {
+          this.dataLoading = true
+          hiveDetails = await useHiveDetails(hiveAccname)
+          this.dataLoading = false
+        }
+
         let newUser
         if (hiveDetails) {
           const profileName = hiveDetails?.profile?.name || hiveAccname

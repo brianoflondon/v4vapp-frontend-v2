@@ -21,7 +21,7 @@
       "type": "chrome",
       "request": "launch",
       "name": "Quasar App: chrome",
-      "url": "https://localhost:9000",
+      "url": "https://localhost:9200",
       "webRoot": "${workspaceFolder}/src",
       "runtimeArgs": [
         "--allow-insecure-localhost"
