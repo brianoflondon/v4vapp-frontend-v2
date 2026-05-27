@@ -11,8 +11,14 @@
         active-class="user-list-active"
       >
         <q-item-section avatar>
-          <q-avatar>
+          <q-avatar v-if="user.loginType === 'hive'">
             <HiveAvatar :hiveAccname="user.hiveAccname" />
+          </q-avatar>
+          <q-avatar v-if="user.loginType === 'evm'" round>
+            <i class="fa-brands fa-ethereum"></i>
+          </q-avatar>
+          <q-avatar v-if="user.loginType === 'btc'" round>
+            <i class="fa-brands fa-btc"></i>
           </q-avatar>
         </q-item-section>
         <q-item-section>
@@ -52,24 +58,24 @@
 </template>
 
 <script setup>
-import { useStoreUser } from "src/stores/storeUser";
-import HiveAvatar from "components/utils/HiveAvatar.vue";
-const storeUser = useStoreUser();
+import { useStoreUser } from "src/stores/storeUser"
+import HiveAvatar from "components/utils/HiveAvatar.vue"
+const storeUser = useStoreUser()
 
-const emit = defineEmits(["update", "click", "user-clicked"]);
+const emit = defineEmits(["update", "click", "user-clicked"])
 
 function doClick(item) {
-  storeUser.switchUser(item);
-  emit("user-clicked", item);
+  storeUser.switchUser(item)
+  emit("user-clicked", item)
   navigator.clipboard.writeText(item).then(
     () => {
-      console.log("Copied to clipboard");
+      console.log("Copied to clipboard")
     },
     (err) => {
-      console.error("Failed to copy to clipboard", err);
+      console.error("Failed to copy to clipboard", err)
     },
-  );
-  emit("update", item);
+  )
+  emit("update", item)
 }
 </script>
 
