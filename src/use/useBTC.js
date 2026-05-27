@@ -12,7 +12,8 @@ import { useGetChallenge, useValidateApi } from "src/use/useUtils"
  */
 export function useBTCAddressExists(address) {
   const value = String(address || "").trim()
-  const btcRegex = /^(bc1|tb1|bcrt1)[ac-hj-np-z02-9]{11,87}$|^[13mn2][a-km-zA-HJ-NP-Z1-9]{25,62}$/
+  const btcRegex =
+    /^(bc1|tb1|bcrt1)[ac-hj-np-z02-9]{11,87}$|^[13mn2][a-km-zA-HJ-NP-Z1-9]{25,62}$/
   const valid = btcRegex.test(value)
 
   return {

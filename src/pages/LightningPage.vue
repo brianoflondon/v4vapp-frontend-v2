@@ -725,10 +725,10 @@ async function decodeInvoice() {
     invoiceText.value = invoiceText.value.trim()
     const [isHiveAccount, isEVMAccount, isBTCAccount, dInvoiceValue] =
       await Promise.all([
-      useHiveAccountExists(invoiceText.value),
-      useEVMAddressExists(invoiceText.value),
-      useBTCAddressExists(invoiceText.value),
-      useDecodeLightningInvoice(invoiceText.value),
+        useHiveAccountExists(invoiceText.value),
+        useEVMAddressExists(invoiceText.value),
+        useBTCAddressExists(invoiceText.value),
+        useDecodeLightningInvoice(invoiceText.value),
       ])
     dInvoice.value = dInvoiceValue
     if (isHiveAccount.exists || isEVMAccount.valid || isBTCAccount.valid) {
