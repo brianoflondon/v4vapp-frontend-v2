@@ -78,17 +78,73 @@ apiLogin.interceptors.request.use(
 )
 
 /**
- * Response interceptor stub for auth failures.
- * In the full solution this will trigger silent refresh when we have HttpOnly cookies.
- * For now it just logs and lets existing error handling (in useV4vapp etc.) do its job.
+ * Response interceptor for auth failures.
+ * Part of the full hardened auth solution (short-lived access + HttpOnly refresh cookie).
+ *
+ * On 401 from a protected endpoint:
+ *   - Try to silently refresh using the HttpOnly refresh cookie (sent automatically by browser)
+ *   - If successful, retry the original request with the new access token
+ *   - If refresh fails, clear local session and let the caller handle re-login
  */
 apiLogin.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error?.response?.status === 401 || error?.response?.status === 403) {
-      // Placeholder for future refresh logic + store.onAuthFailure()
-      console.warn("[auth] 401/403 on apiLogin — token may be expired or invalid", error?.config?.url)
+  async (error) => {
+    const originalRequest = error.config
+
+    if (
+      (error?.response?.status === 401 || error?.response?.status === 403) &&
+      !originalRequest._retry &&
+      originalRequest.url !== "/auth/refresh" &&
+      originalRequest.url !== "/auth/logout"
+    ) {
+      originalRequest._retry = true
+
+      try {
+        console.info("[auth] 401 received — attempting silent refresh via HttpOnly cookie")
+        const refreshResponse = await apiLogin.post("/auth/refresh")
+
+        if (refreshResponse?.data?.access_token) {
+          const newToken = refreshResponse.data.access_token
+
+          // Update the default header for future requests
+          apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+
+          // Also update the store if available (best effort)
+          try {
+            const { useStoreUser } = await import("src/stores/storeUser")
+            const storeUser = useStoreUser()
+            if (storeUser && typeof storeUser.setAccessToken === "function") {
+              storeUser.setAccessToken(newToken)
+            }
+          } catch (e) {
+            // store may not be initialized yet — not fatal
+          }
+
+          // Retry the original request with the new token
+          originalRequest.headers["Authorization"] = `Bearer ${newToken}`
+          return apiLogin(originalRequest)
+        }
+      } catch (refreshError) {
+        console.warn("[auth] Silent refresh failed — user will need to re-authenticate")
+        // Best effort: clear the in-memory token and local session so the app shows login UI naturally.
+        try {
+          const { useStoreUser } = await import("src/stores/storeUser")
+          const storeUser = useStoreUser()
+          if (storeUser) {
+            // Use logoutAll or logout depending on desired UX. logoutAll is safest for full reset.
+            if (typeof storeUser.logoutAll === "function") {
+              await storeUser.logoutAll()
+            } else if (typeof storeUser.logout === "function") {
+              await storeUser.logout()
+            }
+          }
+        } catch (e) {
+          // non-fatal
+        }
+        // Let the original 401 bubble up so calling code can show appropriate UI.
+      }
     }
+
     return Promise.reject(error)
   },
 )

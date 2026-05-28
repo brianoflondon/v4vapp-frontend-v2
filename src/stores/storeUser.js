@@ -64,17 +64,17 @@ export class HiveUser {
     }
   }
 
+  /** @deprecated Use the store's setAccessToken / accessTokens (in-memory only) instead. */
   setApiToken() {
-    // Set the token for the user
+    // Legacy path for old persisted apiToken shape. New code uses accessTokens + store setters.
     if (!this.apiToken) return false
     apiLogin.defaults.headers.common["Authorization"] =
       `Bearer ${this.apiToken}`
-    // need to test if the API token is working
     return true
   }
 
+  /** @deprecated */
   clearApiToken() {
-    // Clear the token for the user
     this.apiToken = null
     apiLogin.defaults.headers.common["Authorization"] = ""
     return true
@@ -159,6 +159,12 @@ export const useStoreUser = defineStore("useStoreUser", {
     pos: useStorage("pos", { receiveCurrency: "hbd" }),
     clientId: useStorage("clientId", generateUUID()),
     dataLoading: useStorage("dataLoading", false),
+
+    // IMPORTANT: accessTokens is deliberately NOT persisted.
+    // With the new short-lived + HttpOnly refresh cookie model, we no longer store
+    // long-lived JWTs in localStorage (major XSS hardening).
+    // Tokens here only live for the current browser session.
+    accessTokens: {},
   }),
 
   getters: {
@@ -195,8 +201,13 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     apiToken() {
       if (!this.currentUser) return null
+      // Prefer the non-persisted in-memory token (new hardened model)
+      if (this.accessTokens[this.currentUser]) {
+        return this.accessTokens[this.currentUser]
+      }
+      // Fallback to old persisted location (will be removed after full migration)
       const hiveUser = this.users[this.currentUser]
-      if (!hiveUser.apiToken) return null
+      if (!hiveUser?.apiToken) return null
       return hiveUser.apiToken
     },
     loginType() {
@@ -489,15 +500,25 @@ export const useStoreUser = defineStore("useStoreUser", {
   },
   actions: {
     initialize() {
-      // called once from the HiveLogin component. If we change any settings in the store,
-      // we can update them here.
+      // called once from the HiveLogin component.
       console.log("Store initialized")
-      // Iterate over users and set loginType to "hive" if not set change in v 1.19.0 and later
+
+      // Because we are invalidating all existing logins for the new auth model,
+      // aggressively remove any old persisted apiTokens from localStorage.
+      // This is a one-time migration step.
+      let strippedAny = false
       for (const userId in this.users) {
         const user = this.users[userId]
         if (!user.loginType) {
           user.loginType = "hive"
         }
+        if (user.apiToken) {
+          delete user.apiToken
+          strippedAny = true
+        }
+      }
+      if (strippedAny) {
+        console.info("[auth] Stripped old persisted access tokens (full re-login required after auth hardening)")
       }
     },
     /**
@@ -648,9 +669,10 @@ export const useStoreUser = defineStore("useStoreUser", {
             loginType,
           )
         }
+        // Store token only in non-persisted memory (new hardened auth model)
         if (apiToken) {
-          apiLogin.defaults.headers.common["Authorization"] =
-            `Bearer ${apiToken}`
+          this.accessTokens[hiveAccname] = apiToken
+          apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
         }
         this.users[hiveAccname] = newUser
         this.currentUser = hiveAccname
@@ -688,13 +710,27 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     apiTokenSet(hiveAccname = this.currentUser) {
       console.debug("Setting API Token for", hiveAccname)
-      if (hiveAccname in this.users && this.users[hiveAccname].apiToken) {
-        apiLogin.defaults.headers.common["Authorization"] =
-          `Bearer ${this.users[hiveAccname].apiToken}`
-        // need to test if the API token is working
+      const token = this.accessTokens[hiveAccname] || this.users[hiveAccname]?.apiToken
+      if (token) {
+        apiLogin.defaults.headers.common["Authorization"] = `Bearer ${token}`
         return true
       }
       return false
+    },
+
+    /**
+     * Set the current access token in memory only (new hardened auth model).
+     * Never persisted to localStorage.
+     */
+    setAccessToken(token) {
+      if (!this.currentUser) return
+      this.accessTokens[this.currentUser] = token
+      apiLogin.defaults.headers.common["Authorization"] = `Bearer ${token}`
+    },
+
+    /** @deprecated Use setAccessToken instead */
+    setTemporaryAccessToken(token) {
+      this.setAccessToken(token)
     },
     expireCheck() {
       // loop through users and check the expire time and if they
@@ -729,8 +765,11 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {Promise<void>} A promise that resolves when the logout process is complete.
      */
     async logout() {
-      if (this.currentUser in this.users) {
-        delete this.users[this.currentUser]
+      if (this.currentUser) {
+        delete this.accessTokens[this.currentUser]
+        if (this.currentUser in this.users) {
+          delete this.users[this.currentUser]
+        }
       }
       this.currentUser = null
       this.currentDetails = null
@@ -742,6 +781,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @async
      */
     async logoutAll() {
+      this.accessTokens = {}
       this.users = {}
       this.currentUser = null
       this.currentDetails = null
