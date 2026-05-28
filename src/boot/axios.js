@@ -114,6 +114,15 @@ api.interceptors.request.use(
 // Attach the refresh interceptor to BOTH instances so that 401/403 on any authenticated call
 // (whether through `api` or `apiLogin`) can trigger the silent refresh using the HttpOnly cookie.
 const refreshInterceptor = async (error) => {
+  // Very loud diagnostic log — this fires on *every* error response through api or apiLogin
+  console.log(
+    "%c[AUTH-DEBUG] === Response ERROR intercepted ===",
+    "color: magenta; font-weight: bold",
+    "url:", error?.config?.url,
+    "status:", error?.response?.status,
+    "instance base:", error?.config?.baseURL
+  );
+
   const originalRequest = error.config
 
   if (
