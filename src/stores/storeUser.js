@@ -43,6 +43,9 @@ export class HiveUser {
     apiToken = null,
     loginType = "hive",
   ) {
+    // Note: For passkeys (authKey = "webauthn"), the `expire` field is now largely
+    // deprecated in favor of the server-side rotating refresh token cookie system
+    // introduced in the 2026 auth hardening.
     this.hiveAccname = hiveAccname
     this.profileName = profileName
     this.keySelected = keySelected
@@ -639,12 +642,18 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     /**
      * Logs in a user with the provided credentials.
+     *
+     * NOTE (2026 auth hardening):
+     * For passkey logins (authKey === "webauthn"), we recommend passing `null` for `expire`.
+     * Session lifetime is now primarily controlled by the rotating HttpOnly refresh token
+     * cookie on the backend, not by this client-side expire value.
+     *
      * @param {string} hiveAccname - The Hive account name.
      * @param {string} keySelected - The selected key.
-     * @param {string|null} authKey - The authentication key (optional) set by HAS.
-     * @param {string|null} expire - The expiration date (optional).
+     * @param {string|null} authKey - The authentication key (optional) set by HAS / "webauthn" for passkeys.
+     * @param {string|null} expire - The expiration date (optional). For passkeys, prefer null.
      * @param {string|null} token - The token (optional).
-     * @param {string|null} apiToken - The API token (optional).
+     * @param {string|null} apiToken - The API token (optional). Stored only in-memory after hardening.
      * @returns {Promise<void>} - A promise that resolves when the login is successful.
      */
     async login(
@@ -758,11 +767,21 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.setAccessToken(token)
     },
     expireCheck() {
-      // loop through users and check the expire time and if they
-      // have expired, log them out.
+      // With the 2026 auth hardening, passkey (webauthn) accounts no longer use
+      // a short client-side expire for session lifetime. Their continuity is
+      // managed by the HttpOnly refresh token cookie (rotated on use).
+      //
+      // We intentionally skip the forced logout for passkey accounts here.
       for (const user in this.users) {
+        const hiveUser = this.users[user]
+
+        // Skip expiration enforcement for passkeys - they use refresh tokens now
+        if (hiveUser.authKey === "webauthn") {
+          continue
+        }
+
         const t = i18n.global.t
-        if (this.users[user].expire < Date.now()) {
+        if (hiveUser.expire && hiveUser.expire < Date.now()) {
           Notify.create({
             message: t("expired_login") + " - " + t("need_to_logout_login"),
             color: "negative",
@@ -777,7 +796,7 @@ export const useStoreUser = defineStore("useStoreUser", {
             ],
           })
           console.debug("User expired", user)
-          delete this.logout()
+          this.logout() // fixed: was previously "delete this.logout()" which did nothing useful
         }
       }
       if (this.users.length === 0 || Object.keys(this.users).length === 0) {

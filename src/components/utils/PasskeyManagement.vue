@@ -308,15 +308,17 @@ async function doPasskeyLogin() {
   }
   const result = await usePasskeyLogin(hiveAccObj.value.value);
   if (result.success) {
-    let expireDate = new Date();
     const loginType = useIsEVMAddress(hiveAccObj.value.value) ? "evm" : "hive";
-    expireDate.setDate(expireDate.getDate() + 7);
-    // StoreUser.login
+
+    // With the 2026 auth hardening (short-lived access tokens + HttpOnly refresh cookies),
+    // we no longer rely on a client-side 7-day expire for passkeys.
+    // Session continuity is now handled by the rotating refresh token cookie.
+    // We pass null for expire so expireCheck() does not forcibly log the user out.
     await storeUser.login(
       hiveAccObj.value.value,
       "active",
       "webauthn",
-      expireDate,
+      null, // expire - intentionally not set for passkeys
       null,
       result.token,
       loginType,
