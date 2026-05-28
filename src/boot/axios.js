@@ -70,9 +70,8 @@ console.log("%c[AUTH-DEBUG] >>> NEW AXIOS BOOT FILE LOADED WITH REFRESH INTERCEP
 // =====================================================
 
 /**
- * Request interceptor — ensures Authorization header from the auth store is present.
- * The apiLogin instance has withCredentials: true so the browser will send the
- * HttpOnly refresh_token cookie (set on /auth/*) when calling /auth/refresh cross-origin.
+ * Request interceptor (currently only on apiLogin for auth routes).
+ * The main refresh logic lives in the *response* interceptor attached to BOTH api and apiLogin.
  */
 apiLogin.interceptors.request.use(
   (config) => {
@@ -91,6 +90,18 @@ apiLogin.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
+// Also attach to the main `api` instance so we get consistent [AUTH-DEBUG] logging
+// for outgoing authenticated calls (most of the app traffic goes through `api`).
+api.interceptors.request.use(
+  (config) => {
+    if (config.url?.includes("/auth/")) {
+      console.log("[AUTH-DEBUG] Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
+    }
+    return config
+  },
+  (error) => Promise.reject(error),
+)
+
 /**
  * Response interceptor for auth failures.
  * Part of the full hardened auth solution (short-lived access + HttpOnly refresh cookie).
@@ -100,81 +111,82 @@ apiLogin.interceptors.request.use(
  *   - If successful, retry the original request with the new access token
  *   - If refresh fails, clear local session and let the caller handle re-login
  */
-apiLogin.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config
+// Attach the refresh interceptor to BOTH instances so that 401/403 on any authenticated call
+// (whether through `api` or `apiLogin`) can trigger the silent refresh using the HttpOnly cookie.
+const refreshInterceptor = async (error) => {
+  const originalRequest = error.config
 
-    if (
-      (error?.response?.status === 401 || error?.response?.status === 403) &&
-      !originalRequest._retry &&
-      originalRequest.url !== "/auth/refresh" &&
-      originalRequest.url !== "/auth/logout"
-    ) {
-      originalRequest._retry = true
+  if (
+    (error?.response?.status === 401 || error?.response?.status === 403) &&
+    !originalRequest._retry &&
+    originalRequest.url !== "/auth/refresh" &&
+    originalRequest.url !== "/auth/logout"
+  ) {
+    originalRequest._retry = true
 
-      console.log("%c[AUTH-DEBUG] >>> 401/403 intercepted on:", "color: orange; font-weight: bold", originalRequest?.url)
+    console.log("%c[AUTH-DEBUG] >>> 401/403 intercepted on:", "color: orange; font-weight: bold", originalRequest?.url)
 
-      try {
-        console.info("[auth] 401 received — attempting silent refresh via HttpOnly cookie")
-        console.log("[AUTH-DEBUG] Calling POST /auth/refresh (relying on HttpOnly cookie)")
+    try {
+      console.info("[auth] 401 received — attempting silent refresh via HttpOnly cookie")
+      console.log("[AUTH-DEBUG] Calling POST /auth/refresh (relying on HttpOnly cookie)")
 
-        const refreshResponse = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
+      const refreshResponse = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
 
-        console.log("[AUTH-DEBUG] /auth/refresh response status:", refreshResponse?.status)
-        console.log("[AUTH-DEBUG] /auth/refresh response data:", refreshResponse?.data)
+      console.log("[AUTH-DEBUG] /auth/refresh response status:", refreshResponse?.status)
+      console.log("[AUTH-DEBUG] /auth/refresh response data:", refreshResponse?.data)
 
-        if (refreshResponse?.data?.access_token) {
-          const newToken = refreshResponse.data.access_token
+      if (refreshResponse?.data?.access_token) {
+        const newToken = refreshResponse.data.access_token
 
-          console.log("%c[AUTH-DEBUG] Silent refresh SUCCESS — got new access token", "color: lime")
+        console.log("%c[AUTH-DEBUG] Silent refresh SUCCESS — got new access token", "color: lime")
 
-          // Update the default header for future requests
-          apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+        // Update default headers on BOTH instances
+        api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+        apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
 
-          // Also update the store if available (best effort)
-          try {
-            const { useStoreUser } = await import("src/stores/storeUser")
-            const storeUser = useStoreUser()
-            if (storeUser && typeof storeUser.setAccessToken === "function") {
-              storeUser.setAccessToken(newToken)
-            }
-          } catch (e) {
-            // store may not be initialized yet — not fatal
-          }
-
-          // Retry the original request with the new token
-          originalRequest.headers["Authorization"] = `Bearer ${newToken}`
-          return apiLogin(originalRequest)
-        } else {
-          console.warn("[AUTH-DEBUG] /auth/refresh responded but no access_token in body")
-        }
-      } catch (refreshError) {
-        console.warn("[auth] Silent refresh failed — user will need to re-authenticate")
-        console.error("[AUTH-DEBUG] /auth/refresh FAILED. Error:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
-
-        // Best effort: clear the in-memory token and local session so the app shows login UI naturally.
+        // Best-effort store update
         try {
           const { useStoreUser } = await import("src/stores/storeUser")
           const storeUser = useStoreUser()
-          if (storeUser) {
-            // Use logoutAll or logout depending on desired UX. logoutAll is safest for full reset.
-            if (typeof storeUser.logoutAll === "function") {
-              await storeUser.logoutAll()
-            } else if (typeof storeUser.logout === "function") {
-              await storeUser.logout()
-            }
+          if (storeUser && typeof storeUser.setAccessToken === "function") {
+            storeUser.setAccessToken(newToken)
           }
         } catch (e) {
           // non-fatal
         }
-        // Let the original 401 bubble up so calling code can show appropriate UI.
+
+        // Retry original request (global axios works because we patched the header on the request)
+        originalRequest.headers["Authorization"] = `Bearer ${newToken}`
+        return axios(originalRequest)
+      } else {
+        console.warn("[AUTH-DEBUG] /auth/refresh responded but no access_token in body")
+      }
+    } catch (refreshError) {
+      console.warn("[auth] Silent refresh failed — user will need to re-authenticate")
+      console.error("[AUTH-DEBUG] /auth/refresh FAILED. Error:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
+
+      // Force logout on permanent refresh failure
+      try {
+        const { useStoreUser } = await import("src/stores/storeUser")
+        const storeUser = useStoreUser()
+        if (storeUser) {
+          if (typeof storeUser.logoutAll === "function") {
+            await storeUser.logoutAll()
+          } else if (typeof storeUser.logout === "function") {
+            await storeUser.logout()
+          }
+        }
+      } catch (e) {
+        // non-fatal
       }
     }
+  }
 
-    return Promise.reject(error)
-  },
-)
+  return Promise.reject(error)
+}
+
+api.interceptors.response.use((response) => response, refreshInterceptor)
+apiLogin.interceptors.response.use((response) => response, refreshInterceptor)
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
