@@ -59,7 +59,10 @@ const lightningAddressDomainSuffix = "v4v.app"
 const lightningAddressDomainPrefix = useDevAccounts ? "d" : ""
 
 const api = axios.create({ baseURL: apiURL })
-const apiLogin = axios.create({ baseURL: apiLoginURL })
+const apiLogin = axios.create({ 
+  baseURL: apiLoginURL,
+  withCredentials: true,   // REQUIRED for the HttpOnly refresh_token cookie to be sent on cross-origin calls (e.g. dev.v4v.app → devapi.v4v.app)
+})
 
 // =====================================================
 // DEBUG PATCH - REMOVE AFTER DIAGNOSIS
@@ -68,8 +71,8 @@ console.log("%c[AUTH-DEBUG] >>> NEW AXIOS BOOT FILE LOADED WITH REFRESH INTERCEP
 
 /**
  * Request interceptor — ensures Authorization header from the auth store is present.
- * Prepared for the full hardened auth solution (short-lived tokens + silent HttpOnly refresh).
- * TODO(Phase 2): add logic here or in response interceptor for silent refresh on 401.
+ * The apiLogin instance has withCredentials: true so the browser will send the
+ * HttpOnly refresh_token cookie (set on /auth/*) when calling /auth/refresh cross-origin.
  */
 apiLogin.interceptors.request.use(
   (config) => {
@@ -116,7 +119,7 @@ apiLogin.interceptors.response.use(
         console.info("[auth] 401 received — attempting silent refresh via HttpOnly cookie")
         console.log("[AUTH-DEBUG] Calling POST /auth/refresh (relying on HttpOnly cookie)")
 
-        const refreshResponse = await apiLogin.post("/auth/refresh")
+        const refreshResponse = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
 
         console.log("[AUTH-DEBUG] /auth/refresh response status:", refreshResponse?.status)
         console.log("[AUTH-DEBUG] /auth/refresh response data:", refreshResponse?.data)

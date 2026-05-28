@@ -176,36 +176,41 @@ export const useStoreUser = defineStore("useStoreUser", {
   }),
 
   getters: {
-    hiveAccname() {
+    // Internal safe accessor — prevents crashes when currentUser points to a missing entry
+    // (can happen during failed refresh, logout races, or partial state).
+    _currentHiveUser() {
       if (!this.currentUser) return null
-      return this.users[this.currentUser].hiveAccname
+      const u = this.users[this.currentUser]
+      return u || null
+    },
+
+    hiveAccname() {
+      const u = this._currentHiveUser
+      return u ? u.hiveAccname : null
     },
     profileName() {
-      if (!this.currentUser) return null
-      return this.users[this.currentUser].profileName
+      const u = this._currentHiveUser
+      return u ? u.profileName : null
     },
     loginAge() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      return (Date.now() - hiveUser.timestamp) / 1000
+      const u = this._currentHiveUser
+      if (!u) return null
+      return (Date.now() - u.timestamp) / 1000
     },
     loginHASExpire() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      if (!hiveUser.expire) return null
-      return (hiveUser.expire - Date.now()) / 1000
+      const u = this._currentHiveUser
+      if (!u || !u.expire) return null
+      return (u.expire - Date.now()) / 1000
     },
     authKey() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      if (!hiveUser.authKey) return null
-      return hiveUser.authKey
+      const u = this._currentHiveUser
+      if (!u || !u.authKey) return null
+      return u.authKey
     },
     token() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      if (!hiveUser.token) return null
-      return hiveUser.token
+      const u = this._currentHiveUser
+      if (!u || !u.token) return null
+      return u.token
     },
     apiToken() {
       if (!this.currentUser) return null
@@ -214,19 +219,17 @@ export const useStoreUser = defineStore("useStoreUser", {
         return this.accessTokens[this.currentUser]
       }
       // Fallback to old persisted location (will be removed after full migration)
-      const hiveUser = this.users[this.currentUser]
-      if (!hiveUser?.apiToken) return null
-      return hiveUser.apiToken
+      const u = this._currentHiveUser
+      if (!u?.apiToken) return null
+      return u.apiToken
     },
     loginType() {
-      if (!this.currentUser) return null
-      const hiveUser = this.users[this.currentUser]
-      return hiveUser.loginType
+      const u = this._currentHiveUser
+      return u ? u.loginType : null
     },
     user() {
-      // Return the HiveUser object for the passed user hiveAccname
-      if (!this.currentUser) return null
-      return this.users[this.currentUser]
+      // Return the HiveUser object for the current user
+      return this._currentHiveUser
     },
     /**
      * Returns the number of users in the store.
@@ -242,22 +245,22 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {string} The login method. Possible values are "none", "has", or "keychain".
      */
     loginMethod() {
-      if (!this.currentUser) return "HiveKeychainQR"
-      const hiveUser = this.users[this.currentUser]
-      if (hiveUser.authKey) return "HAS"
+      const u = this._currentHiveUser
+      if (!u) return "HiveKeychainQR"
+      if (u.authKey) return "HAS"
       return "HiveKeychain"
     },
     isHAS() {
-      if (!this.currentUser) return false
-      const hiveUser = this.users[this.currentUser]
-      console.debug(hiveUser)
-      if (hiveUser.authKey) return true
+      const u = this._currentHiveUser
+      if (!u) return false
+      console.debug(u)
+      if (u.authKey) return true
       return false
     },
     isKeychain() {
-      if (!this.currentUser) return false
-      const hiveUser = this.users[this.currentUser]
-      if (hiveUser.authKey) return false
+      const u = this._currentHiveUser
+      if (!u) return false
+      if (u.authKey) return false
       return true
     },
     /**
