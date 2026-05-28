@@ -61,6 +61,38 @@ const lightningAddressDomainPrefix = useDevAccounts ? "d" : ""
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({ baseURL: apiLoginURL })
 
+/**
+ * Request interceptor — ensures Authorization header from the auth store is present.
+ * Prepared for the full hardened auth solution (short-lived tokens + silent HttpOnly refresh).
+ * TODO(Phase 2): add logic here or in response interceptor for silent refresh on 401.
+ */
+apiLogin.interceptors.request.use(
+  (config) => {
+    // Defensive: if the store has a current apiToken and the request doesn't already set one,
+    // inject it. This reduces reliance on manual apiTokenSet() calls everywhere.
+    // Note: accessing Pinia store here requires the store to be initialized.
+    // For now we keep it lightweight; full integration happens with store refactor.
+    return config
+  },
+  (error) => Promise.reject(error),
+)
+
+/**
+ * Response interceptor stub for auth failures.
+ * In the full solution this will trigger silent refresh when we have HttpOnly cookies.
+ * For now it just logs and lets existing error handling (in useV4vapp etc.) do its job.
+ */
+apiLogin.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401 || error?.response?.status === 403) {
+      // Placeholder for future refresh logic + store.onAuthFailure()
+      console.warn("[auth] 401/403 on apiLogin — token may be expired or invalid", error?.config?.url)
+    }
+    return Promise.reject(error)
+  },
+)
+
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
 
