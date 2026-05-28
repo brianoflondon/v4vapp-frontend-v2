@@ -61,6 +61,11 @@ const lightningAddressDomainPrefix = useDevAccounts ? "d" : ""
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({ baseURL: apiLoginURL })
 
+// =====================================================
+// DEBUG PATCH - REMOVE AFTER DIAGNOSIS
+console.log("%c[AUTH-DEBUG] >>> NEW AXIOS BOOT FILE LOADED WITH REFRESH INTERCEPTOR <<<", "color: cyan; font-weight: bold; font-size: 13px")
+// =====================================================
+
 /**
  * Request interceptor — ensures Authorization header from the auth store is present.
  * Prepared for the full hardened auth solution (short-lived tokens + silent HttpOnly refresh).
@@ -72,6 +77,12 @@ apiLogin.interceptors.request.use(
     // inject it. This reduces reliance on manual apiTokenSet() calls everywhere.
     // Note: accessing Pinia store here requires the store to be initialized.
     // For now we keep it lightweight; full integration happens with store refactor.
+
+    // DEBUG
+    if (config.url?.includes("/auth/")) {
+      console.log("[AUTH-DEBUG] Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
+    }
+
     return config
   },
   (error) => Promise.reject(error),
@@ -99,12 +110,21 @@ apiLogin.interceptors.response.use(
     ) {
       originalRequest._retry = true
 
+      console.log("%c[AUTH-DEBUG] >>> 401/403 intercepted on:", "color: orange; font-weight: bold", originalRequest?.url)
+
       try {
         console.info("[auth] 401 received — attempting silent refresh via HttpOnly cookie")
+        console.log("[AUTH-DEBUG] Calling POST /auth/refresh (relying on HttpOnly cookie)")
+
         const refreshResponse = await apiLogin.post("/auth/refresh")
+
+        console.log("[AUTH-DEBUG] /auth/refresh response status:", refreshResponse?.status)
+        console.log("[AUTH-DEBUG] /auth/refresh response data:", refreshResponse?.data)
 
         if (refreshResponse?.data?.access_token) {
           const newToken = refreshResponse.data.access_token
+
+          console.log("%c[AUTH-DEBUG] Silent refresh SUCCESS — got new access token", "color: lime")
 
           // Update the default header for future requests
           apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
@@ -123,9 +143,13 @@ apiLogin.interceptors.response.use(
           // Retry the original request with the new token
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`
           return apiLogin(originalRequest)
+        } else {
+          console.warn("[AUTH-DEBUG] /auth/refresh responded but no access_token in body")
         }
       } catch (refreshError) {
         console.warn("[auth] Silent refresh failed — user will need to re-authenticate")
+        console.error("[AUTH-DEBUG] /auth/refresh FAILED. Error:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
+
         // Best effort: clear the in-memory token and local session so the app shows login UI naturally.
         try {
           const { useStoreUser } = await import("src/stores/storeUser")

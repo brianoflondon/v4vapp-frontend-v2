@@ -1,5 +1,10 @@
 import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
+
+// =====================================================
+// DEBUG PATCH - REMOVE AFTER DIAGNOSIS
+console.log("%c[AUTH-DEBUG] >>> NEW storeUser.js MODULE LOADED <<<", "color: magenta; font-weight: bold; font-size: 13px")
+// =====================================================
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
@@ -500,6 +505,13 @@ export const useStoreUser = defineStore("useStoreUser", {
   },
   actions: {
     initialize() {
+      // =====================================================
+      // DEBUG PATCH - REMOVE AFTER DIAGNOSIS
+      // =====================================================
+      console.log("%c[AUTH-DEBUG] >>> NEW HARDENED AUTH CODE IS RUNNING <<<", "color: lime; font-weight: bold; font-size: 14px")
+      console.log("[AUTH-DEBUG] initialize() called. Current users in store:", Object.keys(this.users))
+      console.log("[AUTH-DEBUG] Raw users object at init:", JSON.stringify(this.users, null, 2))
+
       // called once from the HiveLogin component.
       console.log("Store initialized")
 
@@ -507,19 +519,32 @@ export const useStoreUser = defineStore("useStoreUser", {
       // aggressively remove any old persisted apiTokens from localStorage.
       // This is a one-time migration step.
       let strippedAny = false
+      const accountsWithOldTokens = []
+
       for (const userId in this.users) {
         const user = this.users[userId]
         if (!user.loginType) {
           user.loginType = "hive"
         }
         if (user.apiToken) {
+          accountsWithOldTokens.push(userId)
+          console.warn("[AUTH-DEBUG] Found OLD apiToken on account:", userId, "— will strip it")
           delete user.apiToken
           strippedAny = true
         }
       }
+
       if (strippedAny) {
         console.info("[auth] Stripped old persisted access tokens (full re-login required after auth hardening)")
+        console.warn("[AUTH-DEBUG] Accounts that had old tokens stripped:", accountsWithOldTokens)
+      } else {
+        console.log("[AUTH-DEBUG] No old apiToken fields found in persisted users during initialize().")
       }
+
+      console.log("[AUTH-DEBUG] Users object AFTER stripping attempt:", JSON.stringify(this.users, null, 2))
+      // =====================================================
+      // END DEBUG PATCH
+      // =====================================================
     },
     /**
      * Updates the user details and profile.
