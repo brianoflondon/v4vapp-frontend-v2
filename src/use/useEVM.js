@@ -96,12 +96,18 @@ export async function useEVMLoginFlow() {
           const validate = await useValidateApi(clientId, signatureData);
           console.log("validate: ", validate);
           console.log("logging in with EVM");
+          console.log("[AUTH-DEBUG] EVM login: Passing expire=null (consistent with passkeys). Short backend token + re-signing provides security.");
 
           await storeUser.login(
             evmConnected,
             "EVM",
             null,
-            validate.data?.expire * 1000,
+            // 2026 auth hardening: pass null for expire (consistent with passkeys).
+            // EVM sessions are not forced out by a client-side expire.
+            // Security comes from short-lived backend access tokens (30 min default)
+            // + requirement to re-sign with the wallet private key.
+            // The axios interceptor will attempt silent refresh via cookie if available.
+            null,
             null,
             validate.data.access_token,
             "evm",

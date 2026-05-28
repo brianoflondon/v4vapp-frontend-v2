@@ -708,6 +708,14 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.accessTokens[hiveAccname] = apiToken
           apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
         }
+
+        // Debug logging for auth hardening changes
+        if (loginType === "evm" || loginType === "btc" || authKey === "webauthn") {
+          console.log(
+            `[AUTH-DEBUG] login(): Storing ${loginType || authKey} user. expire passed=${expire}, using in-memory accessTokens only.`
+          )
+        }
+
         this.users[hiveAccname] = newUser
         this.currentUser = hiveAccname
         if (hiveDetails) {
@@ -767,21 +775,40 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.setAccessToken(token)
     },
     expireCheck() {
-      // With the 2026 auth hardening, passkey (webauthn) accounts no longer use
-      // a short client-side expire for session lifetime. Their continuity is
-      // managed by the HttpOnly refresh token cookie (rotated on use).
+      console.log("[AUTH-DEBUG] expireCheck() running... (checking for legacy expires only)");
+      // === 2026 Auth Hardening - Consistent Session Model ===
       //
-      // We intentionally skip the forced logout for passkey accounts here.
+      // We no longer use the client-side `expire` field to forcibly log out users
+      // for modern login methods. This prevents the regression where EVM/BTC users
+      // (and previously passkeys) were being kicked out after the short backend
+      // access token lifetime (~30 min).
+      //
+      // Security model (no sacrifice):
+      // - All methods get short-lived access tokens from the backend.
+      // - Keychain, FIDO, and (where possible) others use HttpOnly refresh cookies
+      //   with rotation for seamless continuity.
+      // - EVM and BTC require re-signing with the private key on re-auth.
+      // - The `expireCheck()` soft timeout is now only applied to legacy flows.
+      //
+      // Only enforce the legacy expire field for traditional Hive Keychain logins where appropriate.
       for (const user in this.users) {
         const hiveUser = this.users[user]
 
-        // Skip expiration enforcement for passkeys - they use refresh tokens now
-        if (hiveUser.authKey === "webauthn") {
+        // Skip for passkeys, EVM, and BTC - consistent treatment after auth hardening
+        if (
+          hiveUser.authKey === "webauthn" ||
+          hiveUser.loginType === "evm" ||
+          hiveUser.loginType === "btc"
+        ) {
+          console.log(
+            `[AUTH-DEBUG] expireCheck: Skipping expiration enforcement for ${hiveUser.loginType || 'unknown'} (authKey=${hiveUser.authKey || 'none'}) - using new refresh model`
+          )
           continue
         }
 
         const t = i18n.global.t
         if (hiveUser.expire && hiveUser.expire < Date.now()) {
+          console.log(`[AUTH-DEBUG] expireCheck: Traditional login for ${user} has expired (expire=${hiveUser.expire}). Forcing logout.`)
           Notify.create({
             message: t("expired_login") + " - " + t("need_to_logout_login"),
             color: "negative",
@@ -796,7 +823,7 @@ export const useStoreUser = defineStore("useStoreUser", {
             ],
           })
           console.debug("User expired", user)
-          this.logout() // fixed: was previously "delete this.logout()" which did nothing useful
+          this.logout()
         }
       }
       if (this.users.length === 0 || Object.keys(this.users).length === 0) {

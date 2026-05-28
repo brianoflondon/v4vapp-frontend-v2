@@ -162,11 +162,15 @@ export async function useBTCLoginFlow() {
       return null
     }
 
+    console.log("[AUTH-DEBUG] BTC login: Passing expire=null (consistent with passkeys/EVM). Security via short access tokens + wallet re-signing.");
     await storeUser.login(
       paymentAddress,
       "BTC",
       null,
-      validate.data?.expire * 1000,
+      // 2026 auth hardening: pass null for expire (consistent with passkeys and EVM).
+      // BTC sessions are not forced out by a client-side expire.
+      // Security is provided by short-lived backend access tokens + re-signing requirement.
+      null,
       null,
       validate.data.access_token,
       "btc",

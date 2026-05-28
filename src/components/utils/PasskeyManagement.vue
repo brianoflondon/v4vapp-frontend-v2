@@ -314,6 +314,7 @@ async function doPasskeyLogin() {
     // we no longer rely on a client-side 7-day expire for passkeys.
     // Session continuity is now handled by the rotating refresh token cookie.
     // We pass null for expire so expireCheck() does not forcibly log the user out.
+    console.log("[AUTH-DEBUG] Passkey login: Passing expire=null. Using refresh token model (consistent with EVM/BTC changes).");
     await storeUser.login(
       hiveAccObj.value.value,
       "active",
