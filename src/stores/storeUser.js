@@ -811,22 +811,9 @@ export const useStoreUser = defineStore("useStoreUser", {
 
         const t = i18n.global.t
         if (hiveUser.expire && hiveUser.expire < Date.now()) {
-          console.log(`[AUTH-DEBUG] expireCheck: Traditional login for ${user} has expired (expire=${hiveUser.expire}). Forcing logout.`)
-          Notify.create({
-            message: t("expired_login") + " - " + t("need_to_logout_login"),
-            color: "negative",
-            position: "center",
-            timeout: 0,
-            actions: [
-              {
-                label: t("ok"),
-                color: "white",
-                handler: () => {},
-              },
-            ],
-          })
-          console.debug("User expired", user)
-          this.logout()
+          console.log(`[AUTH-DEBUG] expireCheck: Legacy expire field present for ${user} (expire=${hiveUser.expire}). In the 2026 refresh-cookie model we no longer force logout here — relying on short access tokens + /auth/refresh instead.`)
+          // Intentionally do NOT call this.logout() anymore for the new auth system.
+          // The axios response interceptor on 401 + rotating refresh_token cookie is now responsible for session continuity.
         }
       }
       if (this.users.length === 0 || Object.keys(this.users).length === 0) {

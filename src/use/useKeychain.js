@@ -198,10 +198,10 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         hiveAccObj.value,
         props.keyType,
         null,
-        validate.data?.expire * 1000,
+        null,                    // Do not pass client-side expire in the new short-token + HttpOnly refresh cookie model
         null,
         validate.data.access_token,
-        "hive", // loginType
+        "hive",
       )
       console.log("storeUser: ", storeUser.users)
       note({

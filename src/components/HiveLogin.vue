@@ -279,7 +279,7 @@ async function connectEVM() {
             evmConnected.value,
             "EVM",
             null,
-            validate.data?.expire * 1000,
+            null,                    // No client-side expire in the new model
             null,
             validate.data.access_token,
             "evm",

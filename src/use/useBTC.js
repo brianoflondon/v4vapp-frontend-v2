@@ -37,6 +37,20 @@ export function useShortBTCAddress(address) {
 }
 
 /**
+ * Simple boolean check if an address looks like a Bitcoin address.
+ * Useful for determining loginType in passkey flows, etc.
+ *
+ * @param {string} address
+ * @returns {boolean}
+ */
+export function useIsBTCAddress(address) {
+  const value = String(address || "").trim()
+  const btcRegex =
+    /^(bc1|tb1|bcrt1)[ac-hj-np-z02-9]{11,87}$|^[13mn2][a-km-zA-HJ-NP-Z1-9]{25,62}$/
+  return btcRegex.test(value)
+}
+
+/**
  * Uses Sats Connect to request BTC address access, sign backend challenge,
  * and authenticate against the existing validation endpoint.
  *
