@@ -78,6 +78,23 @@
               {{ storeUser.hiveAccname }}@v4v.app
             </div>
           </div>
+
+          <!-- Visual indicator for accounts that had old tokens stripped -->
+          <q-chip
+            v-if="needsReauth"
+            dense
+            color="warning"
+            text-color="black"
+            size="sm"
+            class="q-ml-sm"
+            style="font-size: 0.65rem; height: 18px;"
+          >
+            Re-login needed
+            <q-tooltip>
+              This account's old session was cleared for security during the auth upgrade.<br>
+              Log in again with @{{ storeUser.currentUser }} to restore KeepSats balances and protected features.
+            </q-tooltip>
+          </q-chip>
           <div class="row">
             <div style="font-size: 1.2rem">
               <q-checkbox
@@ -323,12 +340,17 @@ const lightDark = computed(() => {
 })
 
 const nonZeroKeepSats = computed(() => {
+  console.debug("[DEBUG-KeepSats] nonZeroKeepSats — currentKeepSats:", storeUser.currentKeepSats, "keepSatsBalance:", storeUser.keepSatsBalance, "keepSatsBalanceNum:", storeUser.keepSatsBalanceNum)
   if (storeUser.currentKeepSats) {
     if (storeUser.currentKeepSats !== "0") {
       return true
     }
   }
   return false
+})
+
+const needsReauth = computed(() => {
+  return !!storeUser.currentUser && !storeUser.apiToken
 })
 
 const balances = computed(() => {

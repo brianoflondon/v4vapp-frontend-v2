@@ -548,6 +548,10 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
 
       console.log("[AUTH-DEBUG] Users object AFTER stripping attempt:", JSON.stringify(this.users, null, 2))
+      console.log("[DEBUG-KeepSats] accessTokens after stripping:", JSON.stringify(this.accessTokens))
+      if (accountsWithOldTokens.length > 0) {
+        console.warn("[DEBUG-KeepSats] Accounts that lost their apiToken will skip KeepSats fetches until they re-login or get a fresh token via refresh.")
+      }
       // =====================================================
       // END DEBUG PATCH
       // =====================================================
@@ -598,8 +602,16 @@ export const useStoreUser = defineStore("useStoreUser", {
      * or null if an error occurred.
      */
     async updateSatsBalance(useCache = true) {
-      if (this.currentUser && this.apiToken) {
-        const currentSatsBalance = this.currentKeepSats?.net_sats
+      if (!this.currentUser) {
+        console.warn("[AUTH-DEBUG] updateSatsBalance: skipped — no currentUser")
+        return null
+      }
+      if (!this.apiToken) {
+        console.warn("[AUTH-DEBUG] updateSatsBalance: skipped — no apiToken for currentUser", this.currentUser, "accessTokens keys:", Object.keys(this.accessTokens || {}))
+        return null
+      }
+
+      const currentSatsBalance = this.currentKeepSats?.net_sats
         try {
           this.dataLoading = true
           let answer = null
@@ -618,6 +630,7 @@ export const useStoreUser = defineStore("useStoreUser", {
             return null
           }
           this.currentKeepSats = answer
+          console.log("[DEBUG-KeepSats] Successfully fetched and set currentKeepSats for", this.currentUser, "net_sats:", this.currentKeepSats?.net_sats)
           // Ensure net_sats is never -0
           if (this.currentKeepSats && this.currentKeepSats.net_sats === 0) {
             this.currentKeepSats.net_sats = 0
