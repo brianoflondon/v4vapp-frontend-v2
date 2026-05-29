@@ -21,6 +21,12 @@ import { i18n } from "boot/i18n"
 const storeAPIStatus = useStoreAPIStatus()
 const storeCoingecko = useCoingeckoStore()
 
+// Deduplicate concurrent silent refresh attempts.
+// Many components (CreditCard, MainLayout, etc.) call update() / ensureAccessToken()
+// extremely early during boot. We only want one /auth/refresh network call per
+// cold start until we have a result for the cookie owner.
+let cookieRestorePromise = null
+
 export class HiveUser {
   /**
    * Represents a User object.
@@ -92,6 +98,8 @@ export class HiveUser {
   }
 
   get hasApiToken() {
+    // Note: after auth hardening this is usually false for persisted objects
+    // (tokens live in the store's accessTokens map). Use store.hasLiveSession() instead.
     if (this.apiToken) return true
     return false
   }
@@ -118,14 +126,13 @@ export class HiveUser {
   }
 
   get isHAS() {
-    if (this.evm) return false
-    if (!this.apiToken) return false
+    // Modern cookie-based logins (webauthn etc.) use authKey
     if (this.authKey) return true
     return false
   }
 
   get isKeychain() {
-    if (!this.apiToken) return false
+    // Legacy keychain login (no authKey). These need re-signature after reload.
     if (this.authKey) return false
     return true
   }
@@ -225,6 +232,31 @@ export const useStoreUser = defineStore("useStoreUser", {
       const u = this._currentHiveUser
       if (!u?.apiToken) return null
       return u.apiToken
+    },
+
+    /**
+     * Returns true if we currently hold a live (in-memory) access token for this account.
+     * After a cold start / reload, this will only be true for the account whose
+     * HttpOnly refresh cookie we successfully used via ensureAccessToken.
+     */
+    hasLiveSession: (state) => (hiveAccname) => {
+      if (!hiveAccname) return false
+      return !!state.accessTokens[hiveAccname]
+    },
+
+    /**
+     * Per-account auth status for the multi-account switcher.
+     * This is the key piece for making "I have 4 logged in accounts" usable again
+     * under the new short-token + single-cookie model.
+     */
+    getAccountAuthStatus: (state) => (hiveAccname) => {
+      const u = state.users[hiveAccname]
+      if (!u) return 'unknown'
+      const hasToken = !!state.accessTokens[hiveAccname]
+      const hasAuthKey = !!u.authKey   // webauthn / modern cookie-capable login
+      if (hasToken) return 'active'
+      if (hasAuthKey) return 'restorable'   // cookie exists or can be used
+      return 'needs-rekeychain'            // legacy keychain — must re-sign after reload
     },
     loginType() {
       const u = this._currentHiveUser
@@ -659,12 +691,23 @@ export const useStoreUser = defineStore("useStoreUser", {
         return null
       }
       if (!this.apiToken) {
-        console.warn(
-          "[AUTH-DEBUG] updateSatsBalance: skipped — no apiToken for currentUser",
-          this.currentUser,
-          "accessTokens keys:",
-          Object.keys(this.accessTokens || {}),
-        )
+        const restoredAccounts = Object.keys(this.accessTokens || {})
+        if (restoredAccounts.length > 0) {
+          console.log(
+            "[AUTH-DEBUG] updateSatsBalance: no token for currentUser",
+            this.currentUser,
+            "(a cookie session was successfully restored for a different account:",
+            restoredAccounts,
+            "). This is expected for legacy keychain accounts after reload."
+          )
+        } else {
+          console.warn(
+            "[AUTH-DEBUG] updateSatsBalance: skipped — no apiToken for currentUser",
+            this.currentUser,
+            "accessTokens keys:",
+            restoredAccounts,
+          )
+        }
         return null
       }
 
@@ -900,54 +943,66 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!target) return null
       if (this.accessTokens[target]) return this.accessTokens[target]
 
-      try {
-        console.log(
-          "[AUTH-DEBUG] ensureAccessToken: attempting silent restore via HttpOnly cookie for",
-          target
-        )
-        const resp = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
-
-        if (resp?.data?.access_token) {
-          const newToken = resp.data.access_token
-
-          // Decode to discover the actual principal this cookie/token belongs to.
-          // This is essential because currentUser may be a legacy/keychain account
-          // while the live cookie is for the last webauthn account.
-          let owner = target
-          try {
-            const payload = JSON.parse(atob(newToken.split(".")[1]))
-            if (payload?.username) owner = payload.username
-          } catch (e) {
-            // non-fatal; fall back to requested target
-          }
-
-          this.accessTokens[owner] = newToken
-          // Only touch the global header if this is (now) the current user
-          if (owner === this.currentUser) {
-            apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
-          }
-
-          console.log(
-            "[AUTH-DEBUG] ensureAccessToken: SUCCESS — token restored for",
-            owner,
-            owner !== target ? `(requested was ${target})` : ""
-          )
-
-          // Note: callers (initialize, update, switchUser) are responsible for
-          // triggering follow-up UI updates / balance fetches after a successful
-          // restore. We avoid auto-calling here to prevent duplicate fetches when
-          // ensure was itself called from update().
-
-          return newToken
-        }
-      } catch (e) {
-        console.log(
-          "[AUTH-DEBUG] ensureAccessToken: no usable refresh cookie (or refresh failed) for",
-          target,
-          "— account will need explicit re-login if it has no other token"
-        )
+      // If a cookie restore is already in flight, wait for it instead of starting
+      // a second identical POST /auth/refresh. All early callers (CreditCard mount,
+      // initialize, watchers, etc.) will get the same result.
+      if (cookieRestorePromise) {
+        const tokenFromInFlight = await cookieRestorePromise
+        // After the in-flight one finishes, check again if *we* now have a token
+        // for the originally requested target (it may have been for someone else).
+        return this.accessTokens[target] || null
       }
-      return null
+
+      cookieRestorePromise = (async () => {
+        try {
+          console.log(
+            "[AUTH-DEBUG] ensureAccessToken: attempting silent restore via HttpOnly cookie for",
+            target
+          )
+          const resp = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
+
+          if (resp?.data?.access_token) {
+            const newToken = resp.data.access_token
+
+            let owner = target
+            try {
+              const payload = JSON.parse(atob(newToken.split(".")[1]))
+              if (payload?.username) owner = payload.username
+            } catch (e) {
+              // non-fatal
+            }
+
+            this.accessTokens[owner] = newToken
+            if (owner === this.currentUser) {
+              apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+            }
+
+            console.log(
+              "[AUTH-DEBUG] ensureAccessToken: SUCCESS — token restored for",
+              owner,
+              owner !== target ? `(requested was ${target})` : ""
+            )
+
+            return newToken
+          }
+        } catch (e) {
+          console.log(
+            "[AUTH-DEBUG] ensureAccessToken: no usable refresh cookie (or refresh failed) for",
+            target,
+            "— account will need explicit re-login if it has no other token"
+          )
+        }
+        return null
+      })()
+
+      try {
+        const result = await cookieRestorePromise
+        return this.accessTokens[target] || result
+      } finally {
+        // Allow a future hard refresh / long idle to try again if needed.
+        // For the lifetime of this page load we only do one cookie round-trip.
+        cookieRestorePromise = null
+      }
     },
 
     expireCheck() {

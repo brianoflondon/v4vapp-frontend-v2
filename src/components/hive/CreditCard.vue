@@ -79,7 +79,7 @@
             </div>
           </div>
 
-          <!-- Visual indicator for accounts that had old tokens stripped -->
+          <!-- Visual indicator for legacy keychain accounts (no refresh cookie) after reload -->
           <q-chip
             v-if="needsReauth"
             dense
@@ -89,10 +89,11 @@
             class="q-ml-sm"
             style="font-size: 0.65rem; height: 18px;"
           >
-            Re-login needed
+            Re-login with Keychain
             <q-tooltip>
-              This account's old session was cleared for security during the auth upgrade.<br>
-              Log in again with @{{ storeUser.currentUser }} to restore KeepSats balances and protected features.
+              @{{ storeUser.currentUser }} was logged in with Hive Keychain (no long-lived secret kept).<br>
+              After a full reload or Docker rebuild you must re-sign with Keychain once to get a fresh short-lived session.<br>
+              Other accounts (e.g. passkey/webauthn) can restore silently via cookie.
             </q-tooltip>
           </q-chip>
           <div class="row">
@@ -364,8 +365,9 @@ const needsReauth = computed(() => {
     return false
   }
 
-  // Legacy/stripped keychain-only accounts (no authKey) truly have no cookie to restore.
-  // They need an explicit re-login (keychain signature) to get a fresh short token.
+  // Legacy keychain-only accounts (no authKey) have no HttpOnly refresh cookie.
+  // After any full page load / Docker rebuild / long idle their short token is gone
+  // and they must re-present a keychain signature. This is by design for security.
   return true
 })
 
