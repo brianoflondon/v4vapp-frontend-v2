@@ -3,7 +3,10 @@ import { useHiveDetails } from "../use/useHive.js"
 
 // =====================================================
 // DEBUG PATCH - REMOVE AFTER DIAGNOSIS
-console.log("%c[AUTH-DEBUG] >>> NEW storeUser.js MODULE LOADED <<<", "color: magenta; font-weight: bold; font-size: 13px")
+console.log(
+  "%c[AUTH-DEBUG] >>> NEW storeUser.js MODULE LOADED <<<",
+  "color: magenta; font-weight: bold; font-size: 13px",
+)
 // =====================================================
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
@@ -514,9 +517,18 @@ export const useStoreUser = defineStore("useStoreUser", {
       // =====================================================
       // DEBUG PATCH - REMOVE AFTER DIAGNOSIS
       // =====================================================
-      console.log("%c[AUTH-DEBUG] >>> NEW HARDENED AUTH CODE IS RUNNING <<<", "color: lime; font-weight: bold; font-size: 14px")
-      console.log("[AUTH-DEBUG] initialize() called. Current users in store:", Object.keys(this.users))
-      console.log("[AUTH-DEBUG] Raw users object at init:", JSON.stringify(this.users, null, 2))
+      console.log(
+        "%c[AUTH-DEBUG] >>> NEW HARDENED AUTH CODE IS RUNNING <<<",
+        "color: lime; font-weight: bold; font-size: 14px",
+      )
+      console.log(
+        "[AUTH-DEBUG] initialize() called. Current users in store:",
+        Object.keys(this.users),
+      )
+      console.log(
+        "[AUTH-DEBUG] Raw users object at init:",
+        JSON.stringify(this.users, null, 2),
+      )
 
       // called once from the HiveLogin component.
       console.log("Store initialized")
@@ -534,23 +546,42 @@ export const useStoreUser = defineStore("useStoreUser", {
         }
         if (user.apiToken) {
           accountsWithOldTokens.push(userId)
-          console.warn("[AUTH-DEBUG] Found OLD apiToken on account:", userId, "— will strip it")
+          console.warn(
+            "[AUTH-DEBUG] Found OLD apiToken on account:",
+            userId,
+            "— will strip it",
+          )
           delete user.apiToken
           strippedAny = true
         }
       }
 
       if (strippedAny) {
-        console.info("[auth] Stripped old persisted access tokens (full re-login required after auth hardening)")
-        console.warn("[AUTH-DEBUG] Accounts that had old tokens stripped:", accountsWithOldTokens)
+        console.info(
+          "[auth] Stripped old persisted access tokens (full re-login required after auth hardening)",
+        )
+        console.warn(
+          "[AUTH-DEBUG] Accounts that had old tokens stripped:",
+          accountsWithOldTokens,
+        )
       } else {
-        console.log("[AUTH-DEBUG] No old apiToken fields found in persisted users during initialize().")
+        console.log(
+          "[AUTH-DEBUG] No old apiToken fields found in persisted users during initialize().",
+        )
       }
 
-      console.log("[AUTH-DEBUG] Users object AFTER stripping attempt:", JSON.stringify(this.users, null, 2))
-      console.log("[DEBUG-KeepSats] accessTokens after stripping:", JSON.stringify(this.accessTokens))
+      console.log(
+        "[AUTH-DEBUG] Users object AFTER stripping attempt:",
+        JSON.stringify(this.users, null, 2),
+      )
+      console.log(
+        "[DEBUG-KeepSats] accessTokens after stripping:",
+        JSON.stringify(this.accessTokens),
+      )
       if (accountsWithOldTokens.length > 0) {
-        console.warn("[DEBUG-KeepSats] Accounts that lost their apiToken will skip KeepSats fetches until they re-login or get a fresh token via refresh.")
+        console.warn(
+          "[DEBUG-KeepSats] Accounts that lost their apiToken will skip KeepSats fetches until they re-login or get a fresh token via refresh.",
+        )
       }
       // =====================================================
       // END DEBUG PATCH
@@ -607,53 +638,63 @@ export const useStoreUser = defineStore("useStoreUser", {
         return null
       }
       if (!this.apiToken) {
-        console.warn("[AUTH-DEBUG] updateSatsBalance: skipped — no apiToken for currentUser", this.currentUser, "accessTokens keys:", Object.keys(this.accessTokens || {}))
+        console.warn(
+          "[AUTH-DEBUG] updateSatsBalance: skipped — no apiToken for currentUser",
+          this.currentUser,
+          "accessTokens keys:",
+          Object.keys(this.accessTokens || {}),
+        )
         return null
       }
 
       const currentSatsBalance = this.currentKeepSats?.net_sats
+      try {
+        this.dataLoading = true
+        let answer = null
         try {
-          this.dataLoading = true
-          let answer = null
-          try {
-            answer = await useKeepSats(useCache, false)
-            if (answer?.detail === "Could not validate credentials") {
-              console.log("Need to log out")
-              this.logout()
-              return false
-            }
-          } catch (err) {
-            console.error(err)
+          answer = await useKeepSats(useCache, false)
+          if (answer?.detail === "Could not validate credentials") {
+            console.log("Need to log out")
+            this.logout()
+            return false
           }
-          if (answer == null) {
-            this.dataLoading = false
-            return null
-          }
-          this.currentKeepSats = answer
-          console.log("[DEBUG-KeepSats] Successfully fetched and set currentKeepSats for", this.currentUser, "net_sats:", this.currentKeepSats?.net_sats)
-          // Ensure net_sats is never -0
-          if (this.currentKeepSats && this.currentKeepSats.net_sats === 0) {
-            this.currentKeepSats.net_sats = 0
-          }
-          this.dataLoading = false
-          console.debug("currentKeepSats", this.currentKeepSats)
-          if (this.currentKeepSats) {
-            // Ensure net_sats is never -0 for comparison
-            const normalizedCurrent =
-              currentSatsBalance === 0 ? 0 : currentSatsBalance
-            const normalizedNew =
-              this.currentKeepSats.net_sats === 0
-                ? 0
-                : this.currentKeepSats.net_sats
-            if (normalizedCurrent !== normalizedNew) {
-              return true
-            }
-          }
-          return false
         } catch (err) {
           console.error(err)
+        }
+        if (answer == null) {
+          this.dataLoading = false
           return null
         }
+        this.currentKeepSats = answer
+        console.log(
+          "[DEBUG-KeepSats] Successfully fetched and set currentKeepSats for",
+          this.currentUser,
+          "net_sats:",
+          this.currentKeepSats?.net_sats,
+        )
+        // Ensure net_sats is never -0
+        if (this.currentKeepSats && this.currentKeepSats.net_sats === 0) {
+          this.currentKeepSats.net_sats = 0
+        }
+        this.dataLoading = false
+        console.debug("currentKeepSats", this.currentKeepSats)
+        if (this.currentKeepSats) {
+          // Ensure net_sats is never -0 for comparison
+          const normalizedCurrent =
+            currentSatsBalance === 0 ? 0 : currentSatsBalance
+          const normalizedNew =
+            this.currentKeepSats.net_sats === 0
+              ? 0
+              : this.currentKeepSats.net_sats
+          if (normalizedCurrent !== normalizedNew) {
+            return true
+          }
+        }
+        return false
+      } catch (err) {
+        console.error(err)
+        return null
+      }
     },
     /**
      * Logs in a user with the provided credentials.
@@ -721,13 +762,18 @@ export const useStoreUser = defineStore("useStoreUser", {
         // Store token only in non-persisted memory (new hardened auth model)
         if (apiToken) {
           this.accessTokens[hiveAccname] = apiToken
-          apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
+          apiLogin.defaults.headers.common["Authorization"] =
+            `Bearer ${apiToken}`
         }
 
         // Debug logging for auth hardening changes
-        if (loginType === "evm" || loginType === "btc" || authKey === "webauthn") {
+        if (
+          loginType === "evm" ||
+          loginType === "btc" ||
+          authKey === "webauthn"
+        ) {
           console.log(
-            `[AUTH-DEBUG] login(): Storing ${loginType || authKey} user. expire passed=${expire}, using in-memory accessTokens only.`
+            `[AUTH-DEBUG] login(): Storing ${loginType || authKey} user. expire passed=${expire}, using in-memory accessTokens only.`,
           )
         }
 
@@ -767,7 +813,8 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     apiTokenSet(hiveAccname = this.currentUser) {
       console.debug("Setting API Token for", hiveAccname)
-      const token = this.accessTokens[hiveAccname] || this.users[hiveAccname]?.apiToken
+      const token =
+        this.accessTokens[hiveAccname] || this.users[hiveAccname]?.apiToken
       if (token) {
         apiLogin.defaults.headers.common["Authorization"] = `Bearer ${token}`
         return true
@@ -790,7 +837,9 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.setAccessToken(token)
     },
     expireCheck() {
-      console.log("[AUTH-DEBUG] expireCheck() running... (checking for legacy expires only)");
+      console.log(
+        "[AUTH-DEBUG] expireCheck() running... (checking for legacy expires only)",
+      )
       // === 2026 Auth Hardening - Consistent Session Model ===
       //
       // We no longer use the client-side `expire` field to forcibly log out users
@@ -816,14 +865,16 @@ export const useStoreUser = defineStore("useStoreUser", {
           hiveUser.loginType === "btc"
         ) {
           console.log(
-            `[AUTH-DEBUG] expireCheck: Skipping expiration enforcement for ${hiveUser.loginType || 'unknown'} (authKey=${hiveUser.authKey || 'none'}) - using new refresh model`
+            `[AUTH-DEBUG] expireCheck: Skipping expiration enforcement for ${hiveUser.loginType || "unknown"} (authKey=${hiveUser.authKey || "none"}) - using new refresh model`,
           )
           continue
         }
 
         const t = i18n.global.t
         if (hiveUser.expire && hiveUser.expire < Date.now()) {
-          console.log(`[AUTH-DEBUG] expireCheck: Legacy expire field present for ${user} (expire=${hiveUser.expire}). In the 2026 refresh-cookie model we no longer force logout here — relying on short access tokens + /auth/refresh instead.`)
+          console.log(
+            `[AUTH-DEBUG] expireCheck: Legacy expire field present for ${user} (expire=${hiveUser.expire}). In the 2026 refresh-cookie model we no longer force logout here — relying on short access tokens + /auth/refresh instead.`,
+          )
           // Intentionally do NOT call this.logout() anymore for the new auth system.
           // The axios response interceptor on 401 + rotating refresh_token cookie is now responsible for session continuity.
         }
