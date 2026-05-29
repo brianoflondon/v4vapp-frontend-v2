@@ -106,10 +106,15 @@ api.interceptors.request.use(
  * Response interceptor for auth failures.
  * Part of the full hardened auth solution (short-lived access + HttpOnly refresh cookie).
  *
+ * DESIGN RULE (multi-account safety):
+ *   This interceptor MUST NEVER call logoutAll().
+ *   Failures are always scoped to the specific affected account via logoutUser().
+ *   Global logout (logoutAll) is only allowed from explicit user UI actions.
+ *
  * On 401 from a protected endpoint:
- *   - Try to silently refresh using the HttpOnly refresh cookie (sent automatically by browser)
- *   - If successful, retry the original request with the new access token
- *   - If refresh fails, clear local session and let the caller handle re-login
+ *   - Try to silently refresh using the HttpOnly refresh cookie
+ *   - If successful, retry the original request
+ *   - If refresh fails for one account, only log that account out
  */
 // Attach the refresh interceptor to BOTH instances so that 401/403 on any authenticated call
 // (whether through `api` or `apiLogin`) can trigger the silent refresh using the HttpOnly cookie.
@@ -174,15 +179,30 @@ const refreshInterceptor = async (error) => {
       console.warn("[auth] Silent refresh failed — user will need to re-authenticate")
       console.error("[AUTH-DEBUG] /auth/refresh FAILED. Error:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
 
-      // Force logout on permanent refresh failure
+      // Per-account only. The interceptor MUST NEVER call logoutAll().
+      // Identify the affected user from the original failing request if possible.
+      let affectedUser = null
       try {
         const { useStoreUser } = await import("src/stores/storeUser")
         const storeUser = useStoreUser()
-        if (storeUser) {
-          if (typeof storeUser.logoutAll === "function") {
-            await storeUser.logoutAll()
+
+        // Try to extract username from the JWT that was on the failing request
+        const authHeader = originalRequest?.headers?.Authorization || originalRequest?.headers?.authorization
+        if (authHeader && typeof authHeader === 'string') {
+          const token = authHeader.replace(/^Bearer\s+/i, '')
+          const payload = JSON.parse(atob(token.split('.')[1]))
+          if (payload?.username) affectedUser = payload.username
+        }
+        if (!affectedUser) affectedUser = storeUser?.currentUser
+
+        if (storeUser && affectedUser) {
+          if (typeof storeUser.logoutUser === "function") {
+            await storeUser.logoutUser(affectedUser)
           } else if (typeof storeUser.logout === "function") {
-            await storeUser.logout()
+            // Fallback: only logout current if we can't do better
+            if (affectedUser === storeUser.currentUser) {
+              await storeUser.logout()
+            }
           }
         }
       } catch (e) {

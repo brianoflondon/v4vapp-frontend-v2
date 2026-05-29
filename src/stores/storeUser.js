@@ -816,9 +816,8 @@ export const useStoreUser = defineStore("useStoreUser", {
           // The axios response interceptor on 401 + rotating refresh_token cookie is now responsible for session continuity.
         }
       }
-      if (this.users.length === 0 || Object.keys(this.users).length === 0) {
-        this.logoutAll()
-      }
+      // Do not call logoutAll() here. Per-account isolation is important.
+      // If all users happen to be gone, the UI will naturally reflect it.
     },
     /**
      * Logs out the current user.
@@ -827,16 +826,37 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     async logout() {
       if (this.currentUser) {
-        delete this.accessTokens[this.currentUser]
-        if (this.currentUser in this.users) {
-          delete this.users[this.currentUser]
+        this.logoutUser(this.currentUser)
+      }
+    },
+
+    /**
+     * Logs out a specific user account without affecting any other logged-in accounts.
+     * This is the preferred method for per-account refresh/expiry failures.
+     */
+    async logoutUser(hiveAccname) {
+      if (!hiveAccname) return
+
+      delete this.accessTokens[hiveAccname]
+
+      if (hiveAccname in this.users) {
+        delete this.users[hiveAccname]
+      }
+
+      if (this.currentUser === hiveAccname) {
+        this.currentUser = null
+        this.currentDetails = null
+        this.currentProfile = null
+        this.currentKeepSats = null
+
+        // Gracefully switch to another remaining user if one exists
+        const remaining = Object.keys(this.users)
+        if (remaining.length > 0) {
+          this.switchUser(remaining[0])
         }
       }
-      this.currentUser = null
-      this.currentDetails = null
-      this.currentProfile = null
-      this.currentKeepSats = null
     },
+
     /**
      * Logs out all users and resets the current user, details, profile, and keepSats.
      * @async
