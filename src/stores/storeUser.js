@@ -654,7 +654,6 @@ export const useStoreUser = defineStore("useStoreUser", {
           console.error(err)
           return null
         }
-      }
     },
     /**
      * Logs in a user with the provided credentials.
@@ -882,6 +881,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.currentProfile = null
       this.currentKeepSats = null
     },
+
     async bech32Address(currency = "hive") {
       const getBech32 = async (currency) => {
         const params = { currency: currency, no_image: false, json: true }
@@ -957,6 +957,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       return tidyNumber(rawBalance / adjustRate)
     },
   },
+
   persist: {
     enabled: true,
     strategies: [
