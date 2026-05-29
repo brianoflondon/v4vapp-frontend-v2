@@ -27,11 +27,7 @@
             >@{{ user.hiveAccname }}</q-item-label
           >
           <q-tooltip caption>
-            Session status: {{ storeUser.getAccountAuthStatus(user.hiveAccname) }}
-            <br />
-            Login age: {{ storeUser.getUser(user.hiveAccname).loginAgeHuman }}
-            <br />
-            (Keychain accounts need re-signature after reload; passkey/webauthn accounts restore silently via cookie)
+            Login: {{ storeUser.getUser(user.hiveAccname).loginAgeHuman }}
           </q-tooltip>
         </q-item-section>
         <q-item-section side v-if="storeUser.getUser(user.hiveAccname).isHAS">
@@ -45,34 +41,6 @@
           "
         >
           <q-icon name="img:/keychain/hive-keychain-round.svg" />
-        </q-item-section>
-
-        <!-- Per-account session status under the new auth model -->
-        <q-item-section side>
-          <q-badge
-            v-if="storeUser.hasLiveSession(user.hiveAccname)"
-            color="positive"
-            text-color="black"
-            style="font-size: 0.6rem"
-          >
-            active
-          </q-badge>
-          <q-badge
-            v-else-if="storeUser.getAccountAuthStatus(user.hiveAccname) === 'restorable'"
-            color="info"
-            text-color="black"
-            style="font-size: 0.6rem"
-          >
-            restorable
-          </q-badge>
-          <q-badge
-            v-else-if="storeUser.getAccountAuthStatus(user.hiveAccname) === 'needs-rekeychain'"
-            color="warning"
-            text-color="black"
-            style="font-size: 0.6rem"
-          >
-            needs re-keychain
-          </q-badge>
         </q-item-section>
       </q-item>
     </q-list>

@@ -79,23 +79,9 @@
             </div>
           </div>
 
-          <!-- Visual indicator for legacy keychain accounts (no refresh cookie) after reload -->
-          <q-chip
-            v-if="needsReauth"
-            dense
-            color="warning"
-            text-color="black"
-            size="sm"
-            class="q-ml-sm"
-            style="font-size: 0.65rem; height: 18px;"
-          >
-            Re-login with Keychain
-            <q-tooltip>
-              @{{ storeUser.currentUser }} was logged in with Hive Keychain (no long-lived secret kept).<br>
-              After a full reload or Docker rebuild you must re-sign with Keychain once to get a fresh short-lived session.<br>
-              Other accounts (e.g. passkey/webauthn) can restore silently via cookie.
-            </q-tooltip>
-          </q-chip>
+          <!-- No visual re-auth nag here. With the new short-token model + proactive cookie restore,
+               balances for cookie-capable accounts load silently. Legacy keychain accounts will simply
+               have no KeepSats until the user performs a fresh keychain signature for them. -->
           <div class="row">
             <div style="font-size: 1.2rem">
               <q-checkbox
@@ -350,26 +336,9 @@ const nonZeroKeepSats = computed(() => {
   return false
 })
 
-const needsReauth = computed(() => {
-  if (!storeUser.currentUser) return false
-  if (storeUser.apiToken) return false
-
-  // For accounts that logged in via a new-model path (webauthn/passkey, or any that
-  // set a refresh cookie), we may be in the middle of a proactive ensureAccessToken()
-  // restore on init/switch/update. Suppress the chip briefly so the user doesn't see
-  // a spurious "Re-login needed" flash for a session that is silently recoverable.
-  const u = storeUser.users?.[storeUser.currentUser]
-  if (u?.authKey) {
-    // Let the async restore (which decodes the JWT and populates accessTokens under
-    // the real owner) have a chance to flip apiToken to truthy via reactivity.
-    return false
-  }
-
-  // Legacy keychain-only accounts (no authKey) have no HttpOnly refresh cookie.
-  // After any full page load / Docker rebuild / long idle their short token is gone
-  // and they must re-present a keychain signature. This is by design for security.
-  return true
-})
+// needsReauth removed per user feedback — visual warnings/tags for re-keychain were
+// cluttering the design. The underlying restore logic (ensureAccessToken etc.) remains
+// so cookie-backed accounts (webauthn/passkey) continue to work silently after reloads.
 
 const balances = computed(() => {
   if (currencyToggle.value) {

@@ -233,31 +233,6 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!u?.apiToken) return null
       return u.apiToken
     },
-
-    /**
-     * Returns true if we currently hold a live (in-memory) access token for this account.
-     * After a cold start / reload, this will only be true for the account whose
-     * HttpOnly refresh cookie we successfully used via ensureAccessToken.
-     */
-    hasLiveSession: (state) => (hiveAccname) => {
-      if (!hiveAccname) return false
-      return !!state.accessTokens[hiveAccname]
-    },
-
-    /**
-     * Per-account auth status for the multi-account switcher.
-     * This is the key piece for making "I have 4 logged in accounts" usable again
-     * under the new short-token + single-cookie model.
-     */
-    getAccountAuthStatus: (state) => (hiveAccname) => {
-      const u = state.users[hiveAccname]
-      if (!u) return 'unknown'
-      const hasToken = !!state.accessTokens[hiveAccname]
-      const hasAuthKey = !!u.authKey   // webauthn / modern cookie-capable login
-      if (hasToken) return 'active'
-      if (hasAuthKey) return 'restorable'   // cookie exists or can be used
-      return 'needs-rekeychain'            // legacy keychain — must re-sign after reload
-    },
     loginType() {
       const u = this._currentHiveUser
       return u ? u.loginType : null
