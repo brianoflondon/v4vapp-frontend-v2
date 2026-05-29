@@ -154,16 +154,30 @@ const refreshInterceptor = async (error) => {
 
         console.log("%c[AUTH-DEBUG] Silent refresh SUCCESS — got new access token", "color: lime")
 
-        // Update default headers on BOTH instances
+        // Decode to learn the *real* owner of this token (the account whose refresh cookie
+        // was used). We must NOT blindly store under currentUser — the 401 may have come
+        // from a different currentUser than the cookie principal (multi-account case).
+        let tokenOwner = null
+        try {
+          const payload = JSON.parse(atob(newToken.split(".")[1]))
+          if (payload?.username) tokenOwner = payload.username
+        } catch (e) {
+          // non-fatal
+        }
+        if (tokenOwner) {
+          console.log("[AUTH-DEBUG] Silent refresh token owner (from JWT):", tokenOwner)
+        }
+
+        // Update default headers on BOTH instances (global header is for "whoever we just authed as")
         api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
         apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
 
-        // Best-effort store update
+        // Best-effort store update — pass the real owner so it is keyed correctly in accessTokens.
         try {
           const { useStoreUser } = await import("src/stores/storeUser")
           const storeUser = useStoreUser()
           if (storeUser && typeof storeUser.setAccessToken === "function") {
-            storeUser.setAccessToken(newToken)
+            storeUser.setAccessToken(newToken, tokenOwner)
           }
         } catch (e) {
           // non-fatal

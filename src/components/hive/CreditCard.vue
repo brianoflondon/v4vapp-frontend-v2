@@ -350,7 +350,23 @@ const nonZeroKeepSats = computed(() => {
 })
 
 const needsReauth = computed(() => {
-  return !!storeUser.currentUser && !storeUser.apiToken
+  if (!storeUser.currentUser) return false
+  if (storeUser.apiToken) return false
+
+  // For accounts that logged in via a new-model path (webauthn/passkey, or any that
+  // set a refresh cookie), we may be in the middle of a proactive ensureAccessToken()
+  // restore on init/switch/update. Suppress the chip briefly so the user doesn't see
+  // a spurious "Re-login needed" flash for a session that is silently recoverable.
+  const u = storeUser.users?.[storeUser.currentUser]
+  if (u?.authKey) {
+    // Let the async restore (which decodes the JWT and populates accessTokens under
+    // the real owner) have a chance to flip apiToken to truthy via reactivity.
+    return false
+  }
+
+  // Legacy/stripped keychain-only accounts (no authKey) truly have no cookie to restore.
+  // They need an explicit re-login (keychain signature) to get a fresh short token.
+  return true
 })
 
 const balances = computed(() => {

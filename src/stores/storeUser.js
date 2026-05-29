@@ -586,6 +586,19 @@ export const useStoreUser = defineStore("useStoreUser", {
       // =====================================================
       // END DEBUG PATCH
       // =====================================================
+
+      // Proactive restore for any live HttpOnly refresh cookie (passkey/webauthn etc).
+      // This makes the "Re-login needed" chip disappear automatically for the account
+      // that owns the current cookie, without waiting for a 401 on a later page.
+      // Fire-and-forget; on success for the current user we explicitly refresh balances
+      // so the wallet page populates immediately after a cold start / site change.
+      this.ensureAccessToken()
+        .then((tok) => {
+          if (tok && this.currentUser && this.accessTokens[this.currentUser]) {
+            this.updateSatsBalance(true).catch(() => {})
+          }
+        })
+        .catch(() => {})
     },
     /**
      * Updates the user details and profile.
@@ -594,6 +607,14 @@ export const useStoreUser = defineStore("useStoreUser", {
     async update(useCache = true) {
       this.apiTokenSet()
       this.expireCheck()
+
+      // If we have a currentUser but no in-memory token yet, try the cookie restore path.
+      // This is the main fix for "after site change / reload I see Re-login needed even
+      // though I have a valid webauthn/passkey session cookie".
+      if (this.currentUser && !this.apiToken) {
+        await this.ensureAccessToken(this.currentUser)
+      }
+
       console.log("storeUser.js: update called for", this.currentUser)
 
       const currentLoginType = this.users[this.currentUser]?.loginType
@@ -800,7 +821,18 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.currentUser = hiveAccname
           this.apiTokenSet(hiveAccname)
           this.expireCheck()
-          this.update()
+
+          // Proactive restore for the newly selected account (may be the cookie owner
+          // even if it had no token at the instant of switch).
+          if (!this.apiToken) {
+            this.ensureAccessToken(hiveAccname)
+              .then((tok) => {
+                if (tok) this.update()
+              })
+              .catch(() => {})
+          } else {
+            this.update()
+          }
         }
       } catch (err) {
         console.debug(err)
@@ -825,17 +857,99 @@ export const useStoreUser = defineStore("useStoreUser", {
     /**
      * Set the current access token in memory only (new hardened auth model).
      * Never persisted to localStorage.
+     *
+     * @param {string} token - The access token (JWT)
+     * @param {string|null} [forUser=null] - Optional explicit hiveAccname to key under.
+     *   If omitted, uses currentUser. ALWAYS pass the real owner (decoded from JWT)
+     *   when restoring via silent refresh — the cookie may belong to a different
+     *   account than the currentUser at the moment of 401.
      */
-    setAccessToken(token) {
-      if (!this.currentUser) return
-      this.accessTokens[this.currentUser] = token
-      apiLogin.defaults.headers.common["Authorization"] = `Bearer ${token}`
+    setAccessToken(token, forUser = null) {
+      const key = forUser || this.currentUser
+      if (!key) return
+      this.accessTokens[key] = token
+      // Only stomp the global Authorization header if this token is for the
+      // active currentUser (prevents leaking another account's token into headers
+      // when restoring a non-current cookie principal).
+      if (!forUser || forUser === this.currentUser) {
+        apiLogin.defaults.headers.common["Authorization"] = `Bearer ${token}`
+      }
     },
 
     /** @deprecated Use setAccessToken instead */
     setTemporaryAccessToken(token) {
       this.setAccessToken(token)
     },
+
+    /**
+     * Proactively attempt to restore a short-lived access token using the HttpOnly
+     * refresh cookie (primary path for webauthn/passkey, and any login that set the cookie).
+     *
+     * CRITICAL for multi-account + cookie model:
+     *   - The cookie represents ONLY the last account that completed a cookie-setting login.
+     *   - We decode the returned JWT to learn the *real* owner and store under that key.
+     *   - If currentUser !== cookie owner, we still make the token available for when
+     *     the user switches to the cookie owner; we do NOT auto-switch currentUser.
+     *   - On failure we do NOT call logoutUser here (the response interceptor owns
+     *     hard-failure per-account cleanup after a 401+refresh attempt).
+     *
+     * Called from initialize (best-effort), update(), and switchUser().
+     */
+    async ensureAccessToken(hiveAccname = null) {
+      const target = hiveAccname || this.currentUser
+      if (!target) return null
+      if (this.accessTokens[target]) return this.accessTokens[target]
+
+      try {
+        console.log(
+          "[AUTH-DEBUG] ensureAccessToken: attempting silent restore via HttpOnly cookie for",
+          target
+        )
+        const resp = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
+
+        if (resp?.data?.access_token) {
+          const newToken = resp.data.access_token
+
+          // Decode to discover the actual principal this cookie/token belongs to.
+          // This is essential because currentUser may be a legacy/keychain account
+          // while the live cookie is for the last webauthn account.
+          let owner = target
+          try {
+            const payload = JSON.parse(atob(newToken.split(".")[1]))
+            if (payload?.username) owner = payload.username
+          } catch (e) {
+            // non-fatal; fall back to requested target
+          }
+
+          this.accessTokens[owner] = newToken
+          // Only touch the global header if this is (now) the current user
+          if (owner === this.currentUser) {
+            apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+          }
+
+          console.log(
+            "[AUTH-DEBUG] ensureAccessToken: SUCCESS — token restored for",
+            owner,
+            owner !== target ? `(requested was ${target})` : ""
+          )
+
+          // Note: callers (initialize, update, switchUser) are responsible for
+          // triggering follow-up UI updates / balance fetches after a successful
+          // restore. We avoid auto-calling here to prevent duplicate fetches when
+          // ensure was itself called from update().
+
+          return newToken
+        }
+      } catch (e) {
+        console.log(
+          "[AUTH-DEBUG] ensureAccessToken: no usable refresh cookie (or refresh failed) for",
+          target,
+          "— account will need explicit re-login if it has no other token"
+        )
+      }
+      return null
+    },
+
     expireCheck() {
       console.log(
         "[AUTH-DEBUG] expireCheck() running... (checking for legacy expires only)",
