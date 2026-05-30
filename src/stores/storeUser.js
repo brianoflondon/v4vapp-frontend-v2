@@ -183,6 +183,11 @@ export const useStoreUser = defineStore("useStoreUser", {
     // long-lived JWTs in localStorage (major XSS hardening).
     // Tokens here only live for the current browser session.
     accessTokens: {},
+
+    // Tracks accounts for which a recent /auth/refresh attempt failed.
+    // Used to show a minimal, non-intrusive re-auth notifier on CreditCard
+    // **only** when an actual refresh failure occurred (not on every keychain load).
+    reauthNeeded: {},
   }),
 
   getters: {
@@ -249,6 +254,16 @@ export const useStoreUser = defineStore("useStoreUser", {
     numUsers() {
       console.debug("numUsers", Object.keys(this.users).length)
       return Object.keys(this.users).length
+    },
+
+    /**
+     * True when the *current* account had a refresh failure (cookie or short token expired).
+     * This is the signal for showing a minimal re-auth notifier on CreditCard.
+     * It is only set on actual refresh failure paths, not on normal keychain "no token on load".
+     */
+    currentReauthNeeded() {
+      if (!this.currentUser) return false
+      return !!this.reauthNeeded[this.currentUser]
     },
     /**
      * Determines the login method for the current user.
@@ -840,6 +855,7 @@ export const useStoreUser = defineStore("useStoreUser", {
 
         this.users[hiveAccname] = newUser
         this.currentUser = hiveAccname
+        this.clearReauthNeeded(hiveAccname)   // successful login clears any prior reauth flag
         if (hiveDetails) {
           this.currentDetails = hiveDetails
           this.currentProfile = hiveDetails.profile
@@ -970,6 +986,7 @@ export const useStoreUser = defineStore("useStoreUser", {
             }
 
             this.accessTokens[owner] = newToken
+            this.clearReauthNeeded(owner)   // successful restore clears any reauth flag
             if (owner === this.currentUser) {
               apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
             }
@@ -1097,6 +1114,27 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.currentDetails = null
       this.currentProfile = null
       this.currentKeepSats = null
+      this.reauthNeeded = {}
+    },
+
+    /**
+     * Mark that the last refresh attempt for this account failed.
+     * This is used to drive a minimal, design-safe notifier on the CreditCard
+     * **only** when an actual refresh failure occurred.
+     */
+    markReauthNeeded(hiveAccname) {
+      if (hiveAccname) {
+        this.reauthNeeded[hiveAccname] = true
+      }
+    },
+
+    /**
+     * Clear the re-auth needed flag (called on successful login or successful token restore).
+     */
+    clearReauthNeeded(hiveAccname) {
+      if (hiveAccname) {
+        delete this.reauthNeeded[hiveAccname]
+      }
     },
 
     async bech32Address(currency = "hive") {

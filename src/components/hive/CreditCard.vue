@@ -76,6 +76,19 @@
             </div>
             <div v-if="storeUser.loginType === 'hive'" class="text-subtitle2">
               {{ storeUser.hiveAccname }}@v4v.app
+              <q-icon
+                v-if="storeUser.currentReauthNeeded"
+                name="warning"
+                color="warning"
+                size="0.85rem"
+                class="q-ml-xs"
+                style="vertical-align: middle;"
+              >
+                <q-tooltip>
+                  Refresh failed for this account.<br>
+                  Re-authenticate (Keychain / Passkey) to restore KeepSats balances and full access.
+                </q-tooltip>
+              </q-icon>
             </div>
           </div>
 
