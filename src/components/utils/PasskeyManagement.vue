@@ -209,6 +209,7 @@ import {
   usePasskeyUpdate,
 } from "src/use/usePasskeys";
 import { useIsEVMAddress } from "src/use/useEVM";
+import { useIsBTCAddress } from "src/use/useBTC";
 import { useStoreUser } from "src/stores/storeUser";
 import { useI18n } from "vue-i18n";
 import HiveInputAcc from "components/HiveInputAcc.vue";
@@ -308,15 +309,24 @@ async function doPasskeyLogin() {
   }
   const result = await usePasskeyLogin(hiveAccObj.value.value);
   if (result.success) {
-    let expireDate = new Date();
-    const loginType = useIsEVMAddress(hiveAccObj.value.value) ? "evm" : "hive";
-    expireDate.setDate(expireDate.getDate() + 7);
-    // StoreUser.login
+    // Determine correct loginType for passkey logins (supports EVM + BTC addresses)
+    let loginType = "hive";
+    if (useIsEVMAddress(hiveAccObj.value.value)) {
+      loginType = "evm";
+    } else if (useIsBTCAddress(hiveAccObj.value.value)) {
+      loginType = "btc";
+    }
+
+    // With the 2026 auth hardening (short-lived access tokens + HttpOnly refresh cookies),
+    // we no longer rely on a client-side 7-day expire for passkeys.
+    // Session continuity is now handled by the rotating refresh token cookie.
+    // We pass null for expire so expireCheck() does not forcibly log the user out.
+    console.log("[AUTH-DEBUG] Passkey login: Passing expire=null. Using refresh token model (consistent with EVM/BTC changes).");
     await storeUser.login(
       hiveAccObj.value.value,
       "active",
       "webauthn",
-      expireDate,
+      null, // expire - intentionally not set for passkeys
       null,
       result.token,
       loginType,

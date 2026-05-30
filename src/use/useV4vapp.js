@@ -17,15 +17,28 @@ let paymentInProgressDialog = null
  * @returns {Promise<boolean>} A promise that resolves to true if the API token is valid, otherwise false.
  */
 export async function useCheckApiTokenValid(username, apiToken) {
-  // Check if the user has an API token
+  // Check if the user has an API token.
+  // In the new hardened model we prefer the in-memory token managed by the store + axios interceptor.
+  // This function now avoids directly clobbering headers.
   if (!apiToken) return false
-  apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
+
+  // Best effort: if a store is available let it manage the header via the normal path.
+  try {
+    const { useStoreUser } = await import("src/stores/storeUser")
+    const storeUser = useStoreUser()
+    if (storeUser && typeof storeUser.setAccessToken === "function") {
+      storeUser.setAccessToken(apiToken)
+    } else if (apiToken) {
+      // Fallback only if store not ready
+      apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
+    }
+  } catch {
+    if (apiToken) {
+      apiLogin.defaults.headers.common["Authorization"] = `Bearer ${apiToken}`
+    }
+  }
+
   const resp = await apiLogin.get("/auth/check/")
-  const respData = resp.data
-  const now = new Date()
-  const expiryDate = new Date(respData.expires)
-  const diffInMilliseconds = expiryDate - now
-  const diffInMinutes = Math.floor(diffInMilliseconds / 1000 / 60)
   if (resp.status === 200) return true
   return false
 }

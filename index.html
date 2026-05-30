@@ -13,6 +13,9 @@
     />
     <meta name="apple-mobile-web-app-title" content="V4V.app" />
 
+    <!-- CSP meta (backup for nginx headers; start report-only, see nginx/nginx.conf and auth audit) -->
+    <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: https:; connect-src 'self' https://api.v4v.app https://devapi.v4v.app https://rpc.hive.blog https://api.hive.blog wss:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+
     <link
       rel="icon"
       type="image/png"

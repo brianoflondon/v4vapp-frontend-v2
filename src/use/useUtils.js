@@ -243,6 +243,11 @@ export function useUsernameFromRouteParam(routeParam) {
 }
 
 export function generateUUID() {
+  // Cryptographically secure UUID (fixes auth vulnerability #2 / #3)
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  // Fallback (should never be reached in modern browsers used by this app)
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
       v = c === "x" ? r : (r & 0x3) | 0x8;
@@ -357,7 +362,9 @@ export async function useValidateApi(clientId, signedMessage) {
     });
     return validate;
   } catch (error) {
-    if (validate.status === 422) {
+    // Fixed: was referencing undefined `validate` (vulnerability #4 / bug)
+    const status = error?.response?.status
+    if (status === 422) {
       Notify.create({
         message: "422 error from validate",
       });

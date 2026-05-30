@@ -78,6 +78,10 @@
               {{ storeUser.hiveAccname }}@v4v.app
             </div>
           </div>
+
+          <!-- No visual re-auth nag here. With the new short-token model + proactive cookie restore,
+               balances for cookie-capable accounts load silently. Legacy keychain accounts will simply
+               have no KeepSats until the user performs a fresh keychain signature for them. -->
           <div class="row">
             <div style="font-size: 1.2rem">
               <q-checkbox
@@ -323,6 +327,7 @@ const lightDark = computed(() => {
 })
 
 const nonZeroKeepSats = computed(() => {
+  console.debug("[DEBUG-KeepSats] nonZeroKeepSats — currentKeepSats:", storeUser.currentKeepSats, "keepSatsBalance:", storeUser.keepSatsBalance, "keepSatsBalanceNum:", storeUser.keepSatsBalanceNum)
   if (storeUser.currentKeepSats) {
     if (storeUser.currentKeepSats !== "0") {
       return true
@@ -330,6 +335,10 @@ const nonZeroKeepSats = computed(() => {
   }
   return false
 })
+
+// needsReauth removed per user feedback — visual warnings/tags for re-keychain were
+// cluttering the design. The underlying restore logic (ensureAccessToken etc.) remains
+// so cookie-backed accounts (webauthn/passkey) continue to work silently after reloads.
 
 const balances = computed(() => {
   if (currencyToggle.value) {

@@ -37,6 +37,20 @@ export function useShortBTCAddress(address) {
 }
 
 /**
+ * Simple boolean check if an address looks like a Bitcoin address.
+ * Useful for determining loginType in passkey flows, etc.
+ *
+ * @param {string} address
+ * @returns {boolean}
+ */
+export function useIsBTCAddress(address) {
+  const value = String(address || "").trim()
+  const btcRegex =
+    /^(bc1|tb1|bcrt1)[ac-hj-np-z02-9]{11,87}$|^[13mn2][a-km-zA-HJ-NP-Z1-9]{25,62}$/
+  return btcRegex.test(value)
+}
+
+/**
  * Uses Sats Connect to request BTC address access, sign backend challenge,
  * and authenticate against the existing validation endpoint.
  *
@@ -162,11 +176,15 @@ export async function useBTCLoginFlow() {
       return null
     }
 
+    console.log("[AUTH-DEBUG] BTC login: Passing expire=null (consistent with passkeys/EVM). Security via short access tokens + wallet re-signing.");
     await storeUser.login(
       paymentAddress,
       "BTC",
       null,
-      validate.data?.expire * 1000,
+      // 2026 auth hardening: pass null for expire (consistent with passkeys and EVM).
+      // BTC sessions are not forced out by a client-side expire.
+      // Security is provided by short-lived backend access tokens + re-signing requirement.
+      null,
       null,
       validate.data.access_token,
       "btc",

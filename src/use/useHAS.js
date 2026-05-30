@@ -179,7 +179,7 @@ async function resolveAuth(res, auth, challenge_data) {
       auth_payload.account,
       "posting",
       auth_payload.key,
-      hasTokenExpire,
+      null,                    // Stop feeding client-side expire in the new auth model
       res.data.token,
       responseApi.data.access_token,
     );

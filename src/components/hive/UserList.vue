@@ -27,17 +27,7 @@
             >@{{ user.hiveAccname }}</q-item-label
           >
           <q-tooltip caption>
-            {{ $t("Expires") }}
-            <br />
-            API:
-            {{ storeUser.getUser(user.hiveAccname).loginHASExpireHuman }}
-            <br />
-            Login:
-            {{ storeUser.getUser(user.hiveAccname).loginAgeHuman }}
-            <br />
-            API:
-            {{ storeUser.getUser(user.hiveAccname).hasApiToken }}
-            <br />
+            Login: {{ storeUser.getUser(user.hiveAccname).loginAgeHuman }}
           </q-tooltip>
         </q-item-section>
         <q-item-section side v-if="storeUser.getUser(user.hiveAccname).isHAS">

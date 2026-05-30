@@ -59,7 +59,177 @@ const lightningAddressDomainSuffix = "v4v.app"
 const lightningAddressDomainPrefix = useDevAccounts ? "d" : ""
 
 const api = axios.create({ baseURL: apiURL })
-const apiLogin = axios.create({ baseURL: apiLoginURL })
+const apiLogin = axios.create({ 
+  baseURL: apiLoginURL,
+  withCredentials: true,   // REQUIRED for the HttpOnly refresh_token cookie to be sent on cross-origin calls (e.g. dev.v4v.app → devapi.v4v.app)
+})
+
+// =====================================================
+// DEBUG PATCH - REMOVE AFTER DIAGNOSIS
+console.log("%c[AUTH-DEBUG] >>> NEW AXIOS BOOT FILE LOADED WITH REFRESH INTERCEPTOR <<<", "color: cyan; font-weight: bold; font-size: 13px")
+// =====================================================
+
+/**
+ * Request interceptor (currently only on apiLogin for auth routes).
+ * The main refresh logic lives in the *response* interceptor attached to BOTH api and apiLogin.
+ */
+apiLogin.interceptors.request.use(
+  (config) => {
+    // Defensive: if the store has a current apiToken and the request doesn't already set one,
+    // inject it. This reduces reliance on manual apiTokenSet() calls everywhere.
+    // Note: accessing Pinia store here requires the store to be initialized.
+    // For now we keep it lightweight; full integration happens with store refactor.
+
+    // DEBUG
+    if (config.url?.includes("/auth/")) {
+      console.log("[AUTH-DEBUG] Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
+    }
+
+    return config
+  },
+  (error) => Promise.reject(error),
+)
+
+// Also attach to the main `api` instance so we get consistent [AUTH-DEBUG] logging
+// for outgoing authenticated calls (most of the app traffic goes through `api`).
+api.interceptors.request.use(
+  (config) => {
+    if (config.url?.includes("/auth/")) {
+      console.log("[AUTH-DEBUG] Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
+    }
+    return config
+  },
+  (error) => Promise.reject(error),
+)
+
+/**
+ * Response interceptor for auth failures.
+ * Part of the full hardened auth solution (short-lived access + HttpOnly refresh cookie).
+ *
+ * DESIGN RULE (multi-account safety):
+ *   This interceptor MUST NEVER call logoutAll().
+ *   Failures are always scoped to the specific affected account via logoutUser().
+ *   Global logout (logoutAll) is only allowed from explicit user UI actions.
+ *
+ * On 401 from a protected endpoint:
+ *   - Try to silently refresh using the HttpOnly refresh cookie
+ *   - If successful, retry the original request
+ *   - If refresh fails for one account, only log that account out
+ */
+// Attach the refresh interceptor to BOTH instances so that 401/403 on any authenticated call
+// (whether through `api` or `apiLogin`) can trigger the silent refresh using the HttpOnly cookie.
+const refreshInterceptor = async (error) => {
+  // Very loud diagnostic log — this fires on *every* error response through api or apiLogin
+  console.log(
+    "%c[AUTH-DEBUG] === Response ERROR intercepted ===",
+    "color: magenta; font-weight: bold",
+    "url:", error?.config?.url,
+    "status:", error?.response?.status,
+    "instance base:", error?.config?.baseURL
+  );
+
+  const originalRequest = error.config
+
+  if (
+    (error?.response?.status === 401 || error?.response?.status === 403) &&
+    !originalRequest._retry &&
+    originalRequest.url !== "/auth/refresh" &&
+    originalRequest.url !== "/auth/logout"
+  ) {
+    originalRequest._retry = true
+
+    console.log("%c[AUTH-DEBUG] >>> 401/403 intercepted on:", "color: orange; font-weight: bold", originalRequest?.url)
+
+    try {
+      console.info("[auth] 401 received — attempting silent refresh via HttpOnly cookie")
+      console.log("[AUTH-DEBUG] Calling POST /auth/refresh (relying on HttpOnly cookie)")
+
+      const refreshResponse = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
+
+      console.log("[AUTH-DEBUG] /auth/refresh response status:", refreshResponse?.status)
+      console.log("[AUTH-DEBUG] /auth/refresh response data:", refreshResponse?.data)
+
+      if (refreshResponse?.data?.access_token) {
+        const newToken = refreshResponse.data.access_token
+
+        console.log("%c[AUTH-DEBUG] Silent refresh SUCCESS — got new access token", "color: lime")
+
+        // Decode to learn the *real* owner of this token (the account whose refresh cookie
+        // was used). We must NOT blindly store under currentUser — the 401 may have come
+        // from a different currentUser than the cookie principal (multi-account case).
+        let tokenOwner = null
+        try {
+          const payload = JSON.parse(atob(newToken.split(".")[1]))
+          if (payload?.username) tokenOwner = payload.username
+        } catch (e) {
+          // non-fatal
+        }
+        if (tokenOwner) {
+          console.log("[AUTH-DEBUG] Silent refresh token owner (from JWT):", tokenOwner)
+        }
+
+        // Update default headers on BOTH instances (global header is for "whoever we just authed as")
+        api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+        apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+
+        // Best-effort store update — pass the real owner so it is keyed correctly in accessTokens.
+        try {
+          const { useStoreUser } = await import("src/stores/storeUser")
+          const storeUser = useStoreUser()
+          if (storeUser && typeof storeUser.setAccessToken === "function") {
+            storeUser.setAccessToken(newToken, tokenOwner)
+          }
+        } catch (e) {
+          // non-fatal
+        }
+
+        // Retry original request (global axios works because we patched the header on the request)
+        originalRequest.headers["Authorization"] = `Bearer ${newToken}`
+        return axios(originalRequest)
+      } else {
+        console.warn("[AUTH-DEBUG] /auth/refresh responded but no access_token in body")
+      }
+    } catch (refreshError) {
+      console.warn("[auth] Silent refresh failed — user will need to re-authenticate")
+      console.error("[AUTH-DEBUG] /auth/refresh FAILED. Error:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
+
+      // Per-account only. The interceptor MUST NEVER call logoutAll().
+      // Identify the affected user from the original failing request if possible.
+      let affectedUser = null
+      try {
+        const { useStoreUser } = await import("src/stores/storeUser")
+        const storeUser = useStoreUser()
+
+        // Try to extract username from the JWT that was on the failing request
+        const authHeader = originalRequest?.headers?.Authorization || originalRequest?.headers?.authorization
+        if (authHeader && typeof authHeader === 'string') {
+          const token = authHeader.replace(/^Bearer\s+/i, '')
+          const payload = JSON.parse(atob(token.split('.')[1]))
+          if (payload?.username) affectedUser = payload.username
+        }
+        if (!affectedUser) affectedUser = storeUser?.currentUser
+
+        if (storeUser && affectedUser) {
+          if (typeof storeUser.logoutUser === "function") {
+            await storeUser.logoutUser(affectedUser)
+          } else if (typeof storeUser.logout === "function") {
+            // Fallback: only logout current if we can't do better
+            if (affectedUser === storeUser.currentUser) {
+              await storeUser.logout()
+            }
+          }
+        }
+      } catch (e) {
+        // non-fatal
+      }
+    }
+  }
+
+  return Promise.reject(error)
+}
+
+api.interceptors.response.use((response) => response, refreshInterceptor)
+apiLogin.interceptors.response.use((response) => response, refreshInterceptor)
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
