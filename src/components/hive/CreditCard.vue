@@ -50,6 +50,37 @@
       style="position: absolute; top: 30%; left: 8%"
     />
 
+    <!-- Prominent re-auth warning on the card body (near where the reload spinner appears).
+         Only shown after an actual refresh failure. Click to open the auth flow for this account. -->
+    <div
+      v-if="storeUser.currentReauthNeeded && !storeUser.dataLoading"
+      class="reauth-warning cursor-pointer"
+      style="
+        position: absolute;
+        top: 24%;
+        left: 7%;
+        z-index: 20;
+        background: rgba(0, 0, 0, 0.45);
+        border-radius: 50%;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      "
+      @click="triggerReauth"
+    >
+      <q-icon
+        name="warning"
+        color="orange"
+        size="2.6rem"
+      >
+        <q-tooltip>
+          Refresh failed for this account.<br>
+          Click to re-authenticate @{{ storeUser.currentUser }}
+        </q-tooltip>
+      </q-icon>
+    </div>
+
     <q-card-section
       v-if="storeUser.currentUser"
       class="credit-card-strip absolute-bottom q-py-xs q-px-sm text-subtitle2 text-left"
@@ -76,19 +107,6 @@
             </div>
             <div v-if="storeUser.loginType === 'hive'" class="text-subtitle2">
               {{ storeUser.hiveAccname }}@v4v.app
-              <q-icon
-                v-if="storeUser.currentReauthNeeded"
-                name="warning"
-                color="warning"
-                size="0.85rem"
-                class="q-ml-xs"
-                style="vertical-align: middle;"
-              >
-                <q-tooltip>
-                  Refresh failed for this account.<br>
-                  Re-authenticate (Keychain / Passkey) to restore KeepSats balances and full access.
-                </q-tooltip>
-              </q-icon>
             </div>
           </div>
 
@@ -214,6 +232,7 @@ import HbdLogoIcon from "../utils/HbdLogoIcon.vue"
 import { tidyNumber } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
+import { useKeychainLoginFlow } from "src/use/useKeychain"
 const storeCoingecko = useCoingeckoStore()
 
 // import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
@@ -330,6 +349,43 @@ async function scheduleUpdate() {
   await storeUser.update(false)
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 5 * 60 * 1000)
+}
+
+/**
+ * Trigger re-authentication for the current account when the warning icon is clicked.
+ * For keychain accounts this directly starts the Keychain signature flow.
+ * For passkey/webauthn it directs the user (the passkey flow is usually initiated from the menu).
+ */
+async function triggerReauth() {
+  if (!storeUser.currentUser) return
+
+  const acc = storeUser.currentUser
+  storeUser.clearReauthNeeded(acc)
+
+  const isWebauthn = storeUser.authKey === 'webauthn'
+
+  if (isWebauthn) {
+    q.notify({
+      message: `Please re-login with Passkey for @${acc} using the side menu`,
+      color: 'info',
+      timeout: 6000,
+    })
+    return
+  }
+
+  // Keychain (or other hive login) - start the flow directly
+  try {
+    const hiveAccObj = { value: acc }
+    const keyType = storeUser.user?.keySelected || 'Active'
+    const props = { keyType }
+    await useKeychainLoginFlow(hiveAccObj, props)
+  } catch (err) {
+    console.error('Re-auth keychain flow error:', err)
+    q.notify({
+      message: `Failed to start re-auth for @${acc}. Please try from the menu.`,
+      color: 'negative',
+    })
+  }
 }
 
 const lightDark = computed(() => {
