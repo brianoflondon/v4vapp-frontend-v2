@@ -236,14 +236,15 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     apiToken() {
       if (!this.currentUser) return null
-      // Prefer the non-persisted in-memory token (new hardened model)
+      // Strictly return only a token that belongs to the currentUser.
+      // Never return a token that was restored for a different account via the
+      // HttpOnly cookie (this was causing the "wrong balance after switch" bug).
       if (this.accessTokens[this.currentUser]) {
         return this.accessTokens[this.currentUser]
       }
-      // Fallback to old persisted location (will be removed after full migration)
-      const u = this._currentHiveUser
-      if (!u?.apiToken) return null
-      return u.apiToken
+      // No fallback to old persisted apiToken for the current user if it doesn't
+      // match what we have in the in-memory map for this exact account.
+      return null
     },
     loginType() {
       const u = this._currentHiveUser
@@ -920,12 +921,16 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     apiTokenSet(hiveAccname = this.currentUser) {
       console.debug("Setting API Token for", hiveAccname)
-      const token =
-        this.accessTokens[hiveAccname] || this.users[hiveAccname]?.apiToken
+      // Only use a token that is specifically for this account.
+      // Do not leak a token that was restored for a different cookie owner.
+      const token = this.accessTokens[hiveAccname]
       if (token) {
         apiLogin.defaults.headers.common["Authorization"] = `Bearer ${token}`
         return true
       }
+      // Clear the header if we have no token for this specific user
+      // (prevents sending the wrong user's token after a switch).
+      delete apiLogin.defaults.headers.common["Authorization"]
       return false
     },
 

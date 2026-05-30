@@ -168,14 +168,24 @@ const refreshInterceptor = async (error) => {
           console.log("[AUTH-DEBUG] Silent refresh token owner (from JWT):", tokenOwner)
         }
 
-        // Update default headers on BOTH instances (global header is for "whoever we just authed as")
-        api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
-        apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
-
-        // Best-effort store update — pass the real owner so it is keyed correctly in accessTokens.
+        // Only stomp the global Authorization header if the token we just got
+        // is for the *current* user in the UI. Otherwise we would send
+        // brianoflondon's token on calls that the UI thinks are for v4vapp-test.
+        const { useStoreUser } = await import("src/stores/storeUser")
+        let storeUser = null
         try {
-          const { useStoreUser } = await import("src/stores/storeUser")
-          const storeUser = useStoreUser()
+          storeUser = useStoreUser()
+        } catch {}
+
+        const shouldSetGlobalHeader = !tokenOwner || tokenOwner === storeUser?.currentUser
+
+        if (shouldSetGlobalHeader) {
+          api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+          apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+        }
+
+        // Always store the token under the correct owner in the map.
+        try {
           if (storeUser && typeof storeUser.setAccessToken === "function") {
             storeUser.setAccessToken(newToken, tokenOwner)
           }
