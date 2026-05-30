@@ -748,6 +748,20 @@ export const useStoreUser = defineStore("useStoreUser", {
         if (answer == null) {
           return null
         }
+
+        // Critical safety guard against cross-user data pollution
+        // (the root cause of "shows brian's balance while on v4vapp-test" after resume/switch).
+        if (answer.hive_accname && answer.hive_accname !== this.currentUser) {
+          console.error(
+            "[AUTH-DEBUG] CRITICAL MISMATCH: Received keepsats data for the wrong user!",
+            "currentUser:", this.currentUser,
+            "response.hive_accname:", answer.hive_accname,
+            "This almost always means the Authorization header contained a token for a different account (cookie owner vs UI currentUser)."
+          );
+          // Do NOT update currentKeepSats with data that belongs to someone else.
+          return null;
+        }
+
         this.currentKeepSats = answer
         console.log(
           "[DEBUG-KeepSats] Successfully fetched and set currentKeepSats for",
@@ -883,6 +897,9 @@ export const useStoreUser = defineStore("useStoreUser", {
         this.dataLoading = true
         if (hiveAccname in this.users) {
           this.currentUser = hiveAccname
+          // Immediately clear stale balance data from the previous user.
+          // The next update() will fetch fresh data (or fail cleanly).
+          this.currentKeepSats = null
           this.apiTokenSet(hiveAccname)
           this.expireCheck()
 
