@@ -540,9 +540,15 @@ export const useStoreUser = defineStore("useStoreUser", {
       // called once from the HiveLogin component.
       console.log("Store initialized")
 
-      // Because we are invalidating all existing logins for the new auth model,
-      // aggressively remove any old persisted apiTokens from localStorage.
-      // This is a one-time migration step.
+      // Auth hardening migration:
+      // - For accounts that used modern login paths (authKey set, e.g. webauthn/passkey),
+      //   we never persist tokens — they rely on short-lived in-memory + HttpOnly refresh cookie.
+      // - For pure legacy keychain accounts (!authKey), we allow the *short-lived* access token
+      //   received on their last keychain login to remain persisted. This restores the previous
+      //   behaviour where opening a new tab immediately shows KeepSats balances for keychain
+      //   accounts (for the remaining lifetime of that short token).
+      // We only strip apiToken on accounts that have authKey (the dangerous long-lived ones
+      // from the old model, or any that went through the new cookie-based paths).
       let strippedAny = false
       const accountsWithOldTokens = []
 
@@ -551,12 +557,13 @@ export const useStoreUser = defineStore("useStoreUser", {
         if (!user.loginType) {
           user.loginType = "hive"
         }
-        if (user.apiToken) {
+        if (user.apiToken && user.authKey) {
+          // Only strip for modern/cookie-capable accounts
           accountsWithOldTokens.push(userId)
           console.warn(
-            "[AUTH-DEBUG] Found OLD apiToken on account:",
+            "[AUTH-DEBUG] Found OLD apiToken on modern auth account:",
             userId,
-            "— will strip it",
+            "— will strip it (keychain accounts keep their short token for cross-tab use)",
           )
           delete user.apiToken
           strippedAny = true
@@ -565,7 +572,7 @@ export const useStoreUser = defineStore("useStoreUser", {
 
       if (strippedAny) {
         console.info(
-          "[auth] Stripped old persisted access tokens (full re-login required after auth hardening)",
+          "[auth] Stripped old persisted access tokens for modern auth accounts",
         )
         console.warn(
           "[AUTH-DEBUG] Accounts that had old tokens stripped:",
@@ -573,7 +580,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         )
       } else {
         console.log(
-          "[AUTH-DEBUG] No old apiToken fields found in persisted users during initialize().",
+          "[AUTH-DEBUG] No old apiToken fields stripped during initialize (keychain short tokens are intentionally kept for new-tab UX).",
         )
       }
 
@@ -585,11 +592,26 @@ export const useStoreUser = defineStore("useStoreUser", {
         "[DEBUG-KeepSats] accessTokens after stripping:",
         JSON.stringify(this.accessTokens),
       )
-      if (accountsWithOldTokens.length > 0) {
-        console.warn(
-          "[DEBUG-KeepSats] Accounts that lost their apiToken will skip KeepSats fetches until they re-login or get a fresh token via refresh.",
-        )
+
+      // For pure keychain accounts (!authKey), seed the in-memory accessTokens map
+      // from any persisted short-lived apiToken. This makes new tabs / reloads
+      // immediately able to fetch KeepSats for the current keychain user, restoring
+      // the pre-hardening UX for those accounts (token is short-lived, so it will
+      // naturally stop working after backend expiry).
+      for (const userId in this.users) {
+        const user = this.users[userId]
+        if (!user.authKey && user.apiToken && !this.accessTokens[userId]) {
+          this.accessTokens[userId] = user.apiToken
+          console.log(
+            "[AUTH-DEBUG] Seeded in-memory access token for keychain account from persisted short token:",
+            userId,
+          )
+          if (userId === this.currentUser) {
+            apiLogin.defaults.headers.common["Authorization"] = `Bearer ${user.apiToken}`
+          }
+        }
       }
+
       // =====================================================
       // END DEBUG PATCH
       // =====================================================

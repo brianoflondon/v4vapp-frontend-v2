@@ -210,7 +210,21 @@ const refreshInterceptor = async (error) => {
         if (!affectedUser) affectedUser = storeUser?.currentUser
 
         if (storeUser && affectedUser) {
-          if (typeof storeUser.logoutUser === "function") {
+          const affectedUserObj = storeUser.users?.[affectedUser]
+          const isPureKeychain = affectedUserObj && !affectedUserObj.authKey
+
+          if (isPureKeychain) {
+            // For pure keychain accounts, a failed refresh (expired short token) should
+            // not remove the account from the user's list. Just clear the in-memory token.
+            // The user can re-trigger keychain when they need a fresh session.
+            console.log(
+              "[AUTH-DEBUG] Refresh failed for pure keychain account — not logging out (short token simply expired). Account remains in list.",
+              affectedUser,
+            )
+            if (storeUser.accessTokens) {
+              delete storeUser.accessTokens[affectedUser]
+            }
+          } else if (typeof storeUser.logoutUser === "function") {
             await storeUser.logoutUser(affectedUser)
           } else if (typeof storeUser.logout === "function") {
             // Fallback: only logout current if we can't do better
