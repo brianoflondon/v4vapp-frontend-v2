@@ -222,7 +222,6 @@ Você pode armazenar uma pequena quantia de Sats no V4V.app: seu saldo KeepSats.
   date: 'Data',
   paid: 'Pago',
   pending: 'Pendente',
-  date: 'Data',
   paid_by: 'Pago por',
   import_hive: 'Importar Hive',
   local_records: 'Registros Locais',
