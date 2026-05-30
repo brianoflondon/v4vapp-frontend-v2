@@ -38,7 +38,34 @@ const isIphone = /iPhone/.test(window.navigator.userAgent);
 
 onMounted(() => {
   // Initialize the store this only happens here.
-  useStoreUser().initialize();
+  const storeUser = useStoreUser();
+  storeUser.initialize();
+
+  // Recovery for stuck dataLoading on iOS PWA resume from background.
+  // iOS can suspend network requests; if a call never settles, dataLoading
+  // can get stuck true and the CreditCard spinner never disappears.
+  // Primary recovery on visibility
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      if (storeUser.dataLoading) {
+        console.log("[PWA] visibilitychange -> visible: forcing dataLoading = false (iOS resume recovery)");
+        storeUser.dataLoading = false;
+      }
+      storeUser.update(false).catch(() => {});
+    }
+  });
+
+  // Extra safety for iOS PWA resume (pageshow fires reliably on BFCache restore)
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted || document.visibilityState === "visible") {
+      if (storeUser.dataLoading) {
+        console.log("[PWA] pageshow (persisted): forcing dataLoading = false (iOS resume recovery)");
+        storeUser.dataLoading = false;
+      }
+      storeUser.update(false).catch(() => {});
+    }
+  });
+
   const isDev = window.location.href.includes("dev.v4v.app");
   const isLocalhost =
     window.location.href.includes("localhost") ||

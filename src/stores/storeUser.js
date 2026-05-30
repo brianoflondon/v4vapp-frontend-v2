@@ -724,8 +724,8 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
 
       const currentSatsBalance = this.currentKeepSats?.net_sats
+      this.dataLoading = true
       try {
-        this.dataLoading = true
         let answer = null
         try {
           answer = await useKeepSats(useCache, false)
@@ -738,7 +738,6 @@ export const useStoreUser = defineStore("useStoreUser", {
           console.error(err)
         }
         if (answer == null) {
-          this.dataLoading = false
           return null
         }
         this.currentKeepSats = answer
@@ -752,7 +751,6 @@ export const useStoreUser = defineStore("useStoreUser", {
         if (this.currentKeepSats && this.currentKeepSats.net_sats === 0) {
           this.currentKeepSats.net_sats = 0
         }
-        this.dataLoading = false
         console.debug("currentKeepSats", this.currentKeepSats)
         if (this.currentKeepSats) {
           // Ensure net_sats is never -0 for comparison
@@ -770,6 +768,8 @@ export const useStoreUser = defineStore("useStoreUser", {
       } catch (err) {
         console.error(err)
         return null
+      } finally {
+        this.dataLoading = false
       }
     },
     /**
@@ -880,18 +880,30 @@ export const useStoreUser = defineStore("useStoreUser", {
 
           // Proactive restore for the newly selected account (may be the cookie owner
           // even if it had no token at the instant of switch).
+          const doUpdate = () => {
+            this.update().finally(() => {
+              this.dataLoading = false
+            })
+          }
+
           if (!this.apiToken) {
             this.ensureAccessToken(hiveAccname)
               .then((tok) => {
-                if (tok) this.update()
+                if (tok) doUpdate()
+                else this.dataLoading = false
               })
-              .catch(() => {})
+              .catch(() => {
+                this.dataLoading = false
+              })
           } else {
-            this.update()
+            doUpdate()
           }
+        } else {
+          this.dataLoading = false
         }
       } catch (err) {
         console.debug(err)
+        this.dataLoading = false
       }
     },
     /**
