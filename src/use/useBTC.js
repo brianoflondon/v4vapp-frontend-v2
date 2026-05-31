@@ -2,6 +2,7 @@ import { AddressPurpose, MessageSigningProtocols, request } from "sats-connect"
 import { Notify } from "quasar"
 import { useStoreUser } from "src/stores/storeUser"
 import { useGetChallenge, useValidateApi } from "src/use/useUtils"
+import { authDebug } from "src/utils/authDebug"
 
 /**
  * Checks if the given string is a likely valid BTC address format.
@@ -176,7 +177,7 @@ export async function useBTCLoginFlow() {
       return null
     }
 
-    console.log("[AUTH-DEBUG] BTC login: Passing expire=null (consistent with passkeys/EVM). Security via short access tokens + wallet re-signing.");
+    authDebug("BTC login: Passing expire=null (consistent with passkeys/EVM). Security via short access tokens + wallet re-signing.");
     await storeUser.login(
       paymentAddress,
       "BTC",

@@ -688,7 +688,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     async updateSatsBalance(useCache = true) {
       if (!this.currentUser) {
-        authWarn("updateSatsBalance: skipped — no currentUser")
+        authDebug("updateSatsBalance: skipped — no currentUser")
         return null
       }
       if (!this.apiToken) {

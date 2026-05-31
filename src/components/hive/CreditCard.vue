@@ -234,6 +234,7 @@ import { useI18n } from "vue-i18n"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { useKeychainLoginFlow } from "src/use/useKeychain"
 import { usePasskeyLogin } from "src/use/usePasskeys"
+import { authError } from "src/utils/authDebug"
 const storeCoingecko = useCoingeckoStore()
 
 // import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
@@ -406,7 +407,7 @@ async function triggerReauth() {
           })
         }
       } catch (err) {
-        console.error('Passkey re-auth error:', err)
+        authError('Passkey re-auth error:', err)
         q.notify({
           message: 'Failed to start passkey re-authentication',
           color: 'negative',
@@ -423,7 +424,7 @@ async function triggerReauth() {
     const props = { keyType }
     await useKeychainLoginFlow(hiveAccObj, props)
   } catch (err) {
-    console.error('Re-auth keychain flow error:', err)
+    authError('Re-auth keychain flow error:', err)
     q.notify({
       message: `Failed to start re-auth for @${acc}. Please try from the side menu.`,
       color: 'negative',

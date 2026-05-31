@@ -212,6 +212,7 @@ import { useIsEVMAddress } from "src/use/useEVM";
 import { useIsBTCAddress } from "src/use/useBTC";
 import { useStoreUser } from "src/stores/storeUser";
 import { useI18n } from "vue-i18n";
+import { authDebug } from "src/utils/authDebug";
 import HiveInputAcc from "components/HiveInputAcc.vue";
 import HiveAvatar from "components/utils/HiveAvatar.vue";
 import ConfettiExplosion from "vue-confetti-explosion";
@@ -321,7 +322,7 @@ async function doPasskeyLogin() {
     // we no longer rely on a client-side 7-day expire for passkeys.
     // Session continuity is now handled by the rotating refresh token cookie.
     // We pass null for expire so expireCheck() does not forcibly log the user out.
-    console.log("[AUTH-DEBUG] Passkey login: Passing expire=null. Using refresh token model (consistent with EVM/BTC changes).");
+    authDebug("Passkey login: Passing expire=null. Using refresh token model (consistent with EVM/BTC changes).");
     await storeUser.login(
       hiveAccObj.value.value,
       "active",

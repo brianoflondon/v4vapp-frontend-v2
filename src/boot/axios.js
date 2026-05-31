@@ -41,7 +41,7 @@ const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 let apiURL = rootUrl
 let apiLoginURL = rootLoginUrl
 
-console.log("useLocal:", useLocal)
+authDebug("useLocal:", useLocal)
 if (useLocal) {
   apiURL = "http://localhost:1818/v1"
   apiLoginURL = "http://localhost:1818/"
@@ -135,7 +135,7 @@ const refreshInterceptor = async (error) => {
     authDebug(">>> 401/403 intercepted on:", originalRequest?.url)
 
     try {
-      console.info("[auth] 401 received — attempting silent refresh via HttpOnly cookie")
+      authDebug("401 received — attempting silent refresh via HttpOnly cookie")
       authDebug("Calling POST /auth/refresh (relying on HttpOnly cookie)")
 
       // In the multi-user session model, try to request a token for the
@@ -200,11 +200,11 @@ const refreshInterceptor = async (error) => {
         originalRequest.headers["Authorization"] = `Bearer ${newToken}`
         return axios(originalRequest)
       } else {
-        authWarn("/auth/refresh responded but no access_token in body")
+        authDebug("/auth/refresh responded but no access_token in body")
       }
     } catch (refreshError) {
-      authWarn("Silent refresh failed — user will need to re-authenticate")
-      authError("/auth/refresh FAILED:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
+      authDebug("Silent refresh failed — user will need to re-authenticate")
+      authDebug("/auth/refresh FAILED:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
 
       // Per-account only. The interceptor MUST NEVER call logoutAll().
       // Identify the affected user from the original failing request if possible.

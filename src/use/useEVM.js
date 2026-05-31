@@ -1,5 +1,6 @@
 import { useStoreUser } from "src/stores/storeUser";
 import { useGetChallenge, useValidateApi } from "src/use/useUtils";
+import { authDebug } from "src/utils/authDebug";
 /**
  * Checks if the given address is a valid Ethereum address.
  *
@@ -96,7 +97,7 @@ export async function useEVMLoginFlow() {
           const validate = await useValidateApi(clientId, signatureData);
           console.log("validate: ", validate);
           console.log("logging in with EVM");
-          console.log("[AUTH-DEBUG] EVM login: Passing expire=null (consistent with passkeys). Short backend token + re-signing provides security.");
+          authDebug("EVM login: Passing expire=null (consistent with passkeys). Short backend token + re-signing provides security.");
 
           await storeUser.login(
             evmConnected,
