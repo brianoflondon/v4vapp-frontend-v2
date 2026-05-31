@@ -174,6 +174,15 @@ export const useStoreUser = defineStore("useStoreUser", {
       unit: "$",
     }),
     users: useStorage("users", {}),
+
+    /**
+     * Accounts that belong to the current browser session.
+     * In the new "one session, multiple users" model, this is the authoritative list
+     * of accounts the user has attached to this browser (via the refresh cookie).
+     * This replaces a lot of the previous "cookie owner vs currentUser" fighting.
+     */
+    sessionAccounts: useStorage("sessionAccounts", []),
+
     pos: useStorage("pos", { receiveCurrency: "hbd" }),
     clientId: useStorage("clientId", generateUUID()),
     dataLoading: useStorage("dataLoading", false),
@@ -272,6 +281,13 @@ export const useStoreUser = defineStore("useStoreUser", {
     currentReauthNeeded() {
       if (!this.currentUser) return false
       return !!this.reauthNeeded[this.currentUser]
+    },
+
+    /**
+     * Accounts that are part of the current browser session under the new model.
+     */
+    currentSessionAccounts() {
+      return this.sessionAccounts
     },
     /**
      * Determines the login method for the current user.
@@ -864,6 +880,10 @@ export const useStoreUser = defineStore("useStoreUser", {
             `Bearer ${apiToken}`
         }
 
+        // In the new model, a successful login attaches this account to the
+        // current browser session (the refresh cookie's allowed users list).
+        this.addAccountToSession(hiveAccname)
+
         // Debug logging for auth hardening changes
         if (
           loginType === "evm" ||
@@ -895,10 +915,21 @@ export const useStoreUser = defineStore("useStoreUser", {
       try {
         console.debug("switchUser to ", hiveAccname, " from ", this.currentUser)
         this.dataLoading = true
+
         if (hiveAccname in this.users) {
+          // New model: if this account is not yet part of the current browser
+          // session, we should eventually guide the user to "add it to this session".
+          // For now we log it clearly.
+          if (!this.isAccountInCurrentSession(hiveAccname)) {
+            console.log(
+              "[AUTH-DEBUG] Switching to an account that is not yet in the current browser session:",
+              hiveAccname,
+              "— it may need to be re-authenticated to attach it to this session."
+            )
+          }
+
           this.currentUser = hiveAccname
           // Immediately clear stale balance data from the previous user.
-          // The next update() will fetch fresh data (or fail cleanly).
           this.currentKeepSats = null
           this.apiTokenSet(hiveAccname)
           this.expireCheck()
@@ -1143,6 +1174,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveAccname) return
 
       delete this.accessTokens[hiveAccname]
+      this.removeAccountFromSession(hiveAccname)
 
       if (hiveAccname in this.users) {
         delete this.users[hiveAccname]
@@ -1194,6 +1226,39 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (hiveAccname) {
         delete this.reauthNeeded[hiveAccname]
       }
+    },
+
+    // =====================================================
+    // New "One Browser Session, Multiple Users" model helpers
+    // =====================================================
+
+    /**
+     * Adds an account to the current browser session's authorized list.
+     * This should be called after a successful login when we want this
+     * account to be part of the current refresh cookie's session.
+     */
+    addAccountToSession(hiveAccname) {
+      if (!hiveAccname) return
+      if (!this.sessionAccounts.includes(hiveAccname)) {
+        this.sessionAccounts.push(hiveAccname)
+      }
+    },
+
+    /**
+     * Removes an account from the current browser session.
+     * (Useful for explicit "remove this account from this browser" flows later.)
+     */
+    removeAccountFromSession(hiveAccname) {
+      this.sessionAccounts = this.sessionAccounts.filter(acc => acc !== hiveAccname)
+      // Also clean up any token we might be holding
+      delete this.accessTokens[hiveAccname]
+    },
+
+    /**
+     * Returns true if the given account is part of the current browser session.
+     */
+    isAccountInCurrentSession(hiveAccname) {
+      return this.sessionAccounts.includes(hiveAccname)
     },
 
     async bech32Address(currency = "hive") {
