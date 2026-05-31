@@ -1043,7 +1043,10 @@ export const useStoreUser = defineStore("useStoreUser", {
             "[AUTH-DEBUG] ensureAccessToken: attempting silent restore via HttpOnly cookie for",
             target
           )
-          const resp = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
+          // In the new multi-user session model, we can request a token for a
+          // specific user that is allowed in this browser session.
+          const refreshBody = target ? { for_user: target } : null
+          const resp = await apiLogin.post("/auth/refresh", refreshBody, { withCredentials: true })
 
           if (resp?.data?.access_token) {
             const newToken = resp.data.access_token

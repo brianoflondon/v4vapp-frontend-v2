@@ -144,7 +144,15 @@ const refreshInterceptor = async (error) => {
       console.info("[auth] 401 received — attempting silent refresh via HttpOnly cookie")
       console.log("[AUTH-DEBUG] Calling POST /auth/refresh (relying on HttpOnly cookie)")
 
-      const refreshResponse = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
+      // In the multi-user session model, try to request a token for the
+      // specific user we were trying to act as when the 401 happened.
+      const { useStoreUser } = await import("src/stores/storeUser")
+      let storeUserForRefresh = null
+      try { storeUserForRefresh = useStoreUser() } catch {}
+      const intendedUser = storeUserForRefresh?.currentUser || null
+      const refreshBody = intendedUser ? { for_user: intendedUser } : null
+
+      const refreshResponse = await apiLogin.post("/auth/refresh", refreshBody, { withCredentials: true })
 
       console.log("[AUTH-DEBUG] /auth/refresh response status:", refreshResponse?.status)
       console.log("[AUTH-DEBUG] /auth/refresh response data:", refreshResponse?.data)
