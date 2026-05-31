@@ -655,18 +655,20 @@ export const useStoreUser = defineStore("useStoreUser", {
       // END DEBUG PATCH
       // =====================================================
 
-      // Proactive restore for any live HttpOnly refresh cookie (passkey/webauthn etc).
-      // This makes the "Re-login needed" chip disappear automatically for the account
-      // that owns the current cookie, without waiting for a 401 on a later page.
-      // Fire-and-forget; on success for the current user we explicitly refresh balances
-      // so the wallet page populates immediately after a cold start / site change.
-      this.ensureAccessToken()
-        .then((tok) => {
-          if (tok && this.currentUser && this.accessTokens[this.currentUser]) {
-            this.updateSatsBalance(true).catch(() => {})
-          }
-        })
-        .catch(() => {})
+      // Seed sessionAccounts from existing persisted users for transition.
+      // In the new model, on first load after the change, we treat all previously
+      // known users as part of "this browser session". Future logins will explicitly
+      // add accounts via addAccountToSession().
+      const existing = Object.keys(this.users)
+      existing.forEach(acc => this.addAccountToSession(acc))
+
+      // Note: The old aggressive ensureAccessToken + updateSatsBalance on initialize
+      // is being reduced as part of the simplification. We still want fresh data,
+      // but we will request it more deliberately per currentUser.
+      // For now we keep a lightweight kick for the current user.
+      if (this.currentUser && this.isAccountInCurrentSession(this.currentUser)) {
+        this.update().catch(() => {})
+      }
     },
     /**
      * Updates the user details and profile.
