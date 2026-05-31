@@ -347,7 +347,12 @@ function handleSwipe(e) {
 }
 
 async function scheduleUpdate() {
-  await storeUser.update(false)
+  // In the new model we only periodically refresh the current user if they
+  // are part of the current browser session. This reduces unnecessary
+  // /auth/refresh traffic when the user has multiple accounts attached.
+  if (storeUser.currentUser && storeUser.isAccountInCurrentSession?.(storeUser.currentUser)) {
+    await storeUser.update(false)
+  }
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 5 * 60 * 1000)
 }

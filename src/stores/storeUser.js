@@ -678,10 +678,12 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.apiTokenSet()
       this.expireCheck()
 
-      // If we have a currentUser but no in-memory token yet, try the cookie restore path.
-      // This is the main fix for "after site change / reload I see Re-login needed even
-      // though I have a valid webauthn/passkey session cookie".
-      if (this.currentUser && !this.apiToken) {
+      // In the new model we only try to ensure a token if the account is part of
+      // the current browser session. If it's not in the session yet, we don't
+      // spam /auth/refresh — the user needs to explicitly add it via login.
+      if (this.currentUser &&
+          this.isAccountInCurrentSession(this.currentUser) &&
+          !this.apiToken) {
         await this.ensureAccessToken(this.currentUser)
       }
 
@@ -936,15 +938,17 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.apiTokenSet(hiveAccname)
           this.expireCheck()
 
-          // Proactive restore for the newly selected account (may be the cookie owner
-          // even if it had no token at the instant of switch).
+          // In the new model, if the account is in the current session, we just
+          // ensure we have a token for it (the backend will issue one for any
+          // allowed user in the session). If it's not in the session yet, the
+          // update will still run but token acquisition will be limited.
           const doUpdate = () => {
             this.update().finally(() => {
               this.dataLoading = false
             })
           }
 
-          if (!this.apiToken) {
+          if (this.isAccountInCurrentSession(hiveAccname) && !this.apiToken) {
             this.ensureAccessToken(hiveAccname)
               .then((tok) => {
                 if (tok) doUpdate()
