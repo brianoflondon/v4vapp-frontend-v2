@@ -197,13 +197,6 @@ export const useStoreUser = defineStore("useStoreUser", {
     // Used to show a minimal, non-intrusive re-auth notifier on CreditCard
     // **only** when an actual refresh failure occurred (not on every keychain load).
     reauthNeeded: {},
-
-    // Simple per-account memory to avoid spamming /auth/refresh when the
-    // browser's current HttpOnly cookie belongs to a *different* account
-    // than the one the UI currently has selected as currentUser.
-    // This directly addresses the repeated ensureAccessToken spam for
-    // webauthn accounts like v4vapp-test when another account's cookie is active.
-    lastCookieRestore: {}, // { [hiveAccname]: { ts: number, owner: string | null } }
   }),
 
   getters: {
@@ -1034,18 +1027,6 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!target) return null
       if (this.accessTokens[target]) return this.accessTokens[target]
 
-      // Anti-spam: if we recently tried to restore a cookie for this exact account
-      // and it returned a *different* owner (meaning the browser cookie belongs
-      // to someone else right now), don't hammer /auth/refresh on every update().
-      const recent = this.lastCookieRestore[target]
-      const THIRTY_SECONDS = 30_000
-      if (recent && Date.now() - recent.ts < THIRTY_SECONDS) {
-        if (recent.owner && recent.owner !== target) {
-          // We know the current cookie can't help this account right now.
-          return null
-        }
-      }
-
       // If a cookie restore is already in flight, wait for it instead of starting
       // a second identical POST /auth/refresh. All early callers (CreditCard mount,
       // initialize, watchers, etc.) will get the same result.
@@ -1078,10 +1059,6 @@ export const useStoreUser = defineStore("useStoreUser", {
             this.accessTokens[owner] = newToken
             this.clearReauthNeeded(owner)   // successful restore clears any reauth flag
 
-            // Record what we actually got so we can avoid spamming the same
-            // useless /auth/refresh for a different currentUser on the next update().
-            this.lastCookieRestore[target] = { ts: Date.now(), owner }
-
             if (owner === this.currentUser) {
               apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
             }
@@ -1100,7 +1077,6 @@ export const useStoreUser = defineStore("useStoreUser", {
             target,
             "— account will need explicit re-login if it has no other token"
           )
-          this.lastCookieRestore[target] = { ts: Date.now(), owner: null }
         }
         return null
       })()
