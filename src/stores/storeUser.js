@@ -1,9 +1,6 @@
 import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
 import { authDebug, authWarn } from "src/utils/authDebug"
-
-// One-time module load marker (only visible when verbose auth debug is enabled)
-authDebug(">>> NEW storeUser.js MODULE LOADED <<<")
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
@@ -13,6 +10,9 @@ import { apiLogin, api } from "src/boot/axios"
 import { useKeepSats } from "src/use/useV4vapp"
 import { Notify } from "quasar"
 import { i18n } from "boot/i18n"
+
+// One-time module load marker (only visible when verbose auth debug is enabled)
+authDebug(">>> NEW storeUser.js MODULE LOADED <<<")
 
 const storeAPIStatus = useStoreAPIStatus()
 const storeCoingecko = useCoingeckoStore()
@@ -694,16 +694,14 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!this.apiToken) {
         const restoredAccounts = Object.keys(this.accessTokens || {})
         if (restoredAccounts.length > 0) {
-          console.log(
-            authDebug("updateSatsBalance: no token for currentUser",
+          authDebug("updateSatsBalance: no token for currentUser",
             this.currentUser,
             "(a cookie session was successfully restored for a different account:",
             restoredAccounts,
             "). This is expected for legacy keychain accounts after reload."
           )
         } else {
-          console.warn(
-            authDebug("updateSatsBalance: skipped — no apiToken for currentUser",
+          authDebug("updateSatsBalance: skipped — no apiToken for currentUser",
             this.currentUser,
             "accessTokens keys:",
             restoredAccounts,
@@ -733,8 +731,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         // Critical safety guard against cross-user data pollution
         // (the root cause of "shows brian's balance while on v4vapp-test" after resume/switch).
         if (answer.hive_accname && answer.hive_accname !== this.currentUser) {
-          console.error(
-            authWarn("CRITICAL MISMATCH: Received keepsats data for the wrong user!",
+          authWarn("CRITICAL MISMATCH: Received keepsats data for the wrong user!",
             "currentUser:", this.currentUser,
             "response.hive_accname:", answer.hive_accname,
             "This almost always means the Authorization header contained a token for a different account (cookie owner vs UI currentUser)."
@@ -886,8 +883,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           // session, we should eventually guide the user to "add it to this session".
           // For now we log it clearly.
           if (!this.isAccountInCurrentSession(hiveAccname)) {
-            console.log(
-              authDebug("Switching to an account that is not yet in the current browser session:",
+            authDebug("Switching to an account that is not yet in the current browser session:",
               hiveAccname,
               "— it may need to be re-authenticated to attach it to this session."
             )
@@ -1007,10 +1003,7 @@ export const useStoreUser = defineStore("useStoreUser", {
 
       cookieRestorePromise = (async () => {
         try {
-          console.log(
-            authDebug("ensureAccessToken: attempting silent restore via HttpOnly cookie for",
-            target
-          )
+          authDebug("ensureAccessToken: attempting silent restore via HttpOnly cookie for", target)
           // In the new multi-user session model, we can request a token for a
           // specific user that is allowed in this browser session.
           const refreshBody = target ? { for_user: target } : null
@@ -1034,8 +1027,7 @@ export const useStoreUser = defineStore("useStoreUser", {
               apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
             }
 
-            console.log(
-              authDebug("ensureAccessToken: SUCCESS — token restored for",
+            authDebug("ensureAccessToken: SUCCESS — token restored for",
               owner,
               owner !== target ? `(requested was ${target})` : ""
             )
@@ -1043,8 +1035,7 @@ export const useStoreUser = defineStore("useStoreUser", {
             return newToken
           }
         } catch (e) {
-          console.log(
-            authDebug("ensureAccessToken: no usable refresh cookie (or refresh failed) for",
+          authDebug("ensureAccessToken: no usable refresh cookie (or refresh failed) for",
             target,
             "— account will need explicit re-login if it has no other token"
           )
