@@ -4,6 +4,7 @@ import { ref } from "vue";
 import { useStoreUser } from "src/stores/storeUser";
 import { v4 as uuidv4 } from "uuid";
 import { useGetChallenge } from "src/use/useUtils";
+import { authDebug, authError } from "src/utils/authDebug";
 
 const qrCodeTextHAS = ref("");
 const expiry = ref(0);
@@ -18,12 +19,12 @@ let auth_payload = {};
 
 export async function useIsHASAvailable() {
   try {
-    console.debug("useIsHasAvailable running");
+    authDebug("useIsHasAvailable running");
     const status = HAS.status();
-    console.debug("status", status);
+    authDebug("status", status);
     return status.connected;
   } catch (error) {
-    console.error({ error });
+    authError({ error });
     return false;
   }
 }
@@ -34,13 +35,13 @@ export async function useIsHASAvailable() {
  * @returns {boolean} - Returns true if there is an existing authentication that is not expired, otherwise false.
  */
 export function useCheckExistingHASAuth(username) {
-  console.debug("Checking existing HAS auth for ", username);
+  authDebug("Checking existing HAS auth for ", username);
   const existingAuth = storeUser.getUser(username);
-  console.debug("existingAuth", existingAuth);
+  authDebug("existingAuth", existingAuth);
   if (existingAuth && !existingAuth.apiKey) {
-    console.debug("existingAuth", existingAuth);
+    authDebug("existingAuth", existingAuth);
     if (existingAuth.authKey && existingAuth.expire > Date.now()) {
-      console.debug(
+      authDebug(
         "login expires in: ",
         (existingAuth.expire - Date.now()) / 1000 / 60,
         "min",
@@ -61,15 +62,15 @@ export function useCheckExistingHASAuth(username) {
 export async function useHASLogin(username = "", keyType = "active") {
   // Your application information
   if (username === "") {
-    console.error("username is empty");
+    authError("username is empty");
     resolve(false);
   }
   const existingAuth = useCheckExistingHASAuth(username);
   if (existingAuth) {
-    console.debug("existingAuth", existingAuth);
+    authDebug("existingAuth", existingAuth);
     return true;
   }
-  console.debug("username", username);
+  authDebug("username", username);
   const APP_META = {
     name: "v4vapp",
     description: "V4V.app Lightning Hive Gateway",
@@ -88,7 +89,7 @@ export async function useHASLogin(username = "", keyType = "active") {
 
   // Retrieving connection status
   const status = HAS.status();
-  console.debug(status);
+  authDebug(status);
 
   if (auth.expire > Date.now()) {
     // token exists and is still valid - no need to login again
@@ -96,18 +97,18 @@ export async function useHASLogin(username = "", keyType = "active") {
   } else {
     const clientId = storeUser.clientId;
     const challenge = await useGetChallenge(username, clientId);
-    console.debug("challenge", challenge);
+    authDebug("challenge", challenge);
     let challenge_data = undefined;
     // optional - create a challenge to be signed with the active key
     challenge_data = {
       key_type: keyType,
       challenge: challenge.data.challenge,
     };
-    console.debug("challenge_data", challenge_data);
+    authDebug("challenge_data", challenge_data);
 
     HAS.authenticate(auth, APP_META, challenge_data, (req) => {
-      console.debug("response", req); // process auth_wait
-      console.debug("expires in ", (req.expire - Date.now()) / 1000, "secs");
+      authDebug("response", req); // process auth_wait
+      authDebug("expires in ", (req.expire - Date.now()) / 1000, "secs");
       expiry.value = req.expire / 1000;
       auth_payload = {
         account: req.account,
@@ -134,10 +135,10 @@ export async function useHASLogin(username = "", keyType = "active") {
  * @returns {Promise<void>} - A promise that resolves when the authentication process is completed.
  */
 async function resolveAuth(res, auth, challenge_data) {
-  console.debug("--- resolveAuth ---");
-  console.debug("res.data", res.data);
-  console.debug("auth_payload", auth_payload);
-  console.debug("challenge_data", challenge_data);
+  authDebug("--- resolveAuth ---");
+  authDebug("res.data", res.data);
+  authDebug("auth_payload", auth_payload);
+  authDebug("challenge_data", challenge_data);
 
   // Now we call the API to get the token
   // TRY HERE
@@ -172,7 +173,7 @@ async function resolveAuth(res, auth, challenge_data) {
     const hasTokenExpireDate = new Date(hasTokenExpire);
 
     if (hasTokenExpire > apiTokenExpire) {
-      console.debug("HAS expire is greater than API expire");
+      authDebug("HAS expire is greater than API expire");
       hasTokenExpire = apiTokenExpire;
     }
     storeUser.login(
@@ -188,17 +189,17 @@ async function resolveAuth(res, auth, challenge_data) {
     auth_payload = {};
     resolvedHAS.value = res;
   } catch (error) {
-    console.debug("signature failure");
-    console.error("error", error);
+    authDebug("signature failure");
+    authError("error", error);
   }
 
   if (pendingTransaction) {
     const start = Date.now();
-    console.debug("pendingTransaction delay executing now");
+    authDebug("pendingTransaction delay executing now");
     // run the pending transaction AFTER a delay of 300ms to
     // allow the login to complete
     setTimeout(() => {
-      console.debug(
+      authDebug(
         "pendingTransaction executing now ",
         Date.now() - start,
         "ms",
@@ -245,7 +246,7 @@ function createOp(from, to, amount, memo) {
  * @returns {Promise} - A promise that resolves when the transfer is successful or rejects with an error.
  */
 export async function useHASTransfer(username, amount, currency, memo) {
-  console.debug("useHASTransfer: ", username, amount, currency, memo);
+  authDebug("useHASTransfer: ", username, amount, currency, memo);
   amount = parseFloat(amount).toFixed(3);
   const amountString = `${amount} ${currency}`;
   const operation = createOp(username, serverHiveAccount, amountString, memo);
@@ -254,11 +255,11 @@ export async function useHASTransfer(username, amount, currency, memo) {
   const user = storeUser.getUser(username);
   if (!user || !user.authKey) {
     // User not authenticated with HAS
-    console.debug("user not authenticated with HAS");
+    authDebug("user not authenticated with HAS");
     pendingTransaction = function () {
       useHASTransfer(username, amount, currency, memo);
     };
-    console.debug("pendingTransaction stored");
+    authDebug("pendingTransaction stored");
     useHASLogin(username);
     return;
   }

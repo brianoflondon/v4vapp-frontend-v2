@@ -63,6 +63,7 @@ import UserList from "src/components/hive/UserList.vue";
 import HiveLogin from "src/components/HiveLogin.vue";
 import HiveLogout from "src/components/HiveLogout.vue";
 import PasskeyManagement from "src/components/utils/PasskeyManagement.vue";
+import { authDebug, authError } from "src/utils/authDebug";
 
 const storeUser = useStoreUser();
 
@@ -103,11 +104,11 @@ const scopesString = computed(() => {
 
 onMounted(() => {
   readQueryParams();
-  console.log("apiLogin.defaults.headers", apiLogin.defaults.headers);
+  authDebug("apiLogin.defaults.headers", apiLogin.defaults.headers);
 });
 
 function readQueryParams() {
-  console.log("readQueryParams");
+  authDebug("readQueryParams");
   if (route.query) {
     clientId.value = route.query.client_id;
     redirectUri.value = route.query.redirect_uri;
@@ -129,12 +130,12 @@ function readQueryParams() {
 watch(storeUser, (newVal) => {
   nonPKCEChallenge(newVal.hiveAccname);
   if (newVal.hiveAccname != storeUser.currentUser) {
-    console.log("watch storeUser.currentUser", newVal.hiveAccname);
+    authDebug("watch storeUser.currentUser", newVal.hiveAccname);
   }
 });
 
 function doClick(val) {
-  console.log("doClick", val);
+  authDebug("doClick", val);
 }
 
 function checkClientIdLoggedIn() {
@@ -151,14 +152,14 @@ async function nonPKCEChallenge(hiveAccname) {
     codeChallengeMethod.value === undefined ||
     codeChallengeMethod.value === null
   ) {
-    console.log("Don't use PKCE");
+    authDebug("Don't use PKCE");
     pkce.value = false;
     codeChallenge.value = state.value + "-" + hiveAccname;
   }
 }
 
 async function authorize() {
-  console.log("authorize");
+  authDebug("authorize");
   try {
     storeUser.switchUser(storeUser.currentUser);
     let params = {
@@ -169,7 +170,7 @@ async function authorize() {
     };
     // first call the api (must be logged in) to get the auth code
     const resp = await apiLogin.get("alby/get_auth_code", { params });
-    console.log(resp);
+    authDebug(resp);
     const code = resp.data.code;
     params = {
       state: state.value,
@@ -182,10 +183,10 @@ async function authorize() {
       url.search = new URLSearchParams(params).toString();
       window.location.href = url;
     } catch (error) {
-      console.log(error);
+      authError(error);
     }
   } catch (error) {
-    console.log(error);
+    authError(error);
   }
 }
 
@@ -199,9 +200,9 @@ async function test_get_user_me() {
     storeUser.switchUser(storeUser.currentUser);
     const resp = await apiLogin.get("alby/user/me");
     userV4V.value = resp.data;
-    console.log(resp);
+    authDebug(resp);
   } catch (error) {
-    console.log(error);
+    authError(error);
   }
 }
 
@@ -210,9 +211,9 @@ async function test_get_balance() {
     storeUser.switchUser(storeUser.currentUser);
     const resp = await apiLogin.get("alby/balance");
     userBalance.value = resp.data;
-    console.log(resp);
+    authDebug(resp);
   } catch (error) {
-    console.log(error);
+    authError(error);
   }
 }
 
@@ -230,10 +231,10 @@ async function test_send_payment() {
           '{"guid":"1b7783c7-5089-5bd0-9a17-69db0bcb084e","podcast":"BrianofLondon 3Speak Video Podcast","feedID":1370490,"episode":"Offer and counter offer: dueling settlement offers in the Crypto Class Action law suit in Australia","itemID":24015005951,"episode_guid":"/@brianoflondon/srjsthqr","ts":59,"speed":"1","action":"stream","app_name":"CurioCaster","value_msat_total":22000,"url":"https://3speak.tv/rss/brianoflondon.xml","sender_name":"Sir Brian of London","sender_id":"brianoflondon@getalby.com","reply_address":"030a58b8653d32b99200a2334cfe913e51dc7d155aa0116c176657a4f1722677a3","reply_custom_key":696969,"reply_custom_value":"rxZduA9gl4wN22QRIodB","value_msat":22000,"name":"Dr Brian of London ✅"}',
       },
     });
-    console.log(resp);
+    authDebug(resp);
     albyPayment.value = resp.data;
   } catch (error) {
-    console.log(error);
+    authError(error);
   }
 }
 </script>

@@ -266,7 +266,7 @@ const isValid = computed(() => {
 
 // Need to watch this computed derivative of hiveAccObj
 watch(isValid, async (newVal) => {
-  console.debug("isValid changed to:", newVal);
+  authDebug("isValid changed to:", newVal);
   if (newVal) {
     await updatePasskeyList();
   }
@@ -304,7 +304,7 @@ async function updatePasskeyList(useCache = true) {
 }
 
 async function doPasskeyLogin() {
-  console.debug("doPasskeyLogin");
+  authDebug("doPasskeyLogin");
   if (!hiveAccObj.value.value) {
     return;
   }
@@ -345,13 +345,13 @@ async function doPasskeyLogin() {
       color: "negative",
       position: "top",
     });
-    console.debug("doPasskeyLogin failed");
-    console.debug("result", result.message);
+    authDebug("doPasskeyLogin failed");
+    authDebug("result", result.message);
   }
 }
 
 async function doPasskeyManage() {
-  console.debug("doPasskeyManage");
+  authDebug("doPasskeyManage");
   showDialog.value = true;
   hiveAccObj.value = {
     label: storeUser.currentUser,
@@ -369,7 +369,7 @@ async function doPasskeyManageClose() {
 
 async function doPasskeyRegister() {
   loadingCredentials.value = true;
-  console.debug("doPasskeyRegister");
+  authDebug("doPasskeyRegister");
   if (!passkeyName.value) {
     showError.value = true;
     return;
@@ -397,27 +397,27 @@ async function doPasskeyRegister() {
       color: "negative",
       position: "top",
     });
-    console.debug("doPasskeyRegister failed");
-    console.debug("result", result.message);
+    authDebug("doPasskeyRegister failed");
+    authDebug("result", result.message);
   }
   loadingCredentials.value = false;
 }
 
 async function doPasskeyDeleteAsk(evt, cred) {
-  console.debug("doPasskeyDelete", cred);
+  authDebug("doPasskeyDelete", cred);
   confirmDeleteCred.value = cred;
   confirmDelete.value = true;
 }
 
 async function doPasskeyUpdateAsk(evt, cred) {
-  console.debug("do PasskeyUpdate", cred);
+  authDebug("do PasskeyUpdate", cred);
   passkeyName.value = cred.device_name;
   confirmEditCred.value = cred;
   confirmEdit.value = true;
 }
 
 async function doPasskeyDelete(evt, cred) {
-  console.debug("doPasskeyDelete", cred);
+  authDebug("doPasskeyDelete", cred);
   confirmDelete.value = false;
   await usePasskeyDelete(cred._id);
   await updatePasskeyList(false);
@@ -429,10 +429,10 @@ async function doPasskeyDelete(evt, cred) {
 }
 
 async function doPasskeyUpdate(evt, cred) {
-  console.debug("doPasskeyUpdate", cred);
+  authDebug("doPasskeyUpdate", cred);
   confirmEdit.value = false;
-  console.debug("old name", cred.device_name);
-  console.debug("new name", passkeyName.value);
+  authDebug("old name", cred.device_name);
+  authDebug("new name", passkeyName.value);
   await usePasskeyUpdate(cred._id, passkeyName.value);
   await updatePasskeyList(false);
   Notify.create({
@@ -443,10 +443,10 @@ async function doPasskeyUpdate(evt, cred) {
 }
 
 async function doManageKey(cred) {
-  console.debug("doManageKey", cred);
-  console.debug("cred._id", cred._id);
-  console.debug("cred.device_name", cred.device_name);
-  console.debug("formatTimeAgo(cred.last_used)", cred.last_used);
+  authDebug("doManageKey", cred);
+  authDebug("cred._id", cred._id);
+  authDebug("cred.device_name", cred.device_name);
+  authDebug("formatTimeAgo(cred.last_used)", cred.last_used);
 }
 
 function credCountText(cred) {

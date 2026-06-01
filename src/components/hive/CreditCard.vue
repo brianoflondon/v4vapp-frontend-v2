@@ -234,7 +234,7 @@ import { useI18n } from "vue-i18n"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { useKeychainLoginFlow } from "src/use/useKeychain"
 import { usePasskeyLogin } from "src/use/usePasskeys"
-import { authError } from "src/utils/authDebug"
+import { authError, authDebug } from "src/utils/authDebug"
 const storeCoingecko = useCoingeckoStore()
 
 // import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
@@ -289,7 +289,7 @@ watch(
     if (newVal === "💰💰💰") {
       newVal = 0
     }
-    console.debug(
+    authDebug(
       "keepSatsBalance changed from",
       oldVal,
       "to",
@@ -328,7 +328,7 @@ function handleSwipe(e) {
   const currentUser = storeUser.currentUser
 
   if (!Array.isArray(users)) {
-    console.error("storeUser.users is not an array")
+    authError("storeUser.users is not an array")
     return
   }
 
@@ -440,7 +440,7 @@ const lightDark = computed(() => {
 })
 
 const nonZeroKeepSats = computed(() => {
-  console.debug("[DEBUG-KeepSats] nonZeroKeepSats — currentKeepSats:", storeUser.currentKeepSats, "keepSatsBalance:", storeUser.keepSatsBalance, "keepSatsBalanceNum:", storeUser.keepSatsBalanceNum)
+  authDebug("[DEBUG-KeepSats] nonZeroKeepSats — currentKeepSats:", storeUser.currentKeepSats, "keepSatsBalance:", storeUser.keepSatsBalance, "keepSatsBalanceNum:", storeUser.keepSatsBalanceNum)
   if (storeUser.currentKeepSats) {
     if (storeUser.currentKeepSats !== "0") {
       return true

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
-import { authDebug, authWarn } from "src/utils/authDebug"
+import { authDebug, authWarn, authError } from "src/utils/authDebug"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
@@ -258,7 +258,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {number} The number of users.
      */
     numUsers() {
-      console.debug("numUsers", Object.keys(this.users).length)
+      authDebug("numUsers", Object.keys(this.users).length)
       return Object.keys(this.users).length
     },
 
@@ -291,7 +291,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     isHAS() {
       const u = this._currentHiveUser
       if (!u) return false
-      console.debug(u)
+      authDebug(u)
       if (u.authKey) return true
       return false
     },
@@ -467,8 +467,8 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     keepSatsBalance() {
       if (this.currentKeepSats === null) {
-        console.debug("Need to reauthenticate to get keepSatsBalance")
-        console.debug("check if logged in with HAS or Keychain")
+        authDebug("Need to reauthenticate to get keepSatsBalance")
+        authDebug("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
 
@@ -498,8 +498,8 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     keepSatsBalanceNumDisplay() {
       if (this.currentKeepSats === null) {
-        console.debug("Need to reauthenticate to get keepSatsBalance")
-        console.debug("check if logged in with HAS or Keychain")
+        authDebug("Need to reauthenticate to get keepSatsBalance")
+        authDebug("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
       if (this.currentKeepSats?.net_sats > 1000000) {
@@ -512,8 +512,8 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     keepSatsBalanceNum() {
       if (this.currentKeepSats === null) {
-        console.debug("Need to reauthenticate to get keepSatsBalance")
-        console.debug("check if logged in with HAS or Keychain")
+        authDebug("Need to reauthenticate to get keepSatsBalance")
+        authDebug("check if logged in with HAS or Keychain")
         return 0
       }
       // Ensure net_sats is never -0
@@ -648,14 +648,11 @@ export const useStoreUser = defineStore("useStoreUser", {
         await this.ensureAccessToken(this.currentUser)
       }
 
-      console.log("storeUser.js: update called for", this.currentUser)
+      authDebug("update called for", this.currentUser)
 
       const currentLoginType = this.users[this.currentUser]?.loginType
       if (currentLoginType && currentLoginType !== "hive") {
-        console.log(
-          "storeUser.js: skipping Hive API update for loginType",
-          currentLoginType,
-        )
+        authDebug("skipping Hive API update for loginType", currentLoginType)
         this.currentDetails = null
         this.currentProfile = {
           name: this.users[this.currentUser]?.profileName || this.currentUser,
@@ -665,13 +662,13 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
 
       const details = await useHiveDetails(this.currentUser)
-      console.log("storeUser.js: useHiveDetails returned", details)
+      authDebug("useHiveDetails returned", details)
       if (!details) {
-        console.error(
+        authError(
           "storeUser.js: useHiveDetails returned null or undefined!",
         )
       } else if (!details.balance) {
-        console.error(
+        authError(
           "storeUser.js: details object missing 'balance' property!",
           details,
         )
@@ -717,12 +714,12 @@ export const useStoreUser = defineStore("useStoreUser", {
         try {
           answer = await useKeepSats(useCache, false)
           if (answer?.detail === "Could not validate credentials") {
-            console.log("Need to log out")
+            authWarn("Need to log out")
             this.logout()
             return false
           }
         } catch (err) {
-          console.error(err)
+          authError(err)
         }
         if (answer == null) {
           return null
@@ -741,7 +738,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         }
 
         this.currentKeepSats = answer
-        console.log(
+        authDebug(
           "[DEBUG-KeepSats] Successfully fetched and set currentKeepSats for",
           this.currentUser,
           "net_sats:",
@@ -751,7 +748,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         if (this.currentKeepSats && this.currentKeepSats.net_sats === 0) {
           this.currentKeepSats.net_sats = 0
         }
-        console.debug("currentKeepSats", this.currentKeepSats)
+        authDebug("currentKeepSats", this.currentKeepSats)
         if (this.currentKeepSats) {
           // Ensure net_sats is never -0 for comparison
           const normalizedCurrent =
@@ -766,7 +763,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         }
         return false
       } catch (err) {
-        console.error(err)
+        authError(err)
         return null
       } finally {
         this.dataLoading = false
@@ -798,7 +795,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       loginType = "hive",
     ) {
       try {
-        console.log("login", hiveAccname, keySelected)
+        authDebug("login", hiveAccname, keySelected)
         let hiveDetails = null
         if (loginType === "hive") {
           this.dataLoading = true
@@ -821,7 +818,7 @@ export const useStoreUser = defineStore("useStoreUser", {
             loginType,
           )
         } else {
-          console.log("EVM login no Hive details")
+          authDebug("EVM login no Hive details")
           const profileName = useShortEVMAddress(hiveAccname)
           newUser = new HiveUser(
             hiveAccname,
@@ -852,9 +849,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           loginType === "btc" ||
           authKey === "webauthn"
         ) {
-          console.log(
-            authDebug(`login(): Storing ${loginType || authKey} user. expire passed=${expire}`),
-          )
+          authDebug(`login(): Storing ${loginType || authKey} user. expire passed=${expire}`)
         }
 
         this.users[hiveAccname] = newUser
@@ -866,7 +861,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         }
         this.update()
       } catch (err) {
-        console.error(err)
+        authError(err)
       }
     },
     /**
@@ -875,7 +870,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     switchUser(hiveAccname) {
       try {
-        console.debug("switchUser to ", hiveAccname, " from ", this.currentUser)
+        authDebug("switchUser to ", hiveAccname, " from ", this.currentUser)
         this.dataLoading = true
 
         if (hiveAccname in this.users) {
@@ -921,7 +916,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.dataLoading = false
         }
       } catch (err) {
-        console.debug(err)
+        authDebug(err)
         this.dataLoading = false
       }
     },
@@ -931,7 +926,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
      */
     apiTokenSet(hiveAccname = this.currentUser) {
-      console.debug("Setting API Token for", hiveAccname)
+      authDebug("Setting API Token for", hiveAccname)
       // Only use a token that is specifically for this account.
       // Do not leak a token that was restored for a different cookie owner.
       const token = this.accessTokens[hiveAccname]
@@ -1054,9 +1049,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
 
     expireCheck() {
-      console.log(
-        authDebug("expireCheck() running... (checking for legacy expires only)"),
-      )
+      authDebug("expireCheck() running... (checking for legacy expires only)")
       // === 2026 Auth Hardening - Consistent Session Model ===
       //
       // We no longer use the client-side `expire` field to forcibly log out users
@@ -1081,17 +1074,13 @@ export const useStoreUser = defineStore("useStoreUser", {
           hiveUser.loginType === "evm" ||
           hiveUser.loginType === "btc"
         ) {
-          console.log(
-            authDebug(`expireCheck: Skipping legacy expiration for ${hiveUser.loginType || "unknown"} (using refresh model)`),
-          )
+          authDebug(`expireCheck: Skipping legacy expiration for ${hiveUser.loginType || "unknown"} (using refresh model)`)
           continue
         }
 
         const t = i18n.global.t
         if (hiveUser.expire && hiveUser.expire < Date.now()) {
-          console.log(
-            authDebug(`expireCheck: Legacy expire field present for ${user} — using new refresh model instead of forcing logout.`),
-          )
+          authDebug(`expireCheck: Legacy expire field present for ${user} — using new refresh model instead of forcing logout.`)
           // Intentionally do NOT call this.logout() anymore for the new auth system.
           // The axios response interceptor on 401 + rotating refresh_token cookie is now responsible for session continuity.
         }
@@ -1213,7 +1202,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           const res = await api.get(url, { params })
           return res.data
         } catch (err) {
-          console.error(err)
+          authError(err)
           return `${this.currentUser}@${currency}.v4v.app`
         }
       }

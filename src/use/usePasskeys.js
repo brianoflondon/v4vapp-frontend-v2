@@ -8,6 +8,7 @@ import { apiLogin } from "boot/axios";
 import { useStoreUser } from "src/stores/storeUser";
 import * as webauthn from "@github/webauthn-json";
 import { useAppStr } from "src/use/useAppDetails";
+import { authDebug, authError } from "src/utils/authDebug";
 
 const storeUser = useStoreUser();
 
@@ -22,7 +23,7 @@ export async function useListCredentials(useCache = true) {
   const listCredentials = await apiLogin.get(`/credentials/list/`, {
     params: { useCache: useCache },
   });
-  console.debug("credentials", listCredentials.data);
+  authDebug("credentials", listCredentials.data);
   return listCredentials.data;
 }
 
@@ -33,7 +34,7 @@ export async function useListCredentials(useCache = true) {
  * @returns {Promise<number>} The number of credentials.
  */
 export async function useNumCredentials(hiveAccname, useCache = true) {
-  console.debug("useNumCredentials - start", hiveAccname);
+  authDebug("useNumCredentials - start", hiveAccname);
   if (!hiveAccname) {
     return 0;
   }
@@ -42,18 +43,18 @@ export async function useNumCredentials(hiveAccname, useCache = true) {
       `/credentials/count/${hiveAccname}`,
       { params: { useCache: useCache } },
     );
-    console.debug("numCredentials", numCredentials.data);
+    authDebug("numCredentials", numCredentials.data);
     return numCredentials.data.devices;
   } catch (error) {
-    console.debug("useNumCredentials error", error);
+    authDebug("useNumCredentials error", error);
     return 0;
   }
 }
 
 export async function usePasskeyLogin(hiveAccName) {
-  console.debug("webauthnAuth - start");
+  authDebug("webauthnAuth - start");
   if (!hiveAccName) {
-    console.error("No Hive Account Name provided");
+    authError("No Hive Account Name provided");
     return { success: false, message: "no account" };
   }
   let params = {
@@ -66,18 +67,18 @@ export async function usePasskeyLogin(hiveAccName) {
     getChallenge = await apiLogin.post(`/authenticate/begin/`, params, {
       params,
     });
-    console.debug("getChallenge.data", getChallenge.data);
+    authDebug("getChallenge.data", getChallenge.data);
   } catch (error) {
     if (error.response.status === 401) {
-      console.debug("No Credentials found for this account");
+      authDebug("No Credentials found for this account");
       return { success: false, message: "no credentials" };
     }
-    console.error("getChallenge error", error);
+    authError("getChallenge error", error);
     return { success: false, message: "challenge error" };
   }
   try {
     let response = await webauthn.get(getChallenge.data);
-    console.debug("response", response);
+    authDebug("response", response);
     let sendChallengeBack = await apiLogin.post(
       `/authenticate/complete/`,
       response,
@@ -92,7 +93,7 @@ export async function usePasskeyLogin(hiveAccName) {
       let expireDate = new Date();
     }
   } catch (error) {
-    console.error("webauthn.get error", error);
+    authError("webauthn.get error", error);
     return { success: false, message: error.message };
   }
 }
@@ -105,7 +106,7 @@ export async function usePasskeyLogin(hiveAccName) {
  * @returns {Promise<{ success: boolean, message: string }>} - A promise that resolves to an object with the success status and a message.
  */
 export async function usePasskeyRegister(hiveAccName, deviceName) {
-  console.debug("usePasskeyRegister - start");
+  authDebug("usePasskeyRegister - start");
   // First get the challenge from the server
   // Then call webauthn.create with the challenge
   if (!deviceName || !hiveAccName) {
@@ -127,7 +128,7 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
     return { success: false, message: "challenge error" };
   }
   // let options = webauthn.parseCreationOptionsFromJSON(getChallenge.data)
-  // console.debug("options", options)
+  // authDebug("options", options)
   let response = null;
   try {
     response = await webauthn.create(getChallenge.data);
@@ -141,15 +142,15 @@ export async function usePasskeyRegister(hiveAccName, deviceName) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("sendChallengeBack error", error);
+    authError("sendChallengeBack error", error);
     return { success: false, message: error.message };
   }
-  console.debug("sendChallengeBack.data", sendChallengeBack.data);
+  authDebug("sendChallengeBack.data", sendChallengeBack.data);
   return { success: true, message: "Device Registered" };
 }
 
 export async function usePasskeyDelete(credentialId) {
-  console.debug("usePasskeyDelete - start");
+  authDebug("usePasskeyDelete - start");
   if (!credentialId) {
     return { success: false, message: "Nothing to delete" };
   }
@@ -161,16 +162,16 @@ export async function usePasskeyDelete(credentialId) {
     response = await apiLogin.delete(`/credentials/delete/`, {
       params: params,
     });
-    console.debug("response", response.data);
+    authDebug("response", response.data);
     return { success: true, message: "device deleted" };
   } catch (error) {
-    console.error("usePasskeyDelete error", error);
+    authError("usePasskeyDelete error", error);
     return { success: false, message: "delete error" };
   }
 }
 
 export async function usePasskeyUpdate(credentialId, newDeviceName) {
-  console.debug("usePasskeyUpdate - start");
+  authDebug("usePasskeyUpdate - start");
   if (!credentialId || !newDeviceName) {
     return { success: false, message: "Nothing to update" };
   }
@@ -186,10 +187,10 @@ export async function usePasskeyUpdate(credentialId, newDeviceName) {
   let response = null;
   try {
     response = await apiLogin.put(`/credentials/update/`, params, config);
-    console.debug("response", response.data);
+    authDebug("response", response.data);
     return { success: true, message: "device updated" };
   } catch (error) {
-    console.error("usePasskeyUpdate error", error);
+    authError("usePasskeyUpdate error", error);
     return { success: false, message: "update error" };
   }
 }

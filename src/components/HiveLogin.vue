@@ -127,6 +127,7 @@ import {
 } from "src/use/useKeychain"
 import { useHAS, useHASLogin, useIsHASAvailable } from "src/use/useHAS"
 import { useEVMLoginFlow } from "src/use/useEVM"
+import { authDebug, authError } from "src/utils/authDebug"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue"
@@ -147,15 +148,15 @@ const evmButtonDisabled = ref(true)
 const btcButtonDisabled = ref(false)
 
 onBeforeMount(async () => {
-  console.debug("onBeforeMount HiveLogin")
+  authDebug("onBeforeMount HiveLogin")
   evmButtonDisabled.value = await evmButtonCheckDisabled()
 })
 
 onMounted(async () => {
-  // console.debug("onMounted HiveLogin")
+  // authDebug("onMounted HiveLogin")
   isKeychain.value = await useIsHiveKeychainInstalled()
   isHAS.value = await useIsHASAvailable()
-  // console.log("evmButtonDisabled: ", evmButtonDisabled.value)
+  // authDebug("evmButtonDisabled: ", evmButtonDisabled.value)
 })
 
 const keychainButtonDisabled = computed(() => {
@@ -215,9 +216,9 @@ async function loginHAS(username) {
       return
     }
     const answer = await useHASLogin(username)
-    console.debug("HAS Login answer: ", answer)
+    authDebug("HAS Login answer: ", answer)
   } catch (error) {
-    console.debug("error: ", error)
+    authDebug("error: ", error)
   }
 }
 
@@ -226,7 +227,7 @@ const evmAddressLabel = ref("EVM Login")
 
 async function evmButtonCheckDisabled() {
   if (typeof window.ethereum !== "undefined") {
-    console.log("EVM wallet found")
+    authDebug("EVM wallet found")
     return false
   }
   return true
@@ -248,17 +249,17 @@ async function connectEVM() {
       if (accounts.length > 0) {
         evmConnected.value = accounts[0]
         evmAddressLabel.value = useShortEVMAddress(evmConnected.value)
-        console.log("Wallet connected", accounts)
-        console.log("evmConnected.value: ", evmConnected.value)
+        authDebug("Wallet connected", accounts)
+        authDebug("evmConnected.value: ", evmConnected.value)
         const clientId = storeUser.clientId
         const challenge = await useGetChallenge(evmConnected.value, clientId)
-        console.log("challenge: ", challenge)
+        authDebug("challenge: ", challenge)
         // now we have the challenge, we can sign it
         const signature = await signMessage(
           evmConnected.value,
           challenge.data.challenge,
         )
-        console.log("signature: ", signature)
+        authDebug("signature: ", signature)
         // now we can send the signature back to the server
         const signatureData = {
           success: true,
@@ -270,11 +271,11 @@ async function connectEVM() {
           signature: signature,
           account: evmConnected.value,
         }
-        console.log("signatureData: ", signatureData)
+        authDebug("signatureData: ", signatureData)
         try {
           const validate = await useValidateApi(clientId, signatureData)
-          console.log("validate: ", validate)
-          console.log("logging in with EVM")
+          authDebug("validate: ", validate)
+          authDebug("logging in with EVM")
           await storeUser.login(
             evmConnected.value,
             "EVM",
@@ -284,16 +285,16 @@ async function connectEVM() {
             validate.data.access_token,
             "evm",
           )
-          console.log("storeUser.currentUser: ", storeUser.currentUser)
+          authDebug("storeUser.currentUser: ", storeUser.currentUser)
         } catch (error) {
-          console.error("Error validating signature: ", error)
+          authError("Error validating signature: ", error)
         }
       }
     } catch (error) {
-      console.error("User denied wallet connection", error)
+      authError("User denied wallet connection", error)
     }
   } else {
-    console.log("No Ethereum wallet found")
+    authDebug("No Ethereum wallet found")
   }
 }
 
@@ -305,12 +306,12 @@ async function signMessage(address, message) {
     })
     return signature
   } catch (error) {
-    console.error("Error signing message:", error)
+    authError("Error signing message:", error)
   }
 }
 
 watch(qrCodeTextHAS, (newValue) => {
-  console.debug("qrCodeTextHAS newValue: ", newValue)
+  authDebug("qrCodeTextHAS newValue: ", newValue)
   if (!newValue) {
     displayQRCode.value = false
     return
@@ -321,7 +322,7 @@ watch(qrCodeTextHAS, (newValue) => {
 // Review this later
 // TODO: #46 Review this later
 function adminCheck() {
-  console.debug("storeUser.currentUser: ", storeUser.currentUser)
+  authDebug("storeUser.currentUser: ", storeUser.currentUser)
   if (storeUser.currentUser === "brianoflondon") {
     return false
   }
