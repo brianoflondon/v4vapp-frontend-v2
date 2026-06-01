@@ -1,5 +1,6 @@
 import { boot } from "quasar/wrappers"
 import axios from "axios"
+import { authDebug, authWarn, authError } from "src/utils/authDebug"
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -40,7 +41,7 @@ const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 let apiURL = rootUrl
 let apiLoginURL = rootLoginUrl
 
-console.log("useLocal:", useLocal)
+authDebug("useLocal:", useLocal)
 if (useLocal) {
   apiURL = "http://localhost:1818/v1"
   apiLoginURL = "http://localhost:1818/"
@@ -64,10 +65,8 @@ const apiLogin = axios.create({
   withCredentials: true,   // REQUIRED for the HttpOnly refresh_token cookie to be sent on cross-origin calls (e.g. dev.v4v.app → devapi.v4v.app)
 })
 
-// =====================================================
-// DEBUG PATCH - REMOVE AFTER DIAGNOSIS
-console.log("%c[AUTH-DEBUG] >>> NEW AXIOS BOOT FILE LOADED WITH REFRESH INTERCEPTOR <<<", "color: cyan; font-weight: bold; font-size: 13px")
-// =====================================================
+// One-time loud boot message (only in verbose debug mode)
+authDebug(">>> NEW AXIOS BOOT FILE LOADED WITH REFRESH INTERCEPTOR <<<")
 
 /**
  * Request interceptor (currently only on apiLogin for auth routes).
@@ -80,9 +79,8 @@ apiLogin.interceptors.request.use(
     // Note: accessing Pinia store here requires the store to be initialized.
     // For now we keep it lightweight; full integration happens with store refactor.
 
-    // DEBUG
     if (config.url?.includes("/auth/")) {
-      console.log("[AUTH-DEBUG] Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
+      authDebug("Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
     }
 
     return config
@@ -90,12 +88,11 @@ apiLogin.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
-// Also attach to the main `api` instance so we get consistent [AUTH-DEBUG] logging
-// for outgoing authenticated calls (most of the app traffic goes through `api`).
+// Also attach to the main `api` instance for consistent auth-related request logging.
 api.interceptors.request.use(
   (config) => {
     if (config.url?.includes("/auth/")) {
-      console.log("[AUTH-DEBUG] Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
+      authDebug("Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
     }
     return config
   },
@@ -119,14 +116,11 @@ api.interceptors.request.use(
 // Attach the refresh interceptor to BOTH instances so that 401/403 on any authenticated call
 // (whether through `api` or `apiLogin`) can trigger the silent refresh using the HttpOnly cookie.
 const refreshInterceptor = async (error) => {
-  // Very loud diagnostic log — this fires on *every* error response through api or apiLogin
-  console.log(
-    "%c[AUTH-DEBUG] === Response ERROR intercepted ===",
-    "color: magenta; font-weight: bold",
-    "url:", error?.config?.url,
-    "status:", error?.response?.status,
-    "instance base:", error?.config?.baseURL
-  );
+  authDebug("=== Response ERROR intercepted ===", {
+    url: error?.config?.url,
+    status: error?.response?.status,
+    base: error?.config?.baseURL,
+  })
 
   const originalRequest = error.config
 
@@ -138,25 +132,31 @@ const refreshInterceptor = async (error) => {
   ) {
     originalRequest._retry = true
 
-    console.log("%c[AUTH-DEBUG] >>> 401/403 intercepted on:", "color: orange; font-weight: bold", originalRequest?.url)
+    authDebug(">>> 401/403 intercepted on:", originalRequest?.url)
 
     try {
-      console.info("[auth] 401 received — attempting silent refresh via HttpOnly cookie")
-      console.log("[AUTH-DEBUG] Calling POST /auth/refresh (relying on HttpOnly cookie)")
+      authDebug("401 received — attempting silent refresh via HttpOnly cookie")
+      authDebug("Calling POST /auth/refresh (relying on HttpOnly cookie)")
 
-      const refreshResponse = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
+      // In the multi-user session model, try to request a token for the
+      // specific user we were trying to act as when the 401 happened.
+      const { useStoreUser } = await import("src/stores/storeUser")
+      let storeUserForRefresh = null
+      try { storeUserForRefresh = useStoreUser() } catch {}
+      const intendedUser = storeUserForRefresh?.currentUser || null
+      const refreshBody = intendedUser ? { for_user: intendedUser } : null
 
-      console.log("[AUTH-DEBUG] /auth/refresh response status:", refreshResponse?.status)
-      console.log("[AUTH-DEBUG] /auth/refresh response data:", refreshResponse?.data)
+      const refreshResponse = await apiLogin.post("/auth/refresh", refreshBody, { withCredentials: true })
+
+      authDebug("/auth/refresh response status:", refreshResponse?.status)
+      authDebug("/auth/refresh response data:", refreshResponse?.data)
 
       if (refreshResponse?.data?.access_token) {
         const newToken = refreshResponse.data.access_token
 
-        console.log("%c[AUTH-DEBUG] Silent refresh SUCCESS — got new access token", "color: lime")
+        authDebug("Silent refresh SUCCESS — got new access token")
 
-        // Decode to learn the *real* owner of this token (the account whose refresh cookie
-        // was used). We must NOT blindly store under currentUser — the 401 may have come
-        // from a different currentUser than the cookie principal (multi-account case).
+        // Decode to learn the *real* owner of this token
         let tokenOwner = null
         try {
           const payload = JSON.parse(atob(newToken.split(".")[1]))
@@ -165,17 +165,27 @@ const refreshInterceptor = async (error) => {
           // non-fatal
         }
         if (tokenOwner) {
-          console.log("[AUTH-DEBUG] Silent refresh token owner (from JWT):", tokenOwner)
+          authDebug("Silent refresh token owner (from JWT):", tokenOwner)
         }
 
-        // Update default headers on BOTH instances (global header is for "whoever we just authed as")
-        api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
-        apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
-
-        // Best-effort store update — pass the real owner so it is keyed correctly in accessTokens.
+        // Only stomp the global Authorization header if the token we just got
+        // is for the *current* user in the UI. Otherwise we would send
+        // brianoflondon's token on calls that the UI thinks are for v4vapp-test.
+        const { useStoreUser } = await import("src/stores/storeUser")
+        let storeUser = null
         try {
-          const { useStoreUser } = await import("src/stores/storeUser")
-          const storeUser = useStoreUser()
+          storeUser = useStoreUser()
+        } catch {}
+
+        const shouldSetGlobalHeader = !tokenOwner || tokenOwner === storeUser?.currentUser
+
+        if (shouldSetGlobalHeader) {
+          api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+          apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+        }
+
+        // Always store the token under the correct owner in the map.
+        try {
           if (storeUser && typeof storeUser.setAccessToken === "function") {
             storeUser.setAccessToken(newToken, tokenOwner)
           }
@@ -190,11 +200,11 @@ const refreshInterceptor = async (error) => {
         originalRequest.headers["Authorization"] = `Bearer ${newToken}`
         return axios(originalRequest)
       } else {
-        console.warn("[AUTH-DEBUG] /auth/refresh responded but no access_token in body")
+        authDebug("/auth/refresh responded but no access_token in body")
       }
     } catch (refreshError) {
-      console.warn("[auth] Silent refresh failed — user will need to re-authenticate")
-      console.error("[AUTH-DEBUG] /auth/refresh FAILED. Error:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
+      authDebug("Silent refresh failed — user will need to re-authenticate")
+      authDebug("/auth/refresh FAILED:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
 
       // Per-account only. The interceptor MUST NEVER call logoutAll().
       // Identify the affected user from the original failing request if possible.
@@ -220,8 +230,8 @@ const refreshInterceptor = async (error) => {
             // For pure keychain accounts, a failed refresh (expired short token) should
             // not remove the account from the user's list. Just clear the in-memory token.
             // The user can re-trigger keychain when they need a fresh session.
-            console.log(
-              "[AUTH-DEBUG] Refresh failed for pure keychain account — not logging out (short token simply expired). Account remains in list.",
+            authDebug(
+              "Refresh failed for pure keychain account — not logging out (short token simply expired). Account remains in list.",
               affectedUser,
             )
             if (storeUser.accessTokens) {

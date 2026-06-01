@@ -4,6 +4,7 @@ import { Platform, Notify } from "quasar"
 import { i18n } from "boot/i18n"
 import { useStoreUser } from "src/stores/storeUser"
 import { useGetChallenge, useValidateApi } from "src/use/useUtils"
+import { authDebug, authError } from "src/utils/authDebug"
 
 const storeUser = useStoreUser()
 
@@ -88,7 +89,7 @@ export async function useIsHiveKeychainInstalled() {
     const isKeychainIn = !!getHiveKeychain()
     return isKeychainIn
   } catch (error) {
-    console.error({ error })
+    authError({ error })
   }
   return false
 }
@@ -113,10 +114,10 @@ export async function useHiveKeychainLogin({
     })
     // this line is the result which should be used in the API text scripts
     // signed_message_example.json
-    // console.log("loginResult: ", loginResult)
+    // authDebug("loginResult: ", loginResult)
     return loginResult
   } catch (error) {
-    console.error({ error })
+    authError({ error })
     return error
   }
 }
@@ -203,7 +204,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         validate.data.access_token,
         "hive",
       )
-      console.log("storeUser: ", storeUser.users)
+      authDebug("storeUser: ", storeUser.users)
       note({
         icon: "done", // we add an icon
         avatar: avatarUrl,
@@ -230,7 +231,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
     }
   } catch (error) {
     // hiveAccObj["loggedIn"] = false
-    console.error("error: ", error)
+    authError("error: ", error)
     Notify.create({
       icon: "cancel", // we add an icon
       spinner: false, // we reset the spinner setting so the icon can be displayed
@@ -272,7 +273,7 @@ export async function useHiveKeychainTransfer(
     })
     return transfer
   } catch (error) {
-    console.error({ error })
+    authError({ error })
     return error
   }
 }

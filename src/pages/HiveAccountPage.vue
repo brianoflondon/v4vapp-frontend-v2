@@ -36,6 +36,7 @@ import { apiLogin } from "boot/axios";
 import { api } from "boot/axios";
 import { useKeychainLoginFlow } from "src/use/useKeychain";
 import UserList from "src/components/hive/UserList.vue";
+import { authDebug, authError } from "src/utils/authDebug";
 
 const storeUser = useStoreUser();
 
@@ -55,26 +56,26 @@ const apiTokenValid = computed(() => {
 });
 
 onMounted(async () => {
-  console.log("GetHive.vue onMounted");
-  console.log("route", route);
+  authDebug("GetHive.vue onMounted");
+  authDebug("route", route);
   routePage.value = safeStringify(route);
   hiveAccount.value = useUsernameFromRouteParam(route.params.hiveAccTo);
   if (hiveAccount.value === "") {
-    console.error("No Hive Account Name");
+    authError("No Hive Account Name");
   } else {
-    console.log("hiveAccount", hiveAccount.value);
-    console.log("storeUser", storeUser);
+    authDebug("hiveAccount", hiveAccount.value);
+    authDebug("storeUser", storeUser);
     const user = storeUser.getUser(hiveAccount.value);
     if (user) {
-      console.log("user", user);
-      console.log("user.hasApiToken", user.hasApiToken);
-      console.log("user.apiToken", user.apiToken);
+      authDebug("user", user);
+      authDebug("user.hasApiToken", user.hasApiToken);
+      authDebug("user.apiToken", user.apiToken);
       if (user.hasApiToken) {
-        console.log("user.hasApiToken", user.hasApiToken);
-        console.log("user.apiToken", user.apiToken);
+        authDebug("user.hasApiToken", user.hasApiToken);
+        authDebug("user.apiToken", user.apiToken);
         apiLogin.defaults.headers.common["Authorization"] =
           `Bearer ${user.apiToken}`;
-        console.log("apiLogin.defaults: ", apiLogin.defaults.headers.common);
+        authDebug("apiLogin.defaults: ", apiLogin.defaults.headers.common);
         await fetchData();
       }
     }
@@ -82,11 +83,11 @@ onMounted(async () => {
 });
 
 async function fetchData() {
-  console.log("fetchData");
+  authDebug("fetchData");
   const user = storeUser.getUser(hiveAccount.value);
   let lookup = user.hiveAccname;
   if (user) {
-    console.log("fetchData for user", user.hiveAccname);
+    authDebug("fetchData for user", user.hiveAccname);
     if (user.setApiToken()) {
       try {
         if (user.hiveAccname === "v4vapp.dev") {
@@ -107,22 +108,22 @@ async function fetchData() {
           data.value = rawData.data[0].transactions;
         }
       } catch (error) {
-        console.error("fetchData error", error);
+        authError("fetchData error", error);
       }
     } else {
-      console.error("No API Token");
+      authError("No API Token");
       await loginToApi();
     }
   }
 }
 
 async function loginToApi() {
-  console.log("loginToApi");
+  authDebug("loginToApi");
   await loginApiKeychain(hiveAccount.value);
 }
 
 async function loginApiKeychain(username) {
-  console.log("loginApiKeychain");
+  authDebug("loginApiKeychain");
   let hiveAccObj = { value: username };
   const props = { keyType: "active" };
   await useKeychainLoginFlow(hiveAccObj, props);

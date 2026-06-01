@@ -1,13 +1,6 @@
 import { defineStore } from "pinia"
 import { useHiveDetails } from "../use/useHive.js"
-
-// =====================================================
-// DEBUG PATCH - REMOVE AFTER DIAGNOSIS
-console.log(
-  "%c[AUTH-DEBUG] >>> NEW storeUser.js MODULE LOADED <<<",
-  "color: magenta; font-weight: bold; font-size: 13px",
-)
-// =====================================================
+import { authDebug, authWarn, authError } from "src/utils/authDebug"
 import { useStorage, formatTimeAgo } from "@vueuse/core"
 import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
@@ -17,6 +10,9 @@ import { apiLogin, api } from "src/boot/axios"
 import { useKeepSats } from "src/use/useV4vapp"
 import { Notify } from "quasar"
 import { i18n } from "boot/i18n"
+
+// One-time module load marker (only visible when verbose auth debug is enabled)
+authDebug(">>> NEW storeUser.js MODULE LOADED <<<")
 
 const storeAPIStatus = useStoreAPIStatus()
 const storeCoingecko = useCoingeckoStore()
@@ -174,6 +170,15 @@ export const useStoreUser = defineStore("useStoreUser", {
       unit: "$",
     }),
     users: useStorage("users", {}),
+
+    /**
+     * Accounts that belong to the current browser session.
+     * In the new "one session, multiple users" model, this is the authoritative list
+     * of accounts the user has attached to this browser (via the refresh cookie).
+     * This replaces a lot of the previous "cookie owner vs currentUser" fighting.
+     */
+    sessionAccounts: useStorage("sessionAccounts", []),
+
     pos: useStorage("pos", { receiveCurrency: "hbd" }),
     clientId: useStorage("clientId", generateUUID()),
     dataLoading: useStorage("dataLoading", false),
@@ -229,14 +234,15 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     apiToken() {
       if (!this.currentUser) return null
-      // Prefer the non-persisted in-memory token (new hardened model)
+      // Strictly return only a token that belongs to the currentUser.
+      // Never return a token that was restored for a different account via the
+      // HttpOnly cookie (this was causing the "wrong balance after switch" bug).
       if (this.accessTokens[this.currentUser]) {
         return this.accessTokens[this.currentUser]
       }
-      // Fallback to old persisted location (will be removed after full migration)
-      const u = this._currentHiveUser
-      if (!u?.apiToken) return null
-      return u.apiToken
+      // No fallback to old persisted apiToken for the current user if it doesn't
+      // match what we have in the in-memory map for this exact account.
+      return null
     },
     loginType() {
       const u = this._currentHiveUser
@@ -252,7 +258,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {number} The number of users.
      */
     numUsers() {
-      console.debug("numUsers", Object.keys(this.users).length)
+      authDebug("numUsers", Object.keys(this.users).length)
       return Object.keys(this.users).length
     },
 
@@ -264,6 +270,13 @@ export const useStoreUser = defineStore("useStoreUser", {
     currentReauthNeeded() {
       if (!this.currentUser) return false
       return !!this.reauthNeeded[this.currentUser]
+    },
+
+    /**
+     * Accounts that are part of the current browser session under the new model.
+     */
+    currentSessionAccounts() {
+      return this.sessionAccounts
     },
     /**
      * Determines the login method for the current user.
@@ -278,7 +291,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     isHAS() {
       const u = this._currentHiveUser
       if (!u) return false
-      console.debug(u)
+      authDebug(u)
       if (u.authKey) return true
       return false
     },
@@ -454,8 +467,8 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     keepSatsBalance() {
       if (this.currentKeepSats === null) {
-        console.debug("Need to reauthenticate to get keepSatsBalance")
-        console.debug("check if logged in with HAS or Keychain")
+        authDebug("Need to reauthenticate to get keepSatsBalance")
+        authDebug("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
 
@@ -485,8 +498,8 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     keepSatsBalanceNumDisplay() {
       if (this.currentKeepSats === null) {
-        console.debug("Need to reauthenticate to get keepSatsBalance")
-        console.debug("check if logged in with HAS or Keychain")
+        authDebug("Need to reauthenticate to get keepSatsBalance")
+        authDebug("check if logged in with HAS or Keychain")
         return "💰💰💰"
       }
       if (this.currentKeepSats?.net_sats > 1000000) {
@@ -499,8 +512,8 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
     keepSatsBalanceNum() {
       if (this.currentKeepSats === null) {
-        console.debug("Need to reauthenticate to get keepSatsBalance")
-        console.debug("check if logged in with HAS or Keychain")
+        authDebug("Need to reauthenticate to get keepSatsBalance")
+        authDebug("check if logged in with HAS or Keychain")
         return 0
       }
       // Ensure net_sats is never -0
@@ -536,24 +549,12 @@ export const useStoreUser = defineStore("useStoreUser", {
   },
   actions: {
     initialize() {
-      // =====================================================
-      // DEBUG PATCH - REMOVE AFTER DIAGNOSIS
-      // =====================================================
-      console.log(
-        "%c[AUTH-DEBUG] >>> NEW HARDENED AUTH CODE IS RUNNING <<<",
-        "color: lime; font-weight: bold; font-size: 14px",
-      )
-      console.log(
-        "[AUTH-DEBUG] initialize() called. Current users in store:",
-        Object.keys(this.users),
-      )
-      console.log(
-        "[AUTH-DEBUG] Raw users object at init:",
-        JSON.stringify(this.users, null, 2),
-      )
+      authDebug(">>> NEW HARDENED AUTH CODE IS RUNNING <<<")
+      authDebug("initialize() called. Current users in store:", Object.keys(this.users))
+      authDebug("Raw users object at init:", this.users)
 
       // called once from the HiveLogin component.
-      console.log("Store initialized")
+      authDebug("Store initialized")
 
       // Auth hardening migration:
       // - For accounts that used modern login paths (authKey set, e.g. webauthn/passkey),
@@ -575,8 +576,8 @@ export const useStoreUser = defineStore("useStoreUser", {
         if (user.apiToken && user.authKey) {
           // Only strip for modern/cookie-capable accounts
           accountsWithOldTokens.push(userId)
-          console.warn(
-            "[AUTH-DEBUG] Found OLD apiToken on modern auth account:",
+          authWarn(
+            "Found OLD apiToken on modern auth account:",
             userId,
             "— will strip it (keychain accounts keep their short token for cross-tab use)",
           )
@@ -586,27 +587,14 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
 
       if (strippedAny) {
-        console.info(
-          "[auth] Stripped old persisted access tokens for modern auth accounts",
-        )
-        console.warn(
-          "[AUTH-DEBUG] Accounts that had old tokens stripped:",
-          accountsWithOldTokens,
-        )
+        authDebug("Stripped old persisted access tokens for modern auth accounts")
+        authDebug("Accounts that had old tokens stripped:", accountsWithOldTokens)
       } else {
-        console.log(
-          "[AUTH-DEBUG] No old apiToken fields stripped during initialize (keychain short tokens are intentionally kept for new-tab UX).",
-        )
+        authDebug("No old apiToken fields stripped during initialize (keychain short tokens kept for new-tab UX).")
       }
 
-      console.log(
-        "[AUTH-DEBUG] Users object AFTER stripping attempt:",
-        JSON.stringify(this.users, null, 2),
-      )
-      console.log(
-        "[DEBUG-KeepSats] accessTokens after stripping:",
-        JSON.stringify(this.accessTokens),
-      )
+      authDebug("Users object AFTER stripping attempt:", this.users)
+      authDebug("accessTokens after stripping:", this.accessTokens)
 
       // For pure keychain accounts (!authKey), seed the in-memory accessTokens map
       // from any persisted short-lived apiToken. This makes new tabs / reloads
@@ -617,10 +605,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         const user = this.users[userId]
         if (!user.authKey && user.apiToken && !this.accessTokens[userId]) {
           this.accessTokens[userId] = user.apiToken
-          console.log(
-            "[AUTH-DEBUG] Seeded in-memory access token for keychain account from persisted short token:",
-            userId,
-          )
+          authDebug("Seeded in-memory access token for keychain account from persisted short token:", userId)
           if (userId === this.currentUser) {
             apiLogin.defaults.headers.common["Authorization"] = `Bearer ${user.apiToken}`
           }
@@ -631,18 +616,20 @@ export const useStoreUser = defineStore("useStoreUser", {
       // END DEBUG PATCH
       // =====================================================
 
-      // Proactive restore for any live HttpOnly refresh cookie (passkey/webauthn etc).
-      // This makes the "Re-login needed" chip disappear automatically for the account
-      // that owns the current cookie, without waiting for a 401 on a later page.
-      // Fire-and-forget; on success for the current user we explicitly refresh balances
-      // so the wallet page populates immediately after a cold start / site change.
-      this.ensureAccessToken()
-        .then((tok) => {
-          if (tok && this.currentUser && this.accessTokens[this.currentUser]) {
-            this.updateSatsBalance(true).catch(() => {})
-          }
-        })
-        .catch(() => {})
+      // Seed sessionAccounts from existing persisted users for transition.
+      // In the new model, on first load after the change, we treat all previously
+      // known users as part of "this browser session". Future logins will explicitly
+      // add accounts via addAccountToSession().
+      const existing = Object.keys(this.users)
+      existing.forEach(acc => this.addAccountToSession(acc))
+
+      // Note: The old aggressive ensureAccessToken + updateSatsBalance on initialize
+      // is being reduced as part of the simplification. We still want fresh data,
+      // but we will request it more deliberately per currentUser.
+      // For now we keep a lightweight kick for the current user.
+      if (this.currentUser && this.isAccountInCurrentSession(this.currentUser)) {
+        this.update().catch(() => {})
+      }
     },
     /**
      * Updates the user details and profile.
@@ -652,21 +639,20 @@ export const useStoreUser = defineStore("useStoreUser", {
       this.apiTokenSet()
       this.expireCheck()
 
-      // If we have a currentUser but no in-memory token yet, try the cookie restore path.
-      // This is the main fix for "after site change / reload I see Re-login needed even
-      // though I have a valid webauthn/passkey session cookie".
-      if (this.currentUser && !this.apiToken) {
+      // In the new model we only try to ensure a token if the account is part of
+      // the current browser session. If it's not in the session yet, we don't
+      // spam /auth/refresh — the user needs to explicitly add it via login.
+      if (this.currentUser &&
+          this.isAccountInCurrentSession(this.currentUser) &&
+          !this.apiToken) {
         await this.ensureAccessToken(this.currentUser)
       }
 
-      console.log("storeUser.js: update called for", this.currentUser)
+      authDebug("update called for", this.currentUser)
 
       const currentLoginType = this.users[this.currentUser]?.loginType
       if (currentLoginType && currentLoginType !== "hive") {
-        console.log(
-          "storeUser.js: skipping Hive API update for loginType",
-          currentLoginType,
-        )
+        authDebug("skipping Hive API update for loginType", currentLoginType)
         this.currentDetails = null
         this.currentProfile = {
           name: this.users[this.currentUser]?.profileName || this.currentUser,
@@ -676,13 +662,13 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
 
       const details = await useHiveDetails(this.currentUser)
-      console.log("storeUser.js: useHiveDetails returned", details)
+      authDebug("useHiveDetails returned", details)
       if (!details) {
-        console.error(
+        authError(
           "storeUser.js: useHiveDetails returned null or undefined!",
         )
       } else if (!details.balance) {
-        console.error(
+        authError(
           "storeUser.js: details object missing 'balance' property!",
           details,
         )
@@ -699,22 +685,20 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     async updateSatsBalance(useCache = true) {
       if (!this.currentUser) {
-        console.warn("[AUTH-DEBUG] updateSatsBalance: skipped — no currentUser")
+        authDebug("updateSatsBalance: skipped — no currentUser")
         return null
       }
       if (!this.apiToken) {
         const restoredAccounts = Object.keys(this.accessTokens || {})
         if (restoredAccounts.length > 0) {
-          console.log(
-            "[AUTH-DEBUG] updateSatsBalance: no token for currentUser",
+          authDebug("updateSatsBalance: no token for currentUser",
             this.currentUser,
             "(a cookie session was successfully restored for a different account:",
             restoredAccounts,
             "). This is expected for legacy keychain accounts after reload."
           )
         } else {
-          console.warn(
-            "[AUTH-DEBUG] updateSatsBalance: skipped — no apiToken for currentUser",
+          authDebug("updateSatsBalance: skipped — no apiToken for currentUser",
             this.currentUser,
             "accessTokens keys:",
             restoredAccounts,
@@ -730,18 +714,31 @@ export const useStoreUser = defineStore("useStoreUser", {
         try {
           answer = await useKeepSats(useCache, false)
           if (answer?.detail === "Could not validate credentials") {
-            console.log("Need to log out")
+            authWarn("Need to log out")
             this.logout()
             return false
           }
         } catch (err) {
-          console.error(err)
+          authError(err)
         }
         if (answer == null) {
           return null
         }
+
+        // Critical safety guard against cross-user data pollution
+        // (the root cause of "shows brian's balance while on v4vapp-test" after resume/switch).
+        if (answer.hive_accname && answer.hive_accname !== this.currentUser) {
+          authWarn("CRITICAL MISMATCH: Received keepsats data for the wrong user!",
+            "currentUser:", this.currentUser,
+            "response.hive_accname:", answer.hive_accname,
+            "This almost always means the Authorization header contained a token for a different account (cookie owner vs UI currentUser)."
+          );
+          // Do NOT update currentKeepSats with data that belongs to someone else.
+          return null;
+        }
+
         this.currentKeepSats = answer
-        console.log(
+        authDebug(
           "[DEBUG-KeepSats] Successfully fetched and set currentKeepSats for",
           this.currentUser,
           "net_sats:",
@@ -751,7 +748,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         if (this.currentKeepSats && this.currentKeepSats.net_sats === 0) {
           this.currentKeepSats.net_sats = 0
         }
-        console.debug("currentKeepSats", this.currentKeepSats)
+        authDebug("currentKeepSats", this.currentKeepSats)
         if (this.currentKeepSats) {
           // Ensure net_sats is never -0 for comparison
           const normalizedCurrent =
@@ -766,7 +763,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         }
         return false
       } catch (err) {
-        console.error(err)
+        authError(err)
         return null
       } finally {
         this.dataLoading = false
@@ -798,7 +795,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       loginType = "hive",
     ) {
       try {
-        console.log("login", hiveAccname, keySelected)
+        authDebug("login", hiveAccname, keySelected)
         let hiveDetails = null
         if (loginType === "hive") {
           this.dataLoading = true
@@ -821,7 +818,7 @@ export const useStoreUser = defineStore("useStoreUser", {
             loginType,
           )
         } else {
-          console.log("EVM login no Hive details")
+          authDebug("EVM login no Hive details")
           const profileName = useShortEVMAddress(hiveAccname)
           newUser = new HiveUser(
             hiveAccname,
@@ -842,15 +839,17 @@ export const useStoreUser = defineStore("useStoreUser", {
             `Bearer ${apiToken}`
         }
 
+        // In the new model, a successful login attaches this account to the
+        // current browser session (the refresh cookie's allowed users list).
+        this.addAccountToSession(hiveAccname)
+
         // Debug logging for auth hardening changes
         if (
           loginType === "evm" ||
           loginType === "btc" ||
           authKey === "webauthn"
         ) {
-          console.log(
-            `[AUTH-DEBUG] login(): Storing ${loginType || authKey} user. expire passed=${expire}, using in-memory accessTokens only.`,
-          )
+          authDebug(`login(): Storing ${loginType || authKey} user. expire passed=${expire}`)
         }
 
         this.users[hiveAccname] = newUser
@@ -862,7 +861,7 @@ export const useStoreUser = defineStore("useStoreUser", {
         }
         this.update()
       } catch (err) {
-        console.error(err)
+        authError(err)
       }
     },
     /**
@@ -871,22 +870,37 @@ export const useStoreUser = defineStore("useStoreUser", {
      */
     switchUser(hiveAccname) {
       try {
-        console.debug("switchUser to ", hiveAccname, " from ", this.currentUser)
+        authDebug("switchUser to ", hiveAccname, " from ", this.currentUser)
         this.dataLoading = true
+
         if (hiveAccname in this.users) {
+          // New model: if this account is not yet part of the current browser
+          // session, we should eventually guide the user to "add it to this session".
+          // For now we log it clearly.
+          if (!this.isAccountInCurrentSession(hiveAccname)) {
+            authDebug("Switching to an account that is not yet in the current browser session:",
+              hiveAccname,
+              "— it may need to be re-authenticated to attach it to this session."
+            )
+          }
+
           this.currentUser = hiveAccname
+          // Immediately clear stale balance data from the previous user.
+          this.currentKeepSats = null
           this.apiTokenSet(hiveAccname)
           this.expireCheck()
 
-          // Proactive restore for the newly selected account (may be the cookie owner
-          // even if it had no token at the instant of switch).
+          // In the new model, if the account is in the current session, we just
+          // ensure we have a token for it (the backend will issue one for any
+          // allowed user in the session). If it's not in the session yet, the
+          // update will still run but token acquisition will be limited.
           const doUpdate = () => {
             this.update().finally(() => {
               this.dataLoading = false
             })
           }
 
-          if (!this.apiToken) {
+          if (this.isAccountInCurrentSession(hiveAccname) && !this.apiToken) {
             this.ensureAccessToken(hiveAccname)
               .then((tok) => {
                 if (tok) doUpdate()
@@ -902,7 +916,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.dataLoading = false
         }
       } catch (err) {
-        console.debug(err)
+        authDebug(err)
         this.dataLoading = false
       }
     },
@@ -912,13 +926,17 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @returns {boolean} - Returns true if the API token was set successfully, otherwise false.
      */
     apiTokenSet(hiveAccname = this.currentUser) {
-      console.debug("Setting API Token for", hiveAccname)
-      const token =
-        this.accessTokens[hiveAccname] || this.users[hiveAccname]?.apiToken
+      authDebug("Setting API Token for", hiveAccname)
+      // Only use a token that is specifically for this account.
+      // Do not leak a token that was restored for a different cookie owner.
+      const token = this.accessTokens[hiveAccname]
       if (token) {
         apiLogin.defaults.headers.common["Authorization"] = `Bearer ${token}`
         return true
       }
+      // Clear the header if we have no token for this specific user
+      // (prevents sending the wrong user's token after a switch).
+      delete apiLogin.defaults.headers.common["Authorization"]
       return false
     },
 
@@ -980,11 +998,11 @@ export const useStoreUser = defineStore("useStoreUser", {
 
       cookieRestorePromise = (async () => {
         try {
-          console.log(
-            "[AUTH-DEBUG] ensureAccessToken: attempting silent restore via HttpOnly cookie for",
-            target
-          )
-          const resp = await apiLogin.post("/auth/refresh", null, { withCredentials: true })
+          authDebug("ensureAccessToken: attempting silent restore via HttpOnly cookie for", target)
+          // In the new multi-user session model, we can request a token for a
+          // specific user that is allowed in this browser session.
+          const refreshBody = target ? { for_user: target } : null
+          const resp = await apiLogin.post("/auth/refresh", refreshBody, { withCredentials: true })
 
           if (resp?.data?.access_token) {
             const newToken = resp.data.access_token
@@ -999,12 +1017,12 @@ export const useStoreUser = defineStore("useStoreUser", {
 
             this.accessTokens[owner] = newToken
             this.clearReauthNeeded(owner)   // successful restore clears any reauth flag
+
             if (owner === this.currentUser) {
               apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
             }
 
-            console.log(
-              "[AUTH-DEBUG] ensureAccessToken: SUCCESS — token restored for",
+            authDebug("ensureAccessToken: SUCCESS — token restored for",
               owner,
               owner !== target ? `(requested was ${target})` : ""
             )
@@ -1012,8 +1030,7 @@ export const useStoreUser = defineStore("useStoreUser", {
             return newToken
           }
         } catch (e) {
-          console.log(
-            "[AUTH-DEBUG] ensureAccessToken: no usable refresh cookie (or refresh failed) for",
+          authDebug("ensureAccessToken: no usable refresh cookie (or refresh failed) for",
             target,
             "— account will need explicit re-login if it has no other token"
           )
@@ -1032,9 +1049,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
 
     expireCheck() {
-      console.log(
-        "[AUTH-DEBUG] expireCheck() running... (checking for legacy expires only)",
-      )
+      authDebug("expireCheck() running... (checking for legacy expires only)")
       // === 2026 Auth Hardening - Consistent Session Model ===
       //
       // We no longer use the client-side `expire` field to forcibly log out users
@@ -1059,17 +1074,13 @@ export const useStoreUser = defineStore("useStoreUser", {
           hiveUser.loginType === "evm" ||
           hiveUser.loginType === "btc"
         ) {
-          console.log(
-            `[AUTH-DEBUG] expireCheck: Skipping expiration enforcement for ${hiveUser.loginType || "unknown"} (authKey=${hiveUser.authKey || "none"}) - using new refresh model`,
-          )
+          authDebug(`expireCheck: Skipping legacy expiration for ${hiveUser.loginType || "unknown"} (using refresh model)`)
           continue
         }
 
         const t = i18n.global.t
         if (hiveUser.expire && hiveUser.expire < Date.now()) {
-          console.log(
-            `[AUTH-DEBUG] expireCheck: Legacy expire field present for ${user} (expire=${hiveUser.expire}). In the 2026 refresh-cookie model we no longer force logout here — relying on short access tokens + /auth/refresh instead.`,
-          )
+          authDebug(`expireCheck: Legacy expire field present for ${user} — using new refresh model instead of forcing logout.`)
           // Intentionally do NOT call this.logout() anymore for the new auth system.
           // The axios response interceptor on 401 + rotating refresh_token cookie is now responsible for session continuity.
         }
@@ -1096,6 +1107,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveAccname) return
 
       delete this.accessTokens[hiveAccname]
+      this.removeAccountFromSession(hiveAccname)
 
       if (hiveAccname in this.users) {
         delete this.users[hiveAccname]
@@ -1149,6 +1161,39 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
     },
 
+    // =====================================================
+    // New "One Browser Session, Multiple Users" model helpers
+    // =====================================================
+
+    /**
+     * Adds an account to the current browser session's authorized list.
+     * This should be called after a successful login when we want this
+     * account to be part of the current refresh cookie's session.
+     */
+    addAccountToSession(hiveAccname) {
+      if (!hiveAccname) return
+      if (!this.sessionAccounts.includes(hiveAccname)) {
+        this.sessionAccounts.push(hiveAccname)
+      }
+    },
+
+    /**
+     * Removes an account from the current browser session.
+     * (Useful for explicit "remove this account from this browser" flows later.)
+     */
+    removeAccountFromSession(hiveAccname) {
+      this.sessionAccounts = this.sessionAccounts.filter(acc => acc !== hiveAccname)
+      // Also clean up any token we might be holding
+      delete this.accessTokens[hiveAccname]
+    },
+
+    /**
+     * Returns true if the given account is part of the current browser session.
+     */
+    isAccountInCurrentSession(hiveAccname) {
+      return this.sessionAccounts.includes(hiveAccname)
+    },
+
     async bech32Address(currency = "hive") {
       const getBech32 = async (currency) => {
         const params = { currency: currency, no_image: false, json: true }
@@ -1157,7 +1202,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           const res = await api.get(url, { params })
           return res.data
         } catch (err) {
-          console.error(err)
+          authError(err)
           return `${this.currentUser}@${currency}.v4v.app`
         }
       }

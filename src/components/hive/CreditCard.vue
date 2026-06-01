@@ -75,8 +75,8 @@
         size="2.6rem"
       >
         <q-tooltip>
-          Refresh failed for this account.<br>
-          Click to re-authenticate @{{ storeUser.currentUser }}
+          Session problem for @{{ storeUser.currentUser }}.<br>
+          Tap to log back in with Passkey
         </q-tooltip>
       </q-icon>
     </div>
@@ -233,6 +233,12 @@ import { tidyNumber } from "src/use/useUtils"
 import { useI18n } from "vue-i18n"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { useKeychainLoginFlow } from "src/use/useKeychain"
+import { usePasskeyLogin } from "src/use/usePasskeys"
+import { authError, authDebug } from "src/utils/authDebug"
+import {
+  creditCardBackgrounds,
+  creditCardBackgroundUrl,
+} from "src/utils/creditCardBackgrounds"
 const storeCoingecko = useCoingeckoStore()
 
 // import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
@@ -247,15 +253,7 @@ const t = useI18n().t
 // emit balances to the parent component
 const emit = defineEmits(["balances"])
 
-const backgroundImage = [
-  "sealogo01",
-  "sealogo02",
-  "lightning01",
-  "lightning02",
-  "lightning03",
-  "lightning04",
-  "dolphins",
-]
+const backgroundImage = creditCardBackgrounds
 
 /**
  * ConfettiExplosion component
@@ -287,7 +285,7 @@ watch(
     if (newVal === "💰💰💰") {
       newVal = 0
     }
-    console.debug(
+    authDebug(
       "keepSatsBalance changed from",
       oldVal,
       "to",
@@ -326,7 +324,7 @@ function handleSwipe(e) {
   const currentUser = storeUser.currentUser
 
   if (!Array.isArray(users)) {
-    console.error("storeUser.users is not an array")
+    authError("storeUser.users is not an array")
     return
   }
 
@@ -346,15 +344,24 @@ function handleSwipe(e) {
 }
 
 async function scheduleUpdate() {
-  await storeUser.update(false)
+  // In the new model we only periodically refresh the current user if they
+  // are part of the current browser session. This reduces unnecessary
+  // /auth/refresh traffic when the user has multiple accounts attached.
+  if (storeUser.currentUser && storeUser.isAccountInCurrentSession?.(storeUser.currentUser)) {
+    await storeUser.update(false)
+  }
   // Schedule the next update after 5 minutes
   timeoutId = setTimeout(scheduleUpdate, 5 * 60 * 1000)
 }
 
 /**
- * Trigger re-authentication for the current account when the warning icon is clicked.
- * For keychain accounts this directly starts the Keychain signature flow.
- * For passkey/webauthn it directs the user (the passkey flow is usually initiated from the menu).
+ * Trigger re-authentication for the current account.
+ * - For webauthn/passkey accounts: asks for confirmation then triggers the passkey flow directly.
+ * - For keychain accounts: starts the keychain signature flow.
+ *
+ * This is called when the user taps the warning icon on the CreditCard,
+ * or can be called programmatically when we detect a refresh/auth failure
+ * for the current account.
  */
 async function triggerReauth() {
   if (!storeUser.currentUser) return
@@ -365,24 +372,57 @@ async function triggerReauth() {
   const isWebauthn = storeUser.authKey === 'webauthn'
 
   if (isWebauthn) {
-    q.notify({
-      message: `Please re-login with Passkey for @${acc} using the side menu`,
-      color: 'info',
-      timeout: 6000,
+    // Ask the user before popping the passkey prompt (good UX on mobile)
+    q.dialog({
+      title: 'Session expired',
+      message: `Your passkey session for @${acc} needs to be refreshed. Log back in now?`,
+      cancel: true,
+      persistent: true,
+    }).onOk(async () => {
+      try {
+        const result = await usePasskeyLogin(acc)
+        if (result.success) {
+          await storeUser.login(
+            acc,
+            'active',
+            'webauthn',
+            null,
+            null,
+            result.token,
+            'hive'
+          )
+          q.notify({
+            message: 'Re-authenticated successfully with Passkey',
+            color: 'positive',
+            timeout: 3000,
+          })
+        } else {
+          q.notify({
+            message: `Passkey re-auth failed: ${result.message || 'Unknown error'}`,
+            color: 'negative',
+          })
+        }
+      } catch (err) {
+        authError('Passkey re-auth error:', err)
+        q.notify({
+          message: 'Failed to start passkey re-authentication',
+          color: 'negative',
+        })
+      }
     })
     return
   }
 
-  // Keychain (or other hive login) - start the flow directly
+  // Keychain (or other non-passkey hive login)
   try {
     const hiveAccObj = { value: acc }
     const keyType = storeUser.user?.keySelected || 'Active'
     const props = { keyType }
     await useKeychainLoginFlow(hiveAccObj, props)
   } catch (err) {
-    console.error('Re-auth keychain flow error:', err)
+    authError('Re-auth keychain flow error:', err)
     q.notify({
-      message: `Failed to start re-auth for @${acc}. Please try from the menu.`,
+      message: `Failed to start re-auth for @${acc}. Please try from the side menu.`,
       color: 'negative',
     })
   }
@@ -396,7 +436,7 @@ const lightDark = computed(() => {
 })
 
 const nonZeroKeepSats = computed(() => {
-  console.debug("[DEBUG-KeepSats] nonZeroKeepSats — currentKeepSats:", storeUser.currentKeepSats, "keepSatsBalance:", storeUser.keepSatsBalance, "keepSatsBalanceNum:", storeUser.keepSatsBalanceNum)
+  authDebug("[DEBUG-KeepSats] nonZeroKeepSats — currentKeepSats:", storeUser.currentKeepSats, "keepSatsBalance:", storeUser.keepSatsBalance, "keepSatsBalanceNum:", storeUser.keepSatsBalanceNum)
   if (storeUser.currentKeepSats) {
     if (storeUser.currentKeepSats !== "0") {
       return true
@@ -464,9 +504,7 @@ const creditCardOverlay = computed(() => {
   return `/credit-card/overlay/${lightDark.value}/credit-card.webp`
 })
 const creditCardBackground = computed(() => {
-  return `/credit-card/backgrounds/${
-    backgroundImage[backgroundIndex.value]
-  }.webp`
+  return creditCardBackgroundUrl(backgroundImage[backgroundIndex.value])
 })
 const creditCardShading = computed(() => {
   if (q.dark.isActive) {

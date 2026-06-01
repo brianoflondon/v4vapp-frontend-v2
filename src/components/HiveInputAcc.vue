@@ -69,6 +69,7 @@ import HiveAvatar from "components/utils/HiveAvatar.vue";
 import { useI18n } from "vue-i18n";
 import { useHiveProfile } from "src/use/useHive";
 import { useIsEVMAddress, useShortEVMAddress } from "src/use/useEVM";
+import { authDebug } from "src/utils/authDebug";
 
 const props = defineProps({
   label: {
@@ -126,7 +127,7 @@ function toggleLock() {
 }
 
 async function updateHiveAccTo(val, fixed) {
-  console.debug("updateHiveAccTo", val, fixed);
+  authDebug("updateHiveAccTo", val, fixed);
   if (!val) {
     clearInput();
     return;
@@ -155,7 +156,7 @@ async function updateHiveAccTo(val, fixed) {
       simpleHiveInput.value.validate();
     }
   } else {
-    console.log("No Hive profile found for", val);
+    authDebug("No Hive profile found for", val);
     const isEVM = useIsEVMAddress(val);
     if (isEVM) {
       modelValue.value.caption = useShortEVMAddress(val);

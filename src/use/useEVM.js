@@ -1,5 +1,6 @@
 import { useStoreUser } from "src/stores/storeUser";
 import { useGetChallenge, useValidateApi } from "src/use/useUtils";
+import { authDebug, authError } from "src/utils/authDebug";
 /**
  * Checks if the given address is a valid Ethereum address.
  *
@@ -65,19 +66,19 @@ export async function useEVMLoginFlow() {
       if (accounts.length > 0) {
         const evmConnected = accounts[0];
         const evmAddressLabel = useShortEVMAddress(evmConnected);
-        console.log("Wallet connected", accounts);
-        console.log("evmConnected: ", evmConnected);
+        authDebug("Wallet connected", accounts);
+        authDebug("evmConnected: ", evmConnected);
         const clientId = storeUser.clientId;
         const challenge = await useGetChallenge(evmConnected, clientId);
-        console.log("challenge: ", challenge);
+        authDebug("challenge: ", challenge);
         // now we have the challenge, we can sign it
         const signature = await signMessage(
           evmConnected,
           challenge.data.challenge,
         );
-        console.log("signature: ", signature);
+        authDebug("signature: ", signature);
         if (!signature) {
-          console.error("User Rejected Signature Request");
+          authError("User Rejected Signature Request");
           return;
         }
         // now we can send the signature back to the server
@@ -91,12 +92,12 @@ export async function useEVMLoginFlow() {
           signature: signature,
           account: evmConnected,
         };
-        console.log("signatureData: ", signatureData);
+        authDebug("signatureData: ", signatureData);
         try {
           const validate = await useValidateApi(clientId, signatureData);
-          console.log("validate: ", validate);
-          console.log("logging in with EVM");
-          console.log("[AUTH-DEBUG] EVM login: Passing expire=null (consistent with passkeys). Short backend token + re-signing provides security.");
+          authDebug("validate: ", validate);
+          authDebug("logging in with EVM");
+          authDebug("EVM login: Passing expire=null (consistent with passkeys). Short backend token + re-signing provides security.");
 
           await storeUser.login(
             evmConnected,
@@ -113,16 +114,16 @@ export async function useEVMLoginFlow() {
             "evm",
           );
 
-          console.log("storeUser.currentUser: ", storeUser.currentUser);
+          authDebug("storeUser.currentUser: ", storeUser.currentUser);
         } catch (error) {
-          console.error("Error validating signature: ", error);
+          authError("Error validating signature: ", error);
         }
       }
     } catch (error) {
-      console.error("User denied wallet connection", error);
+      authError("User denied wallet connection", error);
     }
   } else {
-    console.log("No Ethereum wallet found");
+    authDebug("No Ethereum wallet found");
   }
 }
 
@@ -134,6 +135,6 @@ async function signMessage(address, message) {
     });
     return signature;
   } catch (error) {
-    console.error("Error signing message:", error);
+    authError("Error signing message:", error);
   }
 }
