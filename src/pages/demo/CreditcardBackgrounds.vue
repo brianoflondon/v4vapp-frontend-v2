@@ -3,7 +3,7 @@
     <div class="q-pa-md row items-start q-gutter-md justify-center">
       <q-card v-for="background in backgroundImage" :key="background">
         <q-card-section style="min-width: 400px">
-          <q-img :src="'credit-card/backgrounds/' + background + '.webp'">
+          <q-img :src="creditCardBackgroundUrl(background)">
             <div class="absolute-bottom text-subtitle2 text-center">
               {{ background }}
             </div>
@@ -15,15 +15,12 @@
 </template>
 
 <script setup>
-const backgroundImage = [
-  "sealogo01",
-  "sealogo02",
-  "lightning01",
-  "lightning02",
-  "lightning03",
-  "lightning04",
-  "dolphins",
-];
+import {
+  creditCardBackgrounds,
+  creditCardBackgroundUrl,
+} from "src/utils/creditCardBackgrounds"
+
+const backgroundImage = creditCardBackgrounds
 </script>
 
 <style lang="scss" scoped></style>

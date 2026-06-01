@@ -235,6 +235,10 @@ import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { useKeychainLoginFlow } from "src/use/useKeychain"
 import { usePasskeyLogin } from "src/use/usePasskeys"
 import { authError, authDebug } from "src/utils/authDebug"
+import {
+  creditCardBackgrounds,
+  creditCardBackgroundUrl,
+} from "src/utils/creditCardBackgrounds"
 const storeCoingecko = useCoingeckoStore()
 
 // import { useLocalCurrencyBalances } from "src/use/useCurrencyCalc"
@@ -249,15 +253,7 @@ const t = useI18n().t
 // emit balances to the parent component
 const emit = defineEmits(["balances"])
 
-const backgroundImage = [
-  "sealogo01",
-  "sealogo02",
-  "lightning01",
-  "lightning02",
-  "lightning03",
-  "lightning04",
-  "dolphins",
-]
+const backgroundImage = creditCardBackgrounds
 
 /**
  * ConfettiExplosion component
@@ -508,9 +504,7 @@ const creditCardOverlay = computed(() => {
   return `/credit-card/overlay/${lightDark.value}/credit-card.webp`
 })
 const creditCardBackground = computed(() => {
-  return `/credit-card/backgrounds/${
-    backgroundImage[backgroundIndex.value]
-  }.webp`
+  return creditCardBackgroundUrl(backgroundImage[backgroundIndex.value])
 })
 const creditCardShading = computed(() => {
   if (q.dark.isActive) {
