@@ -168,7 +168,16 @@ export function useHiveAvatarURL({
 }) {
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
-  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+  if (!hiveAccname || typeof hiveAccname !== "string" || hiveAccname.includes("blob:") || hiveAccname.includes("http")) {
+    if (hiveAccname) {
+      console.warn("[useHiveAvatarURL] Invalid hiveAccname passed (possible blob URL leak or bad state):", hiveAccname, "reason:", reason)
+    }
+    if (hiveAccname && useIsEVMAddress(hiveAccname)) {
+      return useBlankProfileURL("evm")
+    }
+    return useBlankProfileURL()
+  }
+  if (!hiveAccname.match(useHiveAccountRegex)) {
     if (hiveAccname && useIsEVMAddress(hiveAccname)) {
       return useBlankProfileURL("evm")
     }
@@ -186,7 +195,16 @@ export async function useHiveAvatarBlob({
 }) {
   // Uses the Hive.blog image service to get the avatar for a Hive account
   // Returns null if the hiveAccname is blank or not a valid name.
-  if (!hiveAccname || !hiveAccname.match(useHiveAccountRegex)) {
+  if (!hiveAccname || typeof hiveAccname !== "string" || hiveAccname.includes("blob:") || hiveAccname.includes("http")) {
+    if (hiveAccname) {
+      console.warn("[useHiveAvatarBlob] Invalid hiveAccname passed (possible blob URL leak or bad state):", hiveAccname, "reason:", reason)
+    }
+    if (hiveAccname && useIsEVMAddress(hiveAccname)) {
+      return useBlankProfileURL("evm")
+    }
+    return useBlankProfileURL()
+  }
+  if (!hiveAccname.match(useHiveAccountRegex)) {
     if (hiveAccname && useIsEVMAddress(hiveAccname)) {
       return useBlankProfileURL("evm")
     }

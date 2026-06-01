@@ -79,6 +79,11 @@ export async function useGetLightingHiveInvoice(
       message = memo ? memo + " " + checkCode : checkCode;
     }
 
+    if (!hiveAccname || typeof hiveAccname !== "string" || hiveAccname.includes("blob:") || hiveAccname.includes("http") || hiveAccname === "blob") {
+      console.error("[useGetLightingHiveInvoice] CRITICAL: Bad hiveAccname value passed to invoice endpoint. This is a state bug upstream (possible blob URL leak into account fields). Value was:", hiveAccname);
+      return { error: "Invalid Hive account for invoice" };
+    }
+
     currency = currency.toUpperCase();
     const callBackResult = await api.get("new_invoice_hive", {
       params: {

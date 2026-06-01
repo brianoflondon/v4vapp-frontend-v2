@@ -14,10 +14,10 @@
     <meta name="apple-mobile-web-app-title" content="V4V.app" />
 
     <!-- CSP meta (backup for nginx headers; report-only for safe tuning).
-         Note: https://*.hive.blog must be in BOTH img-src and connect-src because
-         many images (avatars, podcast art) are loaded via axios + blob (see useHiveAvatarBlob).
+         Note: blob: + https://*.hive.blog are needed in BOTH img-src and connect-src
+         because images are axios-fetched to blob URLs, then used as <img>/QR logos.
          See nginx/nginx.conf for the primary definition. -->
-    <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: https://*.hive.blog https:; connect-src 'self' blob: https://*.hive.blog https://api.v4v.app https://devapi.v4v.app https://rpc.hive.blog https://api.hive.blog https://api.deathwing.me https://api.openhive.network https://rpc.mahdiyari.info https://techcoderx.com https://hiveapi.actifit.io https://api.c0ff33a.uk https://api.coingecko.com wss:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+    <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: blob: https://*.hive.blog https:; connect-src 'self' blob: https://*.hive.blog https://api.v4v.app https://devapi.v4v.app https://rpc.hive.blog https://api.hive.blog https://api.deathwing.me https://api.openhive.network https://rpc.mahdiyari.info https://techcoderx.com https://hiveapi.actifit.io https://api.c0ff33a.uk https://api.coingecko.com wss:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
 
     <link
       rel="icon"
