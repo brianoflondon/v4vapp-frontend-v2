@@ -222,7 +222,6 @@ export default {
   date: 'Date',
   paid: 'Paid',
   pending: 'Pending',
-  date: 'Date',
   paid_by: 'Paid by',
   import_hive: 'Import Hive',
   local_records: 'Local Records',
