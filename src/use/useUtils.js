@@ -363,6 +363,8 @@ export async function useValidateApi(clientId, signedMessage) {
       headers: {
         "Content-Type": "application/json",
       },
+      // Must be true to receive the HttpOnly refresh cookie set by the server on successful login.
+      withCredentials: true,
     });
     return validate;
   } catch (error) {

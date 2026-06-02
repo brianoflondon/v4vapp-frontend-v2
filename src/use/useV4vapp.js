@@ -38,7 +38,7 @@ export async function useCheckApiTokenValid(username, apiToken) {
     }
   }
 
-  const resp = await apiLogin.get("/auth/check/")
+  const resp = await apiLogin.get("/auth/check/", { withCredentials: true })
   if (resp.status === 200) return true
   return false
 }

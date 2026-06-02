@@ -62,7 +62,14 @@ const lightningAddressDomainPrefix = useDevAccounts ? "d" : ""
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({ 
   baseURL: apiLoginURL,
-  withCredentials: true,   // REQUIRED for the HttpOnly refresh_token cookie to be sent on cross-origin calls (e.g. dev.v4v.app → devapi.v4v.app)
+  // NOTE: withCredentials is NOT set by default here anymore.
+  // We set it explicitly (to true) only on calls that need the HttpOnly refresh cookie:
+  //   - /auth/refresh (to send cookie and receive rotated one)
+  //   - /auth/validate (to receive the Set-Cookie after successful login)
+  //   - /auth/logout (to send the cookie for revocation)
+  // Pre-login calls like /auth/{name} (challenge) use withCredentials: false to avoid
+  // the strict CORS rule that forbids ACAO: '*' on credentialed requests.
+  // This makes login flows more tolerant while the backend is updated.
 })
 
 // One-time loud boot message (only in verbose debug mode)
