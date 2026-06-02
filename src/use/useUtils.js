@@ -336,7 +336,7 @@ export async function useGetChallenge(hiveAccName, clientId) {
     // Do not send credentials for the initial challenge fetch.
     // This avoids the browser enforcing strict CORS (no '*' for ACAO) on pre-login calls.
     // The refresh path (which needs the HttpOnly cookie) explicitly sets withCredentials: true.
-    withCredentials: false,
+    withCredentials: true,
   });
   return getChallenge;
 }

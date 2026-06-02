@@ -85,6 +85,11 @@ export async function usePasskeyLogin(hiveAccName) {
       {
         params,
         headers: { "Content-Type": "application/json" },
+        // Must send withCredentials so the existing HttpOnly refresh cookie (if any)
+        // is included. This allows the backend to call attach_user_to_existing_session
+        // and grow the allowed_users list on the 00_pointer primary record instead of
+        // always creating a fresh single-user session.
+        withCredentials: true,
       },
     );
     if (sendChallengeBack.data.access_token) {

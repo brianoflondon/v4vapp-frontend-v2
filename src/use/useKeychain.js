@@ -286,7 +286,7 @@ export async function useGetApiKeychainChallenge(hiveAccName, clientId) {
     },
     // Do not send credentials for the initial challenge fetch.
     // Avoids strict CORS requirement (no wildcard ACAO) for pre-login calls.
-    withCredentials: false,
+    withCredentials: true,
   })
   return getChallenge
 }

@@ -166,7 +166,12 @@ async function resolveAuth(res, auth, challenge_data) {
     let passwordString = JSON.stringify(passwordData);
     formData.append("password", passwordString);
 
-    const responseApi = await apiLogin.post(`/token`, formData);
+    const responseApi = await apiLogin.post(`/token`, formData, {
+      // Send credentials so any pre-existing refresh cookie is included.
+      // This lets the (now updated) /token handler attach to the existing
+      // session and populate allowed_users (multi-account) on the 00_pointer record.
+      withCredentials: true,
+    });
     const apiTokenExpire = responseApi.data.expire * 1000;
     const apiTokenExpireDate = new Date(apiTokenExpire);
     let hasTokenExpire = res.data.expire;
