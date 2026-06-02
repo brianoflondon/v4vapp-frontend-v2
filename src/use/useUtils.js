@@ -333,6 +333,10 @@ export async function useGetChallenge(hiveAccName, clientId) {
       appId: `${productName}-${version}`.replace(/\s+/g, ""),
       scope: "hive:active",
     },
+    // Do not send credentials for the initial challenge fetch.
+    // This avoids the browser enforcing strict CORS (no '*' for ACAO) on pre-login calls.
+    // The refresh path (which needs the HttpOnly cookie) explicitly sets withCredentials: true.
+    withCredentials: false,
   });
   return getChallenge;
 }
