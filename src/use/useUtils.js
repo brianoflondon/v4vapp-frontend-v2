@@ -333,10 +333,18 @@ export async function useGetChallenge(hiveAccName, clientId) {
       appId: `${productName}-${version}`.replace(/\s+/g, ""),
       scope: "hive:active",
     },
-    // Do not send credentials for the initial challenge fetch.
-    // This avoids the browser enforcing strict CORS (no '*' for ACAO) on pre-login calls.
-    // The refresh path (which needs the HttpOnly cookie) explicitly sets withCredentials: true.
-    withCredentials: true,
+    // Do not send credentials (or the existing Authorization header) for the
+    // initial challenge fetch. This keeps the preflight simple (no cookies,
+    // and no "authorization" in Access-Control-Request-Headers).
+    // The actual attach decision for a second+ account happens later at
+    // /auth/validate/ (or /authenticate/complete), which must use withCredentials: true.
+    withCredentials: false,
+    // Explicitly avoid leaking a previous user's Bearer token on this call.
+    // Some already-logged-in browsers were triggering preflights that asked
+    // for "authorization" in Allow-Headers, which exposed Traefik config issues.
+    headers: {
+      Authorization: undefined,
+    },
   });
   return getChallenge;
 }
