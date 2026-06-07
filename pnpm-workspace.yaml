@@ -1,6 +1,9 @@
 allowBuilds:
   '@parcel/watcher': false
   core-js: false
+  chokidar: true
+  sass: true
+  sass-embedded: true
   esbuild: true
   secp256k1: false
 blockExoticSubdeps: true
