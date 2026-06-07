@@ -34,6 +34,36 @@ module.exports = configure(function (/* ctx */) {
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ["app.scss"],
 
+    // Use the pure JS 'sass' implementation instead of sass-embedded.
+    // This avoids native binary compatibility problems on older macOS (13).
+    extendViteConf (viteConf) {
+      viteConf.css = viteConf.css || {}
+      viteConf.css.preprocessorOptions = viteConf.css.preprocessorOptions || {}
+
+      // Force the pure JS 'sass' implementation (no native binaries) for both .scss and .sass
+      // This avoids sass-embedded native binary crashes on macOS 13.
+      const scssOpts = viteConf.css.preprocessorOptions.scss || {}
+      viteConf.css.preprocessorOptions.scss = {
+        ...scssOpts,
+        implementation: require('sass')
+      }
+
+      const sassOpts = viteConf.css.preprocessorOptions.sass || {}
+      viteConf.css.preprocessorOptions.sass = {
+        ...sassOpts,
+        implementation: require('sass')
+      }
+
+      // Alias sass-embedded to the JS sass to prevent Vite/Quasar from picking the native embedded host
+      viteConf.resolve = viteConf.resolve || {}
+      viteConf.resolve.alias = viteConf.resolve.alias || []
+      const existingAliases = Array.isArray(viteConf.resolve.alias) ? viteConf.resolve.alias : []
+      viteConf.resolve.alias = [
+        ...existingAliases,
+        { find: 'sass-embedded', replacement: require.resolve('sass') }
+      ]
+    },
+
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
       // 'ionicons-v4',
