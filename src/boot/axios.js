@@ -15,11 +15,11 @@ const myNodePubKey =
 
 // const myNodePubKey = ""
 // Don't change
-let useLocal = false;
+let useLocal = false
 
 // Helper to check env vars that may be boolean or string (app-vite v2 auto-parses)
-const envIsTrue = (val) => val === true || val === "true";
-const envIsFalse = (val) => val === false || val === "false";
+const envIsTrue = (val) => val === true || val === "true"
+const envIsFalse = (val) => val === false || val === "false"
 
 const isLocalhost =
   window.location.href.includes("localhost") ||
@@ -59,8 +59,11 @@ const serverHiveAccountTreasury = useDevAccounts
 const lightningAddressDomainSuffix = "v4v.app"
 const lightningAddressDomainPrefix = useDevAccounts ? "d" : ""
 
+// API base path for v4vapp endpoints
+const API_BASE = "/v2/v4vapp/"
+
 const api = axios.create({ baseURL: apiURL })
-const apiLogin = axios.create({ 
+const apiLogin = axios.create({
   baseURL: apiLoginURL,
   // NOTE: withCredentials is NOT set by default here anymore.
   // We set it explicitly (to true) only on calls that need the HttpOnly refresh cookie:
@@ -87,7 +90,11 @@ apiLogin.interceptors.request.use(
     // For now we keep it lightweight; full integration happens with store refactor.
 
     if (config.url?.includes("/auth/")) {
-      authDebug("Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
+      authDebug(
+        "Outgoing auth-related request:",
+        config.method?.toUpperCase(),
+        config.url,
+      )
     }
 
     return config
@@ -99,7 +106,11 @@ apiLogin.interceptors.request.use(
 api.interceptors.request.use(
   (config) => {
     if (config.url?.includes("/auth/")) {
-      authDebug("Outgoing auth-related request:", config.method?.toUpperCase(), config.url)
+      authDebug(
+        "Outgoing auth-related request:",
+        config.method?.toUpperCase(),
+        config.url,
+      )
     }
     return config
   },
@@ -149,11 +160,17 @@ const refreshInterceptor = async (error) => {
       // specific user we were trying to act as when the 401 happened.
       const { useStoreUser } = await import("src/stores/storeUser")
       let storeUserForRefresh = null
-      try { storeUserForRefresh = useStoreUser() } catch {}
+      try {
+        storeUserForRefresh = useStoreUser()
+      } catch {}
       const intendedUser = storeUserForRefresh?.currentUser || null
       const refreshBody = intendedUser ? { for_user: intendedUser } : null
 
-      const refreshResponse = await apiLogin.post("/auth/refresh", refreshBody, { withCredentials: true })
+      const refreshResponse = await apiLogin.post(
+        "/auth/refresh",
+        refreshBody,
+        { withCredentials: true },
+      )
 
       authDebug("/auth/refresh response status:", refreshResponse?.status)
       authDebug("/auth/refresh response data:", refreshResponse?.data)
@@ -184,11 +201,13 @@ const refreshInterceptor = async (error) => {
           storeUser = useStoreUser()
         } catch {}
 
-        const shouldSetGlobalHeader = !tokenOwner || tokenOwner === storeUser?.currentUser
+        const shouldSetGlobalHeader =
+          !tokenOwner || tokenOwner === storeUser?.currentUser
 
         if (shouldSetGlobalHeader) {
           api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
-          apiLogin.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+          apiLogin.defaults.headers.common["Authorization"] =
+            `Bearer ${newToken}`
         }
 
         // Always store the token under the correct owner in the map.
@@ -211,7 +230,11 @@ const refreshInterceptor = async (error) => {
       }
     } catch (refreshError) {
       authDebug("Silent refresh failed — user will need to re-authenticate")
-      authDebug("/auth/refresh FAILED:", refreshError?.response?.status, refreshError?.response?.data || refreshError?.message)
+      authDebug(
+        "/auth/refresh FAILED:",
+        refreshError?.response?.status,
+        refreshError?.response?.data || refreshError?.message,
+      )
 
       // Per-account only. The interceptor MUST NEVER call logoutAll().
       // Identify the affected user from the original failing request if possible.
@@ -221,10 +244,12 @@ const refreshInterceptor = async (error) => {
         const storeUser = useStoreUser()
 
         // Try to extract username from the JWT that was on the failing request
-        const authHeader = originalRequest?.headers?.Authorization || originalRequest?.headers?.authorization
-        if (authHeader && typeof authHeader === 'string') {
-          const token = authHeader.replace(/^Bearer\s+/i, '')
-          const payload = JSON.parse(atob(token.split('.')[1]))
+        const authHeader =
+          originalRequest?.headers?.Authorization ||
+          originalRequest?.headers?.authorization
+        if (authHeader && typeof authHeader === "string") {
+          const token = authHeader.replace(/^Bearer\s+/i, "")
+          const payload = JSON.parse(atob(token.split(".")[1]))
           if (payload?.username) affectedUser = payload.username
         }
         if (!affectedUser) affectedUser = storeUser?.currentUser
@@ -286,6 +311,7 @@ export {
   api,
   apiLogin,
   apiURL,
+  API_BASE,
   myNodePubKey,
   serverHiveAccount,
   serverHiveAccountTreasury,

@@ -2,13 +2,11 @@
 //
 
 import { Notify, Dialog, QSpinnerGears } from "quasar"
-import { api, apiLogin } from "src/boot/axios"
+import { apiLogin, API_BASE } from "src/boot/axios"
 import { checkCache, putInCache } from "src/use/useUtils"
 import { i18n } from "boot/i18n"
 // import { useStoreUser } from "src/store/user"
 // const storeUser = useStoreUser()
-
-const API_BASE = "/v2/v4vapp/"
 
 let paymentInProgressDialog = null
 
@@ -379,7 +377,7 @@ export async function useKeepSatsConvert(satsToConvert, currency, memo = "") {
  */
 export async function useNewAccountCost() {
   try {
-    const response = await api.get("/account/cost")
+    const response = await apiLogin.get(`${API_BASE}account/cost`)
     return response.data
   } catch (error) {
     console.error(error)
