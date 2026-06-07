@@ -2,7 +2,7 @@
 //
 
 import { Notify, Dialog, QSpinnerGears } from "quasar"
-import { api, apiLogin, API_BASE } from "src/boot/axios"
+import { apiLogin, API_BASE } from "src/boot/axios"
 import { checkCache, putInCache } from "src/use/useUtils"
 import { i18n } from "boot/i18n"
 // import { useStoreUser } from "src/store/user"

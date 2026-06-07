@@ -273,7 +273,7 @@ import { useHiveAccountExists } from "src/use/useHive"
 import { buttonActiveNot } from "src/use/useUtils"
 import { PrivateKey } from "@hiveio/dhive"
 import { genRandAlphaNum } from "src/use/useUtils"
-import { apiLogin } from "src/boot/axios"
+import { apiLogin, API_BASE } from "src/boot/axios"
 import { useAppStr } from "src/use/useAppDetails"
 import { useStoreUser } from "src/stores/storeUser"
 import { QRLightningHiveColor } from "src/use/useUtils"
@@ -286,7 +286,6 @@ import ConfirmNewAccount from "src/components/hive/ConfirmNewAccount.vue"
 import GetKeychain from "src/components/hive/GetKeychain.vue"
 import { useNewAccountCost } from "src/use/useV4vapp"
 import { tidyNumber } from "src/use/useUtils"
-import { API_BASE } from "src/boot/axios"
 
 const t = useI18n().t
 const storeUser = useStoreUser()
