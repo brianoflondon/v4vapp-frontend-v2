@@ -1134,8 +1134,9 @@ export const useStoreUser = defineStore("useStoreUser", {
      * in local state.
      *
      * Server refresh cookie:
-     * - Revoked when this is the last remaining local account (or session is empty).
-     * - Left in place when other accounts remain (multi-user session model).
+     * - Revoked when this is the last remaining *session* account (sessionAccounts),
+     *   or when no local users would remain (covers users/sessionAccounts divergence).
+     * - Left in place when other session accounts remain (multi-user session model).
      * - Pass `{ revokeServer: true }` to force full session revoke (e.g. interceptor
      *   hard-failure when the cookie is known dead).
      * - Pass `{ revokeServer: false }` to skip the network call (local-only cleanup).
@@ -1143,10 +1144,17 @@ export const useStoreUser = defineStore("useStoreUser", {
     async logoutUser(hiveAccname, options = {}) {
       if (!hiveAccname) return
 
-      const remainingAfter = Object.keys(this.users).filter(
+      // sessionAccounts is authoritative for the browser refresh-cookie session.
+      // Also treat "no remaining users" as last-account so partial persisted state
+      // cannot leave a live cookie behind.
+      const remainingSession = (this.sessionAccounts || []).filter(
         (name) => name !== hiveAccname,
       )
-      const isLastAccount = remainingAfter.length === 0
+      const remainingUsers = Object.keys(this.users || {}).filter(
+        (name) => name !== hiveAccname,
+      )
+      const isLastAccount =
+        remainingSession.length === 0 || remainingUsers.length === 0
       const revokeServer =
         typeof options.revokeServer === "boolean"
           ? options.revokeServer

@@ -39,11 +39,9 @@
  */
 
 import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 import { useStoreUser } from "src/stores/storeUser";
 
 const storeUser = useStoreUser();
-const t = useI18n().t;
 const loggingOut = ref(false);
 
 async function onLogout() {
