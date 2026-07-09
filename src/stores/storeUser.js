@@ -1089,25 +1089,85 @@ export const useStoreUser = defineStore("useStoreUser", {
       // If all users happen to be gone, the UI will naturally reflect it.
     },
     /**
+     * Revoke the server-side refresh session (HttpOnly cookie) and clear
+     * global Authorization headers. Best-effort: local cleanup still proceeds
+     * if the network call fails.
+     *
+     * Note: the backend treats one refresh cookie as one multi-user session —
+     * this ends the session for every allowed_user on that cookie.
+     */
+    async revokeServerSession() {
+      try {
+        authDebug("Calling POST /auth/logout (withCredentials) to revoke refresh cookie")
+        await apiLogin.post("/auth/logout", null, { withCredentials: true })
+        authDebug("Server session revoked via /auth/logout")
+      } catch (e) {
+        // Cookie may already be missing/expired — still continue local cleanup.
+        authDebug(
+          "Server logout failed (continuing local cleanup):",
+          e?.response?.status || e?.message || e,
+        )
+      } finally {
+        this.clearAuthHeaders()
+      }
+    },
+
+    /** Clear Bearer tokens from both axios instances. */
+    clearAuthHeaders() {
+      delete apiLogin.defaults.headers.common["Authorization"]
+      delete api.defaults.headers.common["Authorization"]
+    },
+
+    /**
      * Logs out the current user.
-     * Removes the current user from the list of users and resets the current user details and profile.
+     * If this is the last local account, also revokes the server refresh session.
      * @returns {Promise<void>} A promise that resolves when the logout process is complete.
      */
     async logout() {
       if (this.currentUser) {
-        this.logoutUser(this.currentUser)
+        await this.logoutUser(this.currentUser)
       }
     },
 
     /**
-     * Logs out a specific user account without affecting any other logged-in accounts.
-     * This is the preferred method for per-account refresh/expiry failures.
+     * Logs out a specific user account without affecting any other logged-in accounts
+     * in local state.
+     *
+     * Server refresh cookie:
+     * - Revoked when this is the last remaining local account (or session is empty).
+     * - Left in place when other accounts remain (multi-user session model).
+     * - Pass `{ revokeServer: true }` to force full session revoke (e.g. interceptor
+     *   hard-failure when the cookie is known dead).
+     * - Pass `{ revokeServer: false }` to skip the network call (local-only cleanup).
      */
-    async logoutUser(hiveAccname) {
+    async logoutUser(hiveAccname, options = {}) {
       if (!hiveAccname) return
 
-      delete this.accessTokens[hiveAccname]
+      const remainingAfter = Object.keys(this.users).filter(
+        (name) => name !== hiveAccname,
+      )
+      const isLastAccount = remainingAfter.length === 0
+      const revokeServer =
+        typeof options.revokeServer === "boolean"
+          ? options.revokeServer
+          : isLastAccount
+
+      if (revokeServer) {
+        // Ends the entire multi-user refresh cookie session on the server.
+        await this.revokeServerSession()
+        this.accessTokens = {}
+      } else {
+        // Multi-account: keep the shared refresh cookie for remaining users.
+        delete this.accessTokens[hiveAccname]
+        if (this.currentUser === hiveAccname) {
+          this.clearAuthHeaders()
+        }
+      }
+
       this.removeAccountFromSession(hiveAccname)
+      if (this.reauthNeeded?.[hiveAccname]) {
+        delete this.reauthNeeded[hiveAccname]
+      }
 
       if (hiveAccname in this.users) {
         delete this.users[hiveAccname]
@@ -1128,17 +1188,20 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
 
     /**
-     * Logs out all users and resets the current user, details, profile, and keepSats.
+     * Logs out all users, revokes the server refresh session, and resets local state.
      * @async
      */
     async logoutAll() {
+      await this.revokeServerSession()
       this.accessTokens = {}
       this.users = {}
+      this.sessionAccounts = []
       this.currentUser = null
       this.currentDetails = null
       this.currentProfile = null
       this.currentKeepSats = null
       this.reauthNeeded = {}
+      this.clearAuthHeaders()
     },
 
     /**
