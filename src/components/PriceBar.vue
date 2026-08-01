@@ -35,9 +35,11 @@
             <div class="q-mt-xs">
               <strong>{{ $t("gateway_status_label") }}</strong>
               {{
-                isGatewayFullyOpen
-                  ? $t("gateway_status_open")
-                  : $t("gateway_status_closed")
+                gatewayOverallStatus === "unknown"
+                  ? $t("gateway_status_unknown")
+                  : gatewayOverallStatus === "open"
+                    ? $t("gateway_status_open")
+                    : $t("gateway_status_closed")
               }}
             </div>
             <div>
@@ -123,8 +125,8 @@ const smallScreen = computed(() => {
   return q.screen.width < 460
 })
 
-const isGatewayFullyOpen = computed(() => {
-  return storeAPIStatus.isGatewayFullyOpen
+const gatewayOverallStatus = computed(() => {
+  return storeAPIStatus.gatewayOverallStatus
 })
 
 const isOverallHealthy = computed(() => {

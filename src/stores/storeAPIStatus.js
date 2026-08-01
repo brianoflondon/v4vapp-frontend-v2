@@ -93,6 +93,10 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
         this.gatewayClosedGetHive === false
       )
     },
+    gatewayOverallStatus() {
+      if (!this.isGatewayStatusKnown) return "unknown"
+      return this.isGatewayFullyOpen ? "open" : "closed"
+    },
     isGatewayAnyClosed() {
       return this.isGatewayStatusKnown
         ? this.gatewayClosedGetLnd || this.gatewayClosedGetHive
@@ -107,7 +111,7 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
       return this.gatewayClosedGetHive ? "closed" : "open"
     },
     isOverallHealthy() {
-      return !this.apiError && this.isGatewayFullyOpen
+      return !this.apiError && !this.gatewayError && this.isGatewayFullyOpen
     },
     mergedStatusDisp() {
       return this.isOverallHealthy ? "🟢" : "🟥"
@@ -214,28 +218,37 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
       this.statusDisp = this.isOverallHealthy ? "🟢" : "🟥"
     },
     async updateGatewayStatus() {
+      let gatewayStatusError = null
       try {
         const res = await callRPC("condenser_api.get_accounts", [
           [serverHiveAccount],
         ])
-        if (!Array.isArray(res) || res.length === 0) return
+        if (!Array.isArray(res) || res.length === 0) {
+          gatewayStatusError = new Error(
+            "Gateway status RPC returned no account data",
+          )
+        } else {
+          const details = res[0]
+          if (!details?.posting_json_metadata) {
+            gatewayStatusError = new Error("Gateway status metadata missing")
+          } else {
+            const metadata = JSON.parse(details.posting_json_metadata)
+            const cfg = metadata?.v4vapp_hiveconfig
+            if (!cfg) {
+              gatewayStatusError = new Error("Gateway config missing")
+            } else {
+              console.debug("Raw posting_json_metadata:", metadata)
+              console.debug("v4vapp_hiveconfig:", cfg)
 
-        const details = res[0]
-        if (!details?.posting_json_metadata) return
-
-        const metadata = JSON.parse(details.posting_json_metadata)
-        const cfg = metadata?.v4vapp_hiveconfig
-        if (!cfg) return
-
-        console.debug("Raw posting_json_metadata:", metadata)
-        console.debug("v4vapp_hiveconfig:", cfg)
-
-        this.hiveConfig = cfg
-        this.gatewayError = null
-        this.gatewayFetchTimestamp = Date.now()
+              this.hiveConfig = cfg
+              this.gatewayFetchTimestamp = Date.now()
+            }
+          }
+        }
       } catch (err) {
-        this.gatewayError = err
+        gatewayStatusError = err instanceof Error ? err : new Error(String(err))
       }
+      this.gatewayError = gatewayStatusError
       this.statusDisp = this.isOverallHealthy ? "🟢" : "🟥"
     },
     async checkKeychain() {

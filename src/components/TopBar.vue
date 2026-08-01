@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from "vue"
+import { computed } from "vue"
 import LanguageSelector from "components/utils/LanguageSelector.vue"
 import DarkSelector from "components/utils/DarkSelector.vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
@@ -45,8 +45,6 @@ const rightDrawerOpen = defineModel({ default: false })
 const { appName, appVersion } = useAppDetails()
 const storeAPIStatus = useStoreAPIStatus()
 
-let gatewayTimeoutId = null
-
 const showGatewayClosedBanner = computed(() => {
   return storeAPIStatus.isGatewayAnyClosed
 })
@@ -54,22 +52,6 @@ const showGatewayClosedBanner = computed(() => {
 const toggleRightDrawer = () => {
   rightDrawerOpen.value = !rightDrawerOpen.value
 }
-
-async function scheduleGatewayStatusUpdate() {
-  await storeAPIStatus.updateGatewayStatus()
-  gatewayTimeoutId = setTimeout(
-    scheduleGatewayStatusUpdate,
-    storeAPIStatus.refreshIntervalMs,
-  )
-}
-
-onMounted(async () => {
-  await scheduleGatewayStatusUpdate()
-})
-
-onUnmounted(() => {
-  clearTimeout(gatewayTimeoutId)
-})
 </script>
 
 <style lang="scss" scoped></style>

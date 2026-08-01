@@ -50,9 +50,11 @@
                   icon="flash_on"
                   size="lg"
                 >
-                  Hive → Lightning:
+                  {{ $t("gateway_direction_hive_to_lightning") }}:
                   {{
-                    storeAPI.gatewayClosedGetLnd === false ? "OPEN" : "CLOSED"
+                    storeAPI.gatewayClosedGetLnd === false
+                      ? $t("gateway_status_open")
+                      : $t("gateway_status_closed")
                   }}
                 </q-chip>
                 <q-chip
@@ -63,9 +65,11 @@
                   icon="flash_on"
                   size="lg"
                 >
-                  Lightning → Hive:
+                  {{ $t("gateway_direction_lightning_to_hive") }}:
                   {{
-                    storeAPI.gatewayClosedGetHive === false ? "OPEN" : "CLOSED"
+                    storeAPI.gatewayClosedGetHive === false
+                      ? $t("gateway_status_open")
+                      : $t("gateway_status_closed")
                   }}
                 </q-chip>
               </div>
