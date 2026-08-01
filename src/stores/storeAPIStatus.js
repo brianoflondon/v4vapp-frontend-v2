@@ -2,13 +2,30 @@ import { defineStore } from "pinia"
 import { api } from "boot/axios"
 import { tidyNumber } from "src/use/useUtils"
 import { useDateFormat } from "@vueuse/core"
+import { serverHiveAccount } from "boot/axios"
+import { callRPC, config as hiveTxConfig } from "hive-tx"
+
+const hiveNodes = [
+  "https://api.hive.blog",
+  "https://api.deathwing.me",
+  "https://api.openhive.network",
+  "https://rpc.mahdiyari.info",
+  "https://techcoderx.com",
+  "https://hiveapi.actifit.io",
+  "https://api.c0ff33a.uk",
+]
+hiveTxConfig.nodes = hiveNodes
 
 export const useStoreAPIStatus = defineStore("storeAPIStatus", {
   state: () => ({
     // count: 0, // for testing
+    refreshIntervalMs: 10 * 60 * 1000,
     fetchTimestamp: null,
     apiStatus: null,
     apiError: null,
+    gatewayFetchTimestamp: null,
+    gatewayError: null,
+    hiveConfig: null,
     statusDisp: "⚡️",
     isKeychainIn: false,
   }),
@@ -56,6 +73,48 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
     },
     prices: (state) => {
       return state.apiStatus ? state.apiStatus.crypto : "fetching prices"
+    },
+    gatewayClosedGetLnd: (state) => {
+      if (!state.hiveConfig) return null
+      return !!state.hiveConfig.closed_get_lnd
+    },
+    gatewayClosedGetHive: (state) => {
+      if (!state.hiveConfig) return null
+      return !!state.hiveConfig.closed_get_hive
+    },
+    isGatewayStatusKnown() {
+      return (
+        this.gatewayClosedGetLnd !== null && this.gatewayClosedGetHive !== null
+      )
+    },
+    isGatewayFullyOpen() {
+      return (
+        this.gatewayClosedGetLnd === false &&
+        this.gatewayClosedGetHive === false
+      )
+    },
+    gatewayOverallStatus() {
+      if (!this.isGatewayStatusKnown) return "unknown"
+      return this.isGatewayFullyOpen ? "open" : "closed"
+    },
+    isGatewayAnyClosed() {
+      return this.isGatewayStatusKnown
+        ? this.gatewayClosedGetLnd || this.gatewayClosedGetHive
+        : false
+    },
+    gatewayLndStatus() {
+      if (this.gatewayClosedGetLnd === null) return "unknown"
+      return this.gatewayClosedGetLnd ? "closed" : "open"
+    },
+    gatewayHiveStatus() {
+      if (this.gatewayClosedGetHive === null) return "unknown"
+      return this.gatewayClosedGetHive ? "closed" : "open"
+    },
+    isOverallHealthy() {
+      return !this.apiError && !this.gatewayError && this.isGatewayFullyOpen
+    },
+    mergedStatusDisp() {
+      return this.isOverallHealthy ? "🟢" : "🟥"
     },
     minMax(state) {
       if (
@@ -138,38 +197,75 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
   },
 
   actions: {
-    update() {
+    async updateApiStatus() {
       console.log("Updating API status...")
-      const onDownload = async () => {
-        try {
-          const res = await api.get("", {
-            params: { get_crypto: true },
-          })
-          this.fetchTimestamp = Date.now()
-          this.apiStatus = res.data
-          this.apiError = null
-          this.apiStatus.crypto = prettyPrices(this.apiStatus.crypto)
-          this.statusDisp = "🟢"
-          console.log("API status updated:", this.apiStatus)
-        } catch (err) {
-          let age = (Date.now() - this.fetchTimestamp) / 1000
-          if (age > 5 && this.apiStatus) {
-            this.apiStatus = null
+      try {
+        const res = await api.get("", {
+          params: { get_crypto: true },
+        })
+        this.fetchTimestamp = Date.now()
+        this.apiStatus = res.data
+        this.apiError = null
+        this.apiStatus.crypto = prettyPrices(this.apiStatus.crypto)
+        console.log("API status updated:", this.apiStatus)
+      } catch (err) {
+        let age = (Date.now() - this.fetchTimestamp) / 1000
+        if (age > 5 && this.apiStatus) {
+          this.apiStatus = null
+        }
+        this.apiError = err
+      }
+      this.statusDisp = this.isOverallHealthy ? "🟢" : "🟥"
+    },
+    async updateGatewayStatus() {
+      let gatewayStatusError = null
+      try {
+        const res = await callRPC("condenser_api.get_accounts", [
+          [serverHiveAccount],
+        ])
+        if (!Array.isArray(res) || res.length === 0) {
+          gatewayStatusError = new Error(
+            "Gateway status RPC returned no account data",
+          )
+        } else {
+          const details = res[0]
+          if (!details?.posting_json_metadata) {
+            gatewayStatusError = new Error("Gateway status metadata missing")
+          } else {
+            const metadata = JSON.parse(details.posting_json_metadata)
+            const cfg = metadata?.v4vapp_hiveconfig
+            if (!cfg) {
+              gatewayStatusError = new Error("Gateway config missing")
+            } else {
+              console.debug("Raw posting_json_metadata:", metadata)
+              console.debug("v4vapp_hiveconfig:", cfg)
+
+              this.hiveConfig = cfg
+              this.gatewayFetchTimestamp = Date.now()
+            }
           }
-          this.apiError = err
-          this.statusDisp = "🟥"
         }
+      } catch (err) {
+        gatewayStatusError = err instanceof Error ? err : new Error(String(err))
       }
-      const checkKeychain = async () => {
-        try {
-          this.isKeychainIn =
-            typeof window !== "undefined" && !!window.hive_keychain
-        } catch (error) {
-          console.error({ error })
-        }
+      this.gatewayError = gatewayStatusError
+      this.statusDisp = this.isOverallHealthy ? "🟢" : "🟥"
+    },
+    async checkKeychain() {
+      try {
+        this.isKeychainIn =
+          typeof window !== "undefined" && !!window.hive_keychain
+      } catch (error) {
+        console.error({ error })
       }
-      onDownload()
-      checkKeychain()
+    },
+    async update() {
+      await Promise.allSettled([
+        this.updateApiStatus(),
+        this.updateGatewayStatus(),
+        this.checkKeychain(),
+      ])
+      this.statusDisp = this.isOverallHealthy ? "🟢" : "🟥"
     },
   },
   persist: {

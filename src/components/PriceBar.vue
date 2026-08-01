@@ -25,13 +25,32 @@
         <strong>$ {{ storeAPIStatus.hbd }}</strong>
       </span>
       <span class="price-bar-item api-status-indicator q-pl-md q-pa-xs">
-        <q-btn
-          @click="clearLocalStorage"
-          flat
-          dense
-          :title="storeAPIStatus.apiError ? $t('failure') : $t('working')"
-        >
-          {{ storeAPIStatus.statusDisp }}
+        <q-btn @click="clearLocalStorage" flat dense :title="statusTitle">
+          {{ mergedStatusDisp }}
+          <q-tooltip>
+            <div>
+              <strong>{{ $t("api_status_label") }}</strong>
+              {{ storeAPIStatus.apiError ? $t("failure") : $t("working") }}
+            </div>
+            <div class="q-mt-xs">
+              <strong>{{ $t("gateway_status_label") }}</strong>
+              {{
+                gatewayOverallStatus === "unknown"
+                  ? $t("gateway_status_unknown")
+                  : gatewayOverallStatus === "open"
+                    ? $t("gateway_status_open")
+                    : $t("gateway_status_closed")
+              }}
+            </div>
+            <div>
+              {{ $t("gateway_direction_hive_to_lightning") }}:
+              {{ gatewayLndStatus }}
+            </div>
+            <div>
+              {{ $t("gateway_direction_lightning_to_hive") }}:
+              {{ gatewayHiveStatus }}
+            </div>
+          </q-tooltip>
         </q-btn>
       </span>
       <span class="price-bar-item reload-status q-pa-xs">
@@ -40,7 +59,7 @@
           :title="$t('reload_prices')"
           flat
           dense
-          @click="storeAPIStatus.update()"
+          @click="refreshStatus"
         />
         <q-tooltip
           >{{ $t("prices_fetched") }}:
@@ -72,49 +91,87 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, computed } from "vue";
-import { useStoreAPIStatus } from "src/stores/storeAPIStatus";
-import { useI18n } from "vue-i18n";
-import { useQuasar, Dialog } from "quasar";
-import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue";
+import { onMounted, onUnmounted, computed } from "vue"
+import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
+import { useI18n } from "vue-i18n"
+import { useQuasar, Dialog } from "quasar"
+import HbdLogoIcon from "src/components/utils/HbdLogoIcon.vue"
 
-const storeAPIStatus = useStoreAPIStatus();
-const t = useI18n().t;
-const q = useQuasar();
+const storeAPIStatus = useStoreAPIStatus()
+const t = useI18n().t
+const q = useQuasar()
 
-let timeoutId;
+let timeoutId
+
+const gatewayLndStatus = computed(() => {
+  if (storeAPIStatus.gatewayLndStatus === "unknown") {
+    return t("gateway_status_unknown")
+  }
+  return storeAPIStatus.gatewayLndStatus === "closed"
+    ? t("gateway_status_closed")
+    : t("gateway_status_open")
+})
+
+const gatewayHiveStatus = computed(() => {
+  if (storeAPIStatus.gatewayHiveStatus === "unknown") {
+    return t("gateway_status_unknown")
+  }
+  return storeAPIStatus.gatewayHiveStatus === "closed"
+    ? t("gateway_status_closed")
+    : t("gateway_status_open")
+})
 
 const smallScreen = computed(() => {
-  return q.screen.width < 460;
-});
+  return q.screen.width < 460
+})
+
+const gatewayOverallStatus = computed(() => {
+  return storeAPIStatus.gatewayOverallStatus
+})
+
+const isOverallHealthy = computed(() => {
+  return storeAPIStatus.isOverallHealthy
+})
+
+const mergedStatusDisp = computed(() => {
+  return storeAPIStatus.mergedStatusDisp
+})
+
+const statusTitle = computed(() => {
+  return isOverallHealthy.value ? t("working") : t("failure")
+})
 
 // run on mounted
 onMounted(async () => {
   try {
-    scheduleUpdate();
+    await scheduleUpdate()
   } catch (err) {
-    console.error("PriceBar err", err);
+    console.error("PriceBar err", err)
   }
-});
+})
+
+async function refreshStatus() {
+  await storeAPIStatus.update()
+}
 
 async function scheduleUpdate() {
-  await storeAPIStatus.update();
-  // Schedule the next update after 5 minutes
-  timeoutId = setTimeout(scheduleUpdate, 10 * 60 * 1000);
+  await refreshStatus()
+  // Schedule the next update after 10 minutes
+  timeoutId = setTimeout(scheduleUpdate, storeAPIStatus.refreshIntervalMs)
 }
 
 onUnmounted(() => {
-  clearTimeout(timeoutId);
-});
+  clearTimeout(timeoutId)
+})
 
 const paddingBottom = computed(() => {
   const isPWA =
     window.matchMedia("(display-mode: standalone)").matches ||
-    window.navigator.standalone;
-  const isIphone = /iPhone/.test(window.navigator.userAgent);
+    window.navigator.standalone
+  const isIphone = /iPhone/.test(window.navigator.userAgent)
 
-  return isPWA && isIphone ? "padding-bottom: 20px;" : "";
-});
+  return isPWA && isIphone ? "padding-bottom: 20px;" : ""
+})
 
 function clearLocalStorage() {
   Dialog.create({
@@ -129,9 +186,9 @@ function clearLocalStorage() {
       color: "primary",
     },
   }).onOk(() => {
-    localStorage.clear();
-    location.reload();
-  });
+    localStorage.clear()
+    location.reload()
+  })
 }
 </script>
 
