@@ -43,34 +43,40 @@
               <div class="text-h6 q-mb-md">Gateway Status</div>
               <div class="row q-gutter-md">
                 <q-chip
-                  :color="!hiveConfig.closed_get_lnd ? 'green' : 'red'"
+                  :color="
+                    storeAPI.gatewayClosedGetLnd === false ? 'green' : 'red'
+                  "
                   text-color="white"
                   icon="flash_on"
                   size="lg"
                 >
                   Hive → Lightning:
-                  {{ !hiveConfig.closed_get_lnd ? "OPEN" : "CLOSED" }}
+                  {{
+                    storeAPI.gatewayClosedGetLnd === false ? "OPEN" : "CLOSED"
+                  }}
                 </q-chip>
                 <q-chip
-                  :color="!hiveConfig.closed_get_hive ? 'green' : 'red'"
+                  :color="
+                    storeAPI.gatewayClosedGetHive === false ? 'green' : 'red'
+                  "
                   text-color="white"
                   icon="flash_on"
                   size="lg"
                 >
                   Lightning → Hive:
-                  {{ !hiveConfig.closed_get_hive ? "OPEN" : "CLOSED" }}
+                  {{
+                    storeAPI.gatewayClosedGetHive === false ? "OPEN" : "CLOSED"
+                  }}
                 </q-chip>
               </div>
               <div class="q-mt-sm text-body2">
-                <p v-if="!hiveConfig.closed_get_lnd">
+                <p v-if="storeAPI.gatewayClosedGetLnd === false">
                   You can swap Hive or HBD for sats at:
                   <a href="https://v4v.app" target="_blank">v4v.app</a>
                 </p>
-                <p v-if="!hiveConfig.closed_get_hive">
+                <p v-if="storeAPI.gatewayClosedGetHive === false">
                   You can send Lightning as Hive or HBD to any Hive account:
-                  <a href="https://v4v.app/pos" target="_blank"
-                    >v4v.app/pos</a
-                  >
+                  <a href="https://v4v.app/pos" target="_blank">v4v.app/pos</a>
                 </p>
               </div>
             </q-card-section>
@@ -230,9 +236,7 @@
 import { ref, computed, onMounted } from "vue"
 import { useAppDetails } from "src/use/useAppDetails.js"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
-import { useHiveDetails } from "src/use/useHive"
 import { tidyNumber } from "src/use/useUtils"
-import { serverHiveAccount } from "boot/axios"
 
 const { appName, appVersion } = useAppDetails()
 const storeAPI = useStoreAPIStatus()
@@ -244,27 +248,13 @@ const storeAPI = useStoreAPIStatus()
 // })
 
 const loading = ref(true)
-const hiveConfig = ref(null)
+const hiveConfig = computed(() => storeAPI.hiveConfig)
 
 // Force fresh data every time the page is visited
 onMounted(async () => {
-  // Refresh live prices from the API
+  // Refresh live prices and gateway config from centralized store
   await storeAPI.update()
-
-  // Fetch the v4vapp_hiveconfig fresh from the Hive blockchain
-  try {
-    const details = await useHiveDetails(serverHiveAccount)
-    if (details?.posting_json_metadata) {
-      const metadata = JSON.parse(details.posting_json_metadata)
-      console.debug("Raw posting_json_metadata:", metadata)
-      console.debug("v4vapp_hiveconfig:", metadata.v4vapp_hiveconfig)
-      hiveConfig.value = metadata.v4vapp_hiveconfig || null
-    }
-  } catch (e) {
-    console.error("Failed to fetch hive config:", e)
-  } finally {
-    loading.value = false
-  }
+  loading.value = false
 })
 
 // Current UTC time string

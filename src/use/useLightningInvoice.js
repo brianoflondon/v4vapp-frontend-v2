@@ -4,8 +4,8 @@ import * as bolt11 from "src/assets/bolt11.min.js"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
 
-const storeAPIStatus = useStoreAPIStatus()
-const storeUser = useStoreUser()
+const getStoreAPIStatus = () => useStoreAPIStatus()
+const getStoreUser = () => useStoreUser()
 
 export async function useGetUnlimitedInvoice(account, amount, comment) {
   try {
@@ -188,6 +188,8 @@ export function useGetTimeProgress(decodedInvoice) {
 }
 
 function validateInvoice(decodedInvoice) {
+  const storeAPIStatus = getStoreAPIStatus()
+  const storeUser = getStoreUser()
   // Check value of invoice is within min and max
   // check that invoice is not expired
   decodedInvoice.errors = {}
