@@ -265,5 +265,12 @@ Você pode armazenar uma pequena quantia de Sats no V4V.app: seu saldo KeepSats.
   recommendation: 'Recomendação:',
   put_into_keychain: 'Insira o Nome de Usuário e a Senha Mestra diretamente no Hive Keychain.',
   store_safely: 'Armazenar a senha mestra com segurança em um Gerenciador de Senhas.',
-  no_forgot_option: 'Não existe a opção "Esqueci Minha Senha" na Hive.'
+  no_forgot_option: 'Não existe a opção "Esqueci Minha Senha" na Hive.',
+  api_status_label: 'API:',
+  gateway_status_label: 'Gateway:',
+  gateway_status_open: 'OPEN',
+  gateway_status_closed: 'CLOSED',
+  gateway_status_unknown: 'Unknown',
+  gateway_direction_hive_to_lightning: 'Hive → Lightning',
+  gateway_direction_lightning_to_hive: 'Lightning → Hive'
 };
