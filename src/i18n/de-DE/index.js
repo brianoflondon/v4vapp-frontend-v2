@@ -265,5 +265,12 @@ Für die Umwandlung von Sats in Hive oder HBD fällt eine Gebühr an.`,
   recommendation: 'Empfehlung:',
   put_into_keychain: 'Geben Sie Benutzername und Master-Passwort direkt in Hive Keychain ein.',
   store_safely: 'Speichern Sie das Master-Passwort sicher in einem Passwort-Manager.',
-  no_forgot_option: 'Es gibt keine "Ich habe meine Schlüssel vergessen" auf Hive.'
+  no_forgot_option: 'Es gibt keine "Ich habe meine Schlüssel vergessen" auf Hive.',
+  api_status_label: 'API:',
+  gateway_status_label: 'Gateway:',
+  gateway_status_open: 'OPEN',
+  gateway_status_closed: 'CLOSED',
+  gateway_status_unknown: 'Unknown',
+  gateway_direction_hive_to_lightning: 'Hive → Lightning',
+  gateway_direction_lightning_to_hive: 'Lightning → Hive'
 };
