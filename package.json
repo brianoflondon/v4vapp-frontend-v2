@@ -5,7 +5,7 @@
   "productName": "V4V App",
   "author": "Brian of London (Dot) <brian@v4v.app>",
   "private": true,
-  "packageManager": "pnpm@10.33.4",
+  "packageManager": "pnpm@11.18.0+sha512.33d83c77da82f49fba836925c6f1b841181ec3132b670639bd012f7075f5c7cf634c5f870147c19aae7478fac01df09d8892e880454896edd23ee9b33757563c",
   "scripts": {
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
@@ -64,17 +64,8 @@
     "workbox-routing": "^6.6.0",
     "workbox-strategies": "^6.6.0"
   },
-  "pnpm": {
-    "overrides": {
-      "esbuild": "0.19.12",
-      "@esbuild/darwin-x64": "0.19.12",
-      "@esbuild/darwin-arm64": "0.19.12",
-      "lightningcss": "1.22.1",
-      "sass-embedded": "npm:sass@1.100.0"
-    }
-  },
   "engines": {
     "node": ">=20",
-    "pnpm": ">=10"
+    "pnpm": ">=11"
   }
 }

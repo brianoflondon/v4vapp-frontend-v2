@@ -9,17 +9,33 @@ import { authDebug, authWarn, authError } from "src/utils/authDebug"
 // "export default () => {}" function below (which runs individually
 // for each client)
 
-// My Lightning Node address to prevent self-payment
-const myNodePubKey =
-  "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
 
-// const myNodePubKey = ""
-// Don't change
-let useLocal = false
+// ---------------------------------------------------------------------------
+// API base URL selection (build-time .env + runtime page host)
+//
+// VUE_APP_LOCAL_API (from .env; @quasar/app-vite may inject true/false as
+// real booleans, not strings — always compare both forms):
+//   true  → always http://localhost:1818
+//   false → never local, even when the app is served from localhost/LAN
+//   unset → local only if the page host looks like localhost/LAN
+//
+// VUE_APP_DEV_API:
+//   true  → https://devapi.v4v.app (unless local wins)
+//   also auto-enabled when the page host contains "dev.v4v.app"
+//
+// Priority: local :1818  >  devapi  >  production api
+//
+// Example (.env) to force remote dev API while developing on localhost:
+//   VUE_APP_LOCAL_API=false
+//   VUE_APP_DEV_API=true
+// ---------------------------------------------------------------------------
 
-// Helper to check env vars that may be boolean or string (app-vite v2 auto-parses)
+// Helper: app-vite v2 injects "true"/"false" env values as bare booleans
 const envIsTrue = (val) => val === true || val === "true"
 const envIsFalse = (val) => val === false || val === "false"
+
+const localApiEnv = process.env.VUE_APP_LOCAL_API
+const devApiEnv = process.env.VUE_APP_DEV_API
 
 const isLocalhost =
   window.location.href.includes("localhost") ||
@@ -27,13 +43,15 @@ const isLocalhost =
   window.location.href.includes("192.168") ||
   window.location.href.includes("10.0")
 
-if (envIsTrue(process.env.VUE_APP_LOCAL_API) || isLocalhost) {
-  useLocal = !envIsFalse(process.env.VUE_APP_LOCAL_API)
-}
+// Explicit false must win over isLocalhost (do not use `!== "false"` alone —
+// when Quasar injects boolean false, `false !== "false"` is true and would
+// incorrectly keep localhost).
+const useLocal = envIsFalse(localApiEnv)
+  ? false
+  : envIsTrue(localApiEnv) || isLocalhost
 
-const isDev = window.location.href.includes("dev.v4v.app")
-
-const useDev = isDev || envIsTrue(process.env.VUE_APP_DEV_API)
+const isDevHost = window.location.href.includes("dev.v4v.app")
+const useDev = isDevHost || envIsTrue(devApiEnv)
 
 const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
 const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
@@ -41,11 +59,21 @@ const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
 let apiURL = rootUrl
 let apiLoginURL = rootLoginUrl
 
-authDebug("useLocal:", useLocal)
 if (useLocal) {
   apiURL = "http://localhost:1818/v1"
   apiLoginURL = "http://localhost:1818/"
 }
+
+authDebug("API URL selection:", {
+  localApiEnv,
+  devApiEnv,
+  isLocalhost,
+  isDevHost,
+  useLocal,
+  useDev,
+  apiURL,
+  apiLoginURL,
+})
 
 // Set dev accounts if useDev or useLocal is true
 const useDevAccounts = useDev || useLocal
@@ -312,7 +340,6 @@ export {
   apiLogin,
   apiURL,
   API_BASE,
-  myNodePubKey,
   serverHiveAccount,
   serverHiveAccountTreasury,
   lightningAddressDomainSuffix,

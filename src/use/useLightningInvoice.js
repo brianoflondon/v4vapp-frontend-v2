@@ -1,4 +1,4 @@
-import { api, myNodePubKey } from "boot/axios"
+import { api } from "boot/axios"
 import { store } from "quasar/wrappers"
 import * as bolt11 from "src/assets/bolt11.min.js"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
@@ -313,6 +313,9 @@ export async function useCreateInvoice(dInvoice) {
       console.error("response from Lightning Service Provider is null")
       return null
     }
+    if (!response.pr) {
+      response.pr = response.payment_request || response.paymentRequest
+    }
     dInvoice.askDetails = false
     dInvoice.callback = response
     return response
@@ -359,6 +362,7 @@ export async function callBackGenerateInvoice(callbackURL, amount, comment) {
  * @returns {Promise<Object>} - A promise that resolves to the decoded metadata object.
  */
 async function decodeMetadata(decodedInvoice) {
+  const storeAPIStatus = getStoreAPIStatus()
   let result = await JSON.parse(decodedInvoice.metadata)
   let decoded = result.reduce((obj, item) => {
     obj[item[0]] = item[1]

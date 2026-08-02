@@ -1,6 +1,6 @@
 # Stage 1: Build the Quasar project
 ARG NODE_VERSION=24.15.0
-ARG PNPM_VERSION=10.33.4
+ARG PNPM_VERSION=11.18.0
 FROM node:${NODE_VERSION} AS build
 ARG PNPM_VERSION
 
@@ -9,8 +9,8 @@ ARG PNPM_VERSION
 
 # Set working directory
 WORKDIR /app
-# Copy dependency manifests and npmrc for registry settings
-COPY package.json pnpm-lock.yaml .npmrc ./
+# Copy dependency manifests (pnpm-workspace.yaml holds overrides/settings for pnpm 11+)
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 
 # Enable Corepack and activate a pinned pnpm version
 RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
