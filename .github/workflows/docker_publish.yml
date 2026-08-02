@@ -1,7 +1,7 @@
 name: Docker publish
 env:
   NODE_VERSION: "24.15.0"
-  PNPM_VERSION: "10.33.4"
+  PNPM_VERSION: "11.18.0"
 
 on:
   push:
