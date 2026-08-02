@@ -1,3 +1,4 @@
+# pnpm 11+ reads settings from this file (not package.json "pnpm" / most .npmrc keys).
 allowBuilds:
   '@parcel/watcher': false
   core-js: false
@@ -11,3 +12,20 @@ minimumReleaseAge: 1440
 minimumReleaseAgeStrict: true
 strictDepBuilds: true
 trustPolicy: no-downgrade
+# Known false positives: older majors republished without trusted-publisher
+# evidence after newer majors already had stronger trust (publish-date based).
+# Required by workbox-build@6 / hive stack / transitive semver ranges.
+trustPolicyExclude:
+  - 'rollup@2.80.0'
+  - '@noble/secp256k1@1.7.2'
+  - 'semver@6.3.1'
+# Moved from package.json "pnpm.overrides" (ignored by pnpm 11+).
+overrides:
+  esbuild: 0.19.12
+  '@esbuild/darwin-x64': 0.19.12
+  '@esbuild/darwin-arm64': 0.19.12
+  lightningcss: 1.22.1
+  sass-embedded: npm:sass@1.100.0
+# Moved from .npmrc (pnpm 11+ only uses .npmrc for auth/registry).
+shamefullyHoist: true
+strictPeerDependencies: false

@@ -193,6 +193,35 @@
                   </td>
                   <td class="keepsats-table-cell numeric-cell q-pl-sm">HUSD</td>
                 </tr>
+                <!-- VSC app liability HBD (pay-with-HBD deposits held on books) -->
+                <tr v-if="vscHbdBalance !== null">
+                  <td class="numeric-cell">
+                    {{ vscHbdBalance }}
+                  </td>
+                  <td class="numeric-cell q-pl-sm">
+                    <HbdLogoIcon />
+                  </td>
+                  <td class="keepsats-table-cell numeric-cell q-pl-sm">
+                    App HBD
+                    <q-tooltip
+                      >HBD held in v4vapp (ledger), not your on-chain wallet</q-tooltip
+                    >
+                  </td>
+                </tr>
+                <tr v-if="vscHiveBalance !== null">
+                  <td class="numeric-cell">
+                    {{ vscHiveBalance }}
+                  </td>
+                  <td>
+                    <q-icon name="fa-brands fa-hive" />
+                  </td>
+                  <td class="keepsats-table-cell numeric-cell q-pl-sm">
+                    App Hive
+                    <q-tooltip
+                      >Hive held in v4vapp (ledger), not your on-chain wallet</q-tooltip
+                    >
+                  </td>
+                </tr>
                 <!-- Lower summation of Hive amounts -->
                 <tr v-if="false">
                   <td
@@ -443,6 +472,20 @@ const nonZeroKeepSats = computed(() => {
     }
   }
   return false
+})
+
+/** VSC liability HBD held on the app (not on-chain wallet HBD). */
+const vscHbdBalance = computed(() => {
+  const v = Number(storeUser.currentKeepSats?.net_hbd ?? 0)
+  if (!Number.isFinite(v) || Math.abs(v) < 0.0005) return null
+  return tidyNumber(v, 3)
+})
+
+/** VSC liability HIVE held on the app (not on-chain wallet HIVE). */
+const vscHiveBalance = computed(() => {
+  const v = Number(storeUser.currentKeepSats?.net_hive ?? 0)
+  if (!Number.isFinite(v) || Math.abs(v) < 0.0005) return null
+  return tidyNumber(v, 3)
 })
 
 // needsReauth removed per user feedback — visual warnings/tags for re-keychain were

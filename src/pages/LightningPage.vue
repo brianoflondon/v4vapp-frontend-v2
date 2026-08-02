@@ -626,7 +626,7 @@ function receiveNewInvoice(val) {
     return
   }
   callbackResult.value = val
-  invoiceText.value = val.pr
+  invoiceText.value = val.pr || val.payment_request || val.paymentRequest
   decodeInvoice()
 }
 

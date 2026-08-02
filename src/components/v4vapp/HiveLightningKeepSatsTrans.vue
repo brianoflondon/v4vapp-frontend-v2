@@ -254,6 +254,62 @@ function truncateMobile(text) {
   return text.substring(0, maxLen) + "…";
 }
 
+// Within the same second, match backend balance_line_sort_key economic order so
+// fee/recv ties do not scramble the customer card (running totals stay coherent).
+const LEDGER_TYPE_FLOW_ORDER = {
+  ob: 0,
+  open_bal: 0,
+  funding: 5,
+  cust_h_in: 10,
+  deposit_h: 10,
+  deposit_l: 15,
+  hold_k: 20,
+  cust_conv: 30,
+  h_conv_k: 30,
+  k_conv_h: 30,
+  exc_conv: 30,
+  withdraw_l: 40,
+  consume_k: 45,
+  recv_l: 50,
+  c_j_fee: 60,
+  c_j_fee_r: 60,
+  exc_fee: 60,
+  fee_inc: 60,
+  fee_exp: 60,
+  r_fee: 60,
+  release_k: 70,
+  cust_h_out: 80,
+  withdraw_h: 80,
+  c_j_rev: 85,
+  notification: 90,
+};
+
+function rowTimestampMs(row) {
+  if (typeof row.timestamp_unix === "number") return row.timestamp_unix;
+  if (typeof row.timestamp === "number") return row.timestamp;
+  return Date.parse(row.timestamp) || 0;
+}
+
+function ledgerTypeFlowOrder(row) {
+  const lt = String(row.ledger_type || "").toLowerCase();
+  return LEDGER_TYPE_FLOW_ORDER[lt] ?? 55;
+}
+
+/** Ascending multi-key compare; Quasar inverts for descending:true. */
+function compareBalanceRows(a, b) {
+  const ta = rowTimestampMs(a);
+  const tb = rowTimestampMs(b);
+  if (ta !== tb) return ta - tb;
+  const oa = ledgerTypeFlowOrder(a);
+  const ob = ledgerTypeFlowOrder(b);
+  if (oa !== ob) return oa - ob;
+  const sa = String(a.short_id || "");
+  const sb = String(b.short_id || "");
+  if (sa < sb) return -1;
+  if (sa > sb) return 1;
+  return 0;
+}
+
 const ledgerColumns = computed(() => {
   const columns = [
     {
@@ -262,13 +318,9 @@ const ledgerColumns = computed(() => {
       sortable: true,
       label: "Date",
       align: "left",
-      field: (row) => {
-        // prefer millisecond unix timestamp when available, fall back to numeric or parsed timestamp
-        if (typeof row.timestamp_unix === "number") return row.timestamp_unix;
-        if (typeof row.timestamp === "number") return row.timestamp;
-        // Date.parse returns ms since epoch or NaN; this handles ISO strings
-        return Date.parse(row.timestamp);
-      },
+      field: (row) => rowTimestampMs(row),
+      // Secondary keys keep same-second fee/recv order stable (backend match).
+      sort: (a, b, rowA, rowB) => compareBalanceRows(rowA, rowB),
     },
   ];
 
@@ -297,7 +349,7 @@ const ledgerColumns = computed(() => {
       sortable: true,
       label: "Sats",
       align: "right",
-      field: (row) => row.conv_signed?.sats || row.sats || 0,
+      field: (row) => nativeOrConvAmount(row, "sats"),
     },
   );
 
@@ -310,7 +362,7 @@ const ledgerColumns = computed(() => {
         sortable: true,
         label: "Hive",
         align: "right",
-        field: (row) => row.conv_signed?.hive || row.hive || 0,
+        field: (row) => nativeOrConvAmount(row, "hive"),
       },
       {
         name: "hbd",
@@ -318,7 +370,8 @@ const ledgerColumns = computed(() => {
         sortable: true,
         label: "HBD",
         align: "right",
-        field: (row) => row.conv_signed?.hbd || row.hbd || 0,
+        // Native HBD amount for unit=hbd (pay-with-HBD deposits)
+        field: (row) => nativeOrConvAmount(row, "hbd"),
       },
     );
   }
@@ -339,7 +392,8 @@ const ledgerColumns = computed(() => {
 // Dynamic visible columns based on screen size
 const visibleColumns = computed(() => {
   if (isMobileView.value) {
-    return ["timestamp", "description", "sats", "total"];
+    // Include hbd/hive so pay-with-HBD deposits are visible on mobile cards
+    return ["timestamp", "description", "sats", "hbd", "total"];
   } else {
     return [
       "timestamp",
@@ -444,19 +498,42 @@ onMounted(() => {
 });
 
 /**
+ * Native ledger amount when the row's unit matches the column; otherwise
+ * notional conversion. HBD deposits store value in `amount` + unit=hbd
+ * (there is no top-level row.hbd field from the API).
+ */
+function nativeOrConvAmount(row, field) {
+  const unit = String(row.unit || "").toLowerCase();
+  const amount = Number(row.amount_signed ?? row.amount ?? 0);
+  if (field === "hbd") {
+    if (unit === "hbd") return amount;
+    return Number(row.conv_signed?.hbd ?? row.hbd ?? 0);
+  }
+  if (field === "hive") {
+    if (unit === "hive") return amount;
+    return Number(row.conv_signed?.hive ?? row.hive ?? 0);
+  }
+  if (field === "sats") {
+    if (unit === "msats") return amount / 1000;
+    if (unit === "sats") return amount;
+    return Number(row.conv_signed?.sats ?? row.sats ?? 0);
+  }
+  return 0;
+}
+
+/**
  * Determines if the specified field is the primary amount in the transaction
  * @param {Object} row - The transaction row data
  * @param {string} field - The field to check ('sats', 'hive', or 'hbd')
  * @returns {boolean} - True if this field matches the unit type
  */
 function isPrimaryAmount(row, field) {
-  const unit = row.unit;
+  const unit = String(row.unit || "").toLowerCase();
   if (!unit) return false;
 
-  // Map unit values to field names
   if (unit === "hive" && field === "hive") return true;
   if (unit === "hbd" && field === "hbd") return true;
-  if (unit === "msats" && field === "sats") return true;
+  if ((unit === "msats" || unit === "sats") && field === "sats") return true;
 
   return false;
 }
