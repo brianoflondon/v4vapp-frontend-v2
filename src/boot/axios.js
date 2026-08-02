@@ -340,7 +340,6 @@ export {
   apiLogin,
   apiURL,
   API_BASE,
-  myNodePubKey,
   serverHiveAccount,
   serverHiveAccountTreasury,
   lightningAddressDomainSuffix,
