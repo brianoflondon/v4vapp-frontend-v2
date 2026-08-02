@@ -9,11 +9,6 @@ import { authDebug, authWarn, authError } from "src/utils/authDebug"
 // "export default () => {}" function below (which runs individually
 // for each client)
 
-// My Lightning Node address to prevent self-payment
-const myNodePubKey =
-  "0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668"
-
-// const myNodePubKey = ""
 
 // ---------------------------------------------------------------------------
 // API base URL selection (build-time .env + runtime page host)
