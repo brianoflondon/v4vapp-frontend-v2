@@ -313,8 +313,8 @@ export async function useCreateInvoice(dInvoice) {
       console.error("response from Lightning Service Provider is null")
       return null
     }
-    if (!response.pr && response.payment_request) {
-      response.pr = response.payment_request
+    if (!response.pr) {
+      response.pr = response.payment_request || response.paymentRequest
     }
     dInvoice.askDetails = false
     dInvoice.callback = response
