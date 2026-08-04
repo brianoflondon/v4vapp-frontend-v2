@@ -193,7 +193,7 @@
                   </td>
                   <td class="keepsats-table-cell numeric-cell q-pl-sm">HUSD</td>
                 </tr>
-                <!-- VSC app liability HBD (pay-with-HBD deposits held on books) -->
+                <!-- VSC app liability HBD (pay-with-HBD deposits held on books)
                 <tr v-if="vscHbdBalance !== null">
                   <td class="numeric-cell">
                     {{ vscHbdBalance }}
@@ -207,8 +207,8 @@
                       >HBD held in v4vapp (ledger), not your on-chain wallet</q-tooltip
                     >
                   </td>
-                </tr>
-                <tr v-if="vscHiveBalance !== null">
+                </tr> -->
+                <!-- <tr v-if="vscHiveBalance !== null">
                   <td class="numeric-cell">
                     {{ vscHiveBalance }}
                   </td>
@@ -221,7 +221,7 @@
                       >Hive held in v4vapp (ledger), not your on-chain wallet</q-tooltip
                     >
                   </td>
-                </tr>
+                </tr> -->
                 <!-- Lower summation of Hive amounts -->
                 <tr v-if="false">
                   <td

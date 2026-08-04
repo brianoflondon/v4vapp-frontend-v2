@@ -919,12 +919,12 @@ async function confirmPayWithApi(message) {
  */
 async function payInvoice(currency, method) {
   // Pay the invoice using Hive Keychain
-  // Use dynamic fee calculation with a 1% uplift for safety margin
+  // Use dynamic fee calculation with a 1.5% uplift for safety margin increased fees
   let baseSats = dInvoice.value?.millisatoshis / 1000 || 0
   let satsWithFees = calcSatsFee(baseSats)
   console.log("satsWithFees", satsWithFees)
-  let uplift = 1.01 // 1% uplift
-  satsWithFees *= uplift // Apply 1% uplift
+  let uplift = 1.015 // 1.5% uplift
+  satsWithFees *= uplift // Apply 1.5% uplift
   satsWithFees += 100 // Add fixed fee
   console.log("satsWithFees with uplift and fixed fee", satsWithFees)
 
