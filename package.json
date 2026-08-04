@@ -1,6 +1,6 @@
 {
   "name": "v4vapp",
-  "version": "2.8.2",
+  "version": "2.8.3",
   "description": "V4V.app Value 4 Value Hive Lightning Bridge",
   "productName": "V4V App",
   "author": "Brian of London (Dot) <brian@v4v.app>",
@@ -22,6 +22,7 @@
     "@vueuse/core": "^14.4.0",
     "axios": "^1.19.0",
     "base-x": "^5.0.1",
+    "fast-uri": ">=3.1.5",
     "hive-auth-wrapper": "^1.0.0",
     "hive-tx": "7.2.0",
     "hive-uri": "0.2.8",
@@ -38,8 +39,7 @@
     "vue-confetti-explosion": "^1.0.2",
     "vue-i18n": "^11.4.8",
     "vue-qrcode-reader": "^5.6.0",
-    "vue-router": "^5.2.0",
-    "fast-uri": ">=3.1.5"
+    "vue-router": "^5.2.0"
   },
   "devDependencies": {
     "@intlify/unplugin-vue-i18n": "^11.2.4",
@@ -50,6 +50,7 @@
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.10.0",
+    "fast-uri": ">=3.1.5",
     "globals": "^17.8.0",
     "postcss": "^8.5.25",
     "prettier": "^3.9.6",
@@ -63,8 +64,7 @@
     "workbox-expiration": "^6.6.0",
     "workbox-precaching": "^6.6.0",
     "workbox-routing": "^6.6.0",
-    "workbox-strategies": "^6.6.0",
-    "fast-uri": ">=3.1.5"
+    "workbox-strategies": "^6.6.0"
   },
   "engines": {
     "node": ">=20",
