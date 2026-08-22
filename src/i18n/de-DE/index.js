@@ -30,7 +30,7 @@ export default {
   no: 'Nein',
   all: 'Alles',
   keepsats: 'KeepSats',
-  cannot_send_to_self: 'You can\'t send to yourself',
+  cannot_send_to_self: 'Du kannst nicht an dich selbst senden',
   // Error
   expired_login: 'Dein Login ist abgelaufen',
   need_to_logout_login: 'Du musst dich abmelden und erneut anmelden',
@@ -267,10 +267,10 @@ Für die Umwandlung von Sats in Hive oder HBD fällt eine Gebühr an.`,
   store_safely: 'Speichern Sie das Master-Passwort sicher in einem Passwort-Manager.',
   no_forgot_option: 'Es gibt keine "Ich habe meine Schlüssel vergessen" auf Hive.',
   api_status_label: 'API:',
-  gateway_status_label: 'Gateway:',
-  gateway_status_open: 'OPEN',
-  gateway_status_closed: 'CLOSED',
-  gateway_status_unknown: 'Unknown',
+  gateway_status_label: 'Schnittstelle:',
+  gateway_status_open: 'Offen',
+  gateway_status_closed: 'GESCHLOSSEN',
+  gateway_status_unknown: 'Unbekannt',
   gateway_direction_hive_to_lightning: 'Hive → Lightning',
   gateway_direction_lightning_to_hive: 'Lightning → Hive'
 };
