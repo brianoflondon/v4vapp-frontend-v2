@@ -265,5 +265,12 @@ export default {
   recommendation: 'Recommendation:',
   put_into_keychain: 'Put Username and Master Password direct into Hive Keychain.',
   store_safely: 'Store the master password safely in a Password manager.',
-  no_forgot_option: 'There is no "I forgot my keys option" on Hive.'
+  no_forgot_option: 'There is no "I forgot my keys option" on Hive.',
+  api_status_label: 'API:',
+  gateway_status_label: 'Gateway:',
+  gateway_status_open: 'OPEN',
+  gateway_status_closed: 'CLOSED',
+  gateway_status_unknown: 'Unknown',
+  gateway_direction_hive_to_lightning: 'Hive → Lightning',
+  gateway_direction_lightning_to_hive: 'Lightning → Hive'
 };
