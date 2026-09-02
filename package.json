@@ -5,6 +5,7 @@
   "productName": "V4V App",
   "author": "Brian of London (Dot) <brian@v4v.app>",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@11.18.0+sha512.33d83c77da82f49fba836925c6f1b841181ec3132b670639bd012f7075f5c7cf634c5f870147c19aae7478fac01df09d8892e880454896edd23ee9b33757563c",
   "scripts": {
     "lint": "eslint .",
@@ -12,13 +13,15 @@
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
     "build": "quasar build",
+    "build:pwa": "quasar build -m pwa",
+    "prepare:quasar": "quasar prepare",
     "patch": "pnpm version patch && git push --follow-tags"
   },
   "dependencies": {
     "@github/webauthn-json": "^2.1.1",
     "@hiveio/dhive": "^1.3.6",
-    "@quasar/cli": "5.0.4",
-    "@quasar/extras": "^2.0.2",
+    "@quasar/cli": "5.0.7",
+    "@quasar/extras": "^2.0.4",
     "@vueuse/core": "^14.4.0",
     "axios": "^1.19.0",
     "base-x": "^5.0.1",
@@ -31,8 +34,7 @@
     "pinia": "^4.0.2",
     "qr-code-styling": "1.9.2",
     "qrcode": "^1.5.3",
-    "quasar": "2.23.3",
-    "register-service-worker": "^1.7.2",
+    "quasar": "2.28.0",
     "sats-connect": "4.2.1",
     "uuid": "^14.0.1",
     "vue": "^3.5.40",
@@ -43,10 +45,9 @@
   },
   "devDependencies": {
     "@intlify/unplugin-vue-i18n": "^11.2.4",
-    "@quasar/app-vite": "2.4.1",
+    "@quasar/app-vite": "3.8.1",
     "@types/qrcode": "1.5.6",
     "autoprefixer": "^10.5.4",
-    "dotenv": "^17.4.2",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.10.0",
@@ -56,18 +57,12 @@
     "prettier": "^3.9.6",
     "sass": "^1.100.0",
     "typescript": "^5.9.3",
-    "vite": "^7.3.2",
-    "vue-eslint-parser": "10.4.1",
-    "workbox-build": "^6.6.0",
-    "workbox-cacheable-response": "^6.6.0",
-    "workbox-core": "^6.6.0",
-    "workbox-expiration": "^6.6.0",
-    "workbox-precaching": "^6.6.0",
-    "workbox-routing": "^6.6.0",
-    "workbox-strategies": "^6.6.0"
+    "vite": "^8.2.1",
+    "vite-plugin-node-polyfills": "^0.28.0",
+    "vue-eslint-parser": "10.4.1"
   },
   "engines": {
-    "node": ">=20",
+    "node": ">=22",
     "pnpm": ">=11"
   }
 }

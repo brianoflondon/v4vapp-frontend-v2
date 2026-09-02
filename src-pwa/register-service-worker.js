@@ -7,7 +7,7 @@ import { version } from "../package.json"
 // ServiceWorkerRegistration: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration
 
 // change
-register(process.env.SERVICE_WORKER_FILE, {
+register(import.meta.env.QUASAR_SERVICE_WORKER_FILE, {
   // The registrationOptions object will be passed as the second argument
   // to ServiceWorkerContainer.register()
   // https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/register#Parameter

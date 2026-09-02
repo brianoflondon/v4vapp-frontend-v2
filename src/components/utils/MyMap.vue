@@ -9,10 +9,9 @@ import "leaflet-search";
 import "leaflet/dist/leaflet.css";
 import "leaflet-search/dist/leaflet-search.min.css";
 
-L.Icon.Default.imagePath =
-  process.env.NODE_ENV === "production"
-    ? "/images/leaflet/"
-    : "/node_modules/leaflet/dist/images/";
+L.Icon.Default.imagePath = import.meta.env.QUASAR_PROD
+  ? "/images/leaflet/"
+  : "/node_modules/leaflet/dist/images/";
 
 const mapContainer = ref(null);
 let mymap = null;

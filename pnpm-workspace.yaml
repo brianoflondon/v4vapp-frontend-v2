@@ -1,4 +1,5 @@
 # pnpm 11+ reads settings from this file (not package.json "pnpm" / most .npmrc keys).
+# https://pnpm.io/settings
 allowBuilds:
   '@parcel/watcher': false
   core-js: false
@@ -6,6 +7,9 @@ allowBuilds:
   sass: true
   sass-embedded: true
   esbuild: true
+  lightningcss: true
+  rolldown: true
+  unrs-resolver: true
   secp256k1: false
 blockExoticSubdeps: true
 minimumReleaseAge: 1440
@@ -14,18 +18,12 @@ strictDepBuilds: true
 trustPolicy: no-downgrade
 # Known false positives: older majors republished without trusted-publisher
 # evidence after newer majors already had stronger trust (publish-date based).
-# Required by workbox-build@6 / hive stack / transitive semver ranges.
 trustPolicyExclude:
-  - 'rollup@2.80.0'
   - '@noble/secp256k1@1.7.2'
   - 'semver@6.3.1'
-# Moved from package.json "pnpm.overrides" (ignored by pnpm 11+).
+# Keep the JS sass implementation in place of sass-embedded (macOS 13 native binary crashes).
 overrides:
-  esbuild: 0.19.12
-  '@esbuild/darwin-x64': 0.19.12
-  '@esbuild/darwin-arm64': 0.19.12
-  lightningcss: 1.22.1
   sass-embedded: npm:sass@1.100.0
-# Moved from .npmrc (pnpm 11+ only uses .npmrc for auth/registry).
+# Kept for hive / older packages that still expect a flattened node_modules.
 shamefullyHoist: true
 strictPeerDependencies: false
