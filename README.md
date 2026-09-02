@@ -61,7 +61,10 @@ As I progress I plan to put this in to the DHF as a new self contained project. 
 
 ```bash
 pnpm install
+pnpm --dir src-pwa install
 ```
+
+PWA-mode dependencies (Workbox, `register-service-worker`) live in `/src-pwa` and need that second install. Docker already does both.
 
 If your install is blocked by pnpm with `ERR_PNPM_TRUST_DOWNGRADE` (current workspace policy is strict), use a scoped one-time exception:
 
@@ -97,4 +100,4 @@ quasar build
 
 ### Customize the configuration
 
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-file).

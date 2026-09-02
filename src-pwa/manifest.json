@@ -1,4 +1,7 @@
 {
+  "name": "V4V.app",
+  "short_name": "V4V.app",
+  "description": "V4V.app Hive Lightning Bridge",
   "orientation": "portrait",
   "background_color": "#dddddd",
   "theme_color": "#027be3",
