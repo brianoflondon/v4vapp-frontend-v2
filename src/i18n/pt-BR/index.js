@@ -268,9 +268,9 @@ Você pode armazenar uma pequena quantia de Sats no V4V.app: seu saldo KeepSats.
   no_forgot_option: 'Não existe a opção "Esqueci Minha Senha" na Hive.',
   api_status_label: 'API:',
   gateway_status_label: 'Gateway:',
-  gateway_status_open: 'OPEN',
-  gateway_status_closed: 'CLOSED',
-  gateway_status_unknown: 'Unknown',
+  gateway_status_open: 'ABERTO',
+  gateway_status_closed: 'FECHADO',
+  gateway_status_unknown: 'DESCONHECIDO',
   gateway_direction_hive_to_lightning: 'Hive → Lightning',
   gateway_direction_lightning_to_hive: 'Lightning → Hive'
 };
