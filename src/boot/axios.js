@@ -1,4 +1,4 @@
-import { boot } from "quasar/wrappers"
+import { defineBoot } from "#q-app"
 import axios from "axios"
 import { authDebug, authWarn, authError } from "src/utils/authDebug"
 
@@ -14,7 +14,8 @@ import { authDebug, authWarn, authError } from "src/utils/authDebug"
 // API base URL selection (build-time .env + runtime page host)
 //
 // VUE_APP_LOCAL_API (from .env; @quasar/app-vite may inject true/false as
-// real booleans, not strings — always compare both forms):
+// real booleans, not strings — always compare both forms).
+// Read via import.meta.env (app-vite v3); clientPrefix includes VUE_APP_*:
 //   true  → always http://localhost:1818
 //   false → never local, even when the app is served from localhost/LAN
 //   unset → local only if the page host looks like localhost/LAN
@@ -30,12 +31,12 @@ import { authDebug, authWarn, authError } from "src/utils/authDebug"
 //   VUE_APP_DEV_API=true
 // ---------------------------------------------------------------------------
 
-// Helper: app-vite v2 injects "true"/"false" env values as bare booleans
+// Helper: app-vite may inject "true"/"false" env values as bare booleans
 const envIsTrue = (val) => val === true || val === "true"
 const envIsFalse = (val) => val === false || val === "false"
 
-const localApiEnv = process.env.VUE_APP_LOCAL_API
-const devApiEnv = process.env.VUE_APP_DEV_API
+const localApiEnv = import.meta.env.VUE_APP_LOCAL_API
+const devApiEnv = import.meta.env.VUE_APP_DEV_API
 
 const isLocalhost =
   window.location.href.includes("localhost") ||
@@ -320,7 +321,7 @@ const refreshInterceptor = async (error) => {
 api.interceptors.response.use((response) => response, refreshInterceptor)
 apiLogin.interceptors.response.use((response) => response, refreshInterceptor)
 
-export default boot(({ app }) => {
+export default defineBoot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
 
   app.config.globalProperties.$axios = axios

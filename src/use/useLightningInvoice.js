@@ -1,5 +1,4 @@
 import { api } from "boot/axios"
-import { store } from "quasar/wrappers"
 import * as bolt11 from "src/assets/bolt11.min.js"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"

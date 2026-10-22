@@ -11,12 +11,14 @@ ARG PNPM_VERSION
 WORKDIR /app
 # Copy dependency manifests (pnpm-workspace.yaml holds overrides/settings for pnpm 11+)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY src-pwa/package.json src-pwa/pnpm-workspace.yaml src-pwa/pnpm-lock.yaml ./src-pwa/
 
 # Enable Corepack and activate a pinned pnpm version
 RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
-# Install dependencies using pnpm
-RUN pnpm install --frozen-lockfile
+# Install root deps, then isolated PWA-mode deps under /src-pwa
+RUN pnpm install --frozen-lockfile \
+  && cd src-pwa && pnpm install --frozen-lockfile
 
 
 # Copy the rest of the application code
