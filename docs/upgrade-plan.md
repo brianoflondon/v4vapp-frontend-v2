@@ -82,4 +82,38 @@
 
 - eslint 9 → 10 (9.x is already deprecated; 10 is a new major)
 - TypeScript 5 → 7 (this repo is JS-first; no urgent need)
+- `@vueuse/core` 14 → 15 (new major)
 - `@github/webauthn-json` is deprecated in favor of native WebAuthn JSON methods
+- `elliptic@6.6.1` (low) has no published patched release. It arrives through `@hiveio/dhive` and the Node crypto polyfill.
+- `braces@3.0.4` is the advisory fix, but that version is not on npm.
+
+---
+
+## Completed — 2026-10-22 (security + current 2.x)
+
+Audit before this pass: 47 high, 34 moderate, 5 low. After: 1 low (`elliptic`, no patched release).
+
+### Direct upgrades
+
+| Package                    | Before   | After   |
+| -------------------------- | -------- | ------- |
+| quasar                     | 2.28.0   | 2.35.2  |
+| @quasar/app-vite           | 3.8.1    | 3.10.3  |
+| @quasar/cli                | 5.0.7    | 5.0.9   |
+| @quasar/extras             | 2.0.4    | 2.1.0   |
+| vite                       | 8.2.2    | 8.3.4   |
+| vue                        | 3.5.40   | 3.5.44  |
+| vue-router                 | 5.2.0    | 5.4.0   |
+| pinia                      | 4.0.2    | 4.1.0   |
+| vue-i18n                   | 11.4.8   | 11.4.16 |
+| axios                      | 1.19.0   | 1.20.0  |
+| sass                       | 1.100.0  | 1.106.0 |
+| hive-tx                    | 7.2.0    | 7.2.2   |
+
+`vite@8.3.5` and `sass@1.106.1` were skipped because they were younger than `minimumReleaseAge` (1440 minutes).
+
+### Transitive security overrides
+
+`sats-connect@4.2.1` (latest stable) still pins `axios@1.12.0` and `valibot@1.1.0`. `hive-auth-wrapper` still pins `uuid@8.3.2`. `pnpm-workspace.yaml` overrides force the patched releases: axios 1.20.0, valibot 1.5.0, uuid 14.0.3, plus form-data, follow-redirects, fast-uri, nanoid, js-yaml, brace-expansion, immutable, source-map-js, pbkdf2, postcss-selector-parser, serialize-javascript, and hono.
+
+The `sass-embedded` override moved from `npm:sass@1.100.0` to `npm:sass@1.106.0` so the JS Sass implementation stays in place on macOS 13.
