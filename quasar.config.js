@@ -168,11 +168,6 @@ export default defineConfig(function (ctx) {
       swFilename: "sw.js",
       manifestFilename: "manifest.json",
       useCredentialsForManifestTag: false,
-      extendPWAManifestJson(json) {
-        json.name = "V4V.app"
-        json.short_name = "V4V.app"
-        json.description = "V4V.app Hive Lightning Bridge"
-      },
     },
 
     cordova: {},
