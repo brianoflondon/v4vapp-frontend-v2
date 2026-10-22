@@ -263,7 +263,7 @@ export default {
   account_created: 'Your Account has been created',
   last_chance: 'This is the last chance to save your keys!',
   recommendation: 'Recommendation:',
-  put_into_keychain: 'Put Username and Master Password direct into Hive Keychain.',
+  put_into_keychain: 'Put Username and Master Password directly into Hive Keychain.',
   store_safely: 'Store the master password safely in a Password manager.',
   no_forgot_option: 'There is no "I forgot my keys" option on Hive.',
   api_status_label: 'API:',
