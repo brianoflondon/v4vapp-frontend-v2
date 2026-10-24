@@ -1,7 +1,20 @@
 import { api } from "boot/axios"
-import * as bolt11 from "src/assets/bolt11.min.js"
+import * as bolt11Module from "src/assets/bolt11.min.js"
 import { useStoreAPIStatus } from "src/stores/storeAPIStatus"
 import { useStoreUser } from "src/stores/storeUser"
+
+// bolt11.min.js is a UMD build. Vite treats it as CommonJS, so it assigns
+// module.exports and never creates the old window.lightningPayReq global.
+function bolt11Api() {
+  if (typeof bolt11Module.decode === "function") return bolt11Module
+  if (typeof bolt11Module.default?.decode === "function") {
+    return bolt11Module.default
+  }
+  if (typeof globalThis.lightningPayReq?.decode === "function") {
+    return globalThis.lightningPayReq
+  }
+  return null
+}
 
 const getStoreAPIStatus = () => useStoreAPIStatus()
 const getStoreUser = () => useStoreUser()
@@ -261,8 +274,9 @@ export function extractPubKeys(data) {
 async function bolt11Decode(invoice) {
   // Decode invoice using local bolt11 library
   try {
-    const decodedInvoice = await lightningPayReq.decode(invoice)
-    return decodedInvoice
+    const decoder = bolt11Api()
+    if (!decoder) return null
+    return decoder.decode(invoice)
   } catch (error) {
     return null
   }

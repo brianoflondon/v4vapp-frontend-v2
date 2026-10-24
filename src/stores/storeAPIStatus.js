@@ -32,35 +32,36 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
 
   getters: {
     bitcoin: (state) => {
-      return state.apiStatus ? state.apiStatus.crypto.fmt.bitcoin : "💰💰💰"
+      return state.apiStatus?.crypto?.fmt?.bitcoin ?? "💰💰💰"
     },
     hive: (state) => {
-      return state.apiStatus ? state.apiStatus.crypto.fmt.hive : "💰💰"
+      return state.apiStatus?.crypto?.fmt?.hive ?? "💰💰"
     },
     hbd: (state) => {
-      return state.apiStatus ? state.apiStatus.crypto.fmt.hbd : "💰💰"
+      return state.apiStatus?.crypto?.fmt?.hbd ?? "💰💰"
     },
     hiveSats: (state) => {
-      if (!state.apiStatus) return "💰💰💰"
-      return tidyNumber(
-        (state.apiStatus.crypto.hive.btc * 100000000).toFixed(0),
-        0,
-      )
+      const btc = state.apiStatus?.crypto?.hive?.btc
+      if (btc == null || Number.isNaN(Number(btc))) return "💰💰💰"
+      return tidyNumber((Number(btc) * 100000000).toFixed(0), 0)
     },
     hiveHBDNumber: (state) => {
-      return state.apiStatus
-        ? state.apiStatus.crypto.v4vapp.Hive_HBD.toFixed(5)
-        : null
+      const hiveHbd = state.apiStatus?.crypto?.v4vapp?.Hive_HBD
+      return hiveHbd == null || Number.isNaN(Number(hiveHbd))
+        ? null
+        : Number(hiveHbd).toFixed(5)
     },
     hiveSatsNumber: (state) => {
-      return state.apiStatus
-        ? state.apiStatus.crypto.hive.btc * 100000000
-        : null
+      const btc = state.apiStatus?.crypto?.hive?.btc
+      return btc == null || Number.isNaN(Number(btc))
+        ? null
+        : Number(btc) * 100000000
     },
     HBDSatsNumber: (state) => {
-      return state.apiStatus
-        ? state.apiStatus.crypto.hive_dollar.btc * 100000000
-        : null
+      const btc = state.apiStatus?.crypto?.hive_dollar?.btc
+      return btc == null || Number.isNaN(Number(btc))
+        ? null
+        : Number(btc) * 100000000
     },
     hiveFeeNumber: (state) => {
       return state.apiStatus ? state.hiveSatsNumber * state.conv_fee_sats : null
@@ -69,10 +70,13 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
       return state.apiStatus ? state.HBDSatsNumber * state.conv_fee_sats : null
     },
     hiveBTCNumber: (state) => {
-      return state.apiStatus ? state.apiStatus.crypto.hive.btc : null
+      const btc = state.apiStatus?.crypto?.hive?.btc
+      return btc == null || Number.isNaN(Number(btc)) ? null : Number(btc)
     },
     prices: (state) => {
-      return state.apiStatus ? state.apiStatus.crypto : "fetching prices"
+      return state.apiStatus?.crypto?.fmt
+        ? state.apiStatus.crypto
+        : "fetching prices"
     },
     gatewayClosedGetLnd: (state) => {
       if (!state.hiveConfig) return null
@@ -204,9 +208,20 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
           params: { get_crypto: true },
         })
         this.fetchTimestamp = Date.now()
-        this.apiStatus = res.data
+        const data =
+          res.data && typeof res.data === "object" ? { ...res.data } : {}
+        const formatted = prettyPrices(data.crypto)
+        if (formatted) {
+          data.crypto = formatted
+        } else if (this.apiStatus?.crypto?.fmt) {
+          console.warn("Cryptoprices missing; keeping the last prices")
+          data.crypto = this.apiStatus.crypto
+        } else {
+          console.warn("Cryptoprices missing")
+          data.crypto = null
+        }
+        this.apiStatus = data
         this.apiError = null
-        this.apiStatus.crypto = prettyPrices(this.apiStatus.crypto)
         console.log("API status updated:", this.apiStatus)
       } catch (err) {
         let age = (Date.now() - this.fetchTimestamp) / 1000
@@ -274,14 +289,22 @@ export const useStoreAPIStatus = defineStore("storeAPIStatus", {
 })
 
 function prettyPrices(prices) {
-  //
-  const bitcoin = tidyNumber(prices.bitcoin.usd.toFixed(0), 0)
-  const hive = tidyNumber(prices.hive.usd.toFixed(2))
-  const hbd = tidyNumber(prices.hive_dollar.usd.toFixed(2))
-  prices.fmt = {
-    bitcoin: bitcoin,
-    hive: hive,
-    hbd: hbd,
+  const bitcoinUsd = Number(prices?.bitcoin?.usd)
+  const hiveUsd = Number(prices?.hive?.usd)
+  const hbdUsd = Number(prices?.hive_dollar?.usd)
+  if (
+    !Number.isFinite(bitcoinUsd) ||
+    !Number.isFinite(hiveUsd) ||
+    !Number.isFinite(hbdUsd)
+  ) {
+    return null
   }
-  return prices
+  return {
+    ...prices,
+    fmt: {
+      bitcoin: tidyNumber(bitcoinUsd.toFixed(0), 0),
+      hive: tidyNumber(hiveUsd.toFixed(2)),
+      hbd: tidyNumber(hbdUsd.toFixed(2)),
+    },
+  }
 }
