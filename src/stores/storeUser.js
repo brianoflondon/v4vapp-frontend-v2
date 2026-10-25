@@ -7,7 +7,13 @@ import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
 import { useShortEVMAddress } from "src/use/useEVM.js"
 import { apiLogin, api, refreshAccessToken } from "src/boot/axios"
-import { readAllowedUsers } from "src/utils/authSession"
+import {
+  parseStoredClientId,
+  pickSessionUser,
+  readAllowedUsers,
+  readStoredClientId,
+  refreshCookieIsDead,
+} from "src/utils/authSession"
 import { useKeepSats } from "src/use/useV4vapp"
 import { Notify } from "quasar"
 import { i18n } from "boot/i18n"
@@ -17,6 +23,12 @@ authDebug(">>> NEW storeUser.js MODULE LOADED <<<")
 
 const getStoreAPIStatus = () => useStoreAPIStatus()
 const getStoreCoingecko = () => useCoingeckoStore()
+
+function initialClientId() {
+  const existing = readStoredClientId()
+  if (typeof existing === "string") return existing
+  return generateUUID()
+}
 
 export class HiveUser {
   /**
@@ -175,8 +187,19 @@ export const useStoreUser = defineStore("useStoreUser", {
     sessionAccounts: useStorage("sessionAccounts", []),
 
     pos: useStorage("pos", { receiveCurrency: "hbd" }),
-    clientId: useStorage("clientId", generateUUID()),
+    // Raw string, same as VueUse's string serializer. A JSON-quoted value
+    // still reads back as the original id so a new one is not minted.
+    clientId: useStorage("clientId", initialClientId(), globalThis.localStorage, {
+      serializer: {
+        read: (raw) => parseStoredClientId(raw) || "",
+        write: (value) => (value == null ? "" : String(value)),
+      },
+    }),
     dataLoading: useStorage("dataLoading", false),
+
+    // checking until GET /auth/session returns. The login form stays hidden
+    // until that call says the cookie is missing (absent) or valid (active).
+    authSessionState: "checking",
 
     // IMPORTANT: accessTokens is deliberately NOT persisted.
     // With the new short-lived + HttpOnly refresh cookie model, we no longer store
@@ -630,17 +653,117 @@ export const useStoreUser = defineStore("useStoreUser", {
       // sessionAccounts is whatever the server last reported (allowed_users /
       // session_users). Do not seed it from every persisted user — those accounts
       // are not necessarily on this browser's refresh cookie.
+      // The cookie is asked first. An empty localStorage is not "logged out"
+      // until GET /auth/session returns 401.
+      return this.restoreSessionFromCookie()
+    },
 
-      // Note: The old aggressive ensureAccessToken + updateSatsBalance on initialize
-      // is being reduced as part of the simplification. We still want fresh data,
-      // but we will request it more deliberately per currentUser.
-      // For now we keep a lightweight kick for the current user.
-      if (
-        this.currentUser &&
-        this.isAccountInCurrentSession(this.currentUser)
-      ) {
-        this.update().catch(() => {})
+    /**
+     * Write users, currentUser, and clientId now. iOS can kill the Home
+     * Screen app before an unload handler flushes storage.
+     * Skips the write when storage cannot be read.
+     */
+    persistAuthIdentity() {
+      if (readStoredClientId() === undefined) return
+      try {
+        const users = {}
+        for (const [name, user] of Object.entries(this.users || {})) {
+          const plain = user?.toJSON ? user.toJSON() : { ...(user || {}) }
+          // Passkey and HAS access tokens stay in memory. Keychain accounts
+          // keep the short apiToken so a new tab can still show a balance.
+          if (plain?.authKey) {
+            plain.apiToken = null
+            plain.token = null
+            if (user) user.apiToken = null
+          }
+          users[name] = plain
+        }
+        // Match VueUse: users is JSON, currentUser and clientId are raw strings.
+        localStorage.setItem("users", JSON.stringify(users))
+        if (this.currentUser) {
+          localStorage.setItem("currentUser", String(this.currentUser))
+        } else {
+          localStorage.removeItem("currentUser")
+        }
+        if (this.clientId) {
+          localStorage.setItem("clientId", String(this.clientId))
+        }
+      } catch {
+        authWarn("Could not persist auth identity")
       }
+    },
+
+    /**
+     * Ask the refresh cookie who is logged in, then mint an access token.
+     * Does not require a saved user, a saved sessionAccounts list, or an
+     * access token. One call is shared if boot and resume overlap.
+     * @returns {Promise<boolean>} true when the cookie session was applied
+     */
+    restoreSessionFromCookie() {
+      if (this._sessionRestoreFlight) return this._sessionRestoreFlight
+      this._sessionRestoreFlight = this._restoreSessionFromCookie().finally(
+        () => {
+          this._sessionRestoreFlight = null
+        },
+      )
+      return this._sessionRestoreFlight
+    },
+
+    async _restoreSessionFromCookie() {
+      this.authSessionState = "checking"
+      this.dataLoading = true
+      try {
+        const response = await apiLogin.get("/auth/session", {
+          withCredentials: true,
+        })
+        const names = readAllowedUsers(response?.data)
+        if (!names) {
+          authDebug("GET /auth/session had no allowed_users")
+          this.authSessionState = this.currentUser ? "active" : "absent"
+          return false
+        }
+        this.sessionAccounts = names
+        for (const name of names) {
+          this.clearReauthNeeded(name)
+          if (!this.users[name]) {
+            this.users[name] = new HiveUser(
+              name,
+              name,
+              "posting",
+              Date.now(),
+              null,
+              null,
+              null,
+              null,
+              "hive",
+            )
+          }
+        }
+        const hinted = response?.data?.current
+        this.currentUser = pickSessionUser(names, this.currentUser, hinted)
+        this.authSessionState = "active"
+        this.persistAuthIdentity()
+      } catch (error) {
+        const status = error?.response?.status
+        if (status === 401) {
+          this.authSessionState = "absent"
+          return false
+        }
+        authDebug(
+          "GET /auth/session failed",
+          status || error?.message || "request failed",
+        )
+        this.authSessionState = this.currentUser ? "active" : "absent"
+        return false
+      } finally {
+        this.dataLoading = false
+      }
+
+      if (!this.currentUser) return true
+      // The cookie is enough. No saved access token is required.
+      await this.ensureAccessToken(this.currentUser)
+      this.update().catch(() => {})
+      return true
     },
     /**
      * Updates the user details and profile.
@@ -728,8 +851,10 @@ export const useStoreUser = defineStore("useStoreUser", {
         try {
           answer = await useKeepSats(useCache, false)
           if (answer?.detail === "Could not validate credentials") {
-            authWarn("Need to log out")
-            this.logout()
+            authWarn("Access token rejected; account needs re-add")
+            this.markReauthNeeded(this.currentUser)
+            delete this.accessTokens[this.currentUser]
+            this.clearAuthHeaders()
             return false
           }
         } catch (err) {
@@ -887,6 +1012,8 @@ export const useStoreUser = defineStore("useStoreUser", {
           this.currentDetails = hiveDetails
           this.currentProfile = hiveDetails.profile
         }
+        this.authSessionState = "active"
+        this.persistAuthIdentity()
         this.update()
       } catch (err) {
         authError(err)
@@ -914,6 +1041,7 @@ export const useStoreUser = defineStore("useStoreUser", {
           }
 
           this.currentUser = hiveAccname
+          this.persistAuthIdentity()
           // Immediately clear stale balance data from the previous user.
           this.currentKeepSats = null
           this.apiTokenSet(hiveAccname)
@@ -1013,6 +1141,9 @@ export const useStoreUser = defineStore("useStoreUser", {
      * sessionAccounts. It does not log the account out. While reauthNeeded
      * is set, this returns without posting /auth/refresh again.
      *
+     * A name is enough. This does not require an existing access token or
+     * a previously saved sessionAccounts entry.
+     *
      * Called from update() and switchUser().
      */
     async ensureAccessToken(hiveAccname = null) {
@@ -1072,7 +1203,13 @@ export const useStoreUser = defineStore("useStoreUser", {
         )
         // 401 means this account is not on the refresh session. Keep the
         // saved user and ask them to re-add. Do not log them out.
-        if (status === 401) this.noteRefreshRefused(target)
+        if (status === 401) {
+          if (refreshCookieIsDead(e?.response?.data?.detail)) {
+            this.noteRefreshCookieDead()
+          } else {
+            this.noteRefreshRefused(target)
+          }
+        }
       }
       return null
     },
@@ -1285,6 +1422,26 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveAccname) return
       this.markReauthNeeded(hiveAccname)
       this.removeAccountFromSession(hiveAccname)
+    },
+
+    /**
+     * The refresh cookie is missing, revoked, or expired.
+     * Mark every saved account once and stop refreshing. Do not call
+     * logout or POST /auth/logout — that storms one logout per account
+     * and cannot clear a cookie the browser is not storing.
+     */
+    noteRefreshCookieDead() {
+      const names = new Set(
+        [...(this.sessionAccounts || []), ...Object.keys(this.users || {})].filter(
+          Boolean,
+        ),
+      )
+      for (const name of names) {
+        this.markReauthNeeded(name)
+        delete this.accessTokens[name]
+      }
+      this.sessionAccounts = []
+      if (this.currentUser) this.clearAuthHeaders()
     },
 
     /**

@@ -67,26 +67,17 @@ export async function useKeepSats(
     })
     return resp.data
   } catch (error) {
-    console.error("useKeepSats", error)
-    const t = i18n.global.t
+    console.error(
+      "useKeepSats",
+      error?.response?.status || error?.message || "request failed",
+    )
     const detail = error?.response?.data?.detail
     if (
       detail === "Hive Key authorization failure" ||
       detail === "Could not validate credentials"
     ) {
-      Notify.create({
-        message: t("need_to_logout_login"),
-        color: "negative",
-        position: "center",
-        timeout: 0,
-        actions: [
-          {
-            label: t("ok"),
-            color: "white",
-            handler: () => {},
-          },
-        ],
-      })
+      // The account stays. CreditCard shows tap-to-re-add. Do not ask the
+      // user to log out, and do not POST /auth/logout from here.
       return error?.response?.data || null
     } else {
       const isNetworkError =

@@ -38,6 +38,72 @@ function normalizeAccountList(raw) {
 }
 
 /**
+ * Pick API bases.
+ *
+ * On v4v.app and dev.v4v.app the API is same-origin under `/api` (Traefik
+ * strips that prefix). The refresh cookie is then host-only on the SPA.
+ * A localhost page keeps talking to the API process, or to devapi when local
+ * mode is off and the dev API flag is on.
+ *
+ * @param {{ href?: string, localApiEnv?: unknown, devApiEnv?: unknown }} input
+ * @returns {{ apiURL: string, apiLoginURL: string, useLocal: boolean, useDev: boolean }}
+ */
+export function resolveApiBases({ href, localApiEnv, devApiEnv } = {}) {
+  const page = String(href || "")
+  const envIsTrue = (val) => val === true || val === "true"
+  const envIsFalse = (val) => val === false || val === "false"
+  const isLocalhost =
+    page.includes("localhost") ||
+    page.includes("127.0.") ||
+    page.includes("192.168") ||
+    page.includes("10.0")
+  const useLocal = envIsFalse(localApiEnv)
+    ? false
+    : envIsTrue(localApiEnv) || isLocalhost
+  const isDevHost = page.includes("dev.v4v.app")
+  const useDev = isDevHost || envIsTrue(devApiEnv)
+  const onSpaHost =
+    page.includes("://dev.v4v.app") ||
+    page.includes("://www.v4v.app") ||
+    page.includes("://v4v.app")
+
+  if (useLocal) {
+    return {
+      apiURL: "http://localhost:1818/v1",
+      apiLoginURL: "http://localhost:1818/",
+      useLocal,
+      useDev,
+    }
+  }
+  // Same-origin whenever the page is the SPA, and for a production build
+  // that is not pointed at the dev API. Localhost + dev API stays absolute
+  // because the Quasar dev server is not the Traefik `/api` route.
+  if (onSpaHost || !useDev) {
+    return {
+      apiURL: "/api/v1",
+      apiLoginURL: "/api/",
+      useLocal,
+      useDev,
+    }
+  }
+  return {
+    apiURL: "https://devapi.v4v.app/v1",
+    apiLoginURL: "https://devapi.v4v.app/",
+    useLocal,
+    useDev,
+  }
+}
+
+/**
+ * Refresh 401 that means the cookie itself is missing, revoked, or expired.
+ * "Requested account is not on this session" is a different, per-account case.
+ * @param {unknown} detail
+ */
+export function refreshCookieIsDead(detail) {
+  return detail === "Invalid or expired refresh token"
+}
+
+/**
  * Paths that must send the HttpOnly refresh cookie so a second login joins
  * the existing session instead of replacing it.
  */
@@ -47,7 +113,58 @@ const CREDENTIALED_AUTH_PATHS = new Set([
   "/auth/validate",
   "/auth/refresh",
   "/auth/logout",
+  "/auth/session",
 ])
+
+/**
+ * clientId is stored as a raw string. A JSON-quoted value is accepted so
+ * an older write does not look like a different id.
+ * @param {string|null|undefined} raw
+ * @returns {string|null}
+ */
+export function parseStoredClientId(raw) {
+  if (raw == null || raw === "") return null
+  try {
+    const parsed = JSON.parse(raw)
+    if (typeof parsed === "string" && parsed.trim()) return parsed.trim()
+  } catch {
+    // A plain string was stored without JSON quotes.
+  }
+  return String(raw).trim() || null
+}
+
+/**
+ * Stored client id, or null when storage is readable and empty.
+ * undefined means storage could not be read, so the caller must not
+ * write a freshly generated id over a value it failed to see.
+ * @param {Storage} [storage]
+ * @returns {string|null|undefined}
+ */
+export function readStoredClientId(storage = globalThis.localStorage) {
+  try {
+    return parseStoredClientId(storage.getItem("clientId"))
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Persisted currentUser wins when that account is still on the cookie.
+ * Otherwise use the server's last-used account, then the first allowed name.
+ * @param {string[]} names
+ * @param {unknown} persisted
+ * @param {unknown} hinted
+ * @returns {string|null}
+ */
+export function pickSessionUser(names, persisted, hinted) {
+  const list = Array.isArray(names) ? names.filter((name) => typeof name === "string" && name) : []
+  const match = (wanted) => {
+    if (typeof wanted !== "string" || !wanted.trim()) return null
+    const fold = wanted.trim().toLowerCase()
+    return list.find((name) => name.toLowerCase() === fold) || null
+  }
+  return match(persisted) || match(hinted) || list[0] || null
+}
 
 export function requestSendsRefreshCookie(url) {
   const path = authPathname(url)

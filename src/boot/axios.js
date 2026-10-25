@@ -1,7 +1,17 @@
 import { defineBoot } from "#q-app"
 import axios from "axios"
 import { authDebug } from "src/utils/authDebug"
-import { requestSendsRefreshCookie } from "src/utils/authSession"
+import {
+  refreshCookieIsDead,
+  requestSendsRefreshCookie,
+  resolveApiBases,
+} from "src/utils/authSession"
+
+function isAuthSessionProbe(url) {
+  if (!url || typeof url !== "string") return false
+  const path = url.split("?")[0]
+  return path === "/auth/session" || path.endsWith("/auth/session")
+}
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -22,49 +32,33 @@ import { requestSendsRefreshCookie } from "src/utils/authSession"
 //   unset → local only if the page host looks like localhost/LAN
 //
 // VUE_APP_DEV_API:
-//   true  → https://devapi.v4v.app (unless local wins)
+//   true  → https://devapi.v4v.app when the page is not the SPA host
 //   also auto-enabled when the page host contains "dev.v4v.app"
 //
-// Priority: local :1818  >  devapi  >  production api
+// v4v.app and dev.v4v.app use relative /api so the refresh cookie is
+// first-party. Traefik strips /api and forwards to the API service.
+// Priority: local :1818  >  SPA /api  >  devapi (localhost pointed at dev)
 //
 // Example (.env) to force remote dev API while developing on localhost:
 //   VUE_APP_LOCAL_API=false
 //   VUE_APP_DEV_API=true
 // ---------------------------------------------------------------------------
 
-// Helper: app-vite may inject "true"/"false" env values as bare booleans
-const envIsTrue = (val) => val === true || val === "true"
-const envIsFalse = (val) => val === false || val === "false"
-
 const localApiEnv = import.meta.env.VUE_APP_LOCAL_API
 const devApiEnv = import.meta.env.VUE_APP_DEV_API
 
+const resolvedBases = resolveApiBases({
+  href: window.location.href,
+  localApiEnv,
+  devApiEnv,
+})
+const { apiURL, apiLoginURL, useLocal, useDev } = resolvedBases
 const isLocalhost =
   window.location.href.includes("localhost") ||
   window.location.href.includes("127.0") ||
   window.location.href.includes("192.168") ||
   window.location.href.includes("10.0")
-
-// Explicit false must win over isLocalhost (do not use `!== "false"` alone —
-// when Quasar injects boolean false, `false !== "false"` is true and would
-// incorrectly keep localhost).
-const useLocal = envIsFalse(localApiEnv)
-  ? false
-  : envIsTrue(localApiEnv) || isLocalhost
-
 const isDevHost = window.location.href.includes("dev.v4v.app")
-const useDev = isDevHost || envIsTrue(devApiEnv)
-
-const rootUrl = useDev ? "https://devapi.v4v.app/v1" : "https://api.v4v.app/v1"
-const rootLoginUrl = useDev ? "https://devapi.v4v.app/" : "https://api.v4v.app/"
-
-let apiURL = rootUrl
-let apiLoginURL = rootLoginUrl
-
-if (useLocal) {
-  apiURL = "http://localhost:1818/v1"
-  apiLoginURL = "http://localhost:1818/"
-}
 
 authDebug("API URL selection:", {
   localApiEnv,
@@ -212,7 +206,8 @@ export const refreshInterceptor = async (error) => {
     originalRequest &&
     !originalRequest._retry &&
     originalRequest.url !== "/auth/refresh" &&
-    originalRequest.url !== "/auth/logout"
+    originalRequest.url !== "/auth/logout" &&
+    !isAuthSessionProbe(originalRequest.url)
   ) {
     originalRequest._retry = true
 
@@ -306,11 +301,22 @@ export const refreshInterceptor = async (error) => {
         refreshError?.response?.status || refreshError?.message,
       )
 
-      // Per-account only. Never logoutAll / logoutUser from a refused refresh.
+      // Never logoutAll / logoutUser from a refused refresh.
+      // A dead cookie marks every account once. One account missing from
+      // an otherwise valid session is marked on its own.
       let affectedUser = null
       try {
         const { useStoreUser } = await import("src/stores/storeUser")
         const storeUser = useStoreUser()
+
+        if (
+          storeUser &&
+          refreshCookieIsDead(refreshError?.response?.data?.detail) &&
+          typeof storeUser.noteRefreshCookieDead === "function"
+        ) {
+          storeUser.noteRefreshCookieDead()
+          return Promise.reject(error)
+        }
 
         const authHeader =
           originalRequest?.headers?.Authorization ||

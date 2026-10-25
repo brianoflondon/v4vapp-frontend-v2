@@ -17,15 +17,32 @@ vi.mock("../src/use/useV4vapp.js", () => ({
 }))
 
 import { useHiveDetails } from "../src/use/useHive.js"
+import { useKeepSats } from "../src/use/useV4vapp.js"
 import {
   apiLogin,
   refreshInterceptor,
   serverHiveAccount,
 } from "../src/boot/axios.js"
-import { readAllowedUsers } from "../src/utils/authSession.js"
+import {
+  pickSessionUser,
+  readAllowedUsers,
+  readStoredClientId,
+  refreshCookieIsDead,
+  resolveApiBases,
+} from "../src/utils/authSession.js"
 import { useStoreUser } from "../src/stores/storeUser.js"
 
 const realApiLoginPost = apiLogin.post.bind(apiLogin)
+const realApiLoginGet = apiLogin.get.bind(apiLogin)
+
+function sessionUnauthorized() {
+  const error = new Error("Request failed with status code 401")
+  error.response = {
+    status: 401,
+    data: { detail: "Invalid or expired refresh token" },
+  }
+  return error
+}
 
 function fakeJwt(username) {
   const payload = btoa(JSON.stringify({ username }))
@@ -52,6 +69,15 @@ function refusedRefreshError() {
   error.response = {
     status: 401,
     data: { detail: "Requested account is not on this session" },
+  }
+  return error
+}
+
+function deadCookieError() {
+  const error = new Error("Request failed with status code 401")
+  error.response = {
+    status: 401,
+    data: { detail: "Invalid or expired refresh token" },
   }
   return error
 }
@@ -104,6 +130,10 @@ describe("multi-account refresh session", () => {
       headers: {},
       config,
     })
+    apiLogin.get = async (url, config) => {
+      if (String(url).includes("/auth/session")) throw sessionUnauthorized()
+      return realApiLoginGet(url, config)
+    }
   })
 
   it("keeps two accounts refreshable after logging in one after the other", async () => {
@@ -196,7 +226,9 @@ describe("multi-account refresh session", () => {
     expect(store.users["v4vapp.dev"]).toBeTruthy()
     expect(store.currentUser).toBe("v4vapp")
     expect(store.reauthNeeded["v4vapp"]).toBe(true)
+    expect(store.reauthNeeded["v4vapp.dev"]).toBeFalsy()
     expect([...store.sessionAccounts]).not.toContain("v4vapp")
+    expect([...store.sessionAccounts]).toContain("v4vapp.dev")
     expect(store.currentReauthNeeded).toBe(true)
   })
 
@@ -324,6 +356,11 @@ describe("multi-account refresh session", () => {
       const config = await handler.fulfilled({ url, method: "post" })
       expect(config.withCredentials).toBe(true)
     }
+    const session = await handler.fulfilled({
+      url: "/auth/session",
+      method: "get",
+    })
+    expect(session.withCredentials).toBe(true)
 
     const challenge = await handler.fulfilled({
       url: "/auth/v4vapp",
@@ -335,6 +372,7 @@ describe("multi-account refresh session", () => {
 
   it("sends the refresh cookie through the axios pipeline", async () => {
     apiLogin.post = realApiLoginPost
+    apiLogin.get = realApiLoginGet
     const seen = []
     apiLogin.defaults.adapter = async (config) => {
       seen.push({
@@ -355,9 +393,11 @@ describe("multi-account refresh session", () => {
     await apiLogin.post("/auth/validate/", { ok: true })
     await apiLogin.post("/auth/refresh", { for_user: "v4vapp" })
     await apiLogin.post("/auth/logout", { username: "v4vapp" })
+    await apiLogin.get("/auth/session")
     await apiLogin.get("/auth/v4vapp", { withCredentials: false })
 
     expect(seen.map((entry) => entry.withCredentials)).toEqual([
+      true,
       true,
       true,
       true,
@@ -643,5 +683,286 @@ describe("multi-account refresh session", () => {
       serverHiveAccount,
     )
     expect(usernameOf(store.accessTokens.v4vapp)).toBe("v4vapp")
+  })
+
+  it("marks every account once when the refresh cookie is dead and does not log out", async () => {
+    const store = useStoreUser()
+    await loginAccount(store, "v4vapp", ["v4vapp", "v4vapp.dev", "v4vapp-test"])
+    await loginAccount(store, "v4vapp.dev", ["v4vapp", "v4vapp.dev", "v4vapp-test"])
+    await loginAccount(store, "v4vapp-test", [
+      "v4vapp",
+      "v4vapp.dev",
+      "v4vapp-test",
+    ])
+    store.currentUser = "v4vapp"
+    store.accessTokens = {
+      v4vapp: fakeJwt("v4vapp"),
+      "v4vapp.dev": fakeJwt("v4vapp.dev"),
+      "v4vapp-test": fakeJwt("v4vapp-test"),
+    }
+    const logoutUser = vi.spyOn(store, "logoutUser")
+    const logout = vi.spyOn(store, "logout")
+    const logoutAll = vi.spyOn(store, "logoutAll")
+    installRefresh(() => {
+      throw deadCookieError()
+    })
+
+    await refreshInterceptor(make401("v4vapp")).catch(() => {})
+
+    expect(logoutUser).not.toHaveBeenCalled()
+    expect(logout).not.toHaveBeenCalled()
+    expect(logoutAll).not.toHaveBeenCalled()
+    expect(refreshCalls).toHaveLength(1)
+    expect(String(refreshCalls[0].url)).not.toContain("/auth/logout")
+    expect(refreshCalls[0].body).toEqual({ for_user: "v4vapp" })
+    for (const name of ["v4vapp", "v4vapp.dev", "v4vapp-test"]) {
+      expect(store.users[name]).toBeTruthy()
+      expect(store.reauthNeeded[name]).toBe(true)
+      expect(store.accessTokens[name]).toBeUndefined()
+    }
+    expect([...store.sessionAccounts]).toEqual([])
+    expect(store.currentUser).toBe("v4vapp")
+
+    refreshCalls = []
+    await refreshInterceptor(make401("v4vapp.dev")).catch(() => {})
+    expect(await store.ensureAccessToken("v4vapp-test")).toBeNull()
+    expect(refreshCalls).toEqual([])
+    expect(logoutUser).not.toHaveBeenCalled()
+  })
+
+  it("does not log out when keepsats says the access token is invalid", async () => {
+    const store = useStoreUser()
+    await loginAccount(store, "v4vapp", ["v4vapp"])
+    store.currentUser = "v4vapp"
+    const logoutUser = vi.spyOn(store, "logoutUser")
+    const logout = vi.spyOn(store, "logout")
+    useKeepSats.mockResolvedValueOnce({ detail: "Could not validate credentials" })
+
+    const updated = await store.updateSatsBalance(false)
+
+    expect(updated).toBe(false)
+    expect(store.reauthNeeded["v4vapp"]).toBe(true)
+    expect(store.users["v4vapp"]).toBeTruthy()
+    expect(store.accessTokens["v4vapp"]).toBeUndefined()
+    expect(logoutUser).not.toHaveBeenCalled()
+    expect(logout).not.toHaveBeenCalled()
+    expect(refreshCalls.some((call) => String(call.url).includes("/auth/logout"))).toBe(
+      false,
+    )
+  })
+})
+
+describe("cookie session restore", () => {
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
+    installRefresh()
+    apiLogin.get = async (url) => {
+      if (String(url).includes("/auth/session")) throw sessionUnauthorized()
+      return { status: 200, data: {} }
+    }
+  })
+
+  it("restores three accounts from the cookie when localStorage is empty", async () => {
+    const store = useStoreUser()
+    store.users = {}
+    store.currentUser = null
+    store.sessionAccounts = []
+    store.accessTokens = {}
+    const logout = vi.spyOn(store, "logout")
+    const logoutUser = vi.spyOn(store, "logoutUser")
+    apiLogin.get = async (url) => {
+      expect(String(url)).toContain("/auth/session")
+      return {
+        status: 200,
+        data: {
+          allowed_users: ["alice", "bob", "carol"],
+          current: "carol",
+        },
+      }
+    }
+    installRefresh((_url, body) => ({
+      status: 200,
+      data: {
+        access_token: fakeJwt(body.for_user),
+        token_type: "bearer",
+      },
+    }))
+
+    const restored = await store.restoreSessionFromCookie()
+
+    expect(restored).toBe(true)
+    expect(Object.keys(store.users).sort()).toEqual(["alice", "bob", "carol"])
+    expect(store.users.alice.hiveAccname).toBe("alice")
+    expect(store.users.bob.profileName).toBe("bob")
+    expect([...store.sessionAccounts]).toEqual(["alice", "bob", "carol"])
+    expect(store.currentUser).toBe("carol")
+    expect(usernameOf(store.accessTokens.carol)).toBe("carol")
+    expect(refreshCalls.map((call) => call.body)).toEqual([{ for_user: "carol" }])
+    expect(refreshCalls[0].config.withCredentials).toBe(true)
+    expect(store.authSessionState).toBe("active")
+    expect(logout).not.toHaveBeenCalled()
+    expect(logoutUser).not.toHaveBeenCalled()
+    expect(localStorage.getItem("currentUser")).toBe("carol")
+    expect(Object.keys(JSON.parse(localStorage.getItem("users"))).sort()).toEqual([
+      "alice",
+      "bob",
+      "carol",
+    ])
+    expect(JSON.stringify(localStorage)).not.toContain("access_token")
+  })
+
+  it("keeps the saved current user when that account is still allowed", async () => {
+    const store = useStoreUser()
+    store.users = {}
+    store.currentUser = "bob"
+    store.sessionAccounts = []
+    apiLogin.get = async () => ({
+      status: 200,
+      data: { allowed_users: ["alice", "bob", "carol"], current: "carol" },
+    })
+    installRefresh((_url, body) => ({
+      status: 200,
+      data: { access_token: fakeJwt(body.for_user), token_type: "bearer" },
+    }))
+
+    await store.restoreSessionFromCookie()
+
+    expect(store.currentUser).toBe("bob")
+    expect(refreshCalls.map((call) => call.body)).toEqual([{ for_user: "bob" }])
+  })
+
+  it("uses the first allowed account when nothing is saved and current is absent", async () => {
+    const store = useStoreUser()
+    store.users = {}
+    store.currentUser = null
+    apiLogin.get = async () => ({
+      status: 200,
+      data: { allowed_users: ["alice", "bob", "carol"] },
+    })
+    installRefresh((_url, body) => ({
+      status: 200,
+      data: { access_token: fakeJwt(body.for_user), token_type: "bearer" },
+    }))
+
+    await store.restoreSessionFromCookie()
+
+    expect(store.currentUser).toBe("alice")
+    expect(pickSessionUser(["alice", "bob"], null, null)).toBe("alice")
+  })
+
+  it("does not refresh or invent users when the cookie session is 401", async () => {
+    const store = useStoreUser()
+    store.users = {}
+    store.currentUser = null
+    store.sessionAccounts = []
+    const logout = vi.spyOn(store, "logout")
+
+    await store.restoreSessionFromCookie()
+
+    expect(store.authSessionState).toBe("absent")
+    expect(store.users).toEqual({})
+    expect(store.currentUser).toBeNull()
+    expect([...store.sessionAccounts]).toEqual([])
+    expect(refreshCalls).toEqual([])
+    expect(logout).not.toHaveBeenCalled()
+  })
+
+  it("does not refresh when GET /auth/session is refused", async () => {
+    const store = useStoreUser()
+    await loginAccount(store, "v4vapp", ["v4vapp"])
+    refreshCalls = []
+
+    await refreshInterceptor({
+      config: { url: "/auth/session", method: "get", headers: {} },
+      response: {
+        status: 401,
+        data: { detail: "Invalid or expired refresh token" },
+      },
+    }).catch(() => {})
+
+    expect(refreshCalls).toEqual([])
+    expect(store.users.v4vapp).toBeTruthy()
+  })
+
+  it("keeps a readable clientId and writes identity on login", async () => {
+    const savedId = "dbccbf4a-1111-4111-8111-111111111111"
+    localStorage.setItem("clientId", savedId)
+    setActivePinia(createPinia())
+    const store = useStoreUser()
+    expect(store.clientId).toBe(savedId)
+    expect(readStoredClientId()).toBe(savedId)
+
+    await store.initialize()
+    expect(store.clientId).toBe(savedId)
+
+    await loginAccount(store, "v4vapp", ["v4vapp"])
+    expect(localStorage.getItem("clientId")).toBe(savedId)
+    expect(localStorage.getItem("currentUser")).toBe("v4vapp")
+    expect(JSON.parse(localStorage.getItem("users")).v4vapp.hiveAccname).toBe(
+      "v4vapp",
+    )
+    expect(JSON.parse(localStorage.getItem("users")).v4vapp.apiToken).toBeNull()
+  })
+
+  it("reads a JSON-quoted clientId without minting a new one", () => {
+    const savedId = "dbccbf4a-1111-4111-8111-111111111111"
+    localStorage.setItem("clientId", JSON.stringify(savedId))
+    setActivePinia(createPinia())
+    const store = useStoreUser()
+    expect(store.clientId).toBe(savedId)
+    expect(readStoredClientId()).toBe(savedId)
+  })
+})
+
+describe("same-origin API base", () => {
+  it("uses /api on the production and dev SPA hosts", () => {
+    for (const href of [
+      "https://v4v.app/",
+      "https://v4v.app/pay",
+      "https://www.v4v.app/",
+      "https://dev.v4v.app/",
+    ]) {
+      const bases = resolveApiBases({
+        href,
+        localApiEnv: "false",
+        devApiEnv: "true",
+      })
+      expect(bases.apiURL).toBe("/api/v1")
+      expect(bases.apiLoginURL).toBe("/api/")
+      expect(bases.useLocal).toBe(false)
+    }
+    expect(refreshCookieIsDead("Invalid or expired refresh token")).toBe(true)
+    expect(refreshCookieIsDead("Requested account is not on this session")).toBe(
+      false,
+    )
+  })
+
+  it("keeps a localhost dev session on the absolute dev API", () => {
+    const local = resolveApiBases({
+      href: "https://localhost:9200/",
+      devApiEnv: "true",
+    })
+    expect(local.apiURL).toBe("http://localhost:1818/v1")
+    expect(local.apiLoginURL).toBe("http://localhost:1818/")
+
+    const remoteDev = resolveApiBases({
+      href: "http://127.0.0.1:9200/",
+      localApiEnv: "false",
+      devApiEnv: "true",
+    })
+    expect(remoteDev.apiURL).toBe("https://devapi.v4v.app/v1")
+    expect(remoteDev.apiLoginURL).toBe("https://devapi.v4v.app/")
+    expect(remoteDev.useLocal).toBe(false)
+  })
+
+  it("does not treat the api host as the SPA", () => {
+    const bases = resolveApiBases({
+      href: "https://api.v4v.app/v1",
+      localApiEnv: "false",
+      devApiEnv: "true",
+    })
+    expect(bases.apiURL).toBe("https://devapi.v4v.app/v1")
+    expect(bases.apiLoginURL).toBe("https://devapi.v4v.app/")
   })
 })
