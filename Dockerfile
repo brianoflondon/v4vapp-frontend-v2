@@ -14,7 +14,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY src-pwa/package.json src-pwa/pnpm-workspace.yaml src-pwa/pnpm-lock.yaml ./src-pwa/
 
 # Enable Corepack and activate a pinned pnpm version
-RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+RUN npm install -g corepack && corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 # Install root deps, then isolated PWA-mode deps under /src-pwa
 RUN pnpm install --frozen-lockfile \
