@@ -1,4 +1,5 @@
 import { serverHiveAccount, apiLogin } from "boot/axios"
+import { isServerHiveAccount } from "src/utils/authSession"
 import { useHiveAvatarURL } from "src/use/useHive.js"
 import { Platform, Notify } from "quasar"
 import { i18n } from "boot/i18n"
@@ -132,6 +133,10 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
  * @returns {void}
  */
 export async function useKeychainLoginFlow(hiveAccObj, props) {
+  if (isServerHiveAccount(hiveAccObj?.value, serverHiveAccount)) {
+    authDebug("useKeychainLoginFlow: refused server hive account")
+    return
+  }
   // Fetch the avatar for the user
   const t = i18n.global.t
   let userToLogin = hiveAccObj.value
@@ -194,7 +199,6 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
       // convert validate.data.expire to a date
       // need to store this token in the storeUser store
       hiveAccObj["loggedIn"] = true
-      hiveAccObj.caption = validate.data.access_token
       await storeUser.login(
         hiveAccObj.value,
         props.keyType,

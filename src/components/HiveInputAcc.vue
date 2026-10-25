@@ -11,7 +11,7 @@
       clearable
       @keydown.esc="clearInput"
       debounce="500"
-      :rules="[(val) => val === '' || isValidAccount || t('no_account')]"
+      :rules="[accountRule]"
     >
       <template v-slot:prepend>
         <q-avatar rounded size="md">
@@ -70,6 +70,8 @@ import { useI18n } from "vue-i18n";
 import { useHiveProfile } from "src/use/useHive";
 import { useIsEVMAddress, useShortEVMAddress } from "src/use/useEVM";
 import { authDebug } from "src/utils/authDebug";
+import { serverHiveAccount } from "boot/axios";
+import { isServerHiveAccount } from "src/utils/authSession";
 
 const props = defineProps({
   label: {
@@ -79,6 +81,12 @@ const props = defineProps({
   prefix: {
     type: String,
     default: "",
+  },
+  // Login and passkey forms set this. Pay-to fields leave it off so a
+  // transfer to the gateway account still validates.
+  blockServerAccount: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -102,6 +110,20 @@ watch(modelValue, (val) => {
     updateHiveAccTo(simpleInput.value, modelValue.value.fixedUser);
   }
 });
+
+function isBlockedServerName(val) {
+  if (!props.blockServerAccount || !val) return false;
+  return isServerHiveAccount(
+    String(val).toLowerCase().trim(),
+    serverHiveAccount,
+  );
+}
+
+function accountRule(val) {
+  if (val === "" || val == null) return true;
+  if (isBlockedServerName(val)) return "Server account cannot log in here";
+  return isValidAccount.value || t("no_account");
+}
 
 function clearInput() {
   modelValue.value.fixedUser = false;
@@ -133,6 +155,21 @@ async function updateHiveAccTo(val, fixed) {
     return;
   }
   val = val.toLowerCase().trim();
+  if (isBlockedServerName(val)) {
+    modelValue.value = {
+      label: val,
+      value: val,
+      caption: setCaption(val),
+      valid: false,
+      fixedUser: !!fixed,
+    };
+    isValidAccount.value = false;
+    avatarName.value = val;
+    if (simpleHiveInput.value) {
+      simpleHiveInput.value.validate();
+    }
+    return;
+  }
   modelValue.value = {
     label: val,
     value: val,

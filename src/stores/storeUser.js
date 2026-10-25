@@ -252,9 +252,21 @@ export const useStoreUser = defineStore("useStoreUser", {
      *
      * @returns {number} The number of users.
      */
+    /**
+     * Saved accounts the person can switch to in this browser.
+     * The gateway account is not a browser login.
+     */
+    browserUsers() {
+      return Object.values(this.users || {}).filter(
+        (user) =>
+          user &&
+          !isServerHiveAccount(user.hiveAccname, serverHiveAccount),
+      )
+    },
+
     numUsers() {
-      authDebug("numUsers", Object.keys(this.users).length)
-      return Object.keys(this.users).length
+      authDebug("numUsers", this.browserUsers.length)
+      return this.browserUsers.length
     },
 
     /**
@@ -556,6 +568,10 @@ export const useStoreUser = defineStore("useStoreUser", {
       // called once from the HiveLogin component.
       authDebug("Store initialized")
 
+      // A persisted gateway account is not a browser login. Drop it before
+      // any token seed or session refresh can target it.
+      this.forgetServerHiveAccount()
+
       // Auth hardening migration:
       // - For accounts that used modern login paths (authKey set, e.g. webauthn/passkey),
       //   we never persist tokens — they rely on short-lived in-memory + HttpOnly refresh cookie.
@@ -656,6 +672,7 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (
         this.currentUser &&
         !isServerHiveAccount(this.currentUser, serverHiveAccount) &&
+        !this.reauthNeeded?.[this.currentUser] &&
         this.isAccountInCurrentSession(this.currentUser) &&
         !this.apiToken
       ) {
@@ -815,6 +832,10 @@ export const useStoreUser = defineStore("useStoreUser", {
       loginType = "hive",
       authResponse = null,
     ) {
+      if (isServerHiveAccount(hiveAccname, serverHiveAccount)) {
+        authDebug("login(): refused server hive account", hiveAccname)
+        return
+      }
       try {
         authDebug("login", hiveAccname, keySelected)
         let hiveDetails = null
@@ -897,6 +918,10 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @param {string} hiveAccname - The hive account name to switch to.
      */
     switchUser(hiveAccname) {
+      if (isServerHiveAccount(hiveAccname, serverHiveAccount)) {
+        authDebug("switchUser: refused server hive account", hiveAccname)
+        return
+      }
       try {
         authDebug("switchUser to ", hiveAccname, " from ", this.currentUser)
         this.dataLoading = true
@@ -931,6 +956,7 @@ export const useStoreUser = defineStore("useStoreUser", {
 
           if (
             !isServerHiveAccount(hiveAccname, serverHiveAccount) &&
+            !this.reauthNeeded?.[hiveAccname] &&
             this.isAccountInCurrentSession(hiveAccname) &&
             !this.apiToken
           ) {
@@ -1011,7 +1037,8 @@ export const useStoreUser = defineStore("useStoreUser", {
      *
      * The server hive account is not a browser login and is never requested.
      * A 401 from refresh marks reauthNeeded and drops the account from
-     * sessionAccounts. It does not log the account out.
+     * sessionAccounts. It does not log the account out. While reauthNeeded
+     * is set, this returns without posting /auth/refresh again.
      *
      * Called from update() and switchUser().
      */
@@ -1023,6 +1050,13 @@ export const useStoreUser = defineStore("useStoreUser", {
         return null
       }
       if (this.accessTokens[target]) return this.accessTokens[target]
+      if (this.reauthNeeded?.[target]) {
+        authDebug(
+          "ensureAccessToken: skipped, refresh already refused for",
+          target,
+        )
+        return null
+      }
 
       authDebug(
         "ensureAccessToken: attempting silent restore via HttpOnly cookie for",
@@ -1119,12 +1153,9 @@ export const useStoreUser = defineStore("useStoreUser", {
       // If all users happen to be gone, the UI will naturally reflect it.
     },
     /**
-     * Revoke the server-side refresh session (HttpOnly cookie) and clear
-     * global Authorization headers. Best-effort: local cleanup still proceeds
-     * if the network call fails.
-     *
-     * Note: the backend treats one refresh cookie as one multi-user session —
-     * this ends the session for every allowed_user on that cookie.
+     * Revoke the whole server refresh session (no username) and clear
+     * global Authorization headers. The backend clears the cookie.
+     * Best-effort: local cleanup still proceeds if the network call fails.
      */
     async revokeServerSession() {
       try {
@@ -1144,6 +1175,30 @@ export const useStoreUser = defineStore("useStoreUser", {
       }
     },
 
+    /**
+     * Drop one account from the shared refresh session. The cookie stays
+     * while other accounts remain. The backend clears it when this was the
+     * last account. Never log the response body (it must not carry a token,
+     * but do not print it either).
+     */
+    async revokeAccountFromServer(hiveAccname) {
+      try {
+        authDebug("Calling POST /auth/logout for one account", hiveAccname)
+        const resp = await apiLogin.post(
+          "/auth/logout",
+          { username: hiveAccname },
+          { withCredentials: true },
+        )
+        authDebug("Per-account logout status:", resp?.status)
+        if (resp?.data) this.applyServerSession(resp.data)
+      } catch (e) {
+        authDebug(
+          "Per-account logout failed (continuing local cleanup):",
+          e?.response?.status || e?.message || "logout failed",
+        )
+      }
+    },
+
     /** Clear Bearer tokens from both axios instances. */
     clearAuthHeaders() {
       delete apiLogin.defaults.headers.common["Authorization"]
@@ -1151,8 +1206,7 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
 
     /**
-     * Logs out the current user.
-     * If this is the last local account, also revokes the server refresh session.
+     * Logs out the current user only. Other accounts keep the refresh cookie.
      * @returns {Promise<void>} A promise that resolves when the logout process is complete.
      */
     async logout() {
@@ -1162,42 +1216,30 @@ export const useStoreUser = defineStore("useStoreUser", {
     },
 
     /**
-     * Logs out a specific user account without affecting any other logged-in accounts
-     * in local state.
+     * Logs out one account. Other accounts stay in `users` and keep their
+     * access tokens and the shared refresh cookie.
      *
      * Server refresh cookie:
-     * - Revoked when this is the last remaining *session* account (sessionAccounts),
-     *   or when no local users would remain (covers users/sessionAccounts divergence).
-     * - Left in place when other session accounts remain (multi-user session model).
-     * - Pass `{ revokeServer: true }` to force full session revoke (e.g. interceptor
-     *   hard-failure when the cookie is known dead).
-     * - Pass `{ revokeServer: false }` to skip the network call (local-only cleanup).
+     * - Default posts `{ username }` so the backend removes only this account.
+     *   The cookie stays while anyone else remains, and is cleared by the
+     *   backend when this was the last account.
+     * - Pass `{ revokeServer: true }` to clear the whole cookie (same as
+     *   logoutAll, but only this local account is removed here).
+     * - Pass `{ revokeServer: false }` to skip the network call.
      */
     async logoutUser(hiveAccname, options = {}) {
       if (!hiveAccname) return
 
-      // sessionAccounts is authoritative for the browser refresh-cookie session.
-      // Also treat "no remaining users" as last-account so partial persisted state
-      // cannot leave a live cookie behind.
-      const remainingSession = (this.sessionAccounts || []).filter(
-        (name) => name !== hiveAccname,
-      )
-      const remainingUsers = Object.keys(this.users || {}).filter(
-        (name) => name !== hiveAccname,
-      )
-      const isLastAccount =
-        remainingSession.length === 0 || remainingUsers.length === 0
-      const revokeServer =
-        typeof options.revokeServer === "boolean"
-          ? options.revokeServer
-          : isLastAccount
-
-      if (revokeServer) {
-        // Ends the entire multi-user refresh cookie session on the server.
+      if (options.revokeServer === true) {
         await this.revokeServerSession()
         this.accessTokens = {}
+      } else if (options.revokeServer !== false) {
+        await this.revokeAccountFromServer(hiveAccname)
+        delete this.accessTokens[hiveAccname]
+        if (this.currentUser === hiveAccname) {
+          this.clearAuthHeaders()
+        }
       } else {
-        // Multi-account: keep the shared refresh cookie for remaining users.
         delete this.accessTokens[hiveAccname]
         if (this.currentUser === hiveAccname) {
           this.clearAuthHeaders()
@@ -1288,8 +1330,43 @@ export const useStoreUser = defineStore("useStoreUser", {
     applyServerSession(payload) {
       const names = readAllowedUsers(payload)
       if (!names) return false
-      this.sessionAccounts = names
+      // The gateway name is not a browser login, even if a payload lists it.
+      this.sessionAccounts = names.filter(
+        (name) => !isServerHiveAccount(name, serverHiveAccount),
+      )
       return true
+    },
+
+    /**
+     * Remove the gateway account from local login state. Payments to that
+     * account are unaffected. Called from initialize() for persisted state.
+     */
+    forgetServerHiveAccount() {
+      const name = serverHiveAccount
+      if (!name) return
+      for (const key of Object.keys(this.users || {})) {
+        const user = this.users[key]
+        if (key === name || user?.hiveAccname === name) {
+          delete this.users[key]
+        }
+      }
+      delete this.accessTokens[name]
+      if (this.reauthNeeded) delete this.reauthNeeded[name]
+      if (Array.isArray(this.sessionAccounts)) {
+        this.sessionAccounts = this.sessionAccounts.filter(
+          (acc) => acc !== name,
+        )
+      }
+      if (this.currentUser === name) {
+        this.clearAuthHeaders()
+        const remaining = Object.keys(this.users)
+        this.currentUser = remaining[0] || null
+        if (!this.currentUser) {
+          this.currentDetails = null
+          this.currentProfile = null
+          this.currentKeepSats = null
+        }
+      }
     },
 
     // =====================================================

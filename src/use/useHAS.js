@@ -1,5 +1,6 @@
 import HAS from "hive-auth-wrapper";
 import { apiLogin, serverHiveAccount } from "boot/axios";
+import { isServerHiveAccount } from "src/utils/authSession";
 import { ref } from "vue";
 import { useStoreUser } from "src/stores/storeUser";
 import { v4 as uuidv4 } from "uuid";
@@ -64,6 +65,10 @@ export async function useHASLogin(username = "", keyType = "active") {
   if (username === "") {
     authError("username is empty");
     resolve(false);
+  }
+  if (isServerHiveAccount(username, serverHiveAccount)) {
+    authDebug("useHASLogin: refused server hive account", username);
+    return false;
   }
   const existingAuth = useCheckExistingHASAuth(username);
   if (existingAuth) {

@@ -349,11 +349,10 @@ watch(
 )
 
 function handleSwipe(e) {
-  const users = Object.values(storeUser.users)
+  const users = storeUser.browserUsers
   const currentUser = storeUser.currentUser
 
-  if (!Array.isArray(users)) {
-    authError("storeUser.users is not an array")
+  if (!Array.isArray(users) || users.length === 0) {
     return
   }
 

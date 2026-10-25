@@ -1,2 +1,3 @@
 # Ignore file for gitleaks
 docs/upgrade-plan.md:generic-api-key:40
+test/auth-session.test.js:generic-api-key:361

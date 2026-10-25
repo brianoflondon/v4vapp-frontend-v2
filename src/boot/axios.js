@@ -193,7 +193,9 @@ api.interceptors.request.use(
  *   This interceptor MUST NEVER call logoutAll() or logoutUser().
  *   A refused refresh marks that account reauthNeeded and drops it from
  *   sessionAccounts. The account stays in `users` so the card can offer
- *   re-add. Only an explicit user logout removes the account.
+ *   re-add. Further /auth/refresh calls for that account are skipped until
+ *   a successful login clears the flag. Only an explicit user logout
+ *   removes the account.
  *
  * On 401 from a protected endpoint:
  *   - Try one silent refresh for the current account (shared in-flight promise)
@@ -239,6 +241,16 @@ export const refreshInterceptor = async (error) => {
       if (isServerHiveAccount(intendedUser, serverHiveAccount)) {
         authDebug(
           "401 while current account is the server hive account — not refreshing",
+          intendedUser,
+        )
+        return Promise.reject(error)
+      }
+
+      // A refused refresh stays refused. Do not post /auth/refresh again
+      // until the user re-adds the account (login clears reauthNeeded).
+      if (intendedUser && storeUser?.reauthNeeded?.[intendedUser]) {
+        authDebug(
+          "401 while this account already needs re-add — not refreshing again",
           intendedUser,
         )
         return Promise.reject(error)

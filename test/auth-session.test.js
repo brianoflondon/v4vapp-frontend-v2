@@ -26,6 +26,8 @@ import {
 import { readAllowedUsers } from "../src/utils/authSession.js"
 import { useStoreUser } from "../src/stores/storeUser.js"
 
+const realApiLoginPost = apiLogin.post.bind(apiLogin)
+
 function fakeJwt(username) {
   const payload = btoa(JSON.stringify({ username }))
   return `e30.${payload}.sig`
@@ -317,5 +319,327 @@ describe("multi-account refresh session", () => {
       withCredentials: false,
     })
     expect(challenge.withCredentials).toBe(false)
+  })
+
+  it("sends the refresh cookie through the axios pipeline", async () => {
+    apiLogin.post = realApiLoginPost
+    const seen = []
+    apiLogin.defaults.adapter = async (config) => {
+      seen.push({
+        url: config.url,
+        withCredentials: config.withCredentials === true,
+      })
+      return {
+        data: { detail: "ok" },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config,
+      }
+    }
+
+    await apiLogin.post("/token", { username: "v4vapp" })
+    await apiLogin.post("/authenticate/complete/", { ok: true })
+    await apiLogin.post("/auth/validate/", { ok: true })
+    await apiLogin.post("/auth/refresh", { for_user: "v4vapp" })
+    await apiLogin.post("/auth/logout", { username: "v4vapp" })
+    await apiLogin.get("/auth/v4vapp", { withCredentials: false })
+
+    expect(seen.map((entry) => entry.withCredentials)).toEqual([
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+    ])
+    expect(JSON.stringify(seen)).not.toContain("access_token")
+  })
+
+  it("keeps keychain, passkey, and HAS on one session and logs out one account", async () => {
+    const store = useStoreUser()
+    const hasKey = "3f1c0c2e-7b4a-4e5d-9a1b-2c3d4e5f6071"
+
+    await store.login(
+      "v4vapp",
+      "posting",
+      null,
+      null,
+      null,
+      fakeJwt("v4vapp"),
+      "hive",
+      {
+        access_token: fakeJwt("v4vapp"),
+        token_type: "bearer",
+        allowed_users: ["v4vapp"],
+      },
+    )
+    await store.login(
+      "v4vapp.dev",
+      "active",
+      "webauthn",
+      null,
+      null,
+      fakeJwt("v4vapp.dev"),
+      "hive",
+      {
+        access_token: fakeJwt("v4vapp.dev"),
+        token_type: "bearer",
+        allowed_users: ["v4vapp", "v4vapp.dev"],
+      },
+    )
+    await store.login(
+      "v4vapp-test",
+      "posting",
+      hasKey,
+      null,
+      null,
+      fakeJwt("v4vapp-test"),
+      "hive",
+      {
+        access_token: fakeJwt("v4vapp-test"),
+        token_type: "bearer",
+        allowed_users: ["v4vapp", "v4vapp.dev", "v4vapp-test"],
+      },
+    )
+
+    expect([...store.sessionAccounts]).toEqual([
+      "v4vapp",
+      "v4vapp.dev",
+      "v4vapp-test",
+    ])
+    expect(store.users["v4vapp"].authKey).toBeNull()
+    expect(store.users["v4vapp.dev"].authKey).toBe("webauthn")
+    expect(store.users["v4vapp-test"].authKey).toBe(hasKey)
+
+    store.accessTokens = {
+      v4vapp: fakeJwt("v4vapp"),
+      "v4vapp.dev": fakeJwt("v4vapp.dev"),
+      "v4vapp-test": fakeJwt("v4vapp-test"),
+    }
+    store.currentUser = "v4vapp"
+
+    installRefresh((url) => {
+      if (String(url).includes("/auth/logout")) {
+        return { status: 200, data: { detail: "Logged out" } }
+      }
+      return {
+        status: 200,
+        data: {
+          access_token: fakeJwt("v4vapp"),
+          token_type: "bearer",
+          allowed_users: ["v4vapp", "v4vapp-test"],
+        },
+      }
+    })
+
+    await store.logoutUser("v4vapp.dev")
+
+    const logoutCall = refreshCalls.find((call) =>
+      String(call.url).includes("/auth/logout"),
+    )
+    expect(logoutCall.body).toEqual({ username: "v4vapp.dev" })
+    expect(logoutCall.config.withCredentials).toBe(true)
+    expect(
+      refreshCalls.some(
+        (call) => String(call.url).includes("/auth/logout") && call.body == null,
+      ),
+    ).toBe(false)
+    expect(JSON.stringify(refreshCalls)).not.toContain("access_token")
+    expect(store.users["v4vapp.dev"]).toBeFalsy()
+    expect(store.users["v4vapp"]).toBeTruthy()
+    expect(store.users["v4vapp-test"]).toBeTruthy()
+    expect(usernameOf(store.accessTokens["v4vapp"])).toBe("v4vapp")
+    expect(usernameOf(store.accessTokens["v4vapp-test"])).toBe("v4vapp-test")
+    expect(store.accessTokens["v4vapp.dev"]).toBeUndefined()
+    expect([...store.sessionAccounts]).toEqual(["v4vapp", "v4vapp-test"])
+
+    store.accessTokens = {}
+    installRefresh((url, body) => {
+      if (String(url).includes("/auth/logout")) {
+        return { status: 200, data: { detail: "Logged out" } }
+      }
+      return {
+        status: 200,
+        data: {
+          access_token: fakeJwt(body.for_user),
+          token_type: "bearer",
+          allowed_users: ["v4vapp", "v4vapp-test"],
+        },
+      }
+    })
+    const token = await store.ensureAccessToken("v4vapp")
+    const other = await store.ensureAccessToken("v4vapp-test")
+    expect(usernameOf(token)).toBe("v4vapp")
+    expect(usernameOf(other)).toBe("v4vapp-test")
+    expect(refreshCalls.map((call) => call.body)).toEqual([
+      { for_user: "v4vapp" },
+      { for_user: "v4vapp-test" },
+    ])
+    expect(refreshCalls.every((call) => call.config.withCredentials === true)).toBe(
+      true,
+    )
+
+    await store.logoutAll()
+    const fullLogout = refreshCalls.find((call) =>
+      String(call.url).includes("/auth/logout"),
+    )
+    expect(fullLogout.body).toBeNull()
+    expect(fullLogout.config.withCredentials).toBe(true)
+    expect(store.users["v4vapp"]).toBeFalsy()
+    expect(store.users["v4vapp-test"]).toBeFalsy()
+  })
+
+  it("does not retry a refused refresh and does not log the account out", async () => {
+    const store = useStoreUser()
+    await loginAccount(store, "v4vapp", ["v4vapp", "v4vapp.dev"])
+    await store.login(
+      "v4vapp.dev",
+      "posting",
+      null,
+      null,
+      null,
+      fakeJwt("v4vapp.dev"),
+      "hive",
+      {
+        access_token: fakeJwt("v4vapp.dev"),
+        token_type: "bearer",
+        allowed_users: ["v4vapp", "v4vapp.dev"],
+      },
+    )
+    store.currentUser = "v4vapp"
+    store.accessTokens = {}
+    const logoutUser = vi.spyOn(store, "logoutUser")
+    const logout = vi.spyOn(store, "logout")
+
+    installRefresh(() => {
+      throw refusedRefreshError()
+    })
+
+    await store.ensureAccessToken("v4vapp")
+    expect(store.reauthNeeded["v4vapp"]).toBe(true)
+    expect(store.users["v4vapp"]).toBeTruthy()
+    expect(store.currentUser).toBe("v4vapp")
+    expect(refreshCalls).toHaveLength(1)
+
+    refreshCalls = []
+    expect(await store.ensureAccessToken("v4vapp")).toBeNull()
+    await refreshInterceptor(make401("v4vapp")).catch(() => {})
+    expect(refreshCalls).toEqual([])
+    expect(logoutUser).not.toHaveBeenCalled()
+    expect(logout).not.toHaveBeenCalled()
+    expect(store.users["v4vapp"]).toBeTruthy()
+
+    installRefresh()
+    const token = await store.ensureAccessToken("v4vapp.dev")
+    expect(usernameOf(token)).toBe("v4vapp.dev")
+    expect(refreshCalls.map((call) => call.body)).toEqual([
+      { for_user: "v4vapp.dev" },
+    ])
+  })
+
+  it("does not retry a refused keychain refresh from the interceptor", async () => {
+    const store = useStoreUser()
+    await store.login(
+      "v4vapp",
+      "posting",
+      null,
+      null,
+      null,
+      fakeJwt("v4vapp"),
+      "hive",
+      {
+        access_token: fakeJwt("v4vapp"),
+        token_type: "bearer",
+        allowed_users: ["v4vapp"],
+      },
+    )
+    store.currentUser = "v4vapp"
+    store.accessTokens = {}
+    const logoutUser = vi.spyOn(store, "logoutUser")
+
+    installRefresh(() => {
+      throw refusedRefreshError()
+    })
+
+    await refreshInterceptor(make401("v4vapp")).catch(() => {})
+    expect(logoutUser).not.toHaveBeenCalled()
+    expect(store.reauthNeeded["v4vapp"]).toBe(true)
+    expect(store.users["v4vapp"]).toBeTruthy()
+    expect(store.currentUser).toBe("v4vapp")
+    expect([...store.sessionAccounts]).toContain("v4vapp")
+    expect(refreshCalls).toHaveLength(1)
+
+    refreshCalls = []
+    await refreshInterceptor(make401("v4vapp")).catch(() => {})
+    expect(await store.ensureAccessToken("v4vapp")).toBeNull()
+    expect(refreshCalls).toEqual([])
+    expect(store.users["v4vapp"]).toBeTruthy()
+  })
+
+  it("refuses the server hive account as a browser login", async () => {
+    const store = useStoreUser()
+    await loginAccount(store, "v4vapp", ["v4vapp", serverHiveAccount])
+    expect([...store.sessionAccounts]).toEqual(["v4vapp"])
+    expect(store.browserUsers.map((user) => user.hiveAccname)).toEqual([
+      "v4vapp",
+    ])
+
+    useHiveDetails.mockClear()
+    refreshCalls = []
+    await store.login(
+      serverHiveAccount,
+      "posting",
+      null,
+      null,
+      null,
+      fakeJwt(serverHiveAccount),
+      "hive",
+      { allowed_users: ["v4vapp", serverHiveAccount] },
+    )
+    expect(useHiveDetails).not.toHaveBeenCalled()
+    expect(store.users[serverHiveAccount]).toBeFalsy()
+    expect(store.currentUser).toBe("v4vapp")
+    expect([...store.sessionAccounts]).toEqual(["v4vapp"])
+
+    store.users[serverHiveAccount] = {
+      hiveAccname: serverHiveAccount,
+      authKey: "webauthn",
+    }
+    store.switchUser(serverHiveAccount)
+    expect(store.currentUser).toBe("v4vapp")
+    expect(store.browserUsers.map((user) => user.hiveAccname)).toEqual([
+      "v4vapp",
+    ])
+    expect(refreshCalls).toEqual([])
+  })
+
+  it("drops a persisted server hive account on initialize", () => {
+    const store = useStoreUser()
+    store.users = {
+      [serverHiveAccount]: {
+        hiveAccname: serverHiveAccount,
+        authKey: "webauthn",
+      },
+      v4vapp: { hiveAccname: "v4vapp", authKey: "webauthn" },
+    }
+    store.currentUser = serverHiveAccount
+    store.sessionAccounts = [serverHiveAccount, "v4vapp"]
+    store.accessTokens = {
+      [serverHiveAccount]: fakeJwt(serverHiveAccount),
+      v4vapp: fakeJwt("v4vapp"),
+    }
+    store.reauthNeeded = { [serverHiveAccount]: true }
+    refreshCalls = []
+
+    store.initialize()
+
+    expect(store.users[serverHiveAccount]).toBeFalsy()
+    expect(store.currentUser).toBe("v4vapp")
+    expect([...store.sessionAccounts]).toEqual(["v4vapp"])
+    expect(store.accessTokens[serverHiveAccount]).toBeFalsy()
+    expect(usernameOf(store.accessTokens.v4vapp)).toBe("v4vapp")
+    expect(store.reauthNeeded[serverHiveAccount]).toBeFalsy()
+    expect(refreshCalls).toEqual([])
   })
 })
