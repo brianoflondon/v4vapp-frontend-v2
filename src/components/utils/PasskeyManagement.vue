@@ -4,8 +4,7 @@
       <q-expansion-item expand-separator icon="key" label="Passkey">
         <!-- Hive Account name input -->
         <q-item>
-          <HiveInputAcc v-model="hiveAccObj" prefix="🔑 " block-server-account>
-          </HiveInputAcc>
+          <HiveInputAcc v-model="hiveAccObj" prefix="🔑 "> </HiveInputAcc>
         </q-item>
         <q-item dense class="justify-center">
           <ConfettiExplosion v-if="visibleConfetti" />
@@ -214,8 +213,6 @@ import { useIsBTCAddress } from "src/use/useBTC";
 import { useStoreUser } from "src/stores/storeUser";
 import { useI18n } from "vue-i18n";
 import { authDebug } from "src/utils/authDebug";
-import { serverHiveAccount } from "boot/axios";
-import { isServerHiveAccount } from "src/utils/authSession";
 import HiveInputAcc from "components/HiveInputAcc.vue";
 import HiveAvatar from "components/utils/HiveAvatar.vue";
 import ConfettiExplosion from "vue-confetti-explosion";
@@ -309,9 +306,6 @@ async function updatePasskeyList(useCache = true) {
 async function doPasskeyLogin() {
   authDebug("doPasskeyLogin");
   if (!hiveAccObj.value.value) {
-    return;
-  }
-  if (isServerHiveAccount(hiveAccObj.value.value, serverHiveAccount)) {
     return;
   }
   const result = await usePasskeyLogin(hiveAccObj.value.value);

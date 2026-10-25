@@ -5,7 +5,7 @@
       <q-item
         clickable
         @click="doClick(user.hiveAccname)"
-        v-for="user in storeUser.browserUsers"
+        v-for="user in storeUser.users"
         :key="user.hiveAccname"
         :active="storeUser.currentUser === user.hiveAccname"
         active-class="user-list-active"

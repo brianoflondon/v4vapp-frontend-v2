@@ -19,7 +19,6 @@ vi.mock("../src/use/useV4vapp.js", () => ({
 import { useHiveDetails } from "../src/use/useHive.js"
 import {
   apiLogin,
-  refreshAccessToken,
   refreshInterceptor,
   serverHiveAccount,
 } from "../src/boot/axios.js"
@@ -258,21 +257,34 @@ describe("multi-account refresh session", () => {
     expect([...store.sessionAccounts]).toEqual(["v4vapp", "v4vapp.dev"])
   })
 
-  it("does not request a token for the server hive account", async () => {
+  it("refreshes the server hive account when that account is logged in", async () => {
     const store = useStoreUser()
-    store.currentUser = serverHiveAccount
-    store.users = {
-      [serverHiveAccount]: { hiveAccname: serverHiveAccount, authKey: "webauthn" },
-    }
-    store.sessionAccounts = [serverHiveAccount]
-    refreshCalls = []
-
-    expect(await store.ensureAccessToken(serverHiveAccount)).toBeNull()
-    expect(await refreshAccessToken(serverHiveAccount)).toBeNull()
-    await refreshInterceptor(make401(serverHiveAccount)).catch(() => {})
-
-    expect(refreshCalls).toEqual([])
+    await store.login(
+      serverHiveAccount,
+      "posting",
+      null,
+      null,
+      null,
+      fakeJwt(serverHiveAccount),
+      "hive",
+      {
+        access_token: fakeJwt(serverHiveAccount),
+        token_type: "bearer",
+        allowed_users: [serverHiveAccount],
+      },
+    )
     expect(store.users[serverHiveAccount]).toBeTruthy()
+    expect(store.currentUser).toBe(serverHiveAccount)
+    expect([...store.sessionAccounts]).toEqual([serverHiveAccount])
+
+    store.accessTokens = {}
+    refreshCalls = []
+    const token = await store.ensureAccessToken(serverHiveAccount)
+    expect(usernameOf(token)).toBe(serverHiveAccount)
+    expect(refreshCalls.map((call) => call.body)).toEqual([
+      { for_user: serverHiveAccount },
+    ])
+    expect(refreshCalls[0].config.withCredentials).toBe(true)
   })
 
   it("does not refresh on 403", async () => {
@@ -577,44 +589,36 @@ describe("multi-account refresh session", () => {
     expect(store.users["v4vapp"]).toBeTruthy()
   })
 
-  it("refuses the server hive account as a browser login", async () => {
+  it("keeps the server hive account when it logs in beside another account", async () => {
     const store = useStoreUser()
-    await loginAccount(store, "v4vapp", ["v4vapp", serverHiveAccount])
-    expect([...store.sessionAccounts]).toEqual(["v4vapp"])
-    expect(store.browserUsers.map((user) => user.hiveAccname)).toEqual([
-      "v4vapp",
-    ])
-
-    useHiveDetails.mockClear()
-    refreshCalls = []
+    await loginAccount(store, "v4vapp", ["v4vapp"])
     await store.login(
       serverHiveAccount,
       "posting",
-      null,
+      "webauthn",
       null,
       null,
       fakeJwt(serverHiveAccount),
       "hive",
-      { allowed_users: ["v4vapp", serverHiveAccount] },
+      {
+        access_token: fakeJwt(serverHiveAccount),
+        token_type: "bearer",
+        allowed_users: ["v4vapp", serverHiveAccount],
+      },
     )
-    expect(useHiveDetails).not.toHaveBeenCalled()
-    expect(store.users[serverHiveAccount]).toBeFalsy()
-    expect(store.currentUser).toBe("v4vapp")
-    expect([...store.sessionAccounts]).toEqual(["v4vapp"])
 
-    store.users[serverHiveAccount] = {
-      hiveAccname: serverHiveAccount,
-      authKey: "webauthn",
-    }
-    store.switchUser(serverHiveAccount)
+    expect(store.users[serverHiveAccount]).toBeTruthy()
+    expect(store.users["v4vapp"]).toBeTruthy()
+    expect(store.currentUser).toBe(serverHiveAccount)
+    expect([...store.sessionAccounts]).toEqual(["v4vapp", serverHiveAccount])
+
+    store.switchUser("v4vapp")
     expect(store.currentUser).toBe("v4vapp")
-    expect(store.browserUsers.map((user) => user.hiveAccname)).toEqual([
-      "v4vapp",
-    ])
-    expect(refreshCalls).toEqual([])
+    store.switchUser(serverHiveAccount)
+    expect(store.currentUser).toBe(serverHiveAccount)
   })
 
-  it("drops a persisted server hive account on initialize", () => {
+  it("keeps a persisted server hive account on initialize", () => {
     const store = useStoreUser()
     store.users = {
       [serverHiveAccount]: {
@@ -629,17 +633,15 @@ describe("multi-account refresh session", () => {
       [serverHiveAccount]: fakeJwt(serverHiveAccount),
       v4vapp: fakeJwt("v4vapp"),
     }
-    store.reauthNeeded = { [serverHiveAccount]: true }
-    refreshCalls = []
 
     store.initialize()
 
-    expect(store.users[serverHiveAccount]).toBeFalsy()
-    expect(store.currentUser).toBe("v4vapp")
-    expect([...store.sessionAccounts]).toEqual(["v4vapp"])
-    expect(store.accessTokens[serverHiveAccount]).toBeFalsy()
+    expect(store.users[serverHiveAccount].hiveAccname).toBe(serverHiveAccount)
+    expect(store.currentUser).toBe(serverHiveAccount)
+    expect([...store.sessionAccounts]).toEqual([serverHiveAccount, "v4vapp"])
+    expect(usernameOf(store.accessTokens[serverHiveAccount])).toBe(
+      serverHiveAccount,
+    )
     expect(usernameOf(store.accessTokens.v4vapp)).toBe("v4vapp")
-    expect(store.reauthNeeded[serverHiveAccount]).toBeFalsy()
-    expect(refreshCalls).toEqual([])
   })
 })

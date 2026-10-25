@@ -4,8 +4,7 @@
 // Login.vue component to manage the passkeys used in the login process.
 //
 
-import { apiLogin, serverHiveAccount } from "boot/axios";
-import { isServerHiveAccount } from "src/utils/authSession";
+import { apiLogin } from "boot/axios";
 import { useStoreUser } from "src/stores/storeUser";
 import * as webauthn from "@github/webauthn-json";
 import { useAppStr } from "src/use/useAppDetails";
@@ -57,10 +56,6 @@ export async function usePasskeyLogin(hiveAccName) {
   if (!hiveAccName) {
     authError("No Hive Account Name provided");
     return { success: false, message: "no account" };
-  }
-  if (isServerHiveAccount(hiveAccName, serverHiveAccount)) {
-    authDebug("usePasskeyLogin: refused server hive account", hiveAccName);
-    return { success: false, message: "server account" };
   }
   let params = {
     hive_accname: hiveAccName,

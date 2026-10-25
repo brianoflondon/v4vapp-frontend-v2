@@ -38,14 +38,6 @@ function normalizeAccountList(raw) {
 }
 
 /**
- * The gateway account (v4vapp in production, devser.v4vapp in dev) is not a
- * browser login and must never be sent as for_user.
- */
-export function isServerHiveAccount(name, serverAccount) {
-  return typeof name === "string" && !!serverAccount && name === serverAccount
-}
-
-/**
  * Paths that must send the HttpOnly refresh cookie so a second login joins
  * the existing session instead of replacing it.
  */

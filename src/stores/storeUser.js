@@ -6,8 +6,8 @@ import { useStoreAPIStatus } from "./storeAPIStatus.js"
 import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
 import { useShortEVMAddress } from "src/use/useEVM.js"
-import { apiLogin, api, refreshAccessToken, serverHiveAccount } from "src/boot/axios"
-import { isServerHiveAccount, readAllowedUsers } from "src/utils/authSession"
+import { apiLogin, api, refreshAccessToken } from "src/boot/axios"
+import { readAllowedUsers } from "src/utils/authSession"
 import { useKeepSats } from "src/use/useV4vapp"
 import { Notify } from "quasar"
 import { i18n } from "boot/i18n"
@@ -252,21 +252,9 @@ export const useStoreUser = defineStore("useStoreUser", {
      *
      * @returns {number} The number of users.
      */
-    /**
-     * Saved accounts the person can switch to in this browser.
-     * The gateway account is not a browser login.
-     */
-    browserUsers() {
-      return Object.values(this.users || {}).filter(
-        (user) =>
-          user &&
-          !isServerHiveAccount(user.hiveAccname, serverHiveAccount),
-      )
-    },
-
     numUsers() {
-      authDebug("numUsers", this.browserUsers.length)
-      return this.browserUsers.length
+      authDebug("numUsers", Object.keys(this.users).length)
+      return Object.keys(this.users).length
     },
 
     /**
@@ -568,10 +556,6 @@ export const useStoreUser = defineStore("useStoreUser", {
       // called once from the HiveLogin component.
       authDebug("Store initialized")
 
-      // A persisted gateway account is not a browser login. Drop it before
-      // any token seed or session refresh can target it.
-      this.forgetServerHiveAccount()
-
       // Auth hardening migration:
       // - For accounts that used modern login paths (authKey set, e.g. webauthn/passkey),
       //   we never persist tokens — they rely on short-lived in-memory + HttpOnly refresh cookie.
@@ -671,7 +655,6 @@ export const useStoreUser = defineStore("useStoreUser", {
       // spam /auth/refresh — the user needs to explicitly add it via login.
       if (
         this.currentUser &&
-        !isServerHiveAccount(this.currentUser, serverHiveAccount) &&
         !this.reauthNeeded?.[this.currentUser] &&
         this.isAccountInCurrentSession(this.currentUser) &&
         !this.apiToken
@@ -832,10 +815,6 @@ export const useStoreUser = defineStore("useStoreUser", {
       loginType = "hive",
       authResponse = null,
     ) {
-      if (isServerHiveAccount(hiveAccname, serverHiveAccount)) {
-        authDebug("login(): refused server hive account", hiveAccname)
-        return
-      }
       try {
         authDebug("login", hiveAccname, keySelected)
         let hiveDetails = null
@@ -918,10 +897,6 @@ export const useStoreUser = defineStore("useStoreUser", {
      * @param {string} hiveAccname - The hive account name to switch to.
      */
     switchUser(hiveAccname) {
-      if (isServerHiveAccount(hiveAccname, serverHiveAccount)) {
-        authDebug("switchUser: refused server hive account", hiveAccname)
-        return
-      }
       try {
         authDebug("switchUser to ", hiveAccname, " from ", this.currentUser)
         this.dataLoading = true
@@ -955,7 +930,6 @@ export const useStoreUser = defineStore("useStoreUser", {
           }
 
           if (
-            !isServerHiveAccount(hiveAccname, serverHiveAccount) &&
             !this.reauthNeeded?.[hiveAccname] &&
             this.isAccountInCurrentSession(hiveAccname) &&
             !this.apiToken
@@ -1035,7 +1009,6 @@ export const useStoreUser = defineStore("useStoreUser", {
      * (`refreshAccessToken`). Waiting on account A's refresh does not answer
      * account B — B gets its own POST /auth/refresh.
      *
-     * The server hive account is not a browser login and is never requested.
      * A 401 from refresh marks reauthNeeded and drops the account from
      * sessionAccounts. It does not log the account out. While reauthNeeded
      * is set, this returns without posting /auth/refresh again.
@@ -1045,10 +1018,6 @@ export const useStoreUser = defineStore("useStoreUser", {
     async ensureAccessToken(hiveAccname = null) {
       const target = hiveAccname || this.currentUser
       if (!target) return null
-      if (isServerHiveAccount(target, serverHiveAccount)) {
-        authDebug("ensureAccessToken: skipped server account", target)
-        return null
-      }
       if (this.accessTokens[target]) return this.accessTokens[target]
       if (this.reauthNeeded?.[target]) {
         authDebug(
@@ -1313,9 +1282,7 @@ export const useStoreUser = defineStore("useStoreUser", {
      * Does not log the user out.
      */
     noteRefreshRefused(hiveAccname) {
-      if (!hiveAccname || isServerHiveAccount(hiveAccname, serverHiveAccount)) {
-        return
-      }
+      if (!hiveAccname) return
       this.markReauthNeeded(hiveAccname)
       this.removeAccountFromSession(hiveAccname)
     },
@@ -1330,43 +1297,8 @@ export const useStoreUser = defineStore("useStoreUser", {
     applyServerSession(payload) {
       const names = readAllowedUsers(payload)
       if (!names) return false
-      // The gateway name is not a browser login, even if a payload lists it.
-      this.sessionAccounts = names.filter(
-        (name) => !isServerHiveAccount(name, serverHiveAccount),
-      )
+      this.sessionAccounts = names
       return true
-    },
-
-    /**
-     * Remove the gateway account from local login state. Payments to that
-     * account are unaffected. Called from initialize() for persisted state.
-     */
-    forgetServerHiveAccount() {
-      const name = serverHiveAccount
-      if (!name) return
-      for (const key of Object.keys(this.users || {})) {
-        const user = this.users[key]
-        if (key === name || user?.hiveAccname === name) {
-          delete this.users[key]
-        }
-      }
-      delete this.accessTokens[name]
-      if (this.reauthNeeded) delete this.reauthNeeded[name]
-      if (Array.isArray(this.sessionAccounts)) {
-        this.sessionAccounts = this.sessionAccounts.filter(
-          (acc) => acc !== name,
-        )
-      }
-      if (this.currentUser === name) {
-        this.clearAuthHeaders()
-        const remaining = Object.keys(this.users)
-        this.currentUser = remaining[0] || null
-        if (!this.currentUser) {
-          this.currentDetails = null
-          this.currentProfile = null
-          this.currentKeepSats = null
-        }
-      }
     },
 
     // =====================================================

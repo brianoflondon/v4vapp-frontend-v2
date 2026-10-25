@@ -1,10 +1,7 @@
 import { defineBoot } from "#q-app"
 import axios from "axios"
 import { authDebug } from "src/utils/authDebug"
-import {
-  isServerHiveAccount,
-  requestSendsRefreshCookie,
-} from "src/utils/authSession"
+import { requestSendsRefreshCookie } from "src/utils/authSession"
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -110,18 +107,12 @@ const refreshFlights = new Map()
 
 /**
  * POST /auth/refresh for one account. Callers share the promise while it is
- * in flight. Returns null without a request when `forUser` is the server
- * hive account (not a browser login).
+ * in flight.
  *
  * @param {string|null} forUser Account to mint an access token for.
  * @returns {Promise<import("axios").AxiosResponse|null>}
  */
 export function refreshAccessToken(forUser) {
-  if (isServerHiveAccount(forUser, serverHiveAccount)) {
-    authDebug("refreshAccessToken: skipped server account", forUser)
-    return Promise.resolve(null)
-  }
-
   const key = forUser || ""
   const inflight = refreshFlights.get(key)
   if (inflight) return inflight
@@ -237,15 +228,6 @@ export const refreshInterceptor = async (error) => {
       }
       const intendedUser = storeUser?.currentUser || null
 
-      // The gateway account is not a browser login. Never mint a token for it.
-      if (isServerHiveAccount(intendedUser, serverHiveAccount)) {
-        authDebug(
-          "401 while current account is the server hive account — not refreshing",
-          intendedUser,
-        )
-        return Promise.reject(error)
-      }
-
       // A refused refresh stays refused. Do not post /auth/refresh again
       // until the user re-adds the account (login clears reauthNeeded).
       if (intendedUser && storeUser?.reauthNeeded?.[intendedUser]) {
@@ -340,11 +322,7 @@ export const refreshInterceptor = async (error) => {
         }
         if (!affectedUser) affectedUser = storeUser?.currentUser
 
-        if (
-          storeUser &&
-          affectedUser &&
-          !isServerHiveAccount(affectedUser, serverHiveAccount)
-        ) {
+        if (storeUser && affectedUser) {
           const affectedUserObj = storeUser.users?.[affectedUser]
           const isPureKeychain = affectedUserObj && !affectedUserObj.authKey
 

@@ -8,11 +8,7 @@
       >
         <!-- Hive Account name input -->
         <q-item>
-          <HiveInputAcc
-            v-model="hiveAccObj"
-            :prefix="t('login')"
-            block-server-account
-          >
+          <HiveInputAcc v-model="hiveAccObj" :prefix="t('login')">
           </HiveInputAcc>
         </q-item>
         <!-- End Hive Account name input -->
@@ -132,8 +128,6 @@ import {
 import { useHAS, useHASLogin, useIsHASAvailable } from "src/use/useHAS"
 import { useEVMLoginFlow } from "src/use/useEVM"
 import { authDebug, authError } from "src/utils/authDebug"
-import { serverHiveAccount } from "boot/axios"
-import { isServerHiveAccount } from "src/utils/authSession"
 import { useI18n } from "vue-i18n"
 import { useQuasar, Platform } from "quasar"
 import CreateHASQRCode from "src/components/qrcode/CreateHASQRCode.vue"
@@ -165,17 +159,12 @@ onMounted(async () => {
   // authDebug("evmButtonDisabled: ", evmButtonDisabled.value)
 })
 
-const serverLoginBlocked = computed(() =>
-  isServerHiveAccount(hiveAccObj.value?.value, serverHiveAccount),
-)
-
 const keychainButtonDisabled = computed(() => {
   return (
     typeof hiveAccObj.value === "undefined" ||
     hiveAccObj.value.value === "" ||
     hiveAccObj.value.value === null ||
-    isKeychain.value === false ||
-    serverLoginBlocked.value
+    isKeychain.value === false
   )
 })
 
@@ -183,8 +172,7 @@ const hasButtonDisabled = computed(() => {
   return (
     typeof hiveAccObj.value === "undefined" ||
     hiveAccObj.value.value === "" ||
-    hiveAccObj.value.value === null ||
-    serverLoginBlocked.value
+    hiveAccObj.value.value === null
   )
 })
 
