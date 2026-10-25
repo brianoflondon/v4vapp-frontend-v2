@@ -189,6 +189,7 @@ export async function useBTCLoginFlow() {
       null,
       validate.data.access_token,
       "btc",
+      validate.data,
     )
 
     Notify.create({

@@ -203,6 +203,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         null,
         validate.data.access_token,
         "hive",
+        validate.data,
       )
       authDebug("storeUser: ", storeUser.users)
       note({

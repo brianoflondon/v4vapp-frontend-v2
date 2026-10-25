@@ -188,6 +188,8 @@ async function resolveAuth(res, auth, challenge_data) {
       null,                    // Stop feeding client-side expire in the new auth model
       res.data.token,
       responseApi.data.access_token,
+      "hive",
+      responseApi.data,
     );
     qrCodeTextHAS.value = null;
     expiry.value = 0;

@@ -1,6 +1,10 @@
 import { defineBoot } from "#q-app"
 import axios from "axios"
-import { authDebug, authWarn, authError } from "src/utils/authDebug"
+import { authDebug } from "src/utils/authDebug"
+import {
+  isServerHiveAccount,
+  requestSendsRefreshCookie,
+} from "src/utils/authSession"
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -94,15 +98,50 @@ const API_BASE = "/v2/v4vapp/"
 const api = axios.create({ baseURL: apiURL })
 const apiLogin = axios.create({
   baseURL: apiLoginURL,
-  // NOTE: withCredentials is NOT set by default here anymore.
-  // We set it explicitly (to true) only on calls that need the HttpOnly refresh cookie:
-  //   - /auth/refresh (to send cookie and receive rotated one)
-  //   - /auth/validate (to receive the Set-Cookie after successful login)
-  //   - /auth/logout (to send the cookie for revocation)
-  // Pre-login calls like /auth/{name} (challenge) use withCredentials: false to avoid
-  // the strict CORS rule that forbids ACAO: '*' on credentialed requests.
-  // This makes login flows more tolerant while the backend is updated.
+  // withCredentials stays off by default. Credentialed requests cannot use
+  // Access-Control-Allow-Origin: *, so the pre-login challenge (/auth/{name})
+  // must not send the cookie. Login and session routes opt in below.
 })
+
+// One in-flight POST /auth/refresh per requested account, shared by
+// ensureAccessToken and the 401 interceptor. A refresh for account A must
+// not satisfy (or block) a refresh for account B.
+const refreshFlights = new Map()
+
+/**
+ * POST /auth/refresh for one account. Callers share the promise while it is
+ * in flight. Returns null without a request when `forUser` is the server
+ * hive account (not a browser login).
+ *
+ * @param {string|null} forUser Account to mint an access token for.
+ * @returns {Promise<import("axios").AxiosResponse|null>}
+ */
+export function refreshAccessToken(forUser) {
+  if (isServerHiveAccount(forUser, serverHiveAccount)) {
+    authDebug("refreshAccessToken: skipped server account", forUser)
+    return Promise.resolve(null)
+  }
+
+  const key = forUser || ""
+  const inflight = refreshFlights.get(key)
+  if (inflight) return inflight
+
+  const body = forUser ? { for_user: forUser } : null
+  const flight = apiLogin
+    .post("/auth/refresh", body, { withCredentials: true })
+    .finally(() => {
+      if (refreshFlights.get(key) === flight) refreshFlights.delete(key)
+    })
+  refreshFlights.set(key, flight)
+  return flight
+}
+
+function attachRefreshCookie(config) {
+  if (requestSendsRefreshCookie(config?.url)) {
+    config.withCredentials = true
+  }
+  return config
+}
 
 // One-time loud boot message (only in verbose debug mode)
 authDebug(">>> NEW AXIOS BOOT FILE LOADED WITH REFRESH INTERCEPTOR <<<")
@@ -113,12 +152,11 @@ authDebug(">>> NEW AXIOS BOOT FILE LOADED WITH REFRESH INTERCEPTOR <<<")
  */
 apiLogin.interceptors.request.use(
   (config) => {
-    // Defensive: if the store has a current apiToken and the request doesn't already set one,
-    // inject it. This reduces reliance on manual apiTokenSet() calls everywhere.
-    // Note: accessing Pinia store here requires the store to be initialized.
-    // For now we keep it lightweight; full integration happens with store refactor.
+    // Login and session routes must send the refresh cookie so a second
+    // account joins allowed_users instead of starting a new session.
+    attachRefreshCookie(config)
 
-    if (config.url?.includes("/auth/")) {
+    if (config.url?.includes("/auth/") || requestSendsRefreshCookie(config.url)) {
       authDebug(
         "Outgoing auth-related request:",
         config.method?.toUpperCase(),
@@ -134,7 +172,8 @@ apiLogin.interceptors.request.use(
 // Also attach to the main `api` instance for consistent auth-related request logging.
 api.interceptors.request.use(
   (config) => {
-    if (config.url?.includes("/auth/")) {
+    attachRefreshCookie(config)
+    if (config.url?.includes("/auth/") || requestSendsRefreshCookie(config.url)) {
       authDebug(
         "Outgoing auth-related request:",
         config.method?.toUpperCase(),
@@ -151,18 +190,22 @@ api.interceptors.request.use(
  * Part of the full hardened auth solution (short-lived access + HttpOnly refresh cookie).
  *
  * DESIGN RULE (multi-account safety):
- *   This interceptor MUST NEVER call logoutAll().
- *   Failures are always scoped to the specific affected account via logoutUser().
- *   Global logout (logoutAll) is only allowed from explicit user UI actions.
+ *   This interceptor MUST NEVER call logoutAll() or logoutUser().
+ *   A refused refresh marks that account reauthNeeded and drops it from
+ *   sessionAccounts. The account stays in `users` so the card can offer
+ *   re-add. Only an explicit user logout removes the account.
  *
  * On 401 from a protected endpoint:
- *   - Try to silently refresh using the HttpOnly refresh cookie
+ *   - Try one silent refresh for the current account (shared in-flight promise)
  *   - If successful, retry the original request
- *   - If refresh fails for one account, only log that account out
+ *   - If refresh is refused, keep the account and ask the user to re-add it
+ *
+ * 403 is a permission answer, not an expired token. Do not refresh.
  */
-// Attach the refresh interceptor to BOTH instances so that 401/403 on any authenticated call
-// (whether through `api` or `apiLogin`) can trigger the silent refresh using the HttpOnly cookie.
-const refreshInterceptor = async (error) => {
+// Attach the refresh interceptor to BOTH instances so that a 401 on any
+// authenticated call (whether through `api` or `apiLogin`) can trigger the
+// silent refresh using the HttpOnly cookie.
+export const refreshInterceptor = async (error) => {
   authDebug("=== Response ERROR intercepted ===", {
     url: error?.config?.url,
     status: error?.response?.status,
@@ -172,49 +215,59 @@ const refreshInterceptor = async (error) => {
   const originalRequest = error.config
 
   if (
-    (error?.response?.status === 401 || error?.response?.status === 403) &&
+    error?.response?.status === 401 &&
+    originalRequest &&
     !originalRequest._retry &&
     originalRequest.url !== "/auth/refresh" &&
     originalRequest.url !== "/auth/logout"
   ) {
     originalRequest._retry = true
 
-    authDebug(">>> 401/403 intercepted on:", originalRequest?.url)
+    authDebug(">>> 401 intercepted on:", originalRequest?.url)
 
     try {
-      authDebug("401 received — attempting silent refresh via HttpOnly cookie")
-      authDebug("Calling POST /auth/refresh (relying on HttpOnly cookie)")
-
-      // In the multi-user session model, try to request a token for the
-      // specific user we were trying to act as when the 401 happened.
       const { useStoreUser } = await import("src/stores/storeUser")
-      let storeUserForRefresh = null
+      let storeUser = null
       try {
-        storeUserForRefresh = useStoreUser()
-      } catch {}
-      const intendedUser = storeUserForRefresh?.currentUser || null
-      const refreshBody = intendedUser ? { for_user: intendedUser } : null
+        storeUser = useStoreUser()
+      } catch {
+        // store not ready
+      }
+      const intendedUser = storeUser?.currentUser || null
 
-      const refreshResponse = await apiLogin.post(
-        "/auth/refresh",
-        refreshBody,
-        { withCredentials: true },
+      // The gateway account is not a browser login. Never mint a token for it.
+      if (isServerHiveAccount(intendedUser, serverHiveAccount)) {
+        authDebug(
+          "401 while current account is the server hive account — not refreshing",
+          intendedUser,
+        )
+        return Promise.reject(error)
+      }
+
+      authDebug(
+        "401 received — attempting silent refresh via HttpOnly cookie for",
+        intendedUser || "(session primary)",
       )
 
+      const refreshResponse = await refreshAccessToken(intendedUser)
+
       authDebug("/auth/refresh response status:", refreshResponse?.status)
-      authDebug("/auth/refresh response data:", refreshResponse?.data)
+      authDebug(
+        "/auth/refresh has access token:",
+        Boolean(refreshResponse?.data?.access_token),
+      )
 
       if (refreshResponse?.data?.access_token) {
         const newToken = refreshResponse.data.access_token
 
         authDebug("Silent refresh SUCCESS — got new access token")
 
-        // Decode to learn the *real* owner of this token
+        // Decode to learn the *real* owner of this token. Do not log the token.
         let tokenOwner = null
         try {
           const payload = JSON.parse(atob(newToken.split(".")[1]))
           if (payload?.username) tokenOwner = payload.username
-        } catch (e) {
+        } catch {
           // non-fatal
         }
         if (tokenOwner) {
@@ -222,14 +275,8 @@ const refreshInterceptor = async (error) => {
         }
 
         // Only stomp the global Authorization header if the token we just got
-        // is for the *current* user in the UI. Otherwise we would send
-        // brianoflondon's token on calls that the UI thinks are for v4vapp-test.
-        const { useStoreUser } = await import("src/stores/storeUser")
-        let storeUser = null
-        try {
-          storeUser = useStoreUser()
-        } catch {}
-
+        // is for the *current* user in the UI. Otherwise we would send one
+        // account's token on calls the UI thinks are for another account.
         const shouldSetGlobalHeader =
           !tokenOwner || tokenOwner === storeUser?.currentUser
 
@@ -239,40 +286,38 @@ const refreshInterceptor = async (error) => {
             `Bearer ${newToken}`
         }
 
-        // Always store the token under the correct owner in the map.
         try {
+          if (storeUser && typeof storeUser.applyServerSession === "function") {
+            storeUser.applyServerSession(refreshResponse.data)
+          }
           if (storeUser && typeof storeUser.setAccessToken === "function") {
             storeUser.setAccessToken(newToken, tokenOwner)
           }
           if (storeUser && tokenOwner) {
             storeUser.clearReauthNeeded(tokenOwner)
           }
-        } catch (e) {
+        } catch {
           // non-fatal
         }
 
-        // Retry original request (global axios works because we patched the header on the request)
+        if (!originalRequest.headers) originalRequest.headers = {}
         originalRequest.headers["Authorization"] = `Bearer ${newToken}`
         return axios(originalRequest)
-      } else {
+      } else if (refreshResponse) {
         authDebug("/auth/refresh responded but no access_token in body")
       }
     } catch (refreshError) {
-      authDebug("Silent refresh failed — user will need to re-authenticate")
       authDebug(
-        "/auth/refresh FAILED:",
-        refreshError?.response?.status,
-        refreshError?.response?.data || refreshError?.message,
+        "Silent refresh failed — account stays; user can re-add it",
+        refreshError?.response?.status || refreshError?.message,
       )
 
-      // Per-account only. The interceptor MUST NEVER call logoutAll().
-      // Identify the affected user from the original failing request if possible.
+      // Per-account only. Never logoutAll / logoutUser from a refused refresh.
       let affectedUser = null
       try {
         const { useStoreUser } = await import("src/stores/storeUser")
         const storeUser = useStoreUser()
 
-        // Try to extract username from the JWT that was on the failing request
         const authHeader =
           originalRequest?.headers?.Authorization ||
           originalRequest?.headers?.authorization
@@ -283,33 +328,34 @@ const refreshInterceptor = async (error) => {
         }
         if (!affectedUser) affectedUser = storeUser?.currentUser
 
-        if (storeUser && affectedUser) {
+        if (
+          storeUser &&
+          affectedUser &&
+          !isServerHiveAccount(affectedUser, serverHiveAccount)
+        ) {
           const affectedUserObj = storeUser.users?.[affectedUser]
           const isPureKeychain = affectedUserObj && !affectedUserObj.authKey
 
           if (isPureKeychain) {
-            // For pure keychain accounts, a failed refresh (expired short token) should
-            // not remove the account from the user's list. Just clear the in-memory token.
-            // The user can re-trigger keychain when they need a fresh session.
+            // Keychain has no refresh cookie. Keep the account. Clear only the
+            // short-lived token and let the card offer a new signature.
             authDebug(
-              "Refresh failed for pure keychain account — not logging out (short token simply expired). Account remains in list.",
+              "Refresh failed for pure keychain account — not logging out. Account remains in list.",
               affectedUser,
             )
             if (storeUser.accessTokens) {
               delete storeUser.accessTokens[affectedUser]
             }
             storeUser.markReauthNeeded(affectedUser)
-          } else if (typeof storeUser.logoutUser === "function") {
-            storeUser.markReauthNeeded(affectedUser)
-            await storeUser.logoutUser(affectedUser)
-          } else if (typeof storeUser.logout === "function") {
-            // Fallback: only logout current if we can't do better
-            if (affectedUser === storeUser.currentUser) {
-              await storeUser.logout()
-            }
+          } else if (typeof storeUser.noteRefreshRefused === "function") {
+            authDebug(
+              "Refresh refused for HAS/passkey account — reauth needed, account kept",
+              affectedUser,
+            )
+            storeUser.noteRefreshRefused(affectedUser)
           }
         }
-      } catch (e) {
+      } catch {
         // non-fatal
       }
     }
