@@ -284,6 +284,7 @@ async function connectEVM() {
             null,
             validate.data.access_token,
             "evm",
+            validate.data,
           )
           authDebug("storeUser.currentUser: ", storeUser.currentUser)
         } catch (error) {

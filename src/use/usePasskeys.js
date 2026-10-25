@@ -93,9 +93,12 @@ export async function usePasskeyLogin(hiveAccName) {
       },
     );
     if (sendChallengeBack.data.access_token) {
-      // give me a date 1 week in the future
-      return { success: true, token: sendChallengeBack.data.access_token };
-      let expireDate = new Date();
+      return {
+        success: true,
+        token: sendChallengeBack.data.access_token,
+        // Full body so login() can apply allowed_users / session_users.
+        authResponse: sendChallengeBack.data,
+      };
     }
   } catch (error) {
     authError("webauthn.get error", error);

@@ -331,6 +331,7 @@ async function doPasskeyLogin() {
       null,
       result.token,
       loginType,
+      result.authResponse,
     );
     Notify.create({
       message: "Logged in with passkey",

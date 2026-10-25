@@ -76,7 +76,7 @@
       >
         <q-tooltip>
           Session problem for @{{ storeUser.currentUser }}.<br>
-          Tap to log back in with Passkey
+          Tap to re-add this account
         </q-tooltip>
       </q-icon>
     </div>
@@ -418,7 +418,8 @@ async function triggerReauth() {
             null,
             null,
             result.token,
-            'hive'
+            'hive',
+            result.authResponse,
           )
           q.notify({
             message: 'Re-authenticated successfully with Passkey',

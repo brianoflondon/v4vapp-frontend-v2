@@ -112,6 +112,7 @@ export async function useEVMLoginFlow() {
             null,
             validate.data.access_token,
             "evm",
+            validate.data,
           );
 
           authDebug("storeUser.currentUser: ", storeUser.currentUser);

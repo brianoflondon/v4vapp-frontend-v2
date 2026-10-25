@@ -194,7 +194,6 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
       // convert validate.data.expire to a date
       // need to store this token in the storeUser store
       hiveAccObj["loggedIn"] = true
-      hiveAccObj.caption = validate.data.access_token
       await storeUser.login(
         hiveAccObj.value,
         props.keyType,
@@ -203,6 +202,7 @@ export async function useKeychainLoginFlow(hiveAccObj, props) {
         null,
         validate.data.access_token,
         "hive",
+        validate.data,
       )
       authDebug("storeUser: ", storeUser.users)
       note({
