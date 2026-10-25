@@ -7,7 +7,7 @@ import { useCoingeckoStore } from "src/stores/storeCoingecko"
 import { tidyNumber, generateUUID } from "src/use/useUtils.js"
 import { useShortEVMAddress } from "src/use/useEVM.js"
 import { apiLogin, api, refreshAccessToken } from "src/boot/axios"
-import { readAllowedUsers } from "src/utils/authSession"
+import { readAllowedUsers, refreshCookieIsDead } from "src/utils/authSession"
 import { useKeepSats } from "src/use/useV4vapp"
 import { Notify } from "quasar"
 import { i18n } from "boot/i18n"
@@ -728,8 +728,10 @@ export const useStoreUser = defineStore("useStoreUser", {
         try {
           answer = await useKeepSats(useCache, false)
           if (answer?.detail === "Could not validate credentials") {
-            authWarn("Need to log out")
-            this.logout()
+            authWarn("Access token rejected; account needs re-add")
+            this.markReauthNeeded(this.currentUser)
+            delete this.accessTokens[this.currentUser]
+            this.clearAuthHeaders()
             return false
           }
         } catch (err) {
@@ -1072,7 +1074,13 @@ export const useStoreUser = defineStore("useStoreUser", {
         )
         // 401 means this account is not on the refresh session. Keep the
         // saved user and ask them to re-add. Do not log them out.
-        if (status === 401) this.noteRefreshRefused(target)
+        if (status === 401) {
+          if (refreshCookieIsDead(e?.response?.data?.detail)) {
+            this.noteRefreshCookieDead()
+          } else {
+            this.noteRefreshRefused(target)
+          }
+        }
       }
       return null
     },
@@ -1285,6 +1293,26 @@ export const useStoreUser = defineStore("useStoreUser", {
       if (!hiveAccname) return
       this.markReauthNeeded(hiveAccname)
       this.removeAccountFromSession(hiveAccname)
+    },
+
+    /**
+     * The refresh cookie is missing, revoked, or expired.
+     * Mark every saved account once and stop refreshing. Do not call
+     * logout or POST /auth/logout — that storms one logout per account
+     * and cannot clear a cookie the browser is not storing.
+     */
+    noteRefreshCookieDead() {
+      const names = new Set(
+        [...(this.sessionAccounts || []), ...Object.keys(this.users || {})].filter(
+          Boolean,
+        ),
+      )
+      for (const name of names) {
+        this.markReauthNeeded(name)
+        delete this.accessTokens[name]
+      }
+      this.sessionAccounts = []
+      if (this.currentUser) this.clearAuthHeaders()
     },
 
     /**

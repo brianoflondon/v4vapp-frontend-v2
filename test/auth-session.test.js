@@ -17,12 +17,17 @@ vi.mock("../src/use/useV4vapp.js", () => ({
 }))
 
 import { useHiveDetails } from "../src/use/useHive.js"
+import { useKeepSats } from "../src/use/useV4vapp.js"
 import {
   apiLogin,
   refreshInterceptor,
   serverHiveAccount,
 } from "../src/boot/axios.js"
-import { readAllowedUsers } from "../src/utils/authSession.js"
+import {
+  readAllowedUsers,
+  refreshCookieIsDead,
+  resolveApiBases,
+} from "../src/utils/authSession.js"
 import { useStoreUser } from "../src/stores/storeUser.js"
 
 const realApiLoginPost = apiLogin.post.bind(apiLogin)
@@ -52,6 +57,15 @@ function refusedRefreshError() {
   error.response = {
     status: 401,
     data: { detail: "Requested account is not on this session" },
+  }
+  return error
+}
+
+function deadCookieError() {
+  const error = new Error("Request failed with status code 401")
+  error.response = {
+    status: 401,
+    data: { detail: "Invalid or expired refresh token" },
   }
   return error
 }
@@ -196,7 +210,9 @@ describe("multi-account refresh session", () => {
     expect(store.users["v4vapp.dev"]).toBeTruthy()
     expect(store.currentUser).toBe("v4vapp")
     expect(store.reauthNeeded["v4vapp"]).toBe(true)
+    expect(store.reauthNeeded["v4vapp.dev"]).toBeFalsy()
     expect([...store.sessionAccounts]).not.toContain("v4vapp")
+    expect([...store.sessionAccounts]).toContain("v4vapp.dev")
     expect(store.currentReauthNeeded).toBe(true)
   })
 
@@ -643,5 +659,123 @@ describe("multi-account refresh session", () => {
       serverHiveAccount,
     )
     expect(usernameOf(store.accessTokens.v4vapp)).toBe("v4vapp")
+  })
+
+  it("marks every account once when the refresh cookie is dead and does not log out", async () => {
+    const store = useStoreUser()
+    await loginAccount(store, "v4vapp", ["v4vapp", "v4vapp.dev", "v4vapp-test"])
+    await loginAccount(store, "v4vapp.dev", ["v4vapp", "v4vapp.dev", "v4vapp-test"])
+    await loginAccount(store, "v4vapp-test", [
+      "v4vapp",
+      "v4vapp.dev",
+      "v4vapp-test",
+    ])
+    store.currentUser = "v4vapp"
+    store.accessTokens = {
+      v4vapp: fakeJwt("v4vapp"),
+      "v4vapp.dev": fakeJwt("v4vapp.dev"),
+      "v4vapp-test": fakeJwt("v4vapp-test"),
+    }
+    const logoutUser = vi.spyOn(store, "logoutUser")
+    const logout = vi.spyOn(store, "logout")
+    const logoutAll = vi.spyOn(store, "logoutAll")
+    installRefresh(() => {
+      throw deadCookieError()
+    })
+
+    await refreshInterceptor(make401("v4vapp")).catch(() => {})
+
+    expect(logoutUser).not.toHaveBeenCalled()
+    expect(logout).not.toHaveBeenCalled()
+    expect(logoutAll).not.toHaveBeenCalled()
+    expect(refreshCalls).toHaveLength(1)
+    expect(String(refreshCalls[0].url)).not.toContain("/auth/logout")
+    expect(refreshCalls[0].body).toEqual({ for_user: "v4vapp" })
+    for (const name of ["v4vapp", "v4vapp.dev", "v4vapp-test"]) {
+      expect(store.users[name]).toBeTruthy()
+      expect(store.reauthNeeded[name]).toBe(true)
+      expect(store.accessTokens[name]).toBeUndefined()
+    }
+    expect([...store.sessionAccounts]).toEqual([])
+    expect(store.currentUser).toBe("v4vapp")
+
+    refreshCalls = []
+    await refreshInterceptor(make401("v4vapp.dev")).catch(() => {})
+    expect(await store.ensureAccessToken("v4vapp-test")).toBeNull()
+    expect(refreshCalls).toEqual([])
+    expect(logoutUser).not.toHaveBeenCalled()
+  })
+
+  it("does not log out when keepsats says the access token is invalid", async () => {
+    const store = useStoreUser()
+    await loginAccount(store, "v4vapp", ["v4vapp"])
+    store.currentUser = "v4vapp"
+    const logoutUser = vi.spyOn(store, "logoutUser")
+    const logout = vi.spyOn(store, "logout")
+    useKeepSats.mockResolvedValueOnce({ detail: "Could not validate credentials" })
+
+    const updated = await store.updateSatsBalance(false)
+
+    expect(updated).toBe(false)
+    expect(store.reauthNeeded["v4vapp"]).toBe(true)
+    expect(store.users["v4vapp"]).toBeTruthy()
+    expect(store.accessTokens["v4vapp"]).toBeUndefined()
+    expect(logoutUser).not.toHaveBeenCalled()
+    expect(logout).not.toHaveBeenCalled()
+    expect(refreshCalls.some((call) => String(call.url).includes("/auth/logout"))).toBe(
+      false,
+    )
+  })
+})
+
+describe("same-origin API base", () => {
+  it("uses /api on the production and dev SPA hosts", () => {
+    for (const href of [
+      "https://v4v.app/",
+      "https://v4v.app/pay",
+      "https://www.v4v.app/",
+      "https://dev.v4v.app/",
+    ]) {
+      const bases = resolveApiBases({
+        href,
+        localApiEnv: "false",
+        devApiEnv: "true",
+      })
+      expect(bases.apiURL).toBe("/api/v1")
+      expect(bases.apiLoginURL).toBe("/api/")
+      expect(bases.useLocal).toBe(false)
+    }
+    expect(refreshCookieIsDead("Invalid or expired refresh token")).toBe(true)
+    expect(refreshCookieIsDead("Requested account is not on this session")).toBe(
+      false,
+    )
+  })
+
+  it("keeps a localhost dev session on the absolute dev API", () => {
+    const local = resolveApiBases({
+      href: "https://localhost:9200/",
+      devApiEnv: "true",
+    })
+    expect(local.apiURL).toBe("http://localhost:1818/v1")
+    expect(local.apiLoginURL).toBe("http://localhost:1818/")
+
+    const remoteDev = resolveApiBases({
+      href: "http://127.0.0.1:9200/",
+      localApiEnv: "false",
+      devApiEnv: "true",
+    })
+    expect(remoteDev.apiURL).toBe("https://devapi.v4v.app/v1")
+    expect(remoteDev.apiLoginURL).toBe("https://devapi.v4v.app/")
+    expect(remoteDev.useLocal).toBe(false)
+  })
+
+  it("does not treat the api host as the SPA", () => {
+    const bases = resolveApiBases({
+      href: "https://api.v4v.app/v1",
+      localApiEnv: "false",
+      devApiEnv: "true",
+    })
+    expect(bases.apiURL).toBe("https://devapi.v4v.app/v1")
+    expect(bases.apiLoginURL).toBe("https://devapi.v4v.app/")
   })
 })
