@@ -51,7 +51,7 @@ onMounted(() => {
         console.log("[PWA] visibilitychange -> visible: forcing dataLoading = false (iOS resume recovery)");
         storeUser.dataLoading = false;
       }
-      storeUser.update(false).catch(() => {});
+      storeUser.restoreSessionFromCookie().catch(() => {});
     }
   });
 
@@ -62,7 +62,7 @@ onMounted(() => {
         console.log("[PWA] pageshow (persisted): forcing dataLoading = false (iOS resume recovery)");
         storeUser.dataLoading = false;
       }
-      storeUser.update(false).catch(() => {});
+      storeUser.restoreSessionFromCookie().catch(() => {});
     }
   });
 

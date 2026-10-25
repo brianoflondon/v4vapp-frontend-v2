@@ -113,7 +113,58 @@ const CREDENTIALED_AUTH_PATHS = new Set([
   "/auth/validate",
   "/auth/refresh",
   "/auth/logout",
+  "/auth/session",
 ])
+
+/**
+ * clientId is stored as a raw string. A JSON-quoted value is accepted so
+ * an older write does not look like a different id.
+ * @param {string|null|undefined} raw
+ * @returns {string|null}
+ */
+export function parseStoredClientId(raw) {
+  if (raw == null || raw === "") return null
+  try {
+    const parsed = JSON.parse(raw)
+    if (typeof parsed === "string" && parsed.trim()) return parsed.trim()
+  } catch {
+    // A plain string was stored without JSON quotes.
+  }
+  return String(raw).trim() || null
+}
+
+/**
+ * Stored client id, or null when storage is readable and empty.
+ * undefined means storage could not be read, so the caller must not
+ * write a freshly generated id over a value it failed to see.
+ * @param {Storage} [storage]
+ * @returns {string|null|undefined}
+ */
+export function readStoredClientId(storage = globalThis.localStorage) {
+  try {
+    return parseStoredClientId(storage.getItem("clientId"))
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Persisted currentUser wins when that account is still on the cookie.
+ * Otherwise use the server's last-used account, then the first allowed name.
+ * @param {string[]} names
+ * @param {unknown} persisted
+ * @param {unknown} hinted
+ * @returns {string|null}
+ */
+export function pickSessionUser(names, persisted, hinted) {
+  const list = Array.isArray(names) ? names.filter((name) => typeof name === "string" && name) : []
+  const match = (wanted) => {
+    if (typeof wanted !== "string" || !wanted.trim()) return null
+    const fold = wanted.trim().toLowerCase()
+    return list.find((name) => name.toLowerCase() === fold) || null
+  }
+  return match(persisted) || match(hinted) || list[0] || null
+}
 
 export function requestSendsRefreshCookie(url) {
   const path = authPathname(url)

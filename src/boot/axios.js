@@ -7,6 +7,12 @@ import {
   resolveApiBases,
 } from "src/utils/authSession"
 
+function isAuthSessionProbe(url) {
+  if (!url || typeof url !== "string") return false
+  const path = url.split("?")[0]
+  return path === "/auth/session" || path.endsWith("/auth/session")
+}
+
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
 // If any client changes this (global) instance, it might be a
@@ -200,7 +206,8 @@ export const refreshInterceptor = async (error) => {
     originalRequest &&
     !originalRequest._retry &&
     originalRequest.url !== "/auth/refresh" &&
-    originalRequest.url !== "/auth/logout"
+    originalRequest.url !== "/auth/logout" &&
+    !isAuthSessionProbe(originalRequest.url)
   ) {
     originalRequest._retry = true
 

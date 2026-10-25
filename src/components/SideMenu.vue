@@ -6,7 +6,12 @@
         @click="$emit('close-menu')"
         @user-clicked="closeRightDrawer"
       />
-      <HiveLogin v-model="hiveAccObj" key-type="Active" :label="label" />
+      <HiveLogin
+        v-if="storeUser.authSessionState !== 'checking'"
+        v-model="hiveAccObj"
+        key-type="Active"
+        :label="label"
+      />
       <PasskeyManagement />
       <HiveLogout />
     </div>

@@ -24,13 +24,25 @@ import {
   serverHiveAccount,
 } from "../src/boot/axios.js"
 import {
+  pickSessionUser,
   readAllowedUsers,
+  readStoredClientId,
   refreshCookieIsDead,
   resolveApiBases,
 } from "../src/utils/authSession.js"
 import { useStoreUser } from "../src/stores/storeUser.js"
 
 const realApiLoginPost = apiLogin.post.bind(apiLogin)
+const realApiLoginGet = apiLogin.get.bind(apiLogin)
+
+function sessionUnauthorized() {
+  const error = new Error("Request failed with status code 401")
+  error.response = {
+    status: 401,
+    data: { detail: "Invalid or expired refresh token" },
+  }
+  return error
+}
 
 function fakeJwt(username) {
   const payload = btoa(JSON.stringify({ username }))
@@ -118,6 +130,10 @@ describe("multi-account refresh session", () => {
       headers: {},
       config,
     })
+    apiLogin.get = async (url, config) => {
+      if (String(url).includes("/auth/session")) throw sessionUnauthorized()
+      return realApiLoginGet(url, config)
+    }
   })
 
   it("keeps two accounts refreshable after logging in one after the other", async () => {
@@ -340,6 +356,11 @@ describe("multi-account refresh session", () => {
       const config = await handler.fulfilled({ url, method: "post" })
       expect(config.withCredentials).toBe(true)
     }
+    const session = await handler.fulfilled({
+      url: "/auth/session",
+      method: "get",
+    })
+    expect(session.withCredentials).toBe(true)
 
     const challenge = await handler.fulfilled({
       url: "/auth/v4vapp",
@@ -351,6 +372,7 @@ describe("multi-account refresh session", () => {
 
   it("sends the refresh cookie through the axios pipeline", async () => {
     apiLogin.post = realApiLoginPost
+    apiLogin.get = realApiLoginGet
     const seen = []
     apiLogin.defaults.adapter = async (config) => {
       seen.push({
@@ -371,9 +393,11 @@ describe("multi-account refresh session", () => {
     await apiLogin.post("/auth/validate/", { ok: true })
     await apiLogin.post("/auth/refresh", { for_user: "v4vapp" })
     await apiLogin.post("/auth/logout", { username: "v4vapp" })
+    await apiLogin.get("/auth/session")
     await apiLogin.get("/auth/v4vapp", { withCredentials: false })
 
     expect(seen.map((entry) => entry.withCredentials)).toEqual([
+      true,
       true,
       true,
       true,
@@ -725,6 +749,169 @@ describe("multi-account refresh session", () => {
     expect(refreshCalls.some((call) => String(call.url).includes("/auth/logout"))).toBe(
       false,
     )
+  })
+})
+
+describe("cookie session restore", () => {
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
+    installRefresh()
+    apiLogin.get = async (url) => {
+      if (String(url).includes("/auth/session")) throw sessionUnauthorized()
+      return { status: 200, data: {} }
+    }
+  })
+
+  it("restores three accounts from the cookie when localStorage is empty", async () => {
+    const store = useStoreUser()
+    store.users = {}
+    store.currentUser = null
+    store.sessionAccounts = []
+    store.accessTokens = {}
+    const logout = vi.spyOn(store, "logout")
+    const logoutUser = vi.spyOn(store, "logoutUser")
+    apiLogin.get = async (url) => {
+      expect(String(url)).toContain("/auth/session")
+      return {
+        status: 200,
+        data: {
+          allowed_users: ["alice", "bob", "carol"],
+          current: "carol",
+        },
+      }
+    }
+    installRefresh((_url, body) => ({
+      status: 200,
+      data: {
+        access_token: fakeJwt(body.for_user),
+        token_type: "bearer",
+      },
+    }))
+
+    const restored = await store.restoreSessionFromCookie()
+
+    expect(restored).toBe(true)
+    expect(Object.keys(store.users).sort()).toEqual(["alice", "bob", "carol"])
+    expect(store.users.alice.hiveAccname).toBe("alice")
+    expect(store.users.bob.profileName).toBe("bob")
+    expect([...store.sessionAccounts]).toEqual(["alice", "bob", "carol"])
+    expect(store.currentUser).toBe("carol")
+    expect(usernameOf(store.accessTokens.carol)).toBe("carol")
+    expect(refreshCalls.map((call) => call.body)).toEqual([{ for_user: "carol" }])
+    expect(refreshCalls[0].config.withCredentials).toBe(true)
+    expect(store.authSessionState).toBe("active")
+    expect(logout).not.toHaveBeenCalled()
+    expect(logoutUser).not.toHaveBeenCalled()
+    expect(localStorage.getItem("currentUser")).toBe("carol")
+    expect(Object.keys(JSON.parse(localStorage.getItem("users"))).sort()).toEqual([
+      "alice",
+      "bob",
+      "carol",
+    ])
+    expect(JSON.stringify(localStorage)).not.toContain("access_token")
+  })
+
+  it("keeps the saved current user when that account is still allowed", async () => {
+    const store = useStoreUser()
+    store.users = {}
+    store.currentUser = "bob"
+    store.sessionAccounts = []
+    apiLogin.get = async () => ({
+      status: 200,
+      data: { allowed_users: ["alice", "bob", "carol"], current: "carol" },
+    })
+    installRefresh((_url, body) => ({
+      status: 200,
+      data: { access_token: fakeJwt(body.for_user), token_type: "bearer" },
+    }))
+
+    await store.restoreSessionFromCookie()
+
+    expect(store.currentUser).toBe("bob")
+    expect(refreshCalls.map((call) => call.body)).toEqual([{ for_user: "bob" }])
+  })
+
+  it("uses the first allowed account when nothing is saved and current is absent", async () => {
+    const store = useStoreUser()
+    store.users = {}
+    store.currentUser = null
+    apiLogin.get = async () => ({
+      status: 200,
+      data: { allowed_users: ["alice", "bob", "carol"] },
+    })
+    installRefresh((_url, body) => ({
+      status: 200,
+      data: { access_token: fakeJwt(body.for_user), token_type: "bearer" },
+    }))
+
+    await store.restoreSessionFromCookie()
+
+    expect(store.currentUser).toBe("alice")
+    expect(pickSessionUser(["alice", "bob"], null, null)).toBe("alice")
+  })
+
+  it("does not refresh or invent users when the cookie session is 401", async () => {
+    const store = useStoreUser()
+    store.users = {}
+    store.currentUser = null
+    store.sessionAccounts = []
+    const logout = vi.spyOn(store, "logout")
+
+    await store.restoreSessionFromCookie()
+
+    expect(store.authSessionState).toBe("absent")
+    expect(store.users).toEqual({})
+    expect(store.currentUser).toBeNull()
+    expect([...store.sessionAccounts]).toEqual([])
+    expect(refreshCalls).toEqual([])
+    expect(logout).not.toHaveBeenCalled()
+  })
+
+  it("does not refresh when GET /auth/session is refused", async () => {
+    const store = useStoreUser()
+    await loginAccount(store, "v4vapp", ["v4vapp"])
+    refreshCalls = []
+
+    await refreshInterceptor({
+      config: { url: "/auth/session", method: "get", headers: {} },
+      response: {
+        status: 401,
+        data: { detail: "Invalid or expired refresh token" },
+      },
+    }).catch(() => {})
+
+    expect(refreshCalls).toEqual([])
+    expect(store.users.v4vapp).toBeTruthy()
+  })
+
+  it("keeps a readable clientId and writes identity on login", async () => {
+    const savedId = "dbccbf4a-1111-4111-8111-111111111111"
+    localStorage.setItem("clientId", savedId)
+    setActivePinia(createPinia())
+    const store = useStoreUser()
+    expect(store.clientId).toBe(savedId)
+    expect(readStoredClientId()).toBe(savedId)
+
+    await store.initialize()
+    expect(store.clientId).toBe(savedId)
+
+    await loginAccount(store, "v4vapp", ["v4vapp"])
+    expect(localStorage.getItem("clientId")).toBe(savedId)
+    expect(localStorage.getItem("currentUser")).toBe("v4vapp")
+    expect(JSON.parse(localStorage.getItem("users")).v4vapp.hiveAccname).toBe(
+      "v4vapp",
+    )
+    expect(JSON.parse(localStorage.getItem("users")).v4vapp.apiToken).toBeNull()
+  })
+
+  it("reads a JSON-quoted clientId without minting a new one", () => {
+    const savedId = "dbccbf4a-1111-4111-8111-111111111111"
+    localStorage.setItem("clientId", JSON.stringify(savedId))
+    setActivePinia(createPinia())
+    const store = useStoreUser()
+    expect(store.clientId).toBe(savedId)
+    expect(readStoredClientId()).toBe(savedId)
   })
 })
 
