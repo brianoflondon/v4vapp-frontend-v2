@@ -62,7 +62,7 @@
     "vue-eslint-parser": "10.4.1"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=26.12.1",
     "pnpm": ">=11"
   }
 }
