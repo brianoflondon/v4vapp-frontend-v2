@@ -6,7 +6,7 @@ Frontend for the V4V.app Website and WebApp
 
 ## The Plan
 
-I have been learning [Vue 3 and Javascript for over a month now](https://peakd.com/hive-139531/@brianoflondon/learning-vue-3-and-hive-keychain-at-the-same-time). The goal is to completely rebuild [v4v.app](https://v4v.app/) only this time I'll do it all myself and I'll understand it. Previously I had some help starting from @ausbitbank and I tinkered and modified from his work.
+I have been learning [Vue 3 and Javascript for over a month now](https://peakd.com/hive-139531/@brianoflondon/learning-vue-3-and-hive-keychain-at-the-same-time). The goal is to completely rebuild [v4v.app](https://v4v.app/) only this time I'll do it all myself and I'll understand it.
 
 ## Building in Public
 
