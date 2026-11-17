@@ -33,10 +33,15 @@ FROM nginx:stable
 # Copy the built project from the previous stage
 COPY --from=build /app/dist/pwa /app/dist/pwa
 
-# Copy the Nginx configuration file
+# Copy the Nginx configuration file. The entrypoint renders the CSP snippet
+# so report-uri.com URLs stay in the container environment.
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx/security-headers.conf.template /etc/nginx/security-headers.conf.template
+COPY nginx/docker-entrypoint.sh /docker-entrypoint-csp.sh
+RUN chmod +x /docker-entrypoint-csp.sh
 
 # Expose the default Nginx port
 EXPOSE 80
 
+ENTRYPOINT ["/docker-entrypoint-csp.sh"]
 CMD ["nginx", "-g", "daemon off;"]
