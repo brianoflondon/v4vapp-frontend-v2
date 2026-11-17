@@ -2,7 +2,7 @@
 # Included from the server block and from every location that sets its own
 # add_header. Nginx drops parent add_header directives in those locations.
 #
-# dev.v4v.app and dev.lnd.v4v.app send Content-Security-Policy. Other hosts
+# dev.v4v.app sends Content-Security-Policy. Other hosts
 # send Content-Security-Policy-Report-Only. The map in nginx.conf picks which
 # header is non-empty. To enforce on v4v.app too, point $csp_enforce at
 # $csp_policy for that host and clear $csp_report.
