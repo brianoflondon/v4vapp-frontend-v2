@@ -6,8 +6,10 @@
 set -eu
 
 valid_https_url() {
+  # Reject quotes, nginx metacharacters, and every whitespace character.
+  # A tab or newline would break out of the generated header line.
   case "$1" in
-    *[\ \'\"\;\$\`\\]*)
+    *[[:space:]]*|*[\'\"\;\$\`\\]*)
       return 1
       ;;
     https://*)
