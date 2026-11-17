@@ -22,10 +22,10 @@ onMounted(() => {
     attribution: "© OpenStreetMap contributors",
   }).addTo(mymap);
 
-  // Add search control
+  // XHR against HTTPS Nominatim. JSONP would inject a third-party script
+  // and fail script-src 'self' once the CSP is enforced.
   const searchControl = new L.Control.Search({
-    url: "http://nominatim.openstreetmap.org/search?format=json&q={s}",
-    jsonpParam: "json_callback",
+    url: "https://nominatim.openstreetmap.org/search?format=json&q={s}",
     propertyName: "display_name",
     propertyLoc: ["lat", "lon"],
     marker: L.marker([0, 0]),
