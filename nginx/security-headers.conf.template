@@ -2,15 +2,17 @@
 # Included from the server block and from every location that sets its own
 # add_header. Nginx drops parent add_header directives in those locations.
 #
-# Report-only on purpose (issue 283). Nothing is blocked yet.
-# After dev.v4v.app reports stay clean for 24-48h:
-#   1. Rename this header to Content-Security-Policy.
-#   2. Point CSP_REPORT_URI at the report-uri.com /enforce path.
+# dev.v4v.app and dev.lnd.v4v.app send Content-Security-Policy. Other hosts
+# send Content-Security-Policy-Report-Only. The map in nginx.conf picks which
+# header is non-empty. To enforce on v4v.app too, point $csp_enforce at
+# $csp_policy for that host and clear $csp_report.
 #
 # CSP_REPORT_SUFFIX and CSP_REPORTING_HEADER are filled by
 # nginx/docker-entrypoint.sh. Leave the env vars unset and reporting stays off.
 ${CSP_REPORTING_HEADER}
-add_header Content-Security-Policy-Report-Only "default-src 'none'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' blob: https://*.hive.blog https://api.v4v.app https://devapi.v4v.app https://rpc.hive.blog https://api.hive.blog https://api.deathwing.me https://api.openhive.network https://rpc.mahdiyari.info https://techcoderx.com https://hiveapi.actifit.io https://api.c0ff33a.uk https://api.coingecko.com https://nominatim.openstreetmap.org https://overpass-api.de https://cloudflareinsights.com wss://hive-auth.arcange.eu; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests${CSP_REPORT_SUFFIX}" always;
+set $csp_policy "default-src 'none'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' blob: https://*.hive.blog https://api.v4v.app https://devapi.v4v.app https://rpc.hive.blog https://api.hive.blog https://api.deathwing.me https://api.openhive.network https://rpc.mahdiyari.info https://techcoderx.com https://hiveapi.actifit.io https://api.c0ff33a.uk https://api.coingecko.com https://nominatim.openstreetmap.org https://overpass-api.de https://cloudflareinsights.com wss://hive-auth.arcange.eu; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests${CSP_REPORT_SUFFIX}";
+add_header Content-Security-Policy $csp_enforce always;
+add_header Content-Security-Policy-Report-Only $csp_report always;
 add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 add_header X-Content-Type-Options "nosniff" always;
 add_header X-Frame-Options "DENY" always;
