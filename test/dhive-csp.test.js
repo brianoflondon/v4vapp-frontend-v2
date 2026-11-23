@@ -5,7 +5,7 @@ import {
   DHIVE_REGENERATOR_SAFE,
   DHIVE_REGENERATOR_UNSAFE,
   patchDhiveForCsp,
-} from "../build/dhiveCspPlugin.js"
+} from "../tools/dhiveCspPlugin.js"
 
 const dhiveBundle = path.resolve(
   "node_modules/@hiveio/dhive/dist/dhive.js",

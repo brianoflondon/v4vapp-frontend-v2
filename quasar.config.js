@@ -11,7 +11,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { createRequire } from "node:module"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
-import { dhiveCspPlugin } from "./build/dhiveCspPlugin.js"
+import { dhiveCspPlugin } from "./tools/dhiveCspPlugin.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const require = createRequire(import.meta.url)

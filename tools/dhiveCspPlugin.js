@@ -3,6 +3,7 @@
 // assignment throws, and the fallback calls Function(), which the site CSP
 // rejects because script-src has no 'unsafe-eval'. The signup route is the only
 // importer, so that rejection leaves /signup blank on v4v.app and dev.v4v.app.
+// This file lives outside build/ because .dockerignore excludes that directory.
 
 export const DHIVE_REGENERATOR_UNSAFE =
   'try{regeneratorRuntime=runtime}catch(accidentalStrictMode){Function("r","regeneratorRuntime = r")(runtime)}'
@@ -24,7 +25,7 @@ export function dhiveCspPlugin() {
       const patched = patchDhiveForCsp(code)
       if (patched == null) {
         this.error(
-          "@hiveio/dhive no longer contains the regenerator-runtime Function() fallback. /signup stays blank under the site Content-Security-Policy until build/dhiveCspPlugin.js matches the installed bundle.",
+          "@hiveio/dhive no longer contains the regenerator-runtime Function() fallback. /signup stays blank under the site Content-Security-Policy until tools/dhiveCspPlugin.js matches the installed bundle.",
         )
       }
       return { code: patched, map: null }
