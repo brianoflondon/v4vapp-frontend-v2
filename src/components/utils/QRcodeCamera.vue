@@ -109,7 +109,9 @@ function onDetect(detectedCodes) {
 
 /*** select camera ***/
 
-const selectedConstraints = ref({ facingMode: "environment" });
+// A bare string is an exact facingMode. Laptop webcams are user-facing, so
+// that constraint is rejected on desktop. ideal keeps the rear camera on phones.
+const selectedConstraints = ref({ facingMode: { ideal: "environment" } });
 const defaultConstraintOptions = [
   { label: "rear camera", constraints: { facingMode: "environment" } },
   { label: "front camera", constraints: { facingMode: "user" } },
