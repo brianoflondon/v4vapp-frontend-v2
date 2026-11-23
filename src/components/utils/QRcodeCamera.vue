@@ -32,6 +32,7 @@
 import { ref, computed } from "vue";
 import { useQuasar } from "quasar";
 import { QrcodeStream } from "vue-qrcode-reader";
+import "src/utils/zxingReaderWasm.js";
 import { useI18n } from "vue-i18n";
 import { axios } from "boot/axios";
 

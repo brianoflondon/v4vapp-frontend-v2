@@ -9,8 +9,11 @@
 #
 # CSP_REPORT_SUFFIX and CSP_REPORTING_HEADER are filled by
 # nginx/docker-entrypoint.sh. Leave the env vars unset and reporting stays off.
+#
+# 'wasm-unsafe-eval' lets the wallet QR scanner compile its same-origin ZXing
+# module. It does not allow eval() or new Function().
 ${CSP_REPORTING_HEADER}
-set $csp_policy "default-src 'none'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' blob: https://*.hive.blog https://api.v4v.app https://devapi.v4v.app https://rpc.hive.blog https://api.hive.blog https://api.deathwing.me https://api.openhive.network https://rpc.mahdiyari.info https://techcoderx.com https://hiveapi.actifit.io https://api.c0ff33a.uk https://api.coingecko.com https://nominatim.openstreetmap.org https://overpass-api.de https://cloudflareinsights.com wss://hive-auth.arcange.eu; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests${CSP_REPORT_SUFFIX}";
+set $csp_policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' blob: https://*.hive.blog https://api.v4v.app https://devapi.v4v.app https://rpc.hive.blog https://api.hive.blog https://api.deathwing.me https://api.openhive.network https://rpc.mahdiyari.info https://techcoderx.com https://hiveapi.actifit.io https://api.c0ff33a.uk https://api.coingecko.com https://nominatim.openstreetmap.org https://overpass-api.de https://cloudflareinsights.com wss://hive-auth.arcange.eu; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests${CSP_REPORT_SUFFIX}";
 add_header Content-Security-Policy $csp_enforce always;
 add_header Content-Security-Policy-Report-Only $csp_report always;
 add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
